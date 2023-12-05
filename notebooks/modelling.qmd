@@ -866,6 +866,19 @@ gt_tbl
 ```
 
 
+## Discussion points
+
++ Limitations, alternatives:
+  + Collapse across some strata
+  + Common parameters
+  + Pooling nested parameters
+  + Partial pooling estimates, e.g. revision broken up into one and two stage
++ Complications associated with additional adjustment (time, site, prognostic, design effects)
++ Compatibility with varying randomisation weights
++ Measures of effect
+
+
+
 ### Independent domain models
 
 Bubble, todo
