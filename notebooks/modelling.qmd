@@ -868,6 +868,7 @@ gt_tbl
 
 ## Discussion points
 
++ Relevance to estimands of interest
 + Limitations, alternatives:
   + Collapse across some strata
   + Common parameters
@@ -876,6 +877,7 @@ gt_tbl
 + Complications associated with additional adjustment (time, site, prognostic, design effects)
 + Compatibility with varying randomisation weights
 + Measures of effect
+
 
 
 
