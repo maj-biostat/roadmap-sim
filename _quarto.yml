@@ -19,13 +19,13 @@ website:
     search: true
     contents:
       - index.qmd
-      - section: "Simulated data summary"
-        contents:
-        - notebooks/data-01.qmd
       - section: "Background notes"
         contents:
         - notebooks/estimands.qmd
         - notebooks/modelling.qmd
+      - section: "Simulated stuff"
+        contents:
+        - notebooks/data-01.qmd
       - notebooks/about.qmd
           
 format:
