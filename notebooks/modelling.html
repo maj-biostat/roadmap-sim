@@ -232,7 +232,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <h2 id="toc-title">Contents</h2>
    
   <ul>
-  <li><a href="#scenario-1---how-model-specification-influences-parameter-estimate-in-logistic-regression" id="toc-scenario-1---how-model-specification-influences-parameter-estimate-in-logistic-regression" class="nav-link active" data-scroll-target="#scenario-1---how-model-specification-influences-parameter-estimate-in-logistic-regression">Scenario 1 - how model specification influences parameter estimate in logistic regression</a></li>
+  <li><a href="#scenario-1---how-model-specification-influences-parameter-estimation-in-logistic-regression" id="toc-scenario-1---how-model-specification-influences-parameter-estimation-in-logistic-regression" class="nav-link active" data-scroll-target="#scenario-1---how-model-specification-influences-parameter-estimation-in-logistic-regression">Scenario 1 - how model specification influences parameter estimation in logistic regression</a></li>
   <li><a href="#scenario-2---model-incorporating-all-strata-and-domains" id="toc-scenario-2---model-incorporating-all-strata-and-domains" class="nav-link" data-scroll-target="#scenario-2---model-incorporating-all-strata-and-domains">Scenario 2 - model incorporating all strata and domains</a>
   <ul>
   <li><a href="#surgery-domain" id="toc-surgery-domain" class="nav-link" data-scroll-target="#surgery-domain">Surgery domain</a></li>
@@ -273,8 +273,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 
 </div>
-<p>Start simply, the goal being to just encourage thinking about what is meant by a marginal versus conditional view for odds-ratios on the treatment effect, irrespetive of whether there is common treatment parameter or not.</p>
-<p>When I say marginal in relation to a causal treatment effect using an odds-ratio, I mean this, which follows the standard potential outcomes notation and definitions:</p>
+<p>Start simply, the goals being to encourage thinking about what the data might look like in order to get a sense of what we might be able to do with it, plus to start to look a bit more closely at the possibilities regarding the statistical modelling.</p>
+<p>For what it is worth, here are a few comments about odds-ratios on the treatment effect, irrespetive of whether we assume a common parameter across silos or not.</p>
+<p>When I am referring to a marginal perspective in relation to a causal treatment effect (using an odds-ratio) I just mean the following, which follows the standard potential outcomes notation and definitions:</p>
 <span class="math display">\begin{aligned}
 \frac{Pr(Y^{x=1} = 1)/Pr(Y^{x=1} = 0)}{Pr(Y^{x=0} = 1)/Pr(Y^{x=0} = 0)}
 \end{aligned}</span>
@@ -284,37 +285,37 @@ y_i &amp;\sim Bernoulli(\pi_i) \\
 logit(\pi_i) &amp;= \eta_i = \beta_0 + \beta_1 I(x == 1)
 \end{aligned}</span>
 <p>and then exponentiate the <span class="math inline">\beta_1</span>.</p>
-<p>When I say conditional, I mean any situation where we might be thinking about strata specific effects</p>
+<p>When I say conditional, which I know is sloppy, I mean any situation where we might be thinking about strata specific effects</p>
 <span class="math display">\begin{aligned}
 \frac{Pr(Y = 1|X=1,A=a)/Pr(Y = 0|X=1,A=a)}{Pr(Y = 1|X=0,A=a)/Pr(Y = 0|X=0,A=a)}
 \end{aligned}</span>
 <p>for which estimation would usually entail a model with an interaction between <span class="math inline">X</span> and <span class="math inline">A</span> and where you would likely note (absolutely) larger age-specific treatment effect odds ratios when compared to the marginal model. Unlike collapsable effect measures, the marginal treatment effect odds ratio is not a weighted average of the treatment effects in age strata. This can lead to weird findings if you choose to (even casually) look too closely.</p>
-<section id="scenario-1---how-model-specification-influences-parameter-estimate-in-logistic-regression" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="scenario-1---how-model-specification-influences-parameter-estimate-in-logistic-regression">Scenario 1 - how model specification influences parameter estimate in logistic regression</h2>
+<section id="scenario-1---how-model-specification-influences-parameter-estimation-in-logistic-regression" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="scenario-1---how-model-specification-influences-parameter-estimation-in-logistic-regression">Scenario 1 - how model specification influences parameter estimation in logistic regression</h2>
 <p>Assume a total sample size of 10000 (for no other reason than to ensure that the empircal summaries will be close to the simulation parameters). Select two silos - early (37.5% of sample) and late (62.5% of sample) acute infections and one domain (antibiotic type) as the focus.</p>
-<p>Assume (for now) that everyone in the cohort will be eligible and the options are soc vs soc + rifampin. Include adjustment for joint (knee vs hip) with early acute silo having (abitrarily) more hip infections (early acute 60% chance of hip infection, late acute 35% chance of hip infection). Any randomisation is 1:1.</p>
+<p>Also assume (for now) that everyone in the cohort will be eligible for the antibiotic type domain and that the only options are soc vs soc + rifampin. Include adjustment for joint (knee vs hip) with early acute silo having (abitrarily) more hip infections (early acute with 60% chance of hip infections, late acute with 35% chance of hip infections). Any randomisation is 1:1.</p>
 <p>Assume an outcome model for patient <span class="math inline">i</span> as follows:</p>
 <span class="math display">\begin{aligned}
 y_i &amp;\sim Bernoulli(\pi_i) \\
-logit(\pi_i) &amp;= \eta_i = \beta_0 + \beta_{s_{[i]}} + \beta_{abtype_{[i]}} + \beta_{joint_{[i]}}
+logit(\pi_i) &amp;= \eta_i = \beta_0 + bsilo_{[silo[i]]} + babty_{[abty[i]]}  + bjoint_{[joint[i]]}
 \end{aligned}</span>
 <p>where</p>
 <ul>
 <li><span class="math inline">\beta_0</span> is a common intercept</li>
-<li><span class="math inline">\beta_{s_{[i]}}</span> models the effect of silo</li>
-<li><span class="math inline">\beta_{abtype_{[i]}}</span> models the effect of rifampin</li>
-<li><span class="math inline">\beta_{joint_{[i]}}</span> models the effect of joint (site of infection)</li>
+<li><span class="math inline">bsilo_s</span> models the effect of silo</li>
+<li><span class="math inline">babty_a</span> models the effect of rifampin</li>
+<li><span class="math inline">bjoint_j</span> models the effect of joint (site of infection)</li>
 </ul>
-<p>All terms are interpreted as <em>the change in the log-odds of treatment success under a unit change in the category type, holding all other terms constant</em>.</p>
+<p>All terms are interpreted as <em>the change in the log-odds of treatment success under a unit change in the category under consideration, holding all other terms constant</em>.</p>
 <p>The effects are, by design, common across strata (urgh, silo). Assume:</p>
 <ul>
-<li><span class="math inline">\beta_0 = logit^{-1}(0.55)</span> (baseline response in early acute, soc &lt;=60 is 55% treatment success)</li>
-<li><span class="math inline">\beta_{\{s_{[i]} == earlyacute\}} = 0</span></li>
-<li><span class="math inline">\beta_{\{s_{[i]} == lateacute\}} = -0.5</span> (worse outcomes in the late acute silo)</li>
-<li><span class="math inline">\beta_{\{abtype_{[i]} == soc\}} = 0</span></li>
-<li><span class="math inline">\beta_{\{abtype_{[i]} == rif\}} = 0.6</span> (rifampin works)</li>
-<li><span class="math inline">\beta_{\{joint_{[i]} == knee\}} = 0</span></li>
-<li><span class="math inline">\beta_{\{joint_{[i]} == hip\}} = -0.7</span> (hip decreases likelihood of treatment success)</li>
+<li><span class="math inline">\beta_0 = logit^{-1}(0.7)</span> (baseline response in early acute, soc, knee is 70% treatment success)</li>
+<li><span class="math inline">bsilo_{[silo[i]] == earlyacute]} = 0</span></li>
+<li><span class="math inline">bsilo_{[silo[i]] == lateacute]} = -0.5</span> (worse outcomes in the late acute silo)</li>
+<li><span class="math inline">babty_{[abty[i]] == soc]} = 0</span></li>
+<li><span class="math inline">babty_{[abty[i]] == rif]} = 1</span> (rifampin works)</li>
+<li><span class="math inline">bjoint_{[joint[i]] == knee]} = 0</span></li>
+<li><span class="math inline">bjoint_{[joint[i]] == hip]} = -0.75</span> (hip decreases likelihood of treatment success)</li>
 </ul>
 <p>Simulate a dataset under the above setup.</p>
 <div class="cell page-columns page-full">
@@ -922,7 +923,7 @@ Pr(Y) = \begin{cases}
   etc, &amp;
          \end{cases}
 \end{aligned}</span>
-<p>Start with a very simple model and build up.</p>
+<p>Very simple model:</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <div class="sourceCode" id="cb2"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb2-1"><a href="#cb2-1"></a><span class="kw">data</span> {</span>
@@ -948,7 +949,7 @@ Pr(Y) = \begin{cases}
 <span id="cb2-21"><a href="#cb2-21"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
-<p>Fit a model with absolutely no stratification/adjustment, i.e.&nbsp;include only a term for assignment to rifampin. This gives an odds ratio associated with assignment of rifampin in the sample; a completely pooled effect of treatment.</p>
+<p>Fit with no stratification/adjustment, i.e.&nbsp;include only a term for assignment to rifampin. This gives an odds ratio associated with assignment of rifampin in the sample; a completely pooled effect of treatment.</p>
 <p>The linear predictor is just</p>
 <p><span class="math display">\beta_0 + \beta_1 I(abty_{[i]} == rif)</span></p>
 <ul>
@@ -1020,7 +1021,7 @@ Total execution time: 0.5 seconds.</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 4 sequential chains...
 
-Chain 1 finished in 0.1 seconds.
+Chain 1 finished in 0.0 seconds.
 Chain 2 finished in 0.0 seconds.
 Chain 3 finished in 0.0 seconds.
 Chain 4 finished in 0.0 seconds.
@@ -1590,10 +1591,10 @@ Total execution time: 0.5 seconds.</code></pre>
 </div>
 </div>
 </div>
-<p>By including the additional terms in the model we arrive at an absolutely larger parameter estimate for the effect of rifampin (albeit usually with the same or larger standard errors) and a widely different view on baseline risk. The conditional model reflects the correctly specified model based on the data generating assumptions and accordingly the baseline risk aligns closer to what we know to be the truth: 0.55 (marginal) vs 0.69 (conditional) models.</p>
-<p>Similarly, exponentiating the two terms gives 2.68 and 2.74 for the estimated odds-ratios for the effect of rifampin under the marginal and conditional model.</p>
+<p>By including the additional terms in the model we arrive at an absolutely larger parameter estimate for the effect of rifampin (albeit usually with the same or larger standard errors) and a widely different view on baseline risk. The conditional model reflects correctly specifies the approach based on the known data generating assumptions and accordingly the baseline risk aligns closer to what we know to be the truth: 0.55 (marginal) vs 0.69 (conditional) models.</p>
+<p>Similarly, we get 2.68 and 2.74 for the estimated odds-ratios for the effect of rifampin under the marginal and conditional model.</p>
 <p>In summary, in a logistic model, if you exclude a relevant predictor then the remaining parameters will be pulled towards the null. The difference between the two model assumptions are a function of the size of the effects - the stronger the effects the greater the difference between the model results. For small effects, there will usually be negligible differences.</p>
-<p>There is an impact on the transportability of effects to other populations. For example, consider the same model fit to a population where the joint infection distribution were reversed across the two silos.</p>
+<p>I believe there is also an impact on the transportability of effects to other populations. For example, consider the same model fit to a population where the joint infection distribution were reversed across the two silos.</p>
 <div class="cell">
 <details>
 <summary>Code</summary>
@@ -1667,9 +1668,9 @@ Total execution time: 0.5 seconds.</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 4 sequential chains...
 
-Chain 1 finished in 0.1 seconds.
+Chain 1 finished in 0.0 seconds.
 Chain 2 finished in 0.1 seconds.
-Chain 3 finished in 0.1 seconds.
+Chain 3 finished in 0.0 seconds.
 Chain 4 finished in 0.1 seconds.
 
 All 4 chains finished successfully.
@@ -2245,24 +2246,24 @@ new distributional assumption for age</p> </div></div>
 <li>for any given domain, 5% of the enrolments will be ineligible</li>
 <li>baseline treatment success of 65%, 55% and 45% for early, late and chronic infection</li>
 </ul>
-<p>For the model specification, for now I am assuming the following:</p>
+<p>For now, for the model specification, I am assuming the following:</p>
 <span class="math display">\begin{aligned}
 y_i &amp;\sim Binomial(\pi_i, n_i) \\
-logit(\pi_i) &amp;= \eta_i = bsilo_{silo_{[i]}} +
-  bjoint_{joint_{[i]}} + \\
-  &amp;bsurg_{surg_{[i]}} +
-  babdu_{abdu_{[i]}} +
-  babty_{abty_{[i]}}
+logit(\pi_i) &amp;= \eta_i = bsilo_{[silo[i]]} +
+  bjoint_{[joint[i]]} + \\
+  &amp;bsurg_{[surg[i]]} +
+  babdu_{[abdu[i]]} +
+  babty_{[abty[i]]}
 \end{aligned}</span>
-<p>which, I know, negates the possibility of subject level effects but that can be deemed irrelevant for now. With priors:</p>
+<p>which, I know, negates the possibility of subject level effects and is almost certainly not ideal. With priors:</p>
 <span class="math display">\begin{aligned}
-bsilo &amp;\sim N(0, 1.5) \\
-bjoint &amp;\sim N(0, 1) \\
-bsurg &amp;\sim N(0, 1) \\
-babdu &amp;\sim N(0, 1) \\
-babty &amp;\sim N(0, 1)
+bsilo_s &amp;\sim N(0, 1.5) \\
+bjoint_j &amp;\sim N(0, 1) \\
+bsurg_o &amp;\sim N(0, 1) \\
+babdu_p &amp;\sim N(0, 1) \\
+babty_q &amp;\sim N(0, 1)
 \end{aligned}</span>
-<p>with all bar <span class="math inline">bsilo</span> and <span class="math inline">bjoint</span> having sum-to-zero constraints applied and <span class="math inline">bjoint_{[1]} = 0</span>. Note that <span class="math inline">bsilo</span> is given a different sd simply to make it just about uniform on the probability scale and therefore allowing us to place a zero mean without major concern.</p>
+<p>with all bar <span class="math inline">bsilo_s</span> and <span class="math inline">bjoint_j</span> having sum-to-zero constraints applied and <span class="math inline">bjoint_{[1]} = 0</span>. Note that <span class="math inline">bsilo_s</span> is given a different sd simply to make it just about uniform on the probability scale and therefore allowing us to place a zero mean without major concern.</p>
 <p>The following function (from the <code>data.R</code> script) simulates data.</p>
 <div class="cell">
 <details>
@@ -2295,10 +2296,10 @@ babty &amp;\sim N(0, 1)
 <p>Provide summaries of patients contributing to the estimation of effects in each domain (surgery, antibiotic duration and antibiotic type).</p>
 <section id="surgery-domain" class="level3 page-columns page-full">
 <h3 class="anchored" data-anchor-id="surgery-domain">Surgery domain</h3>
-<p>For the surgery domain, there were approx 700 patients in the early silo that would have received dair, but are put into against an early_na which will ensures they do not contribute to the estimation of dair effects.</p>
-<p>You will note that the late acute has both one and two stage (instead of just revision). What I am doing is randomising to dair, one-stage, two-stage with probabilities <span class="math inline">\{0.5, 0.25, 0.25\}</span> so that you get approximately 1:1 for dair vs revision.</p>
-<p>You will also note the separate categories for <code>late_one</code> and <code>chronic_one</code> distinguishing the surgery types. I think this is in line with what SW raised but not entirely sure. Using this approach is intended to accomodate different effects for one vs two stage in the late vs chronic, albeit that this is somewhat mute given that the surgery domain intends to aggregate one and two-stage in the late acute group into a revision category. However, for now, I am leaving it as one-stage vs two-stage in the late silo and will worry about refining this down the line.</p>
-<p>Based on this structure, for the surgery domain, I am assuming silo and joint specific effects of interest for the late and chronic silos. The presentation of these effects will be</p>
+<p>For the surgery domain, there were approx 700 patients in the early silo that would have received dair, but are put into against an <code>early_na</code> classification to ensure they do not interfere with the estimation of dair effects.</p>
+<p>You will note that the late acute silo has both one and two stage (instead of just revision). What I am doing is randomising to dair, one-stage, two-stage with probabilities <span class="math inline">\{0.5, 0.25, 0.25\}</span> so that you get approximately 1:1 for dair vs revision.</p>
+<p>You will also note the separate categories for <code>late_one</code> and <code>chronic_one</code> distinguishing the surgery types. I think this is in line with what SW was suggesting but I am not entirely sure. The approach intends to accomodate different effects for one vs two stage in the late vs chronic silo, albeit that this is somewhat mute given that the surgery domain intends to aggregate one and two-stage in the late acute group into a revision category. However, for now, I am leaving it as one-stage vs two-stage in the late silo and will worry about refining this down the line.</p>
+<p>Based on this structure, for the surgery domain, I am assuming silo and joint specific effects of interest for the late and chronic silos. The presentation of these effects could be something along the lines of:</p>
 <ul>
 <li>for late - dair vs one and dair vs two, separately for knee and hip</li>
 <li>for chronic - one vs two, separately for knee and hip</li>
@@ -3041,8 +3042,21 @@ babty &amp;\sim N(0, 1)
 </section>
 <section id="antibiotic-duration-domain" class="level3 page-columns page-full">
 <h3 class="anchored" data-anchor-id="antibiotic-duration-domain">Antibiotic duration domain</h3>
-<p>Similarly, for the antibiotic duration domain, there are approx 700 patients in the early silo that would have received long duration (12 weeks). Again these would be bundled into a domain-specific <code>early_na</code> category to ensure they do not contribute to the estimation of other 12 week effects.</p>
-<p>In the late acute group, the large number of <code>late_na</code> (again about 700) for the antibiotic duration domain deserves comment. Allocation to the antibiotic duration group is dependent on allocation within the surgical group. For those that received dair or for those for whom the surgical domain was not an option, there will be no antibiotic duration treatment option and hence they are classified under <code>late_na</code>. Of the approx 1250 in the late acute silo, approx 660 fell under either <code>dair</code> or <code>late_na</code>. There are also likely some small number of additional participants who are independently deem unsuitable for the antibiotic duration domain.</p>
+<p>Similarly, for the antibiotic duration domain, there are approx 700 patients in the early silo that would all receive long duration (12 weeks) with no randomisation. Again these would be bundled into a domain-specific <code>early_na</code> category to ensure they do not contribute to the estimation of other 12 week effects.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>I am actually just calling the duration effects <code>long</code> vs <code>short</code> irrespective of what the duration is because I believe that this might be the intent.</p>
+</div>
+</div>
+<p>In the late acute group, the large number of <code>late_na</code> (again about 700) for the antibiotic duration domain deserves comment. Allocation to the antibiotic duration group is dependent on allocation within the surgical group. For those that received dair or for those for whom the surgical domain was not an option, there will be no antibiotic duration treatment option and hence they are classified under <code>late_na</code>. Of the approx 1250 in the late acute silo, approx 700 fell under either <code>dair</code> or <code>late_na</code>. There are also likely some small number of additional participants who are independently deem unsuitable for the antibiotic duration domain.</p>
 <div class="cell page-columns page-full">
 <details>
 <summary>Code</summary>
@@ -5425,7 +5439,7 @@ babty &amp;\sim N(0, 1)
 </section>
 <section id="model" class="level3 page-columns page-full">
 <h3 class="anchored" data-anchor-id="model">Model</h3>
-<p>Implement a model per the above spec:</p>
+<p>Implement a model per the earlier specification:</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <div class="sourceCode" id="cb18"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb18-1"><a href="#cb18-1"></a><span class="co">// group all your data up first</span></span>
@@ -5519,7 +5533,7 @@ babty &amp;\sim N(0, 1)
 <span id="cb18-89"><a href="#cb18-89"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
-<p>The model uses a binomial likelihood so I collect the simulated data by silo, joint, surgery, antibutic duration and type and then derive indexes for the parameters. Fit the model.</p>
+<p>The model uses a binomial likelihood so I collect the simulated data by silo, joint, surgery, antibutic duration and type and then derive indexes for the parameters. Once done, we are in a position to fit the model.</p>
 <div class="cell">
 <details>
 <summary>Code</summary>
@@ -5586,15 +5600,15 @@ babty &amp;\sim N(0, 1)
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 sequential chains...
 
-Chain 1 finished in 4.3 seconds.
-Chain 2 finished in 4.3 seconds.
+Chain 1 finished in 4.2 seconds.
+Chain 2 finished in 4.2 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 4.3 seconds.
-Total execution time: 8.6 seconds.</code></pre>
+Mean chain execution time: 4.2 seconds.
+Total execution time: 8.7 seconds.</code></pre>
 </div>
 </div>
-<p>The model produces estimates of risk by group, from which we could attempt to derive relevant causal effects (of whatever form required) by using some kind of empirical weighting. The grouping is obviously not what is intended, but I think it could possibly be useful to try and work through something like this as a means to elicit some more detail on the specification.</p>
+<p>I have set the model up to produced estimates of risk by group, with the mindset that this would allow us to derive relevant causal effects (of whatever form required) by using some kind of empirical weighting. The grouping is obviously not what is intended, but I think it could possibly be useful to try and work through something like this as a means to elicit some more detail on the specification.</p>
 <div class="cell page-columns page-full">
 <details>
 <summary>Code</summary>
