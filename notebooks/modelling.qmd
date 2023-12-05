@@ -1,0 +1,875 @@
+---
+title: "Modelling approaches"
+---
+
+<!-- define indep operator/symbol -->
+\newcommand{\indep}{\perp \!\!\! \perp}
+
+```{r, echo = FALSE}
+source("./R/init.R")
+source("./R/data.R")
+log_info("Called modelling notebook")
+```
+
+Start simply, the goal being to just encourage thinking about what is meant by a marginal versus conditional view for odds-ratios on the treatment effect, irrespetive of whether there is common treatment parameter or not.
+
+When I say marginal in relation to a causal treatment effect using an odds-ratio, I mean this, which follows the standard potential outcomes notation and definitions:
+
+\begin{aligned}
+\frac{Pr(Y^{x=1} = 1)/Pr(Y^{x=1} = 0)}{Pr(Y^{x=0} = 1)/Pr(Y^{x=0} = 0)}
+\end{aligned}
+
+where $x=1$ denotes treatment and $x=0$ denotes control and $Y^a \indep X$ so that the observed OR equates to the causal OR.
+Typically, we would just use a model to estimate this quantity on the log-odds scale
+
+\begin{aligned}
+y_i &\sim Bernoulli(\pi_i) \\
+logit(\pi_i) &= \eta_i = \beta_0 + \beta_1 I(x == 1)
+\end{aligned}
+
+and then exponentiate the $\beta_1$.
+
+When I say conditional, I mean any situation where we might be thinking about strata specific effects
+
+\begin{aligned}
+\frac{Pr(Y = 1|X=1,A=a)/Pr(Y = 0|X=1,A=a)}{Pr(Y = 1|X=0,A=a)/Pr(Y = 0|X=0,A=a)}
+\end{aligned}
+
+for which estimation would usually entail a model with an interaction between $X$ and $A$ and where you would likely note (absolutely) larger age-specific treatment effect odds ratios when compared to the marginal model.
+Unlike collapsable effect measures, the marginal treatment effect odds ratio is not a weighted average of the treatment effects in age strata.
+This can lead to weird findings if you choose to (even casually) look too closely.
+
+## Scenario 1 - how model specification influences parameter estimate in logistic regression
+
+Assume a total sample size of 10000 (for no other reason than to ensure that the empircal summaries will be close to the simulation parameters).
+Select two silos - early (37.5% of sample) and late (62.5% of sample) acute infections and one domain (antibiotic type) as the focus.
+
+Assume (for now) that everyone in the cohort will be eligible and the options are soc vs soc + rifampin.
+Include adjustment for joint (knee vs hip) with early acute silo having (abitrarily) more hip infections (early acute 60% chance of hip infection, late acute 35% chance of hip infection).
+Any randomisation is 1:1.
+
+Assume an outcome model for patient $i$ as follows:
+
+\begin{aligned}
+y_i &\sim Bernoulli(\pi_i) \\
+logit(\pi_i) &= \eta_i = \beta_0 + \beta_{s_{[i]}} + \beta_{abtype_{[i]}} + \beta_{joint_{[i]}}
+\end{aligned}
+
+where 
+
++ $\beta_0$ is a common intercept
++ $\beta_{s_{[i]}}$ models the effect of silo
++ $\beta_{abtype_{[i]}}$ models the effect of rifampin
++ $\beta_{joint_{[i]}}$ models the effect of joint (site of infection)
+
+All terms are interpreted as *the change in the log-odds of treatment success under a unit change in the category type, holding all other terms constant*.
+
+The effects are, by design, common across strata (urgh, silo). Assume:
+
++ $\beta_0 = logit^{-1}(0.55)$ (baseline response in early acute, soc <=60 is 55% treatment success)
++ $\beta_{\{s_{[i]} == earlyacute\}} = 0$
++ $\beta_{\{s_{[i]} == lateacute\}} = -0.5$ (worse outcomes in the late acute silo)
++ $\beta_{\{abtype_{[i]} == soc\}} = 0$
++ $\beta_{\{abtype_{[i]} == rif\}} = 0.6$ (rifampin works)
++ $\beta_{\{joint_{[i]} == knee\}} = 0$ 
++ $\beta_{\{joint_{[i]} == hip\}} = -0.7$ (hip decreases likelihood of treatment success)
+
+Simulate a dataset under the above setup.
+
+```{r}
+#| label: tbl-demo1
+#| tbl-cap: "Demo data - single abtype domain."
+#| tbl-cap-location: margin
+
+set.seed(1001)
+dd1 <- get_data_demo_1(
+  N = 10000,
+  a0 = qlogis(0.7),
+  # late acute does worse
+  a_la = -0.5,
+  c_abty = 1,
+  # hip joint infection decreases your chances of success
+  z_joint = -0.75,
+  pr_ea_joint = 0.6,
+  pr_la_joint = 0.3
+)
+
+dd1_smry <- dd1[, .(y = sum(y), .N), keyby = .(silo, joint, abty)]
+dd1_smry[, joint := c("knee", "hip")[joint + 1]]
+dd1_smry[, pr_success := y / N]
+
+
+cols <- c("Y", "N", "Pr(Y)")
+names(cols) <- c("y", "N", "pr_success")
+
+gt_tbl <- dd1_smry |> 
+  gt(
+    rowname_col = "abty",
+    groupname_col = c("silo", "joint")
+  ) |> 
+  fmt_number(
+    columns = starts_with("pr_success"),
+    decimals = 2
+  ) |>
+  summary_rows(
+    columns = c("y", "N"),
+    fns = list(
+      SubTotal ~ sum(., na.rm = T)
+    )
+  ) |>
+  grand_summary_rows(
+    columns = c("y", "N"),
+    fns = list(
+      Total ~ sum(., na.rm = T)
+    )
+  ) |> 
+  cols_width(
+    starts_with("abty") ~ px(150)
+  ) |> 
+  cols_label(.list = cols) |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  )
+
+# plogis(qlogis(0.7)+1 - 0.75)
+# plogis(qlogis(0.7)-0.5+1 - 0.75)
+
+gt_tbl
+
+```
+
+Double checking a few of the above manually, 
+
+\begin{aligned}
+Pr(Y) = \begin{cases}
+  logit^{-1}(logit(0.7)+1-0.75) \approx 0.75, & \text{if early acute and hip with rif}\\
+  logit^{-1}(logit(0.7)-0.5+1-0.75) \approx 0.65, & \text{if late acute and hip with rif}\\
+  etc, & 
+		 \end{cases}
+\end{aligned}
+
+Start with a very simple model and build up.
+
+```{r}
+#| class-output: stan
+#| echo: false
+
+cat(readLines(file.path("stan", "model01.stan")), sep = "\n")
+```
+
+Fit a model with absolutely no stratification/adjustment, i.e. include only a term for assignment to rifampin.
+This gives an odds ratio associated with assignment of rifampin in the sample; a completely pooled effect of treatment.
+
+The linear predictor is just 
+
+$$\beta_0 + \beta_1 I(abty_{[i]} == rif)$$
+
++ $\beta_1$ gives us the log-odds ratio for the effect of rifampin in our sample.
+
+Fit a second model that stratifies by silo and age.
+There is a common effect of antibiotic choice (no interactions) but the effect is interpreted in terms of holding silo and site of infection constant.
+In other words, it is more of a subject-specific rather population average effect and is arguably more clinically relevant.
+The linear predictor is now 
+
+$$\beta_0 + \beta_1 I(abty_{[i]} == rif) + \beta_2 I(silo_{[i]} == late acute) + \beta_3 I(joint_{[i]} == hip)$$
+
++ $\beta_1$ gives us the log-odds ratio for the effect of rifampin in our sample holding silo and site of infection (joint) constant.
+
+```{r}
+dat <- dd1[, .(y = sum(y), n = .N), keyby = abty]
+dat[abty == "rif", x := 1]
+dat[abty == "soc", x := 0]
+
+ld1 <- list(
+  N = 2, P = 1, 
+  X = array(dat$x, dim = c(2,1)),
+  y = dat$y, n = dat$n
+)
+
+m1 <- cmdstan_model(stan_file = file.path("stan", "model01.stan"))
+f1 <- m1$sample(
+  chains = 4, 
+  data = ld1,
+  iter_sampling = 1000,
+  fixed_param = F,
+  refresh = 0
+)
+
+dat <- dd1[, .(y = sum(y), n = .N), keyby = .(abty, silo, joint)]
+dat[abty == "rif", x := 1]
+dat[abty == "soc", x := 0]
+dat[silo == "early_acute", s := 0]
+dat[silo == "late_acute", s := 1]
+
+ld2 <- list(
+  N = nrow(dat), P = 3, 
+  # note - treatment effect (x) will be b[1]
+  X = dat[, .(x, s, joint)],
+  y = dat$y, n = dat$n
+)
+
+# same model implementation
+f2 <- m1$sample(
+  chains = 4, 
+  data = ld2,
+  iter_sampling = 1000,
+  fixed_param = F,
+  refresh = 0
+)
+```
+
+Summarise the joint posterior from the two models.
+
+```{r}
+#| label: tbl-demo1-pos1
+#| tbl-cap: "Summary of joint posterior from marginal and conditional models."
+#| tbl-cap-location: margin
+
+p1 <- data.table(f1$draws(variables = c("b0","b"), format = "matrix"))
+p1 <- melt(p1, measure.vars = names(p1), variable.name = "par")
+
+p2 <- data.table(f2$draws(variables = c("b0","b"), format = "matrix"))
+p2 <- melt(p2, measure.vars = names(p2), variable.name = "par")
+
+dtbl1 <- rbind(
+  p1[
+    , .(model = "marginal",
+        mu = mean(value), 
+        sd = sd(value),
+        q025 = quantile(value, prob = 0.025),
+        q975 = quantile(value, prob = 0.975)),
+  keyby = par],
+  p2[
+    , .(model = "conditional",
+        mu = mean(value), 
+        sd = sd(value),
+        q025 = quantile(value, prob = 0.025),
+        q975 = quantile(value, prob = 0.975)),
+  keyby = par]
+)
+
+term = c("intercept", "trt", "silo", "joint")
+names(term) = c("b0", paste0("b[",1:3,"]"))
+
+dtbl1[, term := term[par]]
+
+setcolorder(dtbl1, c("model","par", "term"))
+
+gt_tbl <- dtbl1[, .SD, .SDcols = !c("par")] |> 
+  gt(
+    rowname_col = "term",
+    groupname_col = c("model")
+  ) |> 
+  fmt_number(
+    decimals = 3
+  )  |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  )
+
+or_trt1 <- dtbl1[model == "marginal" & term == "trt", exp(mu)]
+or_trt2 <- dtbl1[model == "conditional" & term == "trt", exp(mu)]
+
+risk1 <- plogis(dtbl1[model == "marginal" & term == "intercept", mu])
+risk2 <- plogis(dtbl1[model == "conditional" & term == "intercept", mu])
+
+gt_tbl
+```
+
+By including the additional terms in the model we arrive at an absolutely larger parameter estimate for the effect of rifampin (albeit usually with the same or larger standard errors) and a widely different view on baseline risk.
+The conditional model reflects the correctly specified model based on the data generating assumptions and accordingly the baseline risk aligns closer to what we know to be the truth: `r sprintf("%.2f", risk1)` (marginal) vs `r sprintf("%.2f", risk2)`  (conditional) models.
+
+Similarly, exponentiating the two terms gives `r sprintf("%.2f", or_trt1)` and `r sprintf("%.2f", or_trt2)` for the estimated odds-ratios for the effect of rifampin under the marginal and conditional model.
+
+In summary, in a logistic model, if you exclude a relevant predictor then the remaining parameters will be pulled towards the null.
+The difference between the two model assumptions are a function of the size of the effects - the stronger the effects the greater the difference between the model results.
+For small effects, there will usually be negligible differences.
+
+There is an impact on the transportability of effects to other populations.
+For example, consider the same model fit to a population where the joint infection distribution were reversed across the two silos.
+
+```{r}
+set.seed(1002)
+dd2 <- get_data_demo_1(
+  N = 10000,
+  a0 = qlogis(0.7),
+  # late acute does worse
+  a_la = -0.5,
+  c_abty = 1,
+  # hip joint infection decreases your chances of success
+  z_joint = -0.75,
+  pr_ea_joint = 0.3,
+  pr_la_joint = 0.6
+)
+
+dat <- dd2[, .(y = sum(y), n = .N), keyby = abty]
+dat[abty == "rif", x := 1]
+dat[abty == "soc", x := 0]
+
+ld3 <- list(
+  N = 2, P = 1, 
+  X = array(dat$x, dim = c(2,1)),
+  y = dat$y, n = dat$n
+)
+
+f3 <- m1$sample(
+  chains = 4, 
+  data = ld3,
+  iter_sampling = 1000,
+  fixed_param = F,
+  refresh = 0
+)
+
+dat <- dd2[, .(y = sum(y), n = .N), keyby = .(abty, silo, joint)]
+dat[abty == "rif", x := 1]
+dat[abty == "soc", x := 0]
+dat[silo == "early_acute", s := 0]
+dat[silo == "late_acute", s := 1]
+
+ld4 <- list(
+  N = nrow(dat), P = 3, 
+  # note - treatment effect (x) will be b[1]
+  X = dat[, .(x, s, joint)],
+  y = dat$y, n = dat$n
+)
+
+# same model implementation
+f4 <- m1$sample(
+  chains = 4, 
+  data = ld4,
+  iter_sampling = 1000,
+  fixed_param = F,
+  refresh = 0
+)
+```
+
+
+```{r}
+#| label: tbl-demo1-pos3
+#| tbl-cap: "Summary of joint posterior from marginal and conditional models under new distributional assumption for age"
+#| tbl-cap-location: margin
+
+p3 <- data.table(f3$draws(variables = c("b0", "b"), format = "matrix"))
+p3 <- melt(p3, measure.vars = names(p3), variable.name = "par")
+
+p4 <- data.table(f4$draws(variables = c("b0", "b"), format = "matrix"))
+p4 <- melt(p4, measure.vars = names(p4), variable.name = "par")
+
+dtbl1 <- rbind(
+  p3[
+    , .(model = "marginal",
+        mu = mean(value), 
+        sd = sd(value),
+        q025 = quantile(value, prob = 0.025),
+        q975 = quantile(value, prob = 0.975)),
+  keyby = par],
+  p4[
+    , .(model = "conditional",
+        mu = mean(value), 
+        sd = sd(value),
+        q025 = quantile(value, prob = 0.025),
+        q975 = quantile(value, prob = 0.975)),
+  keyby = par]
+)
+
+term = c("intercept", "trt", "silo", "joint")
+names(term) = c("b0", paste0("b[",1:3,"]"))
+dtbl1[, term := term[par]]
+setcolorder(dtbl1, c("model","par", "term"))
+
+gt_tbl <- dtbl1[, .SD, .SDcols = !c("par")] |> 
+  gt(
+    rowname_col = "term",
+    groupname_col = c("model")
+  ) |> 
+  fmt_number(
+    decimals = 3
+  )  |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  )
+
+or_trt1 <- dtbl1[model == "marginal" & term == "trt", exp(mu)]
+or_trt2 <- dtbl1[model == "conditional" & term == "trt", exp(mu)]
+
+gt_tbl
+```
+
+Side note - the relationship between power and the inclusion of predictive baseline covariates differs between linear and logistic regression.
+In linear regression, you get increased power by the inclusion of additional covariates by virtue of the fact that the standard error drops.
+In logistic regression, the standard error usually stays the same when you include more covariates (and it can get larger).
+However, the parameters will (in general) also move in absolute value further away from the null.
+
+## Scenario 2 - model incorporating all strata and domains
+
+Now assume:
+
++ a more realistic 2500 enrolments, some of whom will be deemed to be non-entries for various domain elements
++ 30%, 50% and 20% of enrolments fall under the early, late and chronic silos respectively
++ in expectation, N = 750, 1250 and 500 for each of the silos
++ knee infections correspond to 60% of cases (same in all silos)
++ for any given domain, 5% of the enrolments will be ineligible
++ baseline treatment success of 65%, 55% and 45% for early, late and chronic infection
+
+For the model specification, for now I am assuming the following:
+
+\begin{aligned}
+y_i &\sim Binomial(\pi_i, n_i) \\
+logit(\pi_i) &= \eta_i = bsilo_{silo_{[i]}} + 
+  bjoint_{joint_{[i]}} + \\
+  &bsurg_{surg_{[i]}} +
+  babdu_{abdu_{[i]}} +
+  babty_{abty_{[i]}} 
+\end{aligned}
+
+which, I know, negates the possibility of subject level effects but that can be deemed irrelevant for now.
+With priors:
+
+\begin{aligned}
+bsilo &\sim N(0, 1.5) \\
+bjoint &\sim N(0, 1) \\
+bsurg &\sim N(0, 1) \\
+babdu &\sim N(0, 1) \\
+babty &\sim N(0, 1) 
+\end{aligned}
+
+with all bar $bsilo$ and $bjoint$ having sum-to-zero constraints applied and $bjoint_{[1]} = 0$.
+Note that $bsilo$ is given a different sd simply to make it just about uniform on the probability scale and therefore allowing us to place a zero mean without major concern.
+
+The following function (from the `data.R` script) simulates data.
+
+```{r}
+
+set.seed(1010)
+dd2 <- get_data_demo_2(
+  N = 2500,
+  # baseline log-odds of trt success by silo
+  b_silo = c(early_acute=qlogis(0.65), late_acute=qlogis(0.55), chronic=qlogis(0.45)),
+  # hip does worse
+  b_joint = c(knee = 0, hip = -0.5),
+  
+  # outcome model parameters for each domain
+  # could do this with ragged, but this is quicker.    
+  v_early_surg = c(early_na=0),
+  v_late_surg = c(late_na=0, late_dair = 0, late_one=0.1, late_two=-0.4),
+  v_chronic_surg = c(chronic_na=0, chronic_one=0, chronic_two=0.2),
+  
+  v_early_abdu = c(early_na=0),
+  v_late_abdu = c(late_na=0, late_one_short=0, late_one_long=0.3, late_two_short=0, late_two_long=0.1),
+  v_chronic_abdu = c(chronic_na=0, chronic_one_short=0, chronic_one_long=-0.2, chronic_two_short=0,chronic_two_long=0.5),
+  
+  v_early_abty = c(early_na=0, soc = 0, rif = 0.3),
+  v_late_abty = c(late_na=0, soc = 0, rif = 0.3),
+  v_chronic_abty = c(chronic_na=0, soc = 0, rif = 0.3)
+      
+)
+```
+
+Provide summaries of patients contributing to the estimation of effects in each domain (surgery, antibiotic duration and antibiotic type).
+
+
+### Surgery domain 
+
+For the surgery domain, there were approx 700 patients in the early silo that would have received dair, but are put into against an early_na which will ensures they do not contribute to the estimation of dair effects.
+
+You will note that the late acute has both one and two stage (instead of just revision).
+What I am doing is randomising to dair, one-stage, two-stage with probabilities $\{0.5, 0.25, 0.25\}$ so that you get approximately 1:1 for dair vs revision.
+
+You will also note the separate categories for `late_one` and `chronic_one` distinguishing the surgery types. 
+I think this is in line with what SW raised but not entirely sure.
+Using this approach is intended to accomodate different effects for one vs two stage in the late vs chronic, albeit that this is somewhat mute given that the surgery domain intends to aggregate one and two-stage in the late acute group into a revision category.
+However, for now, I am leaving it as one-stage vs two-stage in the late silo and will worry about refining this down the line.
+
+Based on this structure, for the surgery domain, I am assuming silo and joint specific effects of interest for the late and chronic silos.
+The presentation of these effects will be 
+
++ for late - dair vs one and dair vs two, separately for knee and hip
++ for chronic - one vs two, separately for knee and hip
+
+interpreted in the context of a given antibiotic duration, type etc.
+
+```{r}
+#| label: tbl-demo2a
+#| tbl-cap: "Demo data - summary by surgery domain"
+#| tbl-cap-location: margin
+ 
+dd2_smry <- dd2[, .(y = sum(y), .N), keyby = .(silo, joint, surg)]
+dd2_smry[, pr_obs := y / N]
+dd2_smry[, odds_obs := pr_obs / (1-pr_obs)]
+dd2_smry[, surg := factor(surg, levels = c(
+  paste0(c("early", "late", "chronic"), "_na"),
+  paste0("late_", c("dair", "one", "two")),
+  paste0("chronic_", c("one", "two"))
+  ))]
+
+dd2_smry <- dd2_smry[order(silo, joint, surg)]
+setkey(dd2_smry, silo, joint, surg)
+
+
+ors <- c(
+  NA, NA,
+  dd2_smry[.("late_acute", "knee", "late_na"), odds_obs]/dd2_smry[.("late_acute", "knee", "late_dair"), odds_obs],
+  NA, # ref
+  dd2_smry[.("late_acute", "knee", "late_one"), odds_obs]/dd2_smry[.("late_acute", "knee", "late_dair"), odds_obs],
+  dd2_smry[.("late_acute", "knee", "late_two"), odds_obs]/dd2_smry[.("late_acute", "knee", "late_dair"), odds_obs],
+  
+  dd2_smry[.("late_acute", "hip", "late_na"), odds_obs]/dd2_smry[.("late_acute", "hip", "late_dair"), odds_obs],
+  NA, # ref
+  dd2_smry[.("late_acute", "hip", "late_one"), odds_obs]/dd2_smry[.("late_acute", "hip", "late_dair"), odds_obs],
+  dd2_smry[.("late_acute", "hip", "late_two"), odds_obs]/dd2_smry[.("late_acute", "hip", "late_dair"), odds_obs],
+  
+  dd2_smry[.("chronic", "knee", "chronic_na"), odds_obs]/dd2_smry[.("chronic", "knee", "chronic_one"), odds_obs],
+  NA, # ref
+  dd2_smry[.("chronic", "knee", "chronic_two"), odds_obs]/dd2_smry[.("chronic", "knee", "chronic_one"), odds_obs],
+  
+  dd2_smry[.("chronic", "hip", "chronic_na"), odds_obs]/dd2_smry[.("chronic", "hip", "chronic_one"), odds_obs],
+  NA, # ref
+  dd2_smry[.("chronic", "hip", "chronic_two"), odds_obs]/dd2_smry[.("chronic", "hip", "chronic_one"), odds_obs]
+)
+
+
+
+dd2_smry[, odds_ratio := ors]
+  
+  
+  
+
+gt_tbl <- dd2_smry |> 
+  gt(
+    groupname_col = c("silo", "joint")
+  ) |> 
+  fmt_number(
+    columns = starts_with("pr_obs"),
+    decimals = 2
+  ) |>
+  fmt_number(
+    columns = starts_with("odds_obs"),
+    decimals = 2
+  ) |>
+  fmt_number(
+    columns = starts_with("odds_ratio"),
+    decimals = 2
+  ) |>
+  summary_rows(
+    columns = c("N"),
+    fns = list(
+      SubTotal ~ sum(., na.rm = T)
+    )
+  ) |>
+  grand_summary_rows(
+    columns = c("N"),
+    fns = list(
+      Total ~ sum(., na.rm = T)
+    )
+  )  |>
+  sub_missing(
+    columns = everything(),
+    rows = everything(),
+    missing_text = "---"
+) |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  )
+
+gt_tbl
+```
+
+
+### Antibiotic duration domain 
+
+Similarly, for the antibiotic duration domain, there are approx 700 patients in the early silo that would have received long duration (12 weeks).
+Again these would be bundled into a domain-specific `early_na` category to ensure they do not contribute to the estimation of other 12 week effects.
+
+In the late acute group, the large number of `late_na` (again about 700) for the antibiotic duration domain deserves comment.
+Allocation to the antibiotic duration group is dependent on allocation within the surgical group.
+For those that received dair or for those for whom the surgical domain was not an option, there will be no antibiotic duration treatment option and hence they are classified under `late_na`.
+Of the approx 1250 in the late acute silo, approx 660 fell under either `dair` or `late_na`. 
+There are also likely some small number of additional participants who are independently deem unsuitable for the antibiotic duration domain.
+
+
+```{r}
+#| label: tbl-demo2b
+#| tbl-cap: "Demo data - summary by ab duration domain"
+#| tbl-cap-location: margin
+
+dd2_smry <- dd2[, .(y = sum(y), .N), keyby = .(silo, joint, abdu)]
+
+dd2_smry <- dd2_smry[order(silo, joint, abdu)]
+
+gt_tbl <- dd2_smry |> 
+  gt(
+    groupname_col = c("silo", "joint")
+  ) |> 
+  summary_rows(
+    columns = c("N"),
+    fns = list(
+      SubTotal ~ sum(., na.rm = T)
+    )
+  ) |>
+  grand_summary_rows(
+    columns = c("N"),
+    fns = list(
+      Total ~ sum(., na.rm = T)
+    )
+  )  |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  )
+
+gt_tbl
+```
+
+### Antibiotic type domain
+
+The patients that enter into this domain are approximately 50% of the enrolments across all silos and infection sites.
+This is a simplistic perspective but it is only aiming to capture the essense of the split across groups.
+
+```{r}
+#| label: tbl-demo2c
+#| tbl-cap: "Demo data - summary by ab type domain"
+#| tbl-cap-location: margin
+
+dd2_smry <- dd2[, .(y = sum(y), .N), keyby = .(silo, joint, abty)]
+
+dd2_smry <- dd2_smry[order(silo, joint, abty)]
+
+gt_tbl <- dd2_smry |> 
+  gt(
+    groupname_col = c("silo", "joint")
+  ) |> 
+  summary_rows(
+    columns = c("N"),
+    fns = list(
+      SubTotal ~ sum(., na.rm = T)
+    )
+  ) |>
+  grand_summary_rows(
+    columns = c("N"),
+    fns = list(
+      Total ~ sum(., na.rm = T)
+    )
+  )  |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  )
+
+gt_tbl
+```
+
+### All domains
+
+Finally, the following table provides a summary across each of the possible combinations of domain level classifications/assignments.
+
+```{r}
+#| label: tbl-demo2d
+#| tbl-cap: "Demo data - summary by all domains"
+#| tbl-cap-location: margin
+
+dd2_smry <- dd2[, .(y = sum(y), .N), keyby = .(silo, joint, surg, abdu, abty)]
+dd2_smry[, surg := factor(surg, levels = c(
+  paste0(c("early", "late", "chronic"), "_na"),
+  paste0("late_", c("dair", "one", "two")),
+  paste0("chronic_", c("one", "two"))
+  ))]
+
+dd2_smry <- dd2_smry[order(silo, joint, surg, abdu, abty)]
+
+gt_tbl <- dd2_smry |> 
+  gt(
+    groupname_col = c("silo", "joint")
+  ) |> 
+  summary_rows(
+    columns = c("N"),
+    fns = list(
+      SubTotal ~ sum(., na.rm = T)
+    )
+  ) |>
+  grand_summary_rows(
+    columns = c("N"),
+    fns = list(
+      Total ~ sum(., na.rm = T)
+    )
+  )  |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  )
+
+gt_tbl
+```
+
+### Model
+
+Implement a model per the above spec:
+
+```{r}
+#| class-output: stan
+#| echo: false
+
+cat(readLines(file.path("stan", "model03.stan")), sep = "\n")
+```
+
+The model uses a binomial likelihood so I collect the simulated data by silo, joint, surgery, antibutic duration and type and then derive indexes for the parameters.
+Fit the model.
+
+```{r}
+dat <- dd2[, .(y = sum(y), n = .N), keyby = .(silo, joint, surg, abdu, abty)]
+dat[, p_obs := y / n]
+
+id_silo <- 1:3
+names(id_silo) <- g_silo
+
+id_joint <- 1:2
+names(id_joint) <- g_joint
+
+id_surg <- 1:8
+names(id_surg) <- c(
+  "early_na", 
+  "late_na", "late_dair", "late_one", "late_two",
+  "chronic_na", "chronic_one", "chronic_two"
+)
+
+id_abdu <- 1:11
+names(id_abdu) <- c(
+  "early_na", 
+  "late_na", "late_one_long", "late_one_short", "late_two_long", "late_two_short",
+  "chronic_na", "chronic_one_long", "chronic_one_short","chronic_two_long", "chronic_two_short"
+)
+
+id_abty <- 1:5
+names(id_abty) <- c(
+  "early_na", "rif", "soc", 
+  "late_na", 
+  "chronic_na"
+)
+  
+dat[, id_silo := id_silo[silo]]
+dat[, id_joint := id_joint[joint]]
+dat[, id_surg := id_surg[surg]]
+dat[, id_abdu := id_abdu[abdu]]
+dat[, id_abty := id_abty[abty]]
+
+
+ld1 <- list(
+  N = nrow(dat), S = 3, J = 2, 
+  O = length(unique(dat$id_surg)),
+  P = length(unique(dat$id_abdu)),
+  Q = length(unique(dat$id_abty)),
+  y = dat$y, n = dat$n,
+  silo = dat$id_silo,
+  joint = dat$id_joint,
+  surg = dat$id_surg,
+  abdu = dat$id_abdu,
+  abty = dat$id_abty  ,
+  prior_only = 0
+)
+ 
+m2 <- cmdstan_model(stan_file = file.path("stan", "model03.stan"))
+f1 <- m2$sample(
+  chains = 2,
+  data = ld1,
+  iter_sampling = 1000,
+  fixed_param = F,
+  refresh = 0
+)
+```
+
+The model produces estimates of risk by group, from which we could attempt to derive relevant causal effects (of whatever form required) by using some kind of empirical weighting.
+The grouping is obviously not what is intended, but I think it could possibly be useful to try and work through something like this as a means to elicit some more detail on the specification.
+
+```{r}
+#| label: tbl-demo2-post1
+#| tbl-cap: "Demo - summary of joint posterior, estimates of risk by strata and allocation"
+#| tbl-cap-location: margin
+
+p1 <- data.table(f1$draws(variables = c("p"), format = "matrix")) 
+p1 <- melt(p1, measure.vars = names(p1), variable.name = "par")
+
+dtbl1 <- 
+  p1[
+    , .(mu = mean(value), 
+        sd = sd(value),
+        q025 = quantile(value, prob = 0.025),
+        q975 = quantile(value, prob = 0.975)),
+  keyby = par]
+
+
+dtbl1 <- cbind(dat[, .(silo, joint, surg, abdu, abty, y, n, p_obs)], dtbl1)
+
+gt_tbl <- dtbl1[, .SD, .SDcols = !c("par")] |> 
+  gt(
+    groupname_col = c("silo", "joint")
+  ) |> 
+  fmt_number(
+    columns = all_of(c("p_obs", "mu", "sd", "q025", "q975")),
+    decimals = 2
+  )  |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  )
+
+
+gt_tbl
+```
+
+
+### Independent domain models
+
+Bubble, todo
+
+### Shared models
+
+Bubble, todo
+
+#### Forms of pooling
+
+Bubble, todo
+
+

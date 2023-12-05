@@ -1,0 +1,56 @@
+project:
+  type: website
+  execute-dir: project
+
+website:
+  title: "ROADMAP - design notes and simulations"
+  navbar:
+    tools:
+      - icon: twitter
+        href: https://twitter.com
+      - icon: github
+        menu:
+          - text: Source Code
+            url:  https://code.com
+          - text: Report a Bug
+            url:  https://bugs.com
+  sidebar:
+    style: "floating"
+    search: true
+    contents:
+      - index.qmd
+      - section: "Simulated data summary"
+        contents:
+        - notebooks/data-01.qmd
+      - section: "Background notes"
+        contents:
+        - notebooks/estimands.qmd
+        - notebooks/modelling.qmd
+      - notebooks/about.qmd
+          
+format:
+  html:
+    theme: sketchy
+    toc: true
+    code-fold: true
+    code-line-numbers: true
+    code-block-background: true
+    toc-location: right
+    toc-title: "Contents"
+    toc-depth: 4
+    toc-expand: true
+    fig-width: 6
+    fig-height: 4
+    fig-dpi: 300
+    fig-cap-location: margin
+    tbl-cap-location: margin
+    format-links: true
+    html-math-method: katex
+    highlight-style: arrow
+    fontsize: 1em
+    link-external-icon: true
+    link-external-newwindow: true
+    link-external-filter: '^(?:http:|https:)\/\/github\.com'
+
+
+

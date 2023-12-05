@@ -1,0 +1,129 @@
+---
+title: "Simulated data summaries"
+---
+
+```{r, echo = FALSE}
+source("./R/init.R")
+log_info("Called modelling notebook")
+```
+
+## Data summaries
+
+The following tables provides indicative patient numbers per treatment under each domain (surgical, antibiotic duration, antibiotic type) with notes on assignment mechanism.
+
+```{r, echo = is_html}
+#| label: tbl-surg
+#| tbl-cap: "Surgical domain - patients and outcomes by silo and treatment."
+#| tbl-cap-location: margin
+
+db <- dbConnect(RSQLite::SQLite(), g_cfg$db_name)
+d_qry <- dbSendQuery(db, "SELECT * FROM v_surg WHERE sim = ?")
+dbBind(d_qry, list(1))
+d <- data.table(dbFetch(d_qry))
+dbClearResult(d_qry)
+dbDisconnect(db)
+
+d <- d[, .(silo, surg, y, N, note)]
+
+cols <- c("Response", "N", "Note")
+names(cols) <- c("y", "N", "note")
+
+gt_tbl <- d |> 
+  gt(
+    rowname_col = "surg",
+    groupname_col = "silo"
+  ) |>
+  grand_summary_rows(
+    columns = c("y", "N"),
+    fns = list(
+      Total ~ sum(., na.rm = T)
+    )
+  ) |> 
+  cols_width(
+    starts_with("surg") ~ px(150)
+  ) |> 
+  cols_label(.list = cols) 
+
+gt_tbl
+```
+
+```{r, echo = is_html}
+#| label: tbl-abdu
+#| tbl-cap: "Antibiotic duration domain (conditional on surgical procedure for late acute) - patients and outcomes by silo and treatment."
+#| tbl-cap-location: margin
+
+db <- dbConnect(RSQLite::SQLite(), g_cfg$db_name)
+d_qry <- dbSendQuery(db, "SELECT * FROM v_abdu WHERE sim = ?")
+dbBind(d_qry, list(1))
+d <- data.table(dbFetch(d_qry))
+dbClearResult(d_qry)
+dbDisconnect(db)
+
+d <- d[, .(silo, surg, abdu, y, N, note)]
+
+cols <- c("Response", "N", "Note")
+names(cols) <- c("y", "N", "note")
+
+gt_tbl <- d |> 
+  gt(
+    rowname_col = "abdu",
+    groupname_col = c("silo", "surg")
+  ) |>
+  grand_summary_rows(
+    columns = c("y", "N"),
+    fns = list(
+      Total ~ sum(., na.rm = T)
+    )
+  ) |> 
+  cols_width(
+    starts_with("abdu") ~ px(150)
+  ) |> 
+  cols_label(.list = cols)
+
+gt_tbl
+```
+
+```{r, echo = is_html}
+#| label: tbl-abty
+#| tbl-cap: "Antibiotic type domain (conditional on gram status) - patients and outcomes by silo and treatment."
+#| tbl-cap-location: margin
+
+db <- dbConnect(RSQLite::SQLite(), g_cfg$db_name)
+d_qry <- dbSendQuery(db, "SELECT * FROM v_abty WHERE sim = ?")
+dbBind(d_qry, list(1))
+d <- data.table(dbFetch(d_qry))
+dbClearResult(d_qry)
+dbDisconnect(db)
+
+d <- d[, .(silo, abty, y, N, note)]
+
+cols <- c("Response", "N", "Note")
+names(cols) <- c("y", "N", "note")
+
+gt_tbl <- d |> 
+  gt(
+    rowname_col = "abty",
+    groupname_col = c("silo")
+  ) |>
+  grand_summary_rows(
+    columns = c("y", "N"),
+    fns = list(
+      Total ~ sum(., na.rm = T)
+    )
+  ) |> 
+  cols_width(
+    starts_with("abty") ~ px(150)
+  ) |> 
+  cols_label(.list = cols)
+
+gt_tbl
+```
+
+
+
+The choice of treatment effect (e.g. absolute vs relative) leads to different characterisations of the same phenomenon and implies different heterogeneity.
+
+
+
+
+

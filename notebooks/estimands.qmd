@@ -1,0 +1,59 @@
+---
+title: "Estimands in complex designs"
+---
+
+## Platform trials
+
+Are designed to permit the evaluation of multiple interventions in a perpetual manner under a single protocol establishing a common infrastructure and analysis plan.
+Interventions can be added and withdrawn at different times based on need and the control group may be revised as the trial progresses.
+Platform trials can include adaptive elements (commonly stopping rules and adaptive randomisations) that allow design variations based on accruing evidence.
+
+## Estimands
+
+Causal estimands are population quantities describing causal effects of treatments.
+The estimand framework facilitates a precise description of the treatment effect of interest in clinical trials.
+The estimand is the thing targeted for estimation which will address a question of interest intrinsic to the trial.
+In other words, setting objectives leads to estimands which, once clear, can lead to identifying a suitable method for estimation.
+
+::: callout-note
+If you do not have a clear definition of an estimand, how do you derive an appropriate estimator?
+:::
+
+Estimands comprise:
+
+1. a population of interest
+2. a treatment strategy
+3. a variable to be measured for each patient
+4. strategies for handing intercurrent events (IE)
+5. a population summary measure
+
+Per FDA, endpoint measures are developed to assess clinical outcomes, but things do seem to get mixed up.
+
+Nevertheless - the *endpoint* is an outcome obtained for each patient that will be statistically analyzed to address the scientific question; this may include data from multiple variables.
+
+While the usual suspects for defining analysis populations (specifically for dealing with IE) were intention-to-treat ITT and per-protocol, the ICH expanded this set of strategies.
+Loosely, ITT analyses all patients as randomised, irrespective of what actually happened (e.g. deviations).
+PP analyses, only those who follow the protocol are used, the otherse are excluded.
+PP is commonly cited as being subject to bias, ITT less so.
+ICH defines:
+
+
+| Command  | Description of common use  |
+|--------|--------|
+| treatment policy | Most common, similar to ITT; data collected is used regardless of whether IE occur. In other words, the IE is not a considered a departure from the treatment regimen of interest. TP preserves the randomisation, hence its attraction. Death can lead to TP being undefineable unless death is the (or a component of the) primary. |
+| composite policy  | Incorporates the IE as a component of the variable, e.g. alive at 29 days without use of rescue medication.   |
+| hypothetical | Complicated - envisages a scenario where the IE does not occur. The observed outcomes of patients without IE correspond to the outcome of interest, but the outcome of patients with IE is considered missing and needs to be imputed.  |
+| while on treatment  | Applicable where there are repeat measures. The data is used up to the point where treatement was ended.   |
+| principal stratum  | Involves defining sub-populations according to the specific IEs on one or all treatments.  |
+
+: ICH treatment strategies {.striped .hover}
+
+as analyses strategies with some loose and brief descriptions provided above.
+
+Intercurrent events are just post-randomisation events that impact our measurements or interpretation of measurements in some way (e.g. intercurrent events arise through discontinuation of medication).
+
+For the population-level summary, it is ususally relevant to provide within and between-arm measures, e.g. within-arm being overall survival at 28 days vs between-arm hazard ratio etc.
+
+Platform trials introduce complexity into the specification of estimands and is not well considered in the literature.
+For example, what are the implications of addring treatment arms or modifying the control or implementing further data-driven adaptive features?
+

@@ -1,0 +1,13 @@
+---
+title: "Modelling approach - arginal vs conditional"
+subtitle: "Implications of arginal vs conditional"
+---
+
+```{r, echo = FALSE}
+source("./R/init.R")
+log_info("Called demo notebook")
+```
+
+It is well known and broadly documented that the choice of treatment effect (e.g. absolute vs relative) leads to different characterisations of the same phenomenon and implies different heterogeneity.
+
+
