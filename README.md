@@ -1,6 +1,6 @@
 # ROADMAP Simulations
 
-This is attempt to incorporate the simulation and reporting of trial operating characteristics into a single project.
+This is attempt to incorporate design notes, the simulation implementation and simulation results for the trial operating characteristics into a single project.
 I know, this might be (a) tricky and (b) foolish.
 However, I thought it would be worth a go.
 
