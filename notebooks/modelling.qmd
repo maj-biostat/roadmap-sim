@@ -11,9 +11,11 @@ source("./R/data.R")
 log_info("Called modelling notebook")
 ```
 
-Start simply, the goal being to just encourage thinking about what is meant by a marginal versus conditional view for odds-ratios on the treatment effect, irrespetive of whether there is common treatment parameter or not.
+Start simply, the goals being to encourage thinking about what the data might look like in order to get a sense of what we might be able to do with it, plus to start to look a bit more closely at the possibilities regarding the statistical modelling.
 
-When I say marginal in relation to a causal treatment effect using an odds-ratio, I mean this, which follows the standard potential outcomes notation and definitions:
+For what it is worth, here are a few comments about odds-ratios on the treatment effect, irrespetive of whether we assume a common parameter across silos or not.
+
+When I am referring to a marginal perspective in relation to a causal treatment effect (using an odds-ratio) I just mean the following, which follows the standard potential outcomes notation and definitions:
 
 \begin{aligned}
 \frac{Pr(Y^{x=1} = 1)/Pr(Y^{x=1} = 0)}{Pr(Y^{x=0} = 1)/Pr(Y^{x=0} = 0)}
@@ -29,7 +31,7 @@ logit(\pi_i) &= \eta_i = \beta_0 + \beta_1 I(x == 1)
 
 and then exponentiate the $\beta_1$.
 
-When I say conditional, I mean any situation where we might be thinking about strata specific effects
+When I say conditional, which I know is sloppy, I mean any situation where we might be thinking about strata specific effects
 
 \begin{aligned}
 \frac{Pr(Y = 1|X=1,A=a)/Pr(Y = 0|X=1,A=a)}{Pr(Y = 1|X=0,A=a)/Pr(Y = 0|X=0,A=a)}
@@ -39,40 +41,40 @@ for which estimation would usually entail a model with an interaction between $X
 Unlike collapsable effect measures, the marginal treatment effect odds ratio is not a weighted average of the treatment effects in age strata.
 This can lead to weird findings if you choose to (even casually) look too closely.
 
-## Scenario 1 - how model specification influences parameter estimate in logistic regression
+## Scenario 1 - how model specification influences parameter estimation in logistic regression
 
 Assume a total sample size of 10000 (for no other reason than to ensure that the empircal summaries will be close to the simulation parameters).
 Select two silos - early (37.5% of sample) and late (62.5% of sample) acute infections and one domain (antibiotic type) as the focus.
 
-Assume (for now) that everyone in the cohort will be eligible and the options are soc vs soc + rifampin.
-Include adjustment for joint (knee vs hip) with early acute silo having (abitrarily) more hip infections (early acute 60% chance of hip infection, late acute 35% chance of hip infection).
+Also assume (for now) that everyone in the cohort will be eligible for the antibiotic type domain and that the only options are soc vs soc + rifampin.
+Include adjustment for joint (knee vs hip) with early acute silo having (abitrarily) more hip infections (early acute with 60% chance of hip infections, late acute with 35% chance of hip infections).
 Any randomisation is 1:1.
 
 Assume an outcome model for patient $i$ as follows:
 
 \begin{aligned}
 y_i &\sim Bernoulli(\pi_i) \\
-logit(\pi_i) &= \eta_i = \beta_0 + \beta_{s_{[i]}} + \beta_{abtype_{[i]}} + \beta_{joint_{[i]}}
+logit(\pi_i) &= \eta_i = \beta_0 + bsilo_{[silo[i]]} + babty_{[abty[i]]}  + bjoint_{[joint[i]]}
 \end{aligned}
 
 where 
 
 + $\beta_0$ is a common intercept
-+ $\beta_{s_{[i]}}$ models the effect of silo
-+ $\beta_{abtype_{[i]}}$ models the effect of rifampin
-+ $\beta_{joint_{[i]}}$ models the effect of joint (site of infection)
++ $bsilo_s$ models the effect of silo
++ $babty_a$ models the effect of rifampin
++ $bjoint_j$ models the effect of joint (site of infection)
 
-All terms are interpreted as *the change in the log-odds of treatment success under a unit change in the category type, holding all other terms constant*.
+All terms are interpreted as *the change in the log-odds of treatment success under a unit change in the category under consideration, holding all other terms constant*.
 
 The effects are, by design, common across strata (urgh, silo). Assume:
 
-+ $\beta_0 = logit^{-1}(0.55)$ (baseline response in early acute, soc <=60 is 55% treatment success)
-+ $\beta_{\{s_{[i]} == earlyacute\}} = 0$
-+ $\beta_{\{s_{[i]} == lateacute\}} = -0.5$ (worse outcomes in the late acute silo)
-+ $\beta_{\{abtype_{[i]} == soc\}} = 0$
-+ $\beta_{\{abtype_{[i]} == rif\}} = 0.6$ (rifampin works)
-+ $\beta_{\{joint_{[i]} == knee\}} = 0$ 
-+ $\beta_{\{joint_{[i]} == hip\}} = -0.7$ (hip decreases likelihood of treatment success)
++ $\beta_0 = logit^{-1}(0.7)$ (baseline response in early acute, soc, knee is 70% treatment success)
++ $bsilo_{[silo[i]] == earlyacute]} = 0$
++ $bsilo_{[silo[i]] == lateacute]} = -0.5$ (worse outcomes in the late acute silo)
++ $babty_{[abty[i]] == soc]} = 0$
++ $babty_{[abty[i]] == rif]} = 1$ (rifampin works)
++ $bjoint_{[joint[i]] == knee]} = 0$ 
++ $bjoint_{[joint[i]] == hip]} = -0.75$ (hip decreases likelihood of treatment success)
 
 Simulate a dataset under the above setup.
 
@@ -154,7 +156,7 @@ Pr(Y) = \begin{cases}
 		 \end{cases}
 \end{aligned}
 
-Start with a very simple model and build up.
+Very simple model:
 
 ```{r}
 #| class-output: stan
@@ -163,7 +165,7 @@ Start with a very simple model and build up.
 cat(readLines(file.path("stan", "model01.stan")), sep = "\n")
 ```
 
-Fit a model with absolutely no stratification/adjustment, i.e. include only a term for assignment to rifampin.
+Fit with no stratification/adjustment, i.e. include only a term for assignment to rifampin.
 This gives an odds ratio associated with assignment of rifampin in the sample; a completely pooled effect of treatment.
 
 The linear predictor is just 
@@ -289,15 +291,15 @@ gt_tbl
 ```
 
 By including the additional terms in the model we arrive at an absolutely larger parameter estimate for the effect of rifampin (albeit usually with the same or larger standard errors) and a widely different view on baseline risk.
-The conditional model reflects the correctly specified model based on the data generating assumptions and accordingly the baseline risk aligns closer to what we know to be the truth: `r sprintf("%.2f", risk1)` (marginal) vs `r sprintf("%.2f", risk2)`  (conditional) models.
+The conditional model reflects correctly specifies the approach based on the known data generating assumptions and accordingly the baseline risk aligns closer to what we know to be the truth: `r sprintf("%.2f", risk1)` (marginal) vs `r sprintf("%.2f", risk2)`  (conditional) models.
 
-Similarly, exponentiating the two terms gives `r sprintf("%.2f", or_trt1)` and `r sprintf("%.2f", or_trt2)` for the estimated odds-ratios for the effect of rifampin under the marginal and conditional model.
+Similarly, we get `r sprintf("%.2f", or_trt1)` and `r sprintf("%.2f", or_trt2)` for the estimated odds-ratios for the effect of rifampin under the marginal and conditional model.
 
 In summary, in a logistic model, if you exclude a relevant predictor then the remaining parameters will be pulled towards the null.
 The difference between the two model assumptions are a function of the size of the effects - the stronger the effects the greater the difference between the model results.
 For small effects, there will usually be negligible differences.
 
-There is an impact on the transportability of effects to other populations.
+I believe there is also an impact on the transportability of effects to other populations.
 For example, consider the same model fit to a population where the joint infection distribution were reversed across the two silos.
 
 ```{r}
@@ -429,30 +431,30 @@ Now assume:
 + for any given domain, 5% of the enrolments will be ineligible
 + baseline treatment success of 65%, 55% and 45% for early, late and chronic infection
 
-For the model specification, for now I am assuming the following:
+For now, for the model specification, I am assuming the following:
 
 \begin{aligned}
 y_i &\sim Binomial(\pi_i, n_i) \\
-logit(\pi_i) &= \eta_i = bsilo_{silo_{[i]}} + 
-  bjoint_{joint_{[i]}} + \\
-  &bsurg_{surg_{[i]}} +
-  babdu_{abdu_{[i]}} +
-  babty_{abty_{[i]}} 
+logit(\pi_i) &= \eta_i = bsilo_{[silo[i]]} + 
+  bjoint_{[joint[i]]} + \\
+  &bsurg_{[surg[i]]} +
+  babdu_{[abdu[i]]} +
+  babty_{[abty[i]]} 
 \end{aligned}
 
-which, I know, negates the possibility of subject level effects but that can be deemed irrelevant for now.
+which, I know, negates the possibility of subject level effects and is almost certainly not ideal.
 With priors:
 
 \begin{aligned}
-bsilo &\sim N(0, 1.5) \\
-bjoint &\sim N(0, 1) \\
-bsurg &\sim N(0, 1) \\
-babdu &\sim N(0, 1) \\
-babty &\sim N(0, 1) 
+bsilo_s &\sim N(0, 1.5) \\
+bjoint_j &\sim N(0, 1) \\
+bsurg_o &\sim N(0, 1) \\
+babdu_p &\sim N(0, 1) \\
+babty_q &\sim N(0, 1) 
 \end{aligned}
 
-with all bar $bsilo$ and $bjoint$ having sum-to-zero constraints applied and $bjoint_{[1]} = 0$.
-Note that $bsilo$ is given a different sd simply to make it just about uniform on the probability scale and therefore allowing us to place a zero mean without major concern.
+with all bar $bsilo_s$ and $bjoint_j$ having sum-to-zero constraints applied and $bjoint_{[1]} = 0$.
+Note that $bsilo_s$ is given a different sd simply to make it just about uniform on the probability scale and therefore allowing us to place a zero mean without major concern.
 
 The following function (from the `data.R` script) simulates data.
 
@@ -488,18 +490,18 @@ Provide summaries of patients contributing to the estimation of effects in each 
 
 ### Surgery domain 
 
-For the surgery domain, there were approx 700 patients in the early silo that would have received dair, but are put into against an early_na which will ensures they do not contribute to the estimation of dair effects.
+For the surgery domain, there were approx 700 patients in the early silo that would have received dair, but are put into against an `early_na` classification to ensure they do not interfere with the estimation of dair effects.
 
-You will note that the late acute has both one and two stage (instead of just revision).
+You will note that the late acute silo has both one and two stage (instead of just revision).
 What I am doing is randomising to dair, one-stage, two-stage with probabilities $\{0.5, 0.25, 0.25\}$ so that you get approximately 1:1 for dair vs revision.
 
 You will also note the separate categories for `late_one` and `chronic_one` distinguishing the surgery types. 
-I think this is in line with what SW raised but not entirely sure.
-Using this approach is intended to accomodate different effects for one vs two stage in the late vs chronic, albeit that this is somewhat mute given that the surgery domain intends to aggregate one and two-stage in the late acute group into a revision category.
+I think this is in line with what SW was suggesting but I am not entirely sure.
+The approach intends to accomodate different effects for one vs two stage in the late vs chronic silo, albeit that this is somewhat mute given that the surgery domain intends to aggregate one and two-stage in the late acute group into a revision category.
 However, for now, I am leaving it as one-stage vs two-stage in the late silo and will worry about refining this down the line.
 
 Based on this structure, for the surgery domain, I am assuming silo and joint specific effects of interest for the late and chronic silos.
-The presentation of these effects will be 
+The presentation of these effects could be something along the lines of:
 
 + for late - dair vs one and dair vs two, separately for knee and hip
 + for chronic - one vs two, separately for knee and hip
@@ -601,13 +603,17 @@ gt_tbl
 
 ### Antibiotic duration domain 
 
-Similarly, for the antibiotic duration domain, there are approx 700 patients in the early silo that would have received long duration (12 weeks).
+Similarly, for the antibiotic duration domain, there are approx 700 patients in the early silo that would all  receive long duration (12 weeks) with no randomisation.
 Again these would be bundled into a domain-specific `early_na` category to ensure they do not contribute to the estimation of other 12 week effects.
+
+:::callout-note
+I am actually just calling the duration effects `long` vs `short` irrespective of what the duration is because I believe that this might be the intent.
+:::
 
 In the late acute group, the large number of `late_na` (again about 700) for the antibiotic duration domain deserves comment.
 Allocation to the antibiotic duration group is dependent on allocation within the surgical group.
 For those that received dair or for those for whom the surgical domain was not an option, there will be no antibiotic duration treatment option and hence they are classified under `late_na`.
-Of the approx 1250 in the late acute silo, approx 660 fell under either `dair` or `late_na`. 
+Of the approx 1250 in the late acute silo, approx 700 fell under either `dair` or `late_na`. 
 There are also likely some small number of additional participants who are independently deem unsuitable for the antibiotic duration domain.
 
 
@@ -741,7 +747,7 @@ gt_tbl
 
 ### Model
 
-Implement a model per the above spec:
+Implement a model per the earlier specification:
 
 ```{r}
 #| class-output: stan
@@ -751,7 +757,7 @@ cat(readLines(file.path("stan", "model03.stan")), sep = "\n")
 ```
 
 The model uses a binomial likelihood so I collect the simulated data by silo, joint, surgery, antibutic duration and type and then derive indexes for the parameters.
-Fit the model.
+Once done, we are in a position to fit the model.
 
 ```{r}
 dat <- dd2[, .(y = sum(y), n = .N), keyby = .(silo, joint, surg, abdu, abty)]
@@ -815,7 +821,7 @@ f1 <- m2$sample(
 )
 ```
 
-The model produces estimates of risk by group, from which we could attempt to derive relevant causal effects (of whatever form required) by using some kind of empirical weighting.
+I have set the model up to produced estimates of risk by group, with the mindset that this would allow us to derive relevant causal effects (of whatever form required) by using some kind of empirical weighting.
 The grouping is obviously not what is intended, but I think it could possibly be useful to try and work through something like this as a means to elicit some more detail on the specification.
 
 ```{r}
