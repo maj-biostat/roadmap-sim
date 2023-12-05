@@ -240,6 +240,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#antibiotic-type-domain" id="toc-antibiotic-type-domain" class="nav-link" data-scroll-target="#antibiotic-type-domain">Antibiotic type domain</a></li>
   <li><a href="#all-domains" id="toc-all-domains" class="nav-link" data-scroll-target="#all-domains">All domains</a></li>
   <li><a href="#model" id="toc-model" class="nav-link" data-scroll-target="#model">Model</a></li>
+  </ul></li>
+  <li><a href="#discussion-points" id="toc-discussion-points" class="nav-link" data-scroll-target="#discussion-points">Discussion points</a>
+  <ul>
   <li><a href="#independent-domain-models" id="toc-independent-domain-models" class="nav-link" data-scroll-target="#independent-domain-models">Independent domain models</a></li>
   <li><a href="#shared-models" id="toc-shared-models" class="nav-link" data-scroll-target="#shared-models">Shared models</a>
   <ul class="collapse">
@@ -1021,7 +1024,7 @@ Total execution time: 0.5 seconds.</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 4 sequential chains...
 
-Chain 1 finished in 0.0 seconds.
+Chain 1 finished in 0.1 seconds.
 Chain 2 finished in 0.0 seconds.
 Chain 3 finished in 0.0 seconds.
 Chain 4 finished in 0.0 seconds.
@@ -1669,12 +1672,12 @@ Total execution time: 0.5 seconds.</code></pre>
 <pre><code>Running MCMC with 4 sequential chains...
 
 Chain 1 finished in 0.0 seconds.
-Chain 2 finished in 0.1 seconds.
+Chain 2 finished in 0.0 seconds.
 Chain 3 finished in 0.0 seconds.
 Chain 4 finished in 0.1 seconds.
 
 All 4 chains finished successfully.
-Mean chain execution time: 0.1 seconds.
+Mean chain execution time: 0.0 seconds.
 Total execution time: 0.5 seconds.</code></pre>
 </div>
 </div>
@@ -5605,7 +5608,7 @@ Chain 2 finished in 4.2 seconds.
 
 Both chains finished successfully.
 Mean chain execution time: 4.2 seconds.
-Total execution time: 8.7 seconds.</code></pre>
+Total execution time: 8.5 seconds.</code></pre>
 </div>
 </div>
 <p>I have set the model up to produced estimates of risk by group, with the mindset that this would allow us to derive relevant causal effects (of whatever form required) by using some kind of empirical weighting. The grouping is obviously not what is intended, but I think it could possibly be useful to try and work through something like this as a means to elicit some more detail on the specification.</p>
@@ -7066,6 +7069,22 @@ allocation</p> </div></div>
 </div>
 </div>
 </section>
+</section>
+<section id="discussion-points" class="level2">
+<h2 class="anchored" data-anchor-id="discussion-points">Discussion points</h2>
+<ul>
+<li>Relevance to estimands of interest</li>
+<li>Limitations, alternatives:
+<ul>
+<li>Collapse across some strata</li>
+<li>Common parameters</li>
+<li>Pooling nested parameters</li>
+<li>Partial pooling estimates, e.g.&nbsp;revision broken up into one and two stage</li>
+</ul></li>
+<li>Complications associated with additional adjustment (time, site, prognostic, design effects)</li>
+<li>Compatibility with varying randomisation weights</li>
+<li>Measures of effect</li>
+</ul>
 <section id="independent-domain-models" class="level3">
 <h3 class="anchored" data-anchor-id="independent-domain-models">Independent domain models</h3>
 <p>Bubble, todo</p>
