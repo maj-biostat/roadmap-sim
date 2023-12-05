@@ -2,4 +2,21 @@
 title: "About"
 ---
 
+```{r, echo = FALSE}
+source("./R/init.R")
+log_info("Called about notebook")
+```
+
+# About {.unnumbered}
+
+## Repository status {.unnumbered}
+
+Details on GitHub repository files, tags, commits follow:
+
+```{r, echo = is_html}
+repo <- git2r::repository(path = ".")
+summary(repo)
+```
+
+
 
