@@ -13,3 +13,16 @@ crossjoin = function(d1, d2) {
 antidiag <- function(X, offset = 0L) {
   X[col(X) + row(X) - ncol(X) - 1L == offset]
 }
+
+post_smry <- function(v){
+  mu <- mean(v)
+  sd <- sd(v)
+  q_025 <- quantile(v, prob = 0.025)
+  q_975 <- quantile(v, prob = 0.975)
+  sprintf("%.3f %.3f (%.3f, %.3f)", mu, sd, q_025, q_975)
+}
+
+yn_rand <- function(N, pr_y = 0.5){
+  pr_n <- 1 - pr_y
+  sample(c("Y", "N"), N, replace = T, prob = c(pr_y, pr_n))
+}

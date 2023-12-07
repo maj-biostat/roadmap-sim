@@ -161,6 +161,7 @@ get_data_demo_2 <- function(
     v_late_surg = c(late_na=0, late_dair = 0, late_one=0.1, late_two=-0.4),
     v_chronic_surg = c(chronic_na=0, chronic_one=0, chronic_two=0.2),
     
+    
     v_early_abdu = c(early_na=0),
     v_late_abdu = c(late_na=0, late_one_short=0, late_one_long=0.3, late_two_short=0, late_two_long=0.1),
     v_chronic_abdu = c(chronic_na=0, chronic_one_short=0, chronic_one_long=-0.2, chronic_two_short=0,chronic_two_long=0.5),
@@ -249,6 +250,310 @@ get_data_demo_2 <- function(
   d
 }
 
+
+N = 10000
+# baseline log-odds of trt success by silo
+b_silo = c(early_acute=qlogis(0.65), late_acute=qlogis(0.55), chronic=qlogis(0.45))
+# hip does worse
+b_joint = c(knee = 0, hip = -0.5)
+# surgery
+
+# could do this with ragged, but this is quicker. 
+
+v_surg_not_rand = c(-0.2)
+v_early_surg = NA
+v_late_surg = c(late_dair = 0, late_one=0.1, late_two=-0.4)
+v_chronic_surg = c(chronic_one=0, chronic_two=0.2)
+
+v_abdu_not_rand = c(-0.3)
+v_early_abdu = NA
+v_late_abdu = c(late_one_short=0, late_one_long=0.3, late_two_short=0, late_two_long=0.1)
+v_chronic_abdu = c(chronic_one_short=0, chronic_one_long=-0.2, chronic_two_short=0,chronic_two_long=0.5)
+
+v_abty_not_rand = c(-0.1)
+v_early_abty = c(soc = 0, rif = 0.3)
+v_late_abty = c(soc = 0, rif = 0.3)
+v_chronic_abty = c(soc = 0, rif = 0.3)
+
+
+get_data_demo_3 <- function(
+    N = 10000,
+    # baseline log-odds of trt success by silo
+    b_silo = c(early_acute=qlogis(0.65), late_acute=qlogis(0.55), chronic=qlogis(0.45)),
+    # hip does worse
+    b_joint = c(knee = 0, hip = -0.5),
+    # surgery
+    
+    # could do this with ragged, but this is quicker. 
+    
+    v_surg_not_rand = c(-0.2),
+    v_early_surg = NA,
+    v_late_surg = c(late_dair = 0, late_one=0.1, late_two=-0.4),
+    v_chronic_surg = c(chronic_one=0, chronic_two=0.2),
+    
+    v_abdu_not_rand = c(-0.3),
+    v_early_abdu = NA,
+    v_late_abdu = c(late_one_short=0, late_one_long=0.3, late_two_short=0, late_two_long=0.1),
+    v_chronic_abdu = c(chronic_one_short=0, chronic_one_long=-0.2, chronic_two_short=0,chronic_two_long=0.5),
+    
+    v_abty_not_rand = c(-0.1),
+    v_early_abty = c(soc = 0, rif = 0.3),
+    v_late_abty = c(soc = 0, rif = 0.3),
+    v_chronic_abty = c(soc = 0, rif = 0.3)
+    
+){
+  # Design options
+  fct_early_surg <- c("no_rand")
+  fct_early_abdu <- c("no_rand")
+  fct_early_abty <- c("no_rand", "soc", "rif")
+  
+  fct_late_surg <- c("no_rand", "late_dair", "late_one", "late_two")
+  fct_late_abdu <- c("no_rand", "late_one_short", "late_one_long", "late_two_short", "late_two_long")
+  fct_late_abty <- c("no_rand", "soc", "rif")
+  
+  fct_chronic_surg <- c("no_rand", "chronic_one", "chronic_two")
+  fct_chronic_abdu <- c("no_rand", "chronic_one_short", "chronic_one_long", "chronic_two_short", "chronic_two_long")
+  fct_chronic_abty <- c("no_rand", "soc", "rif")
+  
+  # Data
+  d <- data.table()
+  d[, pt := 1:N]
+  
+  # Stratification
+  silo <- factor(sample(g_silo, size = N, replace = T, prob = g_pr_silo), levels = g_silo)
+  d[, silo := silo]
+  joint <- factor(sample(g_joint, size = N, replace = T, prob = g_pr_joint), levels = g_joint)
+  d[, joint := joint]
+  
+  # Early
+  # x_rand is shorthand for the randomisation was reveal in the domain for this silo cohort
+  d[silo == "early_acute", surg_rand := "N"]
+  d[silo == "early_acute", surg := fct_early_surg[1]]
+  d[silo == "early_acute", abdu_rand := "N"]
+  d[silo == "early_acute", abdu := fct_early_abdu[1]]
+  # 55% chance of reveal (effective 55% of being gram pos) 
+  d[silo == "early_acute", abty_rand := c("N","Y")[sample(1:2, .N, replace = T, prob = c(0.45, 0.55))]]
+  d[silo == "early_acute" & abty_rand == "N", abty := fct_early_abty[1]]
+  d[silo == "early_acute" & abty_rand == "Y", abty := sample(fct_early_abty, .N, replace = T, prob = c(0, 0.5, 0.5))]
+  
+  
+  
+  # Late
+  d[silo == "late_acute", surg_rand := c("N","Y")[sample(1:2, .N, replace = T, prob = c(0.025, 0.975))]]
+  d[silo == "late_acute" & surg_rand == "N", surg := fct_late_surg[1]]
+  d[silo == "late_acute" & surg_rand == "Y", surg := sample(fct_late_surg, .N, replace = T, prob = c(0, 0.5, 0.25, 0.25))]
+  # Any that had no surgery currently do not enter the abdu domain
+  d[silo == "late_acute" & surg_rand == "N", abdu_rand := "N"]
+  # Any that had dair do not enter the abdu domain
+  d[silo == "late_acute" & surg_rand == "Y" & surg == "late_dair", abdu_rand := "N"]
+  # And then there is a small chance that some of the others are not randomised into this domain
+  d[silo == "late_acute" & is.na(abdu_rand), abdu_rand := c("N","Y")[sample(1:2, .N, replace = T, prob = c(0.025, 0.975))]]
+  d[silo == "late_acute" & abdu_rand == "N", abdu := fct_late_abdu[1]]
+  d[silo == "late_acute" & abdu_rand == "Y" & surg == "late_one", abdu := sample(fct_late_abdu, .N, replace = T, prob = c(0, 0.5, 0.5, 0, 0))]
+  d[silo == "late_acute" & abdu_rand == "Y" & surg == "late_two", abdu := sample(fct_late_abdu, .N, replace = T, prob = c(0, 0, 0, 0.5, 0.5))]
+  # 55% chance of reveal (effective 55% of being gram pos) 
+  d[silo == "late_acute", abty_rand := c("N","Y")[sample(1:2, .N, replace = T, prob = c(0.45, 0.55))]]
+  d[silo == "late_acute" & abty_rand == "N", abty := fct_late_abty[1]]
+  d[silo == "late_acute" & abty_rand == "Y", abty := sample(fct_late_abty, .N, replace = T, prob = c(0, 0.5, 0.5))]
+
+  # Chronic
+  d[silo == "chronic", surg_rand := c("N","Y")[sample(1:2, .N, replace = T, prob = c(0.025, 0.975))]]
+  d[silo == "chronic" & surg_rand == "N", surg := fct_chronic_surg[1]]
+  d[silo == "chronic" & surg_rand == "Y", surg := sample(fct_chronic_surg, .N, replace = T, prob = c(0, 0.5, 0.5))]
+  # Any that had no surgery currently do not enter the abdu domain
+  d[silo == "chronic" & surg_rand == "N", abdu_rand := "N"]
+  # And then there is a small chance that some of the others are not randomised into this domain
+  d[silo == "chronic" & is.na(abdu_rand), abdu_rand := c("N","Y")[sample(1:2, .N, replace = T, prob = c(0.025, 0.975))]]
+  d[silo == "chronic" & abdu_rand == "N", abdu := fct_chronic_abdu[1]]
+  d[silo == "chronic" & abdu_rand == "Y" & surg == "chronic_one", abdu := sample(fct_chronic_abdu, .N, replace = T, prob = c(0, 0.5, 0.5, 0, 0))]
+  d[silo == "chronic" & abdu_rand == "Y" & surg == "chronic_two", abdu := sample(fct_chronic_abdu, .N, replace = T, prob = c(0, 0, 0, 0.5, 0.5))]
+  # 55% chance of reveal (effective 55% of being gram pos) 
+  d[silo == "chronic", abty_rand := c("N","Y")[sample(1:2, .N, replace = T, prob = c(0.45, 0.55))]]
+  d[silo == "chronic" & abty_rand == "N", abty := fct_chronic_abty[1]]
+  d[silo == "chronic" & abty_rand == "Y", abty := sample(fct_chronic_abty, .N, replace = T, prob = c(0, 0.5, 0.5))]
+  
+  
+  d[, .(.N), keyby = .(silo, joint, surg_rand, surg, abdu_rand, abdu, abty_rand, abty)]
+  
+  
+  
+  d[silo == "early_acute", surg := factor(surg, levels = fct_early_surg)]
+  d[silo == "early_acute", abdu := factor(abdu, levels = fct_early_abdu)]
+  d[silo == "early_acute", abty := factor(abty, levels = fct_early_abty)]
+  
+  d[silo == "late_acute", surg := factor(surg, levels = fct_late_surg)]
+  d[silo == "late_acute", abdu := factor(abdu, levels = fct_late_abdu)]
+  d[silo == "late_acute", abty := factor(abty, levels = fct_late_abty)]
+  
+  d[silo == "chronic", surg := factor(surg, levels = fct_chronic_surg)]
+  d[silo == "chronic", abdu := factor(abdu, levels = fct_chronic_abdu)]
+  d[silo == "chronic", abty := factor(abty, levels = fct_chronic_abty)]
+  
+  # Outcome models.
+  d[, eta := b_silo[silo] + b_joint[joint]]
+  
+  # Not being randomised to surgery reduces the chances of successful resp
+  d[surg_rand == 0, eta := eta + v_surg_not_rand]
+  # none in the early_acute group
+  # d[silo == "early_acute" & surg_rand == 1, eta := eta + v_surg_not_rand]
+  d[silo == "late_acute" & surg_rand == 1, eta := eta + v_late_surg[surg]]
+  d[silo == "chronic" & surg_rand == 1, eta := eta + v_chronic_surg[surg]]
+  
+  d[abdu_rand == 0, eta := eta + v_abdu_not_rand]
+  # none in the early_acute group
+  # d[silo == "early_acute" & abdu_rand == 1, eta := eta + v_early_abdu[abdu]]
+  d[silo == "late_acute" & abdu_rand == 1, eta := eta + v_late_abdu[abdu]]
+  d[silo == "chronic" & abdu_rand == 1, eta := eta + v_chronic_abdu[abdu]]
+  
+  d[abty_rand == 0, eta := eta + v_abty_not_rand]
+  d[silo == "early_acute" & abty_rand == 1, eta := eta + v_early_abty[abty]]
+  d[silo == "late_acute" & abty_rand == 1, eta := eta + v_late_abty[abty]]
+  d[silo == "chronic" & abty_rand == 1, eta := eta + v_chronic_abty[abty]]
+  
+  d[, pr_y := plogis(eta)]
+  
+  d[, y := rbinom(.N, 1, prob = pr_y)]
+  
+  d
+}
+
+N = 10000
+# baseline log-odds of trt success by silo
+b_silo = c(early_acute=qlogis(0.65), late_acute=qlogis(0.55), chronic=qlogis(0.45))
+# hip does worse
+b_joint = c(knee = 0, hip = -0.5)
+# surgery
+
+# could do this with ragged, but this is quicker. 
+
+v_surg_not_rand = c(-0.2)
+v_early_surg = NA
+v_late_surg = c(late_dair = 0, late_one=0.1, late_two=-0.4)
+v_chronic_surg = c(chronic_one=0, chronic_two=0.2)
+
+v_abdu_not_rand = c(-0.3)
+v_early_abdu = NA
+v_late_abdu = c(late_one_short=0, late_one_long=0.3, late_two_short=0, late_two_long=0.1)
+v_chronic_abdu = c(chronic_one_short=0, chronic_one_long=-0.2, chronic_two_short=0,chronic_two_long=0.5)
+
+v_abty_not_rand = c(-0.1)
+v_early_abty = c(soc = 0, rif = 0.3)
+v_late_abty = c(soc = 0, rif = 0.3)
+v_chronic_abty = c(soc = 0, rif = 0.3)
+
+
+get_data_demo_4 <- function(
+
+    
+){
+  
+  # Data
+  d <- data.table()
+  d[, pt := 1:N]
+  
+  f_silo <- c("e", "l", "c")
+  pr_silo <- c(e = 0.3, l = 0.5, c = 0.2)
+  
+  # Stratification
+  silo <- factor(sample(f_silo, size = N, replace = T, prob = pr_silo), levels = f_silo)
+  d[, silo := silo]
+  joint <- factor(sample(g_joint, size = N, replace = T, prob = g_pr_joint), levels = g_joint)
+  d[, joint := joint]
+  
+  # Early
+  # x_rand is shorthand for the randomisation was reveal in the domain for this silo cohort
+  d[silo == "e", surg_rand := "N"]
+  d[silo == "e", surg := "no_rand"]
+  d[silo == "e", surg_typ := "dair"]
+  # Stratify domain by surgery type
+  d[silo == "e", abdu_rand := "N"]
+  d[silo == "e", abdu := "no_rand"]
+  # 55% chance of reveal (effective 55% of being gram pos) 
+  d[silo == "e", abty_rand := yn_rand(.N, 0.55)]
+  d[silo == "e" & abty_rand == "N", abty := "no_rand"]
+  d[silo == "e" & abty_rand == "Y", abty := sample(c("norif", "rif"), .N, replace = T, prob = c(0.5, 0.5))]
+
+  # Late
+  d[silo == "l", surg_rand := yn_rand(.N, 0.975)]
+  d[silo == "l" & surg_rand == "N", `:=`(surg = "no_rand", surg_typ = "no_rand")]
+  d[silo == "l" & surg_rand == "Y", surg := sample(c("dair", "rev"), .N, replace = T, prob = c(0.5, 0.5))]
+  d[silo == "l" & surg_rand == "Y" & surg == "dair", surg_typ := "dair"]
+  d[silo == "l" & surg_rand == "Y" & surg == "rev", surg_typ := sample(c("one", "two"), .N, replace = T, prob = c(0.25, 0.75))]
+  d[silo == "l" & surg == "dair", abdu_rand := "N"]
+  d[silo == "l" & surg == "no_rand", abdu_rand := "N"]
+  d[silo == "l" & surg_typ %in%  c("one", "two"), abdu_rand := yn_rand(.N, 0.975)]
+  d[silo == "l" & abdu_rand == "N", abdu := "no_rand"]
+  d[silo == "l" & abdu_rand == "Y" & surg_typ == "dair", abdu := "no_rand"]
+  d[silo == "l" & abdu_rand == "Y" & surg_typ == "one", abdu := sample(c("6w", "12wa"), .N, replace = T, prob = c(0.5, 0.5))]
+  d[silo == "l" & abdu_rand == "Y" & surg_typ == "two", abdu := sample(c("1w", "12wb"), .N, replace = T, prob = c(0.5, 0.5))]
+  # 55% chance of reveal (effective 55% of being gram pos) 
+  d[silo == "l" & surg == "no_rand", abty_rand := "N"]
+  d[silo == "l" & is.na(abty_rand), abty_rand := yn_rand(.N, 0.5)]
+  d[silo == "l" & abty_rand == "N", abty := "no_rand"]
+  d[silo == "l" & abty_rand == "Y", abty := sample(c("norif", "rif"), .N, replace = T, prob = c(0.5, 0.5))]
+  
+  # Chronic
+  d[silo == "c", surg_rand := yn_rand(.N, 0.975)]
+  d[silo == "c" & surg_rand == "N", surg := "no_rand"]
+  d[silo == "c" & surg_rand == "Y", surg := sample(c("one", "two"), .N, replace = T, prob = c(0.5, 0.5))]
+  d[silo == "c" , surg_typ := copy(surg)]
+  # Any that had no surgery currently do not enter the abdu domain
+  d[silo == "c" & surg_rand == "N", abdu_rand := "N"]
+  # And then there is a small chance that some of the others are not randomised into this domain
+  d[silo == "c" & is.na(abdu_rand), abdu_rand := yn_rand(.N, 0.975)]
+  d[silo == "c" & abdu_rand == "N", abdu := "no_rand"]
+  d[silo == "c" & abdu_rand == "Y" & surg_typ == "one", abdu := sample(c("6w", "12wa"), .N, replace = T, prob = c(0.5, 0.5))]
+  d[silo == "c" & abdu_rand == "Y" & surg_typ == "two", abdu := sample(c("1w", "12wb"), .N, replace = T, prob = c(0.5, 0.5))]
+  # 55% chance of reveal (effective 55% of being gram pos) 
+  d[silo == "c" & surg == "no_rand", abty_rand := "N"]
+  d[silo == "c" & is.na(abty_rand), abty_rand := yn_rand(.N, 0.5)]
+  d[silo == "c" & abty_rand == "N", abty := "no_rand"]
+  d[silo == "c" & abty_rand == "Y", abty := sample(c("norif", "rif"), .N, replace = T, prob = c(0.5, 0.5))]
+  
+  
+  d[, .(.N), keyby = .(silo, joint, surg_rand, surg, surg_typ, abdu_rand, abdu, abty_rand, abty)]
+  
+  
+  
+  d[silo == "early_acute", surg := factor(surg, levels = fct_early_surg)]
+  d[silo == "early_acute", abdu := factor(abdu, levels = fct_early_abdu)]
+  d[silo == "early_acute", abty := factor(abty, levels = fct_early_abty)]
+  
+  d[silo == "late_acute", surg := factor(surg, levels = fct_late_surg)]
+  d[silo == "late_acute", abdu := factor(abdu, levels = fct_late_abdu)]
+  d[silo == "late_acute", abty := factor(abty, levels = fct_late_abty)]
+  
+  d[silo == "chronic", surg := factor(surg, levels = fct_chronic_surg)]
+  d[silo == "chronic", abdu := factor(abdu, levels = fct_chronic_abdu)]
+  d[silo == "chronic", abty := factor(abty, levels = fct_chronic_abty)]
+  
+  # Outcome models.
+  d[, eta := b_silo[silo] + b_joint[joint]]
+  
+  # Not being randomised to surgery reduces the chances of successful resp
+  d[surg_rand == 0, eta := eta + v_surg_not_rand]
+  # none in the early_acute group
+  # d[silo == "early_acute" & surg_rand == 1, eta := eta + v_surg_not_rand]
+  d[silo == "late_acute" & surg_rand == 1, eta := eta + v_late_surg[surg]]
+  d[silo == "chronic" & surg_rand == 1, eta := eta + v_chronic_surg[surg]]
+  
+  d[abdu_rand == 0, eta := eta + v_abdu_not_rand]
+  # none in the early_acute group
+  # d[silo == "early_acute" & abdu_rand == 1, eta := eta + v_early_abdu[abdu]]
+  d[silo == "late_acute" & abdu_rand == 1, eta := eta + v_late_abdu[abdu]]
+  d[silo == "chronic" & abdu_rand == 1, eta := eta + v_chronic_abdu[abdu]]
+  
+  d[abty_rand == 0, eta := eta + v_abty_not_rand]
+  d[silo == "early_acute" & abty_rand == 1, eta := eta + v_early_abty[abty]]
+  d[silo == "late_acute" & abty_rand == 1, eta := eta + v_late_abty[abty]]
+  d[silo == "chronic" & abty_rand == 1, eta := eta + v_chronic_abty[abty]]
+  
+  d[, pr_y := plogis(eta)]
+  
+  d[, y := rbinom(.N, 1, prob = pr_y)]
+  
+  d
+}
 
 get_data <- function(
       ){

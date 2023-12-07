@@ -866,6 +866,588 @@ gt_tbl
 ```
 
 
+
+## Scenario 3 - model incorporating all strata and domains reparameterising randomisation effects
+
+
+For now, for the model specification, I am assuming the following:
+
+\begin{aligned}
+y_i &\sim Binomial(\pi_i, n_i) \\
+logit(\pi_i) &= \eta_i = bsilo_{[silo[i]]} + 
+  bjoint_{[joint[i]]} + \\
+  &bnotrandsurg_{[randsurg[i]]} + \\
+  &I(randsurg[i] == Y) bsurg_{[surg[i]]} + \\
+  &bnotrandabdu_{[randabdu[i]]} + \\
+  &I(randabdu[i] == Y) babdu_{[abdu[i]]} + \\
+  &bnotrandabty_{[randabty[i]]} + \\
+  &I(randabty[i] == Y) babty_{[abty[i]]}
+\end{aligned}
+
+Make those randomised within a domain to be the reference group and not-randominsed an offset from this (common to all silos).
+
+\begin{aligned}
+bsilo_s &\sim N(0, 1.5) \\
+bjoint_j &\sim N(0, 1) \\
+bnotrandsurg &\sim N(0, 1) \\
+bnotrandabdu &\sim N(0, 1) \\
+bnotrandabty &\sim N(0, 1) \\
+bsurg_o &\sim N(0, 1) \\
+babdu_p &\sim N(0, 1) \\
+babty_q &\sim N(0, 1) \\
+\end{aligned}
+
+\begin{aligned}
+bjoint_{[knee]} &= 0 \\
+bnotrandsurg_{[Y]} &= 0 \\
+bnotrandabdu_{[Y]} &= 0 \\
+bnotrandabty_{[Y]} &= 0
+\end{aligned}
+
+$bsurg$, $babdu$ and $babty$ have sum-to-zero constraints over the randomised treatment options.
+$bsilo_s$ is given a different sd to make it just about uniform on the probability scale and therefore allowing us to place a zero mean without major concern.
+
+The following function (from the `data.R` script) simulates data.
+
+```{r}
+set.seed(10001)
+dd3 <- get_data_demo_3(
+  N = 2500,
+  # baseline log-odds of trt success by silo
+  b_silo = c(early_acute=qlogis(0.65), late_acute=qlogis(0.55), chronic=qlogis(0.45)),
+  # hip does worse
+  b_joint = c(knee = 0, hip = -0.5),
+  
+  # domains
+  v_surg_not_rand = c(-0.2),
+  v_early_surg = NA,
+  v_late_surg = c(late_dair = 0, late_one=0.1, late_two=-0.4),
+  v_chronic_surg = c(chronic_one=0, chronic_two=0.2),
+  
+  v_abdu_not_rand = c(-0.3),
+  v_early_abdu = NA,
+  v_late_abdu = c(late_one_short=0, late_one_long=0.3, late_two_short=0, late_two_long=0.1),
+  v_chronic_abdu = c(chronic_one_short=0, chronic_one_long=-0.2, chronic_two_short=0,chronic_two_long=0.5),
+  
+  v_abty_not_rand = c(-0.1),
+  v_early_abty = c(soc = 0, rif = 0.3),
+  v_late_abty = c(soc = 0, rif = 0.3),
+  v_chronic_abty = c(soc = 0, rif = 0.3)
+)
+```
+
+Provide summaries of patients contributing to the estimation of effects in each domain (surgery, antibiotic duration and antibiotic type).
+
+
+### Surgery domain 
+
+```{r}
+#| label: tbl-demo3a
+#| tbl-cap: "Demo data - summary for surgery domain"
+#| tbl-cap-location: margin
+ 
+dd3_smry <- dd3[, .(y = sum(y), .N), keyby = .(silo, joint, surg_rand, surg)]
+dd3_smry[, pr_obs := y / N]
+dd3_smry[, surg := factor(surg, levels = c(
+  paste0("no_rand"),
+  paste0("late_", c("dair", "one", "two")),
+  paste0("chronic_", c("one", "two"))
+  ))]
+
+dd3_smry <- dd3_smry[order(silo, joint, surg_rand, surg)]
+setkey(dd3_smry, silo, joint, surg_rand, surg)
+
+  
+  
+
+gt_tbl <- dd3_smry |> 
+  gt(
+    groupname_col = c("silo", "joint")
+  ) |> 
+  fmt_number(
+    columns = starts_with("pr_obs"),
+    decimals = 2
+  ) |>
+  summary_rows(
+    columns = c("N"),
+    fns = list(
+      SubTotal ~ sum(., na.rm = T)
+    )
+  ) |>
+  grand_summary_rows(
+    columns = c("N"),
+    fns = list(
+      Total ~ sum(., na.rm = T)
+    )
+  )  |>
+  sub_missing(
+    columns = everything(),
+    rows = everything(),
+    missing_text = "---"
+) |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  )
+
+gt_tbl
+```
+
+### Antibiotic duration domain 
+
+```{r}
+#| label: tbl-demo3b
+#| tbl-cap: "Demo data - summary for antibiotic duration domain"
+#| tbl-cap-location: margin
+ 
+dd3_smry <- dd3[, .(y = sum(y), .N), keyby = .(silo, joint, abdu_rand, abdu)]
+dd3_smry[, pr_obs := y / N]
+
+dd3_smry[, abdu := factor(abdu, levels = c(
+  paste0("no_rand"),
+  paste0("late_one_", c("short", "long")),
+  paste0("late_two_", c("short", "long")),
+  paste0("chronic_one_", c("short", "long")),
+  paste0("chronic_two_", c("short", "long"))
+  ))]
+
+dd3_smry <- dd3_smry[order(silo, joint, abdu_rand, abdu)]
+setkey(dd3_smry, silo, joint, abdu_rand, abdu)
+
+gt_tbl <- dd3_smry |> 
+  gt(
+    groupname_col = c("silo", "joint")
+  ) |> 
+  fmt_number(
+    columns = starts_with("pr_obs"),
+    decimals = 2
+  ) |>
+  summary_rows(
+    columns = c("N"),
+    fns = list(
+      SubTotal ~ sum(., na.rm = T)
+    )
+  ) |>
+  grand_summary_rows(
+    columns = c("N"),
+    fns = list(
+      Total ~ sum(., na.rm = T)
+    )
+  )  |>
+  sub_missing(
+    columns = everything(),
+    rows = everything(),
+    missing_text = "---"
+) |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  )
+
+gt_tbl
+```
+
+### Antibiotic type domain
+
+```{r}
+#| label: tbl-demo3c
+#| tbl-cap: "Demo data - summary for antibiotic type domain"
+#| tbl-cap-location: margin
+ 
+dd3_smry <- dd3[, .(y = sum(y), .N), keyby = .(silo, joint, abty_rand, abty)]
+dd3_smry[, pr_obs := y / N]
+
+dd3_smry[, abty := factor(abty, levels = c(
+  "no_rand", "soc", "rif"
+  ))]
+
+dd3_smry <- dd3_smry[order(silo, joint, abty_rand, abty)]
+setkey(dd3_smry, silo, joint, abty_rand, abty)
+
+gt_tbl <- dd3_smry |> 
+  gt(
+    groupname_col = c("silo", "joint")
+  ) |> 
+  fmt_number(
+    columns = starts_with("pr_obs"),
+    decimals = 2
+  ) |>
+  summary_rows(
+    columns = c("N"),
+    fns = list(
+      SubTotal ~ sum(., na.rm = T)
+    )
+  ) |>
+  grand_summary_rows(
+    columns = c("N"),
+    fns = list(
+      Total ~ sum(., na.rm = T)
+    )
+  )  |>
+  sub_missing(
+    columns = everything(),
+    rows = everything(),
+    missing_text = "---"
+) |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  )
+
+gt_tbl
+```
+
+### All domains
+
+The following table provides a summary across each of the possible combinations of domain level classifications/assignments.
+
+```{r}
+#| label: tbl-demo3d
+#| tbl-cap: "Demo data - summary by all domains"
+#| tbl-cap-location: margin
+
+dd3_smry <- dd3[, .(y = sum(y), .N), keyby = .(silo, joint, surg_rand, surg, abdu_rand, abdu, abty_rand, abty)]
+
+dd3_smry[, surg := factor(surg, levels = c(
+  paste0("no_rand"),
+  paste0("late_", c("dair", "one", "two")),
+  paste0("chronic_", c("one", "two"))
+  ))]
+dd3_smry[, abdu := factor(abdu, levels = c(
+  paste0("no_rand"),
+  paste0("late_one_", c("short", "long")),
+  paste0("late_two_", c("short", "long")),
+  paste0("chronic_one_", c("short", "long")),
+  paste0("chronic_two_", c("short", "long"))
+  ))]
+dd3_smry[, abty := factor(abty, levels = c(
+  "no_rand", "soc", "rif"
+  ))]
+
+dd3_smry <- dd3_smry[order(silo, joint, surg, abdu, abty)]
+setkey(dd3_smry, silo, joint, abty_rand, abty)
+
+gt_tbl <- dd3_smry |> 
+  gt(
+    groupname_col = c("silo", "joint")
+  ) |> 
+  summary_rows(
+    columns = c("N"),
+    fns = list(
+      SubTotal ~ sum(., na.rm = T)
+    )
+  ) |>
+  grand_summary_rows(
+    columns = c("N"),
+    fns = list(
+      Total ~ sum(., na.rm = T)
+    )
+  )  |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  )
+
+gt_tbl
+```
+
+### Model
+
+Revised model that includes parameters to characterise the effect of not being randomised and restricts the sum-to-zero constraint on the randomised treatments.
+
+```{r}
+#| class-output: stan
+#| echo: false
+
+cat(readLines(file.path("stan", "model04.stan")), sep = "\n")
+```
+
+Group the data to the set of covariate patterns then set indexes for stan.
+
+:::callout-note
+The use of negative indexes is just a workaround as stan doesn't like missing values in your data.
+These negative indexes only appear under the domains (surg, abdu and abty) when no randomisation has occurred.
+The model is set up such that these indexes are never actually encountered.
+::: 
+
+```{r}
+dat <- dd3[, .(y = sum(y), n = .N), 
+           keyby = .(silo, joint, surg_rand, surg, abdu_rand, abdu, abty_rand, abty)]
+dat <- cbind(id = 1:nrow(dat), dat)
+
+# X1
+model.matrix(~silo + joint + surg_non_rand + abdu_non_rand + abty_non_rand,
+             data = dat[, .(silo, joint, 
+                            surg_non_rand = surg_rand == "N",
+                            abdu_non_rand = abdu_rand == "N",
+                            abty_non_rand = abty_rand == "N")])[,-1]
+
+dat[silo == "early_acute" & abty_rand == "Y", .(id, abty = as.integer(abty == "rif"))]
+
+
+dat[silo == "late_acute" & 
+    surg_rand == "Y" & abdu_rand == "Y" & abty_rand == "Y", 
+    .(id, abty = as.integer(abty == "rif"))]
+
+
+2 * 5 * 2 * 4 * 2 * 2
+
+
+
+
+
+model.matrix(~silo + joint + surg_non_rand + abdu_non_rand + abty_non_rand,
+             data = dat[silo == "early_acute" & , .(silo, joint, 
+                            surg_non_rand = surg_rand == "N",
+                            abdu_non_rand = abdu_rand == "N",
+                            abty_non_rand = abty_rand == "N")])[,-1]
+
+
+
+
+
+dat[, p_obs := y / n]
+
+id_silo <- 1:3
+names(id_silo) <- g_silo
+
+id_joint <- 1:2
+names(id_joint) <- g_joint
+
+id_rand <- 1:2
+names(id_rand) <- c("Y", "N")
+
+id_surg <- 1:5
+names(id_surg) <- c( 
+  "late_dair", "late_one", "late_two",
+  "chronic_one", "chronic_two"
+)
+
+id_abdu <- 1:8
+names(id_abdu) <- c(
+  "late_one_long", "late_one_short", "late_two_long", "late_two_short",
+  "chronic_one_long", "chronic_one_short","chronic_two_long", "chronic_two_short"
+)
+
+id_abty <- 1:2
+names(id_abty) <- c(
+  "rif", "soc"
+)
+  
+dat[, id_silo := id_silo[silo]]
+dat[, id_joint := id_joint[joint]]
+dat[, id_randsurg := id_rand[surg_rand]]
+dat[, id_randabdu := id_rand[abdu_rand]]
+dat[, id_randabty := id_rand[abty_rand]]
+
+dat[, id_surg := id_surg[surg]]
+dat[, id_abdu := id_abdu[abdu]]
+dat[, id_abty := id_abty[abty]]
+
+dat[is.na(id_surg), id_surg := -999]
+dat[is.na(id_abdu), id_abdu := -999]
+dat[is.na(id_abty), id_abty := -999]
+
+
+ld1 <- list(
+  N = nrow(dat), S = 3, J = 2, 
+  O = max(dat$id_surg),
+  P = max(dat$id_abdu),
+  Q = max(dat$id_abty),
+  y = dat$y, n = dat$n,
+  silo = dat$id_silo,
+  joint = dat$id_joint,
+  rand_surg = dat$id_randsurg,
+  rand_abdu = dat$id_randabdu,
+  rand_abty = dat$id_randabty,
+  surg = dat$id_surg,
+  abdu = dat$id_abdu,
+  abty = dat$id_abty,
+  prior_only = 0
+)
+ 
+m3 <- cmdstan_model(stan_file = file.path("stan", "model04.stan"))
+f1 <- m3$sample(
+  chains = 2,
+  data = ld1,
+  iter_sampling = 1000,
+  fixed_param = F,
+  refresh = 0
+)
+```
+
+```{r}
+#| label: tbl-demo3-post1
+#| tbl-cap: "Demo - summary of joint posterior, estimates of risk by strata and allocation"
+#| tbl-cap-location: margin
+
+# It is best to transform the posterior samples and then summarize only after having applied all transformations.
+
+p1 <- data.table(f1$draws(variables = c("p"), format = "matrix")) 
+p1 <- melt(p1, measure.vars = names(p1), variable.name = "par")
+
+p1[, id := gsub("p[", "", par, fixed = T)]
+p1[, id := as.integer(gsub("]", "", id, fixed = T))]
+p1[, par := NULL]
+
+
+dtbl1 <- 
+  p1[
+    , .(p_mu = mean(value)),
+  keyby = id]
+
+
+dtbl1 <- cbind(dat[, .(silo, joint, surg, abdu, abty, y, n, p_obs)], dtbl1)
+setcolorder(dtbl1, "id")
+
+gt_tbl <- dtbl1 |> 
+  gt(
+    groupname_col = c("silo", "joint")
+  ) |> 
+  fmt_number(
+    columns = all_of(c("p_obs", "p_mu")),
+    decimals = 2
+  )  |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  )
+
+
+gt_tbl
+```
+
+
+```{r}
+#| label: tbl-demo3-post2
+#| tbl-cap: "Demo - parameter estimates"
+#| tbl-cap-location: margin
+
+p1 <- data.table(f1$draws(
+  variables = c("b_silo", "b_joint[2]",
+                "b_not_rand_surg[2]", "b_not_rand_abdu[2]", "b_not_rand_abty[2]",
+                "b_surg", "b_abdu", "b_abty"), format = "matrix")) 
+
+p1 <- melt(p1, measure.vars = names(p1), variable.name = "par")
+
+dtbl1 <- 
+  p1[
+    , .(mu = mean(value),
+        sd = sd(value),
+        q_025 = quantile(value, prob = 0.025),
+        q_975 = quantile(value, prob = 0.975)
+        ),
+  keyby = par]
+
+
+dtbl1[par %like% "b_silo", idx := gsub("b_silo[", "", par, fixed = T)]
+dtbl1[par %like% "b_silo", idx := gsub("]", "", idx, fixed = T)]
+dtbl1[par %like% "b_silo", par_lev := names(id_silo[as.integer(idx)])]
+
+dtbl1[par %like% "b_joint", idx := gsub("b_joint[", "", par, fixed = T)]
+dtbl1[par %like% "b_joint", idx := gsub("]", "", idx, fixed = T)]
+dtbl1[par %like% "b_joint", par_lev := names(id_joint[as.integer(idx)])]
+
+dtbl1[par %like% "b_not_rand_surg", idx := gsub("b_not_rand_surg[", "", par, fixed = T)]
+dtbl1[par %like% "b_not_rand_surg", idx := gsub("]", "", idx, fixed = T)]
+dtbl1[par %like% "b_not_rand_surg", par_lev := names(id_rand[as.integer(idx)])]
+dtbl1[par %like% "b_not_rand_abdu", idx := gsub("b_not_rand_abdu[", "", par, fixed = T)]
+dtbl1[par %like% "b_not_rand_abdu", idx := gsub("]", "", idx, fixed = T)]
+dtbl1[par %like% "b_not_rand_abdu", par_lev := names(id_rand[as.integer(idx)])]
+dtbl1[par %like% "b_not_rand_abty", idx := gsub("b_not_rand_abty[", "", par, fixed = T)]
+dtbl1[par %like% "b_not_rand_abty", idx := gsub("]", "", idx, fixed = T)]
+dtbl1[par %like% "b_not_rand_abty", par_lev := names(id_rand[as.integer(idx)])]
+
+dtbl1[par %like% "b_surg", idx := gsub("b_surg[", "", par, fixed = T)]
+dtbl1[par %like% "b_surg", idx := gsub("]", "", idx, fixed = T)]
+dtbl1[par %like% "b_surg", par_lev := names(id_surg[as.integer(idx)])]
+
+dtbl1[par %like% "b_abdu", idx := gsub("b_abdu[", "", par, fixed = T)]
+dtbl1[par %like% "b_abdu", idx := gsub("]", "", idx, fixed = T)]
+dtbl1[par %like% "b_abdu", par_lev := names(id_abdu[as.integer(idx)])]
+
+dtbl1[par %like% "b_abty", idx := gsub("b_abty[", "", par, fixed = T)]
+dtbl1[par %like% "b_abty", idx := gsub("]", "", idx, fixed = T)]
+dtbl1[par %like% "b_abty", par_lev := names(id_abty[as.integer(idx)])]
+
+setcolorder(dtbl1, c("par", "par_lev"))
+dtbl1[, idx := NULL]
+
+gt_tbl <- dtbl1 |> 
+  gt(
+  ) |> 
+  fmt_number(
+    columns = all_of(c("mu", "sd", "q_025", "q_975")),
+    decimals = 2
+  )  |>
+  opt_table_font(
+    font = list(
+      google_font(name = "Patrick Hand SC"),
+      "Cochin", "serif"
+    )
+  ) |>
+  tab_options(
+    table.font.size = px(14L)
+  ) |>
+  cols_align(
+    align = "left",
+    columns = par
+  )
+
+
+gt_tbl
+```
+
+## Scenario 4 
+
+
+There seems to be a flawed assumption with the sum-to-zero perspective across all treatments and silos.
+It would be better to split these up.
+
+How to do that in a sensible way?
+
+Could use conditional logic.
+
+Could I set up a standard design matrix for each combination?
+
+
+```{r}
+d <- data.table(grp = sample(1:3, 100, replace = T))
+d[, grp := factor(grp)]
+
+model.matrix(~-1 + grp, data = d)
+```
+
+
+
+Think about a model 
+
+
 ## Discussion points
 
 + Relevance to estimands of interest
@@ -893,4 +1475,13 @@ Bubble, todo
 
 Bubble, todo
 
+```{r}
+# rstan::rstan_options(auto_write = TRUE)
+# mtmp <- rstan::stan_model("stan//tmp.stan", auto_write = TRUE)
+# rstan::expose_stan_functions(mtmp)
+# m1 <- qr1(5)
+# m2 <- qr2(5)
+# 
+# round(m1 %*% m2, 3)
+```
 
