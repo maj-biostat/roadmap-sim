@@ -19,13 +19,12 @@ website:
     search: true
     contents:
       - index.qmd
-      - section: "Background notes"
+      - section: "Design specification"
         contents:
-        - notebooks/estimands.qmd
-        - notebooks/modelling.qmd
-      - section: "Simulated stuff"
-        contents:
-        - notebooks/data-01.qmd
+        - notebooks/population-structure.qmd
+        - notebooks/model-spec.qmd
+        - notebooks/simulation-pars.qmd
+        - notebooks/trial-data.qmd
       - notebooks/about.qmd
           
 format:
@@ -45,7 +44,8 @@ format:
     fig-cap-location: margin
     tbl-cap-location: margin
     format-links: true
-    html-math-method: katex
+    html-math-method: mathjax
+    classoption: fleqn
     highlight-style: arrow
     fontsize: 1em
     link-external-icon: true

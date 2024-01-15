@@ -1,0 +1,170 @@
+---
+title: "Model specification"
+
+---
+
+```{r, echo = FALSE}
+source("./R/init.R")
+# source("./R/data.R")
+log_info("Called model-spec notebook")
+```
+
+
+
+## Introduction
+
+The primary outcome is treatment success at 12 months post platform entry, defined as **all of**: 
+
+1. Alive
+2. Clinical cure (no clinical or microbiological evidence of infection)
+3. No ongoing use of antibiotics for the index joint; and
+4. The prosthesis present after the initial management strategy is complete (destination prosthesis) still in place
+
+hereafter referred to as 'treatment success'.
+
+For each silo and site of infectioin we model the probability of treatment success as follows:
+
+\begin{aligned}
+\log{ \left( \frac{\pi_i}{1 - \pi_i} \right) } = \alpha_{s(i),u(i)} + \zeta_i
+\end{aligned}
+
+where 
+
++ $\alpha_{s(i),u(i)}$ denotes the log-odds of treatment success for patient $i$ in silo $s$ and having infection site $u$ in those randomised to the reference groups in the surgery (A), duration (B) and antibiotic type (C) domains
++ $\zeta_i$ is a series of other terms that are context dependent and expanded upon below
+
+### Early infection
+
+Patients with early stage infection are only randomised into the antibiotic type domain; the surgical intervention is fixed to be dair and the antibiotic duration is fixed at 12 weeks.
+In other words, there are no treatment comparisons in the surgical nor duration domain for the early stage infection patients; neither do they contribute to the estimation of parameters in the late or chronic silos.
+
+$\zeta_i$ comprises terms that characterise the effects of non-membership in domains $A$, $B$ and $C$ (60% of the cohort are assumed to enter into domain C irrespetive of their membership in domains $A$ and $B$).
+Non-membership parameters are shared across all silos.
+$\zeta_i$ also includes a term to model the effect of treatment allocation within domain $C$.
+
+We have $\gamma_{A}$ denoting the effect of non-membership^[TODO - is this a meaningful parameter?] for domain $A$ included (or not) in the linear predictor based on an indicator of domain non-membership $\mathbb{I}_{A^\prime(i)}$ for each patient $i$ (evaluates to true for all patients with early stage infection).
+$\gamma_{B}$ denotes the effect of non-membership to domain $B$ and so on.
+
+For those patients entering into the antibiotic type domain, there is a parameter that charactersises the effect of treatment(s) $\beta_{C,d_{C,j(i)}}$ shared across silos and for which $d_{C,j}$ is a treatment index.
+The treatment effect is included (or not) in the linear predictor based on an indicator of domain membership $\mathbb{I}_{C(i)}$ for each patient $i$.
+
+\begin{aligned}
+\zeta_i = \gamma_{A} \mathbb{I}_{A^\prime(i)} + \gamma_{B} \mathbb{I}_{B^\prime(i)} + \gamma_{C} \mathbb{I}_{C^\prime(i)} + \beta_{C,d_{C,j(i)}} \mathbb{I}_{C(i)}
+\end{aligned}
+ 
+No other terms are included in the model for the purposes of simulation.
+In the full model, there would be additional terms to capture time trends, site variation and prognostic covariates.
+For $C$, the treatment effects could be partially pooled across silos.
+A population view of the average OR across the silos (i.e. sample from a normal distribution with variance equal to our parameter estimate) would likely be attenuated towards the null and have more uncertainty relative to a pooled estimate.
+
+### Late infection
+
+Patients with late infection enter all domains, but with some restrictions.
+They are randomised to dair vs revision in the surgical domain. 
+Patients allocated to revision will receive a one or two-stage procedure, the plan for which needs to be captured at the time of randomisation.
+Patients allocated to dair, do not contribute to the estimation of duration effects.
+Patients allocated to revision for whom the plan is to undertake a one-stage procedure are allocated to 6 vs 12 weeks following stage one.
+Patients allocated to revision for whom the plan is to undertake a two-stage procedure are allocated to 7 days vs 12 weeks following stage two.
+
+$\zeta_i$ again comprises terms that characterise the effects of non-membership in domains $A$, $B$ and $C$ (60% of the cohort are assumed to enter into domain C irrespetive of their membership in domains $A$ and $B$) along with terms to model the effects of treatment allocation within each domain.
+All patients are assumed to enter the surgical domain and so $\gamma_{A}$ can be omitted.
+Patients allocated to dair, would contribute to the estimation of $\gamma_{B}$.
+
+\begin{aligned}
+\zeta_i &= \gamma_{B} \mathbb{I}_{B^\prime(i)} + \gamma_{C} \mathbb{I}_{C^\prime(i)} + \beta_{A,s(i),d_{A,j(i)}}\mathbb{I}_{A(i)} + \\
+&\qquad  \beta_{B_{1},s(i),d_{B_1,j(i)}}\mathbb{I}_{one-stage(i)}  +  \beta_{B_{2},s(i),d_{B_2,j(i)}}\mathbb{I}_{two-stage(i)} +  \beta_{C,d_{C,j(i)}}\mathbb{I}_{C(i)}
+\end{aligned}
+
++ $\beta_{A,s,d_{A,j}}$ represents a (silo specific) parameter characterising the effect of revision relative to dair 
++ $\beta_{B_{1},s,d_{B_1,j}}$ represents a (silo specific) parameter characterising the effect of 12 weeks relative to 6 weeks in patients who were planned to have a one-stage procedure.
++ $\beta_{B_{2},s,d_{B_2,j}}$ represents a (silo specific) parameter characterising the effect of 12 weeks relative to 7 days (post second stage) in patients who were planned to have a two-stage procedure.
++ $\beta_{C,d_{C,j}}$ is as previously defined, again noting that the parameter is currently pooled over all silos.
+
+As before, the reference level parameters are all set to zero.
+The terms for the $B$ domain are silo-specific, i.e. unpooled.
+These should be considered for partial pooling across the late and chronic silos.
+However, the fact that one vs two-stage were not randomised for the late silo might lead to some confounding and therefore complicate the interpretation of these terms even further.
+
+### Chronic infection
+
+Patients with chronic infection enter all domains without restrictions.
+They are randomised to one vs two-stage in the surgical domain. 
+Patients allocated to one-stage are allocated to 6 vs 12 weeks following stage one.
+Patients allocated to two-stage are allocated to 7 days vs 12 weeks following stage two.
+Entry into the type domain is as above.
+
+$\zeta_i$ again comprises terms that characterise the effects of non-membership in domains $A$, $B$ and $C$ (60% of the cohort are assumed to enter into domain C irrespetive of their membership in domains $A$ and $B$) along with terms to model the effects of treatment allocation within each domain.
+However, since all patients are assumed to enter the surgical and duration domains, $\gamma_{A}$ and $\gamma_{B}$ can be omitted.
+
+\begin{aligned}
+\zeta_i &= \gamma_{C} \mathbb{I}_{C^\prime(i)} + \beta_{A,s(i),d_{A,j(i)}}\mathbb{I}_{A(i)} + \\
+&\qquad  \beta_{B_{1},s(i),d_{B_1,j(i)}}\mathbb{I}_{one-stage(i)}  +  \beta_{B_{2},s(i),d_{B_2,j(i)}}\mathbb{I}_{two-stage(i)} +  \beta_{C,d_{C,j(i)}}\mathbb{I}_{C(i)}
+\end{aligned}
+
+With definitions for the terms as above.
+
+## Priors
+
+As with the linear predictor, the priors are currently targeted towards the simulation work.
+
+### Intercepts
+
+The silo and infection site specific intercepts are given independent normal priors
+
+\begin{aligned}
+\alpha_{s(i),u(i)} \sim \mathcal{N}(0, 1.5^2)
+\end{aligned}
+
+On the probability scale, these concentrate on 0.5 with 95% of the density between 0.04 and 0.96, approximately uniform across this interval.
+While the intercepts are currently independent, consideration should be given to partial pooling across site of infection.
+
+### Domain non-membership
+
+The domain non-membership parameters are given standard normal independent priors.
+These parameters are pooled across all silos.
+
+\begin{aligned}
+\gamma_\mathcal{D} \sim \mathcal{N}(0, 1)
+\end{aligned}
+
+### Interventions
+
+A hierarchical prior structure may be appropriate for some of the intervention effects dependent on what can be assumed regarding exchangeability.
+
+#### Surgical domain
+
+Silo-specific, independent normal priors are assumed for the surgical domain.
+There is no pooling, we simply compare dair vs revision in the late stage patients and one vs two stage in the chronic stage patients.
+
+\begin{aligned}
+\beta_{A,s,d_{A,j}} \sim \mathcal{N}(0, 1)
+\end{aligned}
+
+#### Antibiotic duration domain
+
+While a hierarchical structure could be considered for this domain, independent normal priors are currenlty assumed for the duration domain.
+Currently, there is no pooling.
+We compare 6 vs 12 weeks for late stage patients having a one stage procedure and 7 days vs 12 wks for those having a two stage procedure.
+Independently, we compare 6 vs 12 weeks for chronic stage patients having a one stage procedure and 7 days vs 12 wks for those having a two stage procedure.
+
+\begin{aligned}
+\beta_{B_k,s,d_{B,j}} \sim \mathcal{N}(0, 1)
+\end{aligned}
+
+Theoretically, partial pooling could be implemented across the late and chronic silos.
+
+#### Antibiotic type domain
+
+A hierarchical structure could also be considered for this domain.
+The 'average' across silos could be obtained by sampling from the posterior assuming normality based on the parameter for the group variance.
+With three groups the extent of the partial pooling is going to be heavily influenced by the prior rather than the data.
+
+Currently we adopt a standard normal prior for the treatment effects in this domain, which are pooled across silos.
+
+\begin{aligned}
+\beta_{C,d_{C,j}} \sim \mathcal{N}(0, 1)
+\end{aligned}
+
+
+
+

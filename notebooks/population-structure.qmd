@@ -1,0 +1,180 @@
+---
+title: "Population structure"
+
+---
+
+```{r, echo = FALSE}
+source("./R/init.R")
+# source("./R/data.R")
+log_info("Called population-structure notebook")
+```
+
+The following data specification is for the partially factorial structure of the study.
+The outcome model is specified separately.
+
+
+## Silo
+
+::: {.column width="50%"}
+
+| Silo |  $\pi$ |
+|------|-----|
+| early |  0.3 |
+| late  |   0.5 |
+| chronic | 0.2 |
+
+: Silo categories ($\pi$ denotes probability of membership) {.striped .hover}
+:::
+
+
+## Site of infection (joint)
+
+::: {.column width="70%"}
+
+Silo | Joint |  $\pi$ |
+-----|-----|----|----|
+early | knee |  0.4 | 
+early |hip |  0.6 | 
+late |knee |  0.3 | 
+late |hip |  0.7 | 
+chronic |knee | 0.5 | 
+chronic |hip |  0.5 | 
+
+: Site of infection ($\pi$ denotes probability of site infection conditional on silo membership) {.striped .hover}
+:::
+
+## Randomisation into surgery domain (A)
+
+::: {.column width="50%"}
+
+Silo | Randomised ($e_a$) |  
+-----|-----|
+early |N |   
+late | Y |   
+chronic | Y | 
+
+: Randomisation within domain A {.striped .hover}
+:::
+
+
+## Surgery domain (A)
+
+Early silo does not receive randomisation; all early stage patients receive DAIR.
+
+::: {.column width="70%"}
+
+Silo | Surgery type ($a$) |  $\pi$ |
+-----|-----|----|----|
+early | dair |     - | 
+late | dair |     0.5 | 
+late |revision |  0.5 | 
+chronic | one-stage | 0.5 | 
+chronic |two-stage |  0.5 | 
+
+: Allocation within domain A ($\pi$ denotes probability allocation to surgery type conditional on silo membership) {.striped .hover}
+:::
+
+## Intended surgery
+
+Late stage infections will be randomised to DAIR vs revision where revision is one or two-stage.
+Conditional on late-stage infection and allocation to revision, assume equal chance of indended revision type (one vs two stage); intended revision type is not randomised.
+All bar late-stage infection revision have intended surgery set to allocated surgery.
+
+::: {.column width="70%"}
+
+Silo | Allocation ($a$) | Intended surgery ($q$) | $\pi$ |
+-----|-----|----|----|----|
+early | dair | dair | - | 
+late | dair |  dair |   - | 
+late |revision |  one-stage | 0.5 | 
+late |revision |  two-stage | 0.5 | 
+chronic | one-stage | one-stage | - | 
+chronic |two-stage |  two-stage | - | 
+
+: Indended surgical approach ($\pi$ denotes probability allocation to surgery type conditional on silo membership) {.striped .hover}
+:::
+
+## Randomisation into duration domain (B)
+
+Conditional on intended surgery.
+
+::: {.column width="70%"}
+
+Intended surgery ($q$) | Randomised ($e_b$) |  
+-----|----|----|
+dair |  N | 
+revision |  Y | 
+one-stage |  Y | 
+two-stage |  Y | 
+
+: Randomisation within domain B {.striped .hover}
+:::
+
+## Duration domain (B)
+
+Duration of antibiotic is conditional on allocated (intended) surgery type, see above.
+Patients receiving DAIR are assumed to have 12 wk duration (not randomised).
+
+::: {.column width="70%"}
+
+Allocation/Intended surgery ($q$) | Allocation ($b$) | $\pi$ |
+-----|----|---|
+dair | 12 wk |  - | 
+one-stage | 6 wk |  0.5 | 
+one-stage | 12 wk |  0.5 | 
+two-stage | 7 day post 2  |  0.5 | 
+two-stage | 12 wk post 2  |  0.5 | 
+
+: Allocation within duration domain ($\pi$ denotes probability allocation to surgery type conditional on allocated/intended surgery)  {.striped .hover}
+:::
+
+## Randomisation into adjunctive domain (C)
+
+60% of cohort enter into domain, the rest are flagged as ineligible
+
+::: {.column width="70%"}
+
+Silo | Randomised ($e_c$) |  $\pi$ | 
+-----|-----|----|
+early | Y | 0.6 |
+late |   Y |  0.6 |
+chronic |  Y |  0.6 |
+
+: Randomisation within domain C ($\pi$ denotes probability patient is indicated as eligible for domain)  {.striped .hover}
+:::  
+
+## Adjunctive domain (C)
+
+::: {.column width="70%"}
+
+Allocation ($c$) | $\pi$ |
+-----|----|
+no rif | 0.5 |
+rif | 0.5 |
+
+: Allocation within adjunctive domain ($\pi$ denotes probability that an eligible patient is allocated to no rif vs rif) {.striped .hover}
+:::
+
+## Encoded specification
+
+The above specification is bundled into an R package (`roadmap.data`) for consistent data generation for ROADMAP.
+
+```{r}
+roadmap.data::get_pop_spec()
+```
+
+The following function simulates the design matrix.
+
+```{r}
+roadmap.data::get_design
+```
+
+The data generation assumptions imply unique patients groups on which we would observe the outcome.
+The outcome is known to be heterogenous across these groups and yet the stated goal is to aggregate measures of effect (odds ratios) across all these groups, e.g. no rif vs rif.
+However, the effect of interest is assumed to be obtained from the model parameter that characterises the effect of antibiotic type conditional on the other covariates in the model.
+
+```{r}
+d <- roadmap.data::get_design()
+unique(d[order(silo, joint, ea, a, qa, eb, b, ec, c), .SD, .SDcols = !c("id")])
+```
+

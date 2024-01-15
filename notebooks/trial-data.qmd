@@ -1,0 +1,148 @@
+---
+title: "Simulated trial data"
+
+---
+
+```{r, echo = FALSE}
+source("./R/init.R")
+log_info("Called trial-data notebook")
+```
+
+
+
+## Introduction
+
+Trial data is simulated under the model specification, see earlier section.
+
+```{r}
+d <- get_trial_data(N = 2500)
+
+d_a <- d[silo %in% c("late", "chronic"), .(y = sum(y), .N), keyby = .(silo, joint, ea, a)]
+d_b_late <- d[silo %in% c("late") & a == "rev", .(y = sum(y), .N), keyby = .(silo, joint, qa, eb, b)]
+d_b_chronic <- d[silo %in% c("chronic") , .(y = sum(y), .N), keyby = .(silo, joint, qa, eb, b)]
+
+d_b <- rbind(d_b_late, d_b_chronic)
+d_c <- d[ec == "Y", .(y = sum(y), .N), keyby = .(silo, joint, ec, c)]
+
+d_all_grps <- d[, .(y = sum(y), .N), keyby = .(silo, joint, ea, a, qa, eb, b, ec, c)]
+```
+
+@tbl-smry-Da shows a summary of simulated trial data for surgical domain.
+Each row comprises patients allocated to the surgical domain intervention detail plus their duration and type intervention.
+For example, late stage patients with knee joint infections receiving revision would include patients allocated to the duration options dependent on the planned surgical procedure and type options dependent on whether they were eligible for the type domain.
+
+```{r}
+#| label: tbl-smry-Da
+#| tbl-cap: 'Summary of simulated trial data for surgical domain'
+#| column: page
+
+cols <- c("Silo", "Infection site", "Surgery", "Success", "N", "Pr(success)")
+names(cols) <- names(d_a[, .(silo, joint, a, y, N, p_obs = y/N)])
+
+gt_tbl <- d_a[, .(silo, joint, a, y, N, p_obs = y/N)] |> 
+  gt(
+  ) |> 
+  cols_align(
+    align = "left",
+    columns = starts_with(c("silo", "joint"))
+  ) |> 
+  fmt_number(
+    columns = starts_with(c("p_obs")),
+    decimals = 2
+  ) |>
+  cols_label(.list = cols)
+
+gt_tbl
+```
+
+@tbl-smry-Db shows the analogous summary of simulated trial data for the duration domain.
+
+```{r}
+#| label: tbl-smry-Db
+#| tbl-cap: 'Summary of simulated trial data for duration domain'
+#| column: page
+
+
+cols <- c("Silo", "Infection site", "Type", "Success", "N", "Pr(success)")
+names(cols) <- names(d_c[, .(silo, joint, c, y, N, p_obs = y/N)])
+
+gt_tbl <- d_c[, .(silo, joint, c, y, N, p_obs = y/N)] |> 
+  gt(
+  ) |> 
+  cols_align(
+    align = "left",
+    columns = starts_with(c("silo", "joint"))
+  ) |> 
+  fmt_number(
+    columns = starts_with(c("p_obs")),
+    decimals = 2
+  ) |>
+  cols_label(.list = cols)
+
+gt_tbl
+```
+
+@tbl-smry-Dc shows the analogous summary of simulated trial data for the type domain.
+
+```{r}
+#| label: tbl-smry-Dc
+#| tbl-cap: 'Summary of simulated trial data for type domain'
+#| column: page
+
+
+cols <- c("Silo", "Infection site", "Revision", "Duration", "Success", "N", "Pr(success)")
+names(cols) <- names(d_b[, .(silo, joint, qa, b, y, N, p_obs = y/N)])
+
+gt_tbl <- d_b[, .(silo, joint, qa, b, y, N, p_obs = y/N)] |> 
+  gt(
+  ) |> 
+  cols_align(
+    align = "left",
+    columns = starts_with(c("silo", "joint"))
+  ) |> 
+  fmt_number(
+    columns = starts_with(c("p_obs")),
+    decimals = 2
+  ) |>
+  cols_label(.list = cols)
+
+gt_tbl
+```
+
+
+
+@tbl-smry-D-all shows the analogous summary of simulated trial data for the type domain.
+
+```{r}
+#| label: tbl-smry-D-all
+#| tbl-cap: 'Summary of all groupings from simulated trial data'
+#| column: page
+
+
+# cols <- c("Silo", "Infection site", "A", "A (trt)", "A (plan)", "B", "B (trt)", "C", "C (trt)", "Success", "N", "Pr(success)")
+# names(cols) <- names(d_all_grps[, .(silo, joint, ea, a, qa, eb, b, ec, c, y, N, p_obs = y/N)])
+
+datatable(d_all_grps[, .(silo, joint, ea, a, qa, eb, b, ec, c, y, N, p_obs = round(y/N, 2))],
+          rownames = FALSE,
+          colnames = c(
+            'Silo' = 1, 
+            'Infection site' = 2,
+            'A' = 3,
+            'A (trt)' = 4,
+            'A (plan)' = 5,
+            'B' = 6,
+            'B (trt)' = 7,
+            'C' = 8,
+            'C (trt)' = 9,
+            'Success' = 10,
+            'N' = 10,
+            'Pr(success)' = 12
+            ),
+          filter = 'top', options = list(
+            pageLength = 20, autoWidth = TRUE)
+          )
+
+
+```
+
+

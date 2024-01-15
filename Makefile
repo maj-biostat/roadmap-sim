@@ -32,6 +32,7 @@ list:
 clean:
 	rm -fR logs/*
 	rm -f data/*.sqlite
+	rm -fr _site/*
 
 # @echo "\nPassword is" $(PASSWORD)
 .PHONY: preview

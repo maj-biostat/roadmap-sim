@@ -417,30 +417,8 @@ get_data_demo_3 <- function(
   d
 }
 
-N = 10000
-# baseline log-odds of trt success by silo
-b_silo = c(early_acute=qlogis(0.65), late_acute=qlogis(0.55), chronic=qlogis(0.45))
-# hip does worse
-b_joint = c(knee = 0, hip = -0.5)
-# surgery
 
-# could do this with ragged, but this is quicker. 
-
-v_surg_not_rand = c(-0.2)
-v_early_surg = NA
-v_late_surg = c(late_dair = 0, late_one=0.1, late_two=-0.4)
-v_chronic_surg = c(chronic_one=0, chronic_two=0.2)
-
-v_abdu_not_rand = c(-0.3)
-v_early_abdu = NA
-v_late_abdu = c(late_one_short=0, late_one_long=0.3, late_two_short=0, late_two_long=0.1)
-v_chronic_abdu = c(chronic_one_short=0, chronic_one_long=-0.2, chronic_two_short=0,chronic_two_long=0.5)
-
-v_abty_not_rand = c(-0.1)
-v_early_abty = c(soc = 0, rif = 0.3)
-v_late_abty = c(soc = 0, rif = 0.3)
-v_chronic_abty = c(soc = 0, rif = 0.3)
-
+N <- 10000
 
 get_data_demo_4 <- function(
 
@@ -454,10 +432,13 @@ get_data_demo_4 <- function(
   f_silo <- c("e", "l", "c")
   pr_silo <- c(e = 0.3, l = 0.5, c = 0.2)
   
+  f_joint <- c("k", "h")
+  pr_joint <- c(k = 0.6, h = 0.4)
+  
   # Stratification
   silo <- factor(sample(f_silo, size = N, replace = T, prob = pr_silo), levels = f_silo)
   d[, silo := silo]
-  joint <- factor(sample(g_joint, size = N, replace = T, prob = g_pr_joint), levels = g_joint)
+  joint <- factor(sample(f_joint, size = N, replace = T, prob = pr_joint), levels = f_joint)
   d[, joint := joint]
   
   # Early
@@ -474,18 +455,16 @@ get_data_demo_4 <- function(
   d[silo == "e" & abty_rand == "Y", abty := sample(c("norif", "rif"), .N, replace = T, prob = c(0.5, 0.5))]
 
   # Late
-  d[silo == "l", surg_rand := yn_rand(.N, 0.975)]
-  d[silo == "l" & surg_rand == "N", `:=`(surg = "no_rand", surg_typ = "no_rand")]
+  d[silo == "l", surg_rand := "Y"]
   d[silo == "l" & surg_rand == "Y", surg := sample(c("dair", "rev"), .N, replace = T, prob = c(0.5, 0.5))]
   d[silo == "l" & surg_rand == "Y" & surg == "dair", surg_typ := "dair"]
   d[silo == "l" & surg_rand == "Y" & surg == "rev", surg_typ := sample(c("one", "two"), .N, replace = T, prob = c(0.25, 0.75))]
   d[silo == "l" & surg == "dair", abdu_rand := "N"]
-  d[silo == "l" & surg == "no_rand", abdu_rand := "N"]
-  d[silo == "l" & surg_typ %in%  c("one", "two"), abdu_rand := yn_rand(.N, 0.975)]
+  d[silo == "l" & surg_typ %in%  c("one", "two"), abdu_rand := "Y"]
   d[silo == "l" & abdu_rand == "N", abdu := "no_rand"]
   d[silo == "l" & abdu_rand == "Y" & surg_typ == "dair", abdu := "no_rand"]
-  d[silo == "l" & abdu_rand == "Y" & surg_typ == "one", abdu := sample(c("6w", "12wa"), .N, replace = T, prob = c(0.5, 0.5))]
-  d[silo == "l" & abdu_rand == "Y" & surg_typ == "two", abdu := sample(c("1w", "12wb"), .N, replace = T, prob = c(0.5, 0.5))]
+  d[silo == "l" & abdu_rand == "Y" & surg_typ == "one", abdu := sample(c("w6", "w12a"), .N, replace = T, prob = c(0.5, 0.5))]
+  d[silo == "l" & abdu_rand == "Y" & surg_typ == "two", abdu := sample(c("w1", "w12b"), .N, replace = T, prob = c(0.5, 0.5))]
   # 55% chance of reveal (effective 55% of being gram pos) 
   d[silo == "l" & surg == "no_rand", abty_rand := "N"]
   d[silo == "l" & is.na(abty_rand), abty_rand := yn_rand(.N, 0.5)]
@@ -493,42 +472,75 @@ get_data_demo_4 <- function(
   d[silo == "l" & abty_rand == "Y", abty := sample(c("norif", "rif"), .N, replace = T, prob = c(0.5, 0.5))]
   
   # Chronic
-  d[silo == "c", surg_rand := yn_rand(.N, 0.975)]
-  d[silo == "c" & surg_rand == "N", surg := "no_rand"]
+  d[silo == "c", surg_rand := "Y"]
   d[silo == "c" & surg_rand == "Y", surg := sample(c("one", "two"), .N, replace = T, prob = c(0.5, 0.5))]
   d[silo == "c" , surg_typ := copy(surg)]
   # Any that had no surgery currently do not enter the abdu domain
-  d[silo == "c" & surg_rand == "N", abdu_rand := "N"]
-  # And then there is a small chance that some of the others are not randomised into this domain
-  d[silo == "c" & is.na(abdu_rand), abdu_rand := yn_rand(.N, 0.975)]
-  d[silo == "c" & abdu_rand == "N", abdu := "no_rand"]
-  d[silo == "c" & abdu_rand == "Y" & surg_typ == "one", abdu := sample(c("6w", "12wa"), .N, replace = T, prob = c(0.5, 0.5))]
-  d[silo == "c" & abdu_rand == "Y" & surg_typ == "two", abdu := sample(c("1w", "12wb"), .N, replace = T, prob = c(0.5, 0.5))]
+  d[silo == "c", abdu_rand := "Y"]
+  d[silo == "c" & abdu_rand == "Y" & surg_typ == "one", abdu := sample(c("w6", "w12a"), .N, replace = T, prob = c(0.5, 0.5))]
+  d[silo == "c" & abdu_rand == "Y" & surg_typ == "two", abdu := sample(c("w1", "w12b"), .N, replace = T, prob = c(0.5, 0.5))]
   # 55% chance of reveal (effective 55% of being gram pos) 
-  d[silo == "c" & surg == "no_rand", abty_rand := "N"]
-  d[silo == "c" & is.na(abty_rand), abty_rand := yn_rand(.N, 0.5)]
+  d[silo == "c" , abty_rand := yn_rand(.N, 0.5)]
   d[silo == "c" & abty_rand == "N", abty := "no_rand"]
   d[silo == "c" & abty_rand == "Y", abty := sample(c("norif", "rif"), .N, replace = T, prob = c(0.5, 0.5))]
+
   
+
+  # baseline log-odds of trt success by silo
+  # early_acute 
   
-  d[, .(.N), keyby = .(silo, joint, surg_rand, surg, surg_typ, abdu_rand, abdu, abty_rand, abty)]
+  b_silo = c(e=qlogis(0.65), l=qlogis(0.55), c=qlogis(0.45))
+  # hip does worse in all silos
+  b_joint = rbind(e = c(knee = 0, hip = -0.5), l = c(knee = 0, hip = -0.25), c = c(knee = 0, hip = -0.75))
+  # common effect of not randomised by domain across all silo
+  b_not_rand = c(surg = 0, abdu = -0.5, abty = -0.2)
+  b_surg <- list(
+    l = c(dair = 0, rev = -0.7),
+    c = c(one = 0, two = 0.4)
+  )
+  b_abdu <- list(
+    l = list(
+      one = c(w6 = 0, w12a = 0.2),
+      two = c(w1 = 0, w12b = -0.4)
+    ),
+    c = list(
+      one = c(w6 = 0, w12a = -0.2),
+      two = c(w1 = 0, w12b = 0.6)
+    )
+  )
+  b_abty <- rbind(
+    e = c(norif = 0, rif = 0.3),
+    l = c(norif = 0, rif = 0.3),
+    c = c(norif = 0, rif = 0.3)
+  )
   
-  
-  
-  d[silo == "early_acute", surg := factor(surg, levels = fct_early_surg)]
-  d[silo == "early_acute", abdu := factor(abdu, levels = fct_early_abdu)]
-  d[silo == "early_acute", abty := factor(abty, levels = fct_early_abty)]
-  
-  d[silo == "late_acute", surg := factor(surg, levels = fct_late_surg)]
-  d[silo == "late_acute", abdu := factor(abdu, levels = fct_late_abdu)]
-  d[silo == "late_acute", abty := factor(abty, levels = fct_late_abty)]
-  
-  d[silo == "chronic", surg := factor(surg, levels = fct_chronic_surg)]
-  d[silo == "chronic", abdu := factor(abdu, levels = fct_chronic_abdu)]
-  d[silo == "chronic", abty := factor(abty, levels = fct_chronic_abty)]
-  
+  id_silo <- 1:3
+  names(id_silo) <- c("e", "l", "c")
+  id_joint <- 1:2
+  names(id_joint) <- c("knee", "hip")
+  # SURG
+  id_l_surg <- 1:2
+  names(id_l_surg) <- c("dair", "rev")
+  id_c_surg <- 1:2
+  names(id_c_surg) <- c("one", "two")
+  # ABTY
+  id_abty <- 1:2
+  names(id_abty) <- c("norif", "rif")
+
   # Outcome models.
-  d[, eta := b_silo[silo] + b_joint[joint]]
+  d[, eta_s := b_silo[silo]]
+  d[, eta_j := b_joint[cbind(id_silo[d$silo], id_joint[d$joint])]]
+  
+  # lapply(b_surg[d$silo], function(z){ z[] })
+  
+  
+  eta_surg = b_surg[cbind(id_silo[d[abty_rand == "Y", silo]], id_abty[d[abty_rand == "Y", abty]])]
+  d[abty_rand == "Y", eta_abty := eta_abty]
+  
+  
+  eta_abty = b_abty[cbind(id_silo[d[abty_rand == "Y", silo]], id_abty[d[abty_rand == "Y", abty]])]
+  d[abty_rand == "Y", eta_abty := eta_abty]
+  
   
   # Not being randomised to surgery reduces the chances of successful resp
   d[surg_rand == 0, eta := eta + v_surg_not_rand]
