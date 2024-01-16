@@ -141,7 +141,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design specification</a></li><li class="breadcrumb-item"><a href="../notebooks/model-implementation.html">Model implementation</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/model-implementation.html">Model implementation</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -170,7 +170,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
- <span class="menu-text">Design specification</span></a>
+ <span class="menu-text">Design</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -220,18 +220,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
-    <h2 id="toc-title">Contents</h2>
-   
-  <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
-  </ul>
-</nav>
+        
     </div>
 <!-- main -->
 <main class="content page-columns page-full" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design specification</a></li><li class="breadcrumb-item"><a href="../notebooks/model-implementation.html">Model implementation</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/model-implementation.html">Model implementation</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">Model implementation</h1>
 </div>
@@ -253,9 +247,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 
 </div>
-<section id="introduction" class="level2 page-columns page-full">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
-<p>Given the design, the simplest implementation I could think of split the data into silo-specific chunks, mimicking the formulation in the model specification earlier. Nevertheless, the model is cumbersome.</p>
+<p>The simplest implementation I could think of split the data into silo-specific chunks, mimicking the formulation in the model specification earlier. Nevertheless, the model is cumbersome.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <div class="sourceCode" id="cb1"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">data</span> {</span>
@@ -413,7 +405,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-153"><a href="#cb1-153"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
-<p>Below I create a data set with many more records that we will have available simple in order to see if we can get close to recovering the parameters. I fit the above model and then extract and summarise the posterior.</p>
+<p>Below I create a data set with many more records that we will have available in order to see if we can recover the parameters. I fit the above model and then extract and summarise the posterior.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -517,7 +509,7 @@ Total execution time: 5.6 seconds.</code></pre>
 <span id="cb4-24"><a href="#cb4-24"></a>         <span class="at">eta_q975 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.975</span>)), <span class="at">keyby =</span> idx])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p><a href="#fig-post-vs-tru" class="quarto-xref">Figure&nbsp;1</a> shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model. It suggests a fairly strong association between the true and estimated log-odds of treatment success for this particular dataset.</p>
+<p><a href="#fig-post-vs-tru" class="quarto-xref">Figure&nbsp;1</a> shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model. It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset.</p>
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
@@ -545,7 +537,6 @@ Figure&nbsp;1: Scatter plot comparing true vs estimated 95% credible interval fo
 </div>
 
 
-</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

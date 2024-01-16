@@ -136,7 +136,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design specification</a></li><li class="breadcrumb-item"><a href="../notebooks/model-spec.html">Model specification</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/model-spec.html">Model specification</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -165,7 +165,7 @@ window.Quarto = {
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
- <span class="menu-text">Design specification</span></a>
+ <span class="menu-text">Design</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
@@ -219,12 +219,9 @@ window.Quarto = {
     <h2 id="toc-title">Contents</h2>
    
   <ul>
-  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a>
-  <ul>
-  <li><a href="#early-infection" id="toc-early-infection" class="nav-link" data-scroll-target="#early-infection">Early infection</a></li>
+  <li><a href="#early-infection" id="toc-early-infection" class="nav-link active" data-scroll-target="#early-infection">Early infection</a></li>
   <li><a href="#late-infection" id="toc-late-infection" class="nav-link" data-scroll-target="#late-infection">Late infection</a></li>
   <li><a href="#chronic-infection" id="toc-chronic-infection" class="nav-link" data-scroll-target="#chronic-infection">Chronic infection</a></li>
-  </ul></li>
   <li><a href="#priors" id="toc-priors" class="nav-link" data-scroll-target="#priors">Priors</a>
   <ul>
   <li><a href="#intercepts" id="toc-intercepts" class="nav-link" data-scroll-target="#intercepts">Intercepts</a></li>
@@ -242,7 +239,7 @@ window.Quarto = {
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design specification</a></li><li class="breadcrumb-item"><a href="../notebooks/model-spec.html">Model specification</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/model-spec.html">Model specification</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">Model specification</h1>
 </div>
@@ -264,8 +261,6 @@ window.Quarto = {
 <div class="cell">
 
 </div>
-<section id="introduction" class="level2">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
 <p>The primary outcome is treatment success at 12 months post platform entry, defined as <strong>all of</strong>:</p>
 <ol type="1">
 <li>Alive</li>
@@ -319,7 +314,6 @@ window.Quarto = {
 &amp;\qquad  \beta_{B_{1},s(i),d_{B_1,j(i)}}\mathbb{I}_{one-stage(i)}  +  \beta_{B_{2},s(i),d_{B_2,j(i)}}\mathbb{I}_{two-stage(i)} +  \beta_{C,d_{C,j(i)}}\mathbb{I}_{C(i)}
 \end{aligned}\]</span>
 <p>With definitions for the terms as above.</p>
-</section>
 </section>
 <section id="priors" class="level2">
 <h2 class="anchored" data-anchor-id="priors">Priors</h2>
