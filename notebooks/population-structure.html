@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>ROADMAP - design notes and simulations - Estimands in complex designs</title>
+<title>ROADMAP - design notes and simulations - Population structure</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -67,6 +101,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -107,7 +170,7 @@ ul.task-list li input[type="checkbox"] {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Estimands in complex designs</li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design specification</a></li><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Population structure</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -144,7 +207,7 @@ ul.task-list li input[type="checkbox"] {
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../notebooks/population-structure.html" class="sidebar-item-text sidebar-link">
+  <a href="../notebooks/population-structure.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Population structure</span></a>
   </div>
 </li>
@@ -190,17 +253,25 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">Contents</h2>
    
   <ul>
-  <li><a href="#platform-trials" id="toc-platform-trials" class="nav-link active" data-scroll-target="#platform-trials">Platform trials</a></li>
-  <li><a href="#estimands" id="toc-estimands" class="nav-link" data-scroll-target="#estimands">Estimands</a></li>
+  <li><a href="#silo" id="toc-silo" class="nav-link active" data-scroll-target="#silo">Silo</a></li>
+  <li><a href="#site-of-infection-joint" id="toc-site-of-infection-joint" class="nav-link" data-scroll-target="#site-of-infection-joint">Site of infection (joint)</a></li>
+  <li><a href="#randomisation-into-surgery-domain-a" id="toc-randomisation-into-surgery-domain-a" class="nav-link" data-scroll-target="#randomisation-into-surgery-domain-a">Randomisation into surgery domain (A)</a></li>
+  <li><a href="#surgery-domain-a" id="toc-surgery-domain-a" class="nav-link" data-scroll-target="#surgery-domain-a">Surgery domain (A)</a></li>
+  <li><a href="#intended-surgery" id="toc-intended-surgery" class="nav-link" data-scroll-target="#intended-surgery">Intended surgery</a></li>
+  <li><a href="#randomisation-into-duration-domain-b" id="toc-randomisation-into-duration-domain-b" class="nav-link" data-scroll-target="#randomisation-into-duration-domain-b">Randomisation into duration domain (B)</a></li>
+  <li><a href="#duration-domain-b" id="toc-duration-domain-b" class="nav-link" data-scroll-target="#duration-domain-b">Duration domain (B)</a></li>
+  <li><a href="#randomisation-into-adjunctive-domain-c" id="toc-randomisation-into-adjunctive-domain-c" class="nav-link" data-scroll-target="#randomisation-into-adjunctive-domain-c">Randomisation into adjunctive domain (C)</a></li>
+  <li><a href="#adjunctive-domain-c" id="toc-adjunctive-domain-c" class="nav-link" data-scroll-target="#adjunctive-domain-c">Adjunctive domain (C)</a></li>
+  <li><a href="#encoded-specification" id="toc-encoded-specification" class="nav-link" data-scroll-target="#encoded-specification">Encoded specification</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default">
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design specification</a></li><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Population structure</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Estimands in complex designs</h1>
+<h1 class="title">Population structure</h1>
 </div>
 
 
@@ -217,76 +288,606 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<section id="platform-trials" class="level2">
-<h2 class="anchored" data-anchor-id="platform-trials">Platform trials</h2>
-<p>Are designed to permit the evaluation of multiple interventions in a perpetual manner under a single protocol establishing a common infrastructure and analysis plan. Interventions can be added and withdrawn at different times based on need and the control group may be revised as the trial progresses. Platform trials can include adaptive elements (commonly stopping rules and adaptive randomisations) that allow design variations based on accruing evidence.</p>
-</section>
-<section id="estimands" class="level2">
-<h2 class="anchored" data-anchor-id="estimands">Estimands</h2>
-<p>Causal estimands are population quantities describing causal effects of treatments. The estimand framework facilitates a precise description of the treatment effect of interest in clinical trials. The estimand is the thing targeted for estimation which will address a question of interest intrinsic to the trial. In other words, setting objectives leads to estimands which, once clear, can lead to identifying a suitable method for estimation.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
+<div class="cell">
+
 </div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>If you do not have a clear definition of an estimand, how do you derive an appropriate estimator?</p>
-</div>
-</div>
-<p>Estimands comprise:</p>
-<ol type="1">
-<li>a population of interest</li>
-<li>a treatment strategy</li>
-<li>a variable to be measured for each patient</li>
-<li>strategies for handing intercurrent events (IE)</li>
-<li>a population summary measure</li>
-</ol>
-<p>Per FDA, endpoint measures are developed to assess clinical outcomes, but things do seem to get mixed up.</p>
-<p>Nevertheless - the <em>endpoint</em> is an outcome obtained for each patient that will be statistically analyzed to address the scientific question; this may include data from multiple variables.</p>
-<p>While the usual suspects for defining analysis populations (specifically for dealing with IE) were intention-to-treat ITT and per-protocol, the ICH expanded this set of strategies. Loosely, ITT analyses all patients as randomised, irrespective of what actually happened (e.g.&nbsp;deviations). PP analyses, only those who follow the protocol are used, the otherse are excluded. PP is commonly cited as being subject to bias, ITT less so. ICH defines:</p>
+<p>The following data specification is for the partially factorial structure of the study. The outcome model is specified separately.</p>
+<section id="silo" class="level2">
+<h2 class="anchored" data-anchor-id="silo">Silo</h2>
+<div class="column" style="width:50%;">
 <table class="table-striped table-hover table">
-<caption>ICH treatment strategies</caption>
-<colgroup>
-<col style="width: 50%">
-<col style="width: 50%">
-</colgroup>
+<caption>Silo categories (<span class="math inline">\(\pi\)</span> denotes probability of membership)</caption>
 <thead>
 <tr class="header">
-<th>Command</th>
-<th>Description of common use</th>
+<th>Silo</th>
+<th><span class="math inline">\(\pi\)</span></th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>treatment policy</td>
-<td>Most common, similar to ITT; data collected is used regardless of whether IE occur. In other words, the IE is not a considered a departure from the treatment regimen of interest. TP preserves the randomisation, hence its attraction. Death can lead to TP being undefineable unless death is the (or a component of the) primary.</td>
+<td>early</td>
+<td>0.3</td>
 </tr>
 <tr class="even">
-<td>composite policy</td>
-<td>Incorporates the IE as a component of the variable, e.g.&nbsp;alive at 29 days without use of rescue medication.</td>
+<td>late</td>
+<td>0.5</td>
 </tr>
 <tr class="odd">
-<td>hypothetical</td>
-<td>Complicated - envisages a scenario where the IE does not occur. The observed outcomes of patients without IE correspond to the outcome of interest, but the outcome of patients with IE is considered missing and needs to be imputed.</td>
-</tr>
-<tr class="even">
-<td>while on treatment</td>
-<td>Applicable where there are repeat measures. The data is used up to the point where treatement was ended.</td>
-</tr>
-<tr class="odd">
-<td>principal stratum</td>
-<td>Involves defining sub-populations according to the specific IEs on one or all treatments.</td>
+<td>chronic</td>
+<td>0.2</td>
 </tr>
 </tbody>
 </table>
-<p>as analyses strategies with some loose and brief descriptions provided above.</p>
-<p>Intercurrent events are just post-randomisation events that impact our measurements or interpretation of measurements in some way (e.g.&nbsp;intercurrent events arise through discontinuation of medication).</p>
-<p>For the population-level summary, it is ususally relevant to provide within and between-arm measures, e.g.&nbsp;within-arm being overall survival at 28 days vs between-arm hazard ratio etc.</p>
-<p>Platform trials introduce complexity into the specification of estimands and is not well considered in the literature. For example, what are the implications of addring treatment arms or modifying the control or implementing further data-driven adaptive features?</p>
+</div>
+</section>
+<section id="site-of-infection-joint" class="level2">
+<h2 class="anchored" data-anchor-id="site-of-infection-joint">Site of infection (joint)</h2>
+<div class="column" style="width:70%;">
+<table class="table-striped table-hover table">
+<caption>Site of infection (<span class="math inline">\(\pi\)</span> denotes probability of site infection conditional on silo membership)</caption>
+<thead>
+<tr class="header">
+<th>Silo</th>
+<th>Joint</th>
+<th><span class="math inline">\(\pi\)</span></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>early</td>
+<td>knee</td>
+<td>0.4</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>early</td>
+<td>hip</td>
+<td>0.6</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>late</td>
+<td>knee</td>
+<td>0.3</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>late</td>
+<td>hip</td>
+<td>0.7</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>chronic</td>
+<td>knee</td>
+<td>0.5</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>chronic</td>
+<td>hip</td>
+<td>0.5</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="randomisation-into-surgery-domain-a" class="level2">
+<h2 class="anchored" data-anchor-id="randomisation-into-surgery-domain-a">Randomisation into surgery domain (A)</h2>
+<div class="column" style="width:50%;">
+<table class="table-striped table-hover table">
+<caption>Randomisation within domain A</caption>
+<thead>
+<tr class="header">
+<th>Silo</th>
+<th>Randomised (<span class="math inline">\(e_a\)</span>)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>early</td>
+<td>N</td>
+</tr>
+<tr class="even">
+<td>late</td>
+<td>Y</td>
+</tr>
+<tr class="odd">
+<td>chronic</td>
+<td>Y</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="surgery-domain-a" class="level2">
+<h2 class="anchored" data-anchor-id="surgery-domain-a">Surgery domain (A)</h2>
+<p>Early silo does not receive randomisation; all early stage patients receive DAIR.</p>
+<div class="column" style="width:70%;">
+<table class="table-striped table-hover table">
+<caption>Allocation within domain A (<span class="math inline">\(\pi\)</span> denotes probability allocation to surgery type conditional on silo membership)</caption>
+<thead>
+<tr class="header">
+<th>Silo</th>
+<th>Surgery type (<span class="math inline">\(a\)</span>)</th>
+<th><span class="math inline">\(\pi\)</span></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>early</td>
+<td>dair</td>
+<td>-</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>late</td>
+<td>dair</td>
+<td>0.5</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>late</td>
+<td>revision</td>
+<td>0.5</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>chronic</td>
+<td>one-stage</td>
+<td>0.5</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>chronic</td>
+<td>two-stage</td>
+<td>0.5</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="intended-surgery" class="level2">
+<h2 class="anchored" data-anchor-id="intended-surgery">Intended surgery</h2>
+<p>Late stage infections will be randomised to DAIR vs revision where revision is one or two-stage. Conditional on late-stage infection and allocation to revision, assume equal chance of indended revision type (one vs two stage); intended revision type is not randomised. All bar late-stage infection revision have intended surgery set to allocated surgery.</p>
+<div class="column" style="width:70%;">
+<table class="table-striped table-hover table">
+<caption>Indended surgical approach (<span class="math inline">\(\pi\)</span> denotes probability allocation to surgery type conditional on silo membership)</caption>
+<thead>
+<tr class="header">
+<th>Silo</th>
+<th>Allocation (<span class="math inline">\(a\)</span>)</th>
+<th>Intended surgery (<span class="math inline">\(q\)</span>)</th>
+<th><span class="math inline">\(\pi\)</span></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>early</td>
+<td>dair</td>
+<td>dair</td>
+<td>-</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>late</td>
+<td>dair</td>
+<td>dair</td>
+<td>-</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>late</td>
+<td>revision</td>
+<td>one-stage</td>
+<td>0.5</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>late</td>
+<td>revision</td>
+<td>two-stage</td>
+<td>0.5</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>chronic</td>
+<td>one-stage</td>
+<td>one-stage</td>
+<td>-</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>chronic</td>
+<td>two-stage</td>
+<td>two-stage</td>
+<td>-</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="randomisation-into-duration-domain-b" class="level2">
+<h2 class="anchored" data-anchor-id="randomisation-into-duration-domain-b">Randomisation into duration domain (B)</h2>
+<p>Conditional on intended surgery.</p>
+<div class="column" style="width:70%;">
+<table class="table-striped table-hover table">
+<caption>Randomisation within domain B</caption>
+<thead>
+<tr class="header">
+<th>Intended surgery (<span class="math inline">\(q\)</span>)</th>
+<th>Randomised (<span class="math inline">\(e_b\)</span>)</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dair</td>
+<td>N</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>revision</td>
+<td>Y</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>one-stage</td>
+<td>Y</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>two-stage</td>
+<td>Y</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="duration-domain-b" class="level2">
+<h2 class="anchored" data-anchor-id="duration-domain-b">Duration domain (B)</h2>
+<p>Duration of antibiotic is conditional on allocated (intended) surgery type, see above. Patients receiving DAIR are assumed to have 12 wk duration (not randomised).</p>
+<div class="column" style="width:70%;">
+<table class="table-striped table-hover table">
+<caption>Allocation within duration domain (<span class="math inline">\(\pi\)</span> denotes probability allocation to surgery type conditional on allocated/intended surgery)</caption>
+<thead>
+<tr class="header">
+<th>Allocation/Intended surgery (<span class="math inline">\(q\)</span>)</th>
+<th>Allocation (<span class="math inline">\(b\)</span>)</th>
+<th><span class="math inline">\(\pi\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>dair</td>
+<td>12 wk</td>
+<td>-</td>
+</tr>
+<tr class="even">
+<td>one-stage</td>
+<td>6 wk</td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td>one-stage</td>
+<td>12 wk</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>two-stage</td>
+<td>7 day post 2</td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td>two-stage</td>
+<td>12 wk post 2</td>
+<td>0.5</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="randomisation-into-adjunctive-domain-c" class="level2">
+<h2 class="anchored" data-anchor-id="randomisation-into-adjunctive-domain-c">Randomisation into adjunctive domain (C)</h2>
+<p>60% of cohort enter into domain, the rest are flagged as ineligible</p>
+<div class="column" style="width:70%;">
+<table class="table-striped table-hover table">
+<caption>Randomisation within domain C (<span class="math inline">\(\pi\)</span> denotes probability patient is indicated as eligible for domain)</caption>
+<thead>
+<tr class="header">
+<th>Silo</th>
+<th>Randomised (<span class="math inline">\(e_c\)</span>)</th>
+<th><span class="math inline">\(\pi\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>early</td>
+<td>Y</td>
+<td>0.6</td>
+</tr>
+<tr class="even">
+<td>late</td>
+<td>Y</td>
+<td>0.6</td>
+</tr>
+<tr class="odd">
+<td>chronic</td>
+<td>Y</td>
+<td>0.6</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="adjunctive-domain-c" class="level2">
+<h2 class="anchored" data-anchor-id="adjunctive-domain-c">Adjunctive domain (C)</h2>
+<div class="column" style="width:70%;">
+<table class="table-striped table-hover table">
+<caption>Allocation within adjunctive domain (<span class="math inline">\(\pi\)</span> denotes probability that an eligible patient is allocated to no rif vs rif)</caption>
+<thead>
+<tr class="header">
+<th>Allocation (<span class="math inline">\(c\)</span>)</th>
+<th><span class="math inline">\(\pi\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>no rif</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>rif</td>
+<td>0.5</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section id="encoded-specification" class="level2">
+<h2 class="anchored" data-anchor-id="encoded-specification">Encoded specification</h2>
+<p>The above specification is bundled into an R package (<code>roadmap.data</code>) for consistent data generation for ROADMAP.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>roadmap.data<span class="sc">::</span><span class="fu">get_pop_spec</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>$r_silo
+      silo   p
+1:   early 0.3
+2:    late 0.5
+3: chronic 0.2
+
+$r_joint
+      silo joint   p
+1:   early  knee 0.4
+2:   early   hip 0.6
+3:    late  knee 0.3
+4:    late   hip 0.7
+5: chronic  knee 0.5
+6: chronic   hip 0.5
+
+$r_ea
+      silo rand
+1:   early    N
+2:    late    Y
+3: chronic    Y
+
+$r_a
+      silo    a   p
+1:   early dair  NA
+2:    late dair 0.5
+3:    late  rev 0.5
+4: chronic  one 0.5
+5: chronic  two 0.5
+
+$r_a_q
+      silo    a   qa   p
+1:   early dair dair  NA
+2:    late dair dair  NA
+3:    late  rev  one 0.5
+4:    late  rev  two 0.5
+5: chronic  one  one  NA
+6: chronic  two  two  NA
+
+$r_eb
+     qa rand
+1: dair    N
+2:  rev    Y
+3:  one    Y
+4:  two    Y
+
+$r_b
+     qa     b   p
+1: dair   w12 1.0
+2:  one w06p1 0.5
+3:  one w12p1 0.5
+4:  two d07p2 0.5
+5:  two w12p2 0.5
+
+$r_ec
+      silo rand   p
+1:   early    Y 0.6
+2:    late    Y 0.6
+3: chronic    Y 0.6
+
+$r_c
+       c   p
+1: norif 0.5
+2:   rif 0.5</code></pre>
+</div>
+</div>
+<p>The following function simulates the design matrix.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>roadmap.data<span class="sc">::</span>get_design</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>function(N = 100000, pop_spec = NULL){
+
+  if(is.null(pop_spec)){
+    pop_spec &lt;- get_pop_spec()
+  }
+
+  d &lt;- data.table()
+  # pt id
+  d[, id := 1:N]
+  d[, silo := sample(pop_spec$r_silo$silo, size = N, replace = T, prob = pop_spec$r_silo$p)]
+  setkey(d, silo)
+  setkey(pop_spec$r_joint, silo)
+  setkey(pop_spec$r_ea, silo)
+  for(z in pop_spec$r_silo$silo){
+    d[z, joint :=
+        sample(pop_spec$r_joint[z, joint], size = .N, replace = T, prob = pop_spec$r_joint[z, p])
+    ]
+
+    # might as well set ea (eligibility for domain a)
+    d[z, ea := pop_spec$r_ea[z, rand]]
+  }
+
+  # Surgery domain (A)
+  setkey(pop_spec$r_a, silo)
+  d["early", a := "dair"]
+  z &lt;- "late"
+  d[z, a := sample(pop_spec$r_a[z, a], size = .N, replace = T, prob = pop_spec$r_a[z, p])]
+  z &lt;- "chronic"
+  d[z, a := sample(pop_spec$r_a[z, a], size = .N, replace = T, prob = pop_spec$r_a[z, p])]
+
+  # introduce the intended surgical approach (for late stage allocated to revision)
+  setkey(d, silo, a)
+  setkey(pop_spec$r_a_q, silo, a)
+  d[.("late", "rev"), qa :=
+      sample(pop_spec$r_a_q[.("late", "rev"), qa], size = .N, replace = T, prob = pop_spec$r_a_q[.("late", "rev"), p])]
+  d[is.na(qa), qa := copy(a)]
+
+  # Duration domain (B)
+  # eligibility based on a
+  d &lt;- merge(d, pop_spec$r_eb[, .(qa, eb = rand)], by = c("qa"), all.x = T)
+  setcolorder(d, c("id", "silo", "joint", "ea", "a", "qa","eb"))
+  setkey(d, id)
+
+  setkey(d, qa)
+  setkey(pop_spec$r_b, qa)
+  # all dair get 12wk
+  d["dair", b := pop_spec$r_b["dair", unique(b)]]
+
+  setkey(d, qa)
+  setkey(pop_spec$r_b, qa)
+
+  z &lt;- "one"
+  d[z, b := sample(pop_spec$r_b[z, b], size = .N, replace = T, prob = pop_spec$r_b[z, p])]
+  z &lt;- "two"
+  d[z, b := sample(pop_spec$r_b[z, b], size = .N, replace = T, prob = pop_spec$r_b[z, p])]
+  setkey(d, id)
+
+  # Antibiotic type domain (C)
+
+  # Here I make eligibility random to reflect that some of our cohort will not
+  # enter into this domain, irrespective of their randomisation in other domains.
+  # Each silo is allowed to have a different proportion of pts entering into
+  # domain C.
+  setkey(d, silo)
+  setkey(pop_spec$r_ec, silo)
+
+  for(z in pop_spec$r_ec$silo){
+    d[z, ec :=
+        sample(c("Y","N"), size = .N, replace = T, prob = c(pop_spec$r_ec[z, p], 1- pop_spec$r_ec[z, p]))
+    ]
+  }
+
+  d[ec == "Y",
+    c := sample(pop_spec$r_c[, c], size = .N, replace = T, prob = pop_spec$r_c[, p])]
+  d[ec == "N", c := "other"]
+
+  setkey(d, id)
+
+  d
+}
+&lt;bytecode: 0x12104cd30&gt;
+&lt;environment: namespace:roadmap.data&gt;</code></pre>
+</div>
+</div>
+<p>The data generation assumptions imply unique patients groups on which we would observe the outcome. The outcome is known to be heterogenous across these groups and yet the stated goal is to aggregate measures of effect (odds ratios) across all these groups, e.g.&nbsp;no rif vs rif. However, the effect of interest is assumed to be obtained from the model parameter that characterises the effect of antibiotic type conditional on the other covariates in the model.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>d <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_design</span>()</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="fu">unique</span>(d[<span class="fu">order</span>(silo, joint, ea, a, qa, eb, b, ec, c), .SD, <span class="at">.SDcols =</span> <span class="sc">!</span><span class="fu">c</span>(<span class="st">"id"</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>       silo joint ea    a   qa eb     b ec     c
+ 1: chronic   hip  Y  one  one  Y w06p1  N other
+ 2: chronic   hip  Y  one  one  Y w06p1  Y norif
+ 3: chronic   hip  Y  one  one  Y w06p1  Y   rif
+ 4: chronic   hip  Y  one  one  Y w12p1  N other
+ 5: chronic   hip  Y  one  one  Y w12p1  Y norif
+ 6: chronic   hip  Y  one  one  Y w12p1  Y   rif
+ 7: chronic   hip  Y  two  two  Y d07p2  N other
+ 8: chronic   hip  Y  two  two  Y d07p2  Y norif
+ 9: chronic   hip  Y  two  two  Y d07p2  Y   rif
+10: chronic   hip  Y  two  two  Y w12p2  N other
+11: chronic   hip  Y  two  two  Y w12p2  Y norif
+12: chronic   hip  Y  two  two  Y w12p2  Y   rif
+13: chronic  knee  Y  one  one  Y w06p1  N other
+14: chronic  knee  Y  one  one  Y w06p1  Y norif
+15: chronic  knee  Y  one  one  Y w06p1  Y   rif
+16: chronic  knee  Y  one  one  Y w12p1  N other
+17: chronic  knee  Y  one  one  Y w12p1  Y norif
+18: chronic  knee  Y  one  one  Y w12p1  Y   rif
+19: chronic  knee  Y  two  two  Y d07p2  N other
+20: chronic  knee  Y  two  two  Y d07p2  Y norif
+21: chronic  knee  Y  two  two  Y d07p2  Y   rif
+22: chronic  knee  Y  two  two  Y w12p2  N other
+23: chronic  knee  Y  two  two  Y w12p2  Y norif
+24: chronic  knee  Y  two  two  Y w12p2  Y   rif
+25:   early   hip  N dair dair  N   w12  N other
+26:   early   hip  N dair dair  N   w12  Y norif
+27:   early   hip  N dair dair  N   w12  Y   rif
+28:   early  knee  N dair dair  N   w12  N other
+29:   early  knee  N dair dair  N   w12  Y norif
+30:   early  knee  N dair dair  N   w12  Y   rif
+31:    late   hip  Y dair dair  N   w12  N other
+32:    late   hip  Y dair dair  N   w12  Y norif
+33:    late   hip  Y dair dair  N   w12  Y   rif
+34:    late   hip  Y  rev  one  Y w06p1  N other
+35:    late   hip  Y  rev  one  Y w06p1  Y norif
+36:    late   hip  Y  rev  one  Y w06p1  Y   rif
+37:    late   hip  Y  rev  one  Y w12p1  N other
+38:    late   hip  Y  rev  one  Y w12p1  Y norif
+39:    late   hip  Y  rev  one  Y w12p1  Y   rif
+40:    late   hip  Y  rev  two  Y d07p2  N other
+41:    late   hip  Y  rev  two  Y d07p2  Y norif
+42:    late   hip  Y  rev  two  Y d07p2  Y   rif
+43:    late   hip  Y  rev  two  Y w12p2  N other
+44:    late   hip  Y  rev  two  Y w12p2  Y norif
+45:    late   hip  Y  rev  two  Y w12p2  Y   rif
+46:    late  knee  Y dair dair  N   w12  N other
+47:    late  knee  Y dair dair  N   w12  Y norif
+48:    late  knee  Y dair dair  N   w12  Y   rif
+49:    late  knee  Y  rev  one  Y w06p1  N other
+50:    late  knee  Y  rev  one  Y w06p1  Y norif
+51:    late  knee  Y  rev  one  Y w06p1  Y   rif
+52:    late  knee  Y  rev  one  Y w12p1  N other
+53:    late  knee  Y  rev  one  Y w12p1  Y norif
+54:    late  knee  Y  rev  one  Y w12p1  Y   rif
+55:    late  knee  Y  rev  two  Y d07p2  N other
+56:    late  knee  Y  rev  two  Y d07p2  Y norif
+57:    late  knee  Y  rev  two  Y d07p2  Y   rif
+58:    late  knee  Y  rev  two  Y w12p2  N other
+59:    late  knee  Y  rev  two  Y w12p2  Y norif
+60:    late  knee  Y  rev  two  Y w12p2  Y   rif
+       silo joint ea    a   qa eb     b ec     c</code></pre>
+</div>
+</div>
 
 
 </section>
