@@ -4,8 +4,8 @@ data {
   array[N_e] int e_su;
   array[N_e] int e_y;
   array[N_e] int e_n;
-  vector[N_e] e_ec;
-  vector[N_e] e_ecp; // 1 - e_ec
+  vector[N_e] e_ec; // membership
+  vector[N_e] e_ecp; // non-membership, ie 1 - e_ec
   array[N_e] int e_c;
   
   int N_l;
@@ -18,9 +18,9 @@ data {
   vector[N_l] l_ea;
   vector[N_l] l_eap;
   array[N_l] int l_a;
-  vector[N_l] l_eb;
-  vector[N_l] l_eb1p;
-  vector[N_l] l_eb2p;
+  vector[N_l] l_eb1;
+  vector[N_l] l_eb2;
+  vector[N_l] l_ebp;
   array[N_l] int l_b;
   
   int N_c;
@@ -33,9 +33,9 @@ data {
   vector[N_c] c_ea;
   vector[N_c] c_eap;
   array[N_c] int c_a;
-  vector[N_c] c_eb;
-  vector[N_c] c_eb1p;
-  vector[N_c] c_eb2p;
+  vector[N_c] c_eb1;
+  vector[N_c] c_eb2;
+  vector[N_c] c_ebp;
   array[N_c] int c_b;
   
 }
@@ -59,7 +59,7 @@ transformed parameters{
   // overrun or conditionals for building linear predictor.
   
   vector[2] b_a_l; // dair vs revision (late silo)
-  vector[3] b_b1_l; // note length - dair vs revision (late silo, recvd one-stage) 
+  vector[3] b_b1_l; // note length - dair vs revision (late silo, recvd one-stage)
   vector[3] b_b2_l; // note length - dair vs revision (late silo, recvd two-stage)
   
   vector[2] b_a_c; // dair vs revision (chronic silo)
@@ -67,27 +67,27 @@ transformed parameters{
   vector[2] b_b2_c; // dair vs revision (chronic silo, recvd two-stage)
   
   vector[3] b_c; // note length
-  
+
   b_a_l[1] = 0.0;
   b_a_l[2] = b_a_l_raw;
-  
+
   b_b1_l[1] = 0.0;
   b_b1_l[2] = b_b1_l_raw;
   b_b1_l[3] = 0.0;
-  
+   
   b_b2_l[1] = 0.0;
   b_b2_l[2] = b_b2_l_raw;
   b_b2_l[3] = 0.0;
   
   b_a_c[1] = 0.0;
   b_a_c[2] = b_a_c_raw;
-  
+
   b_b1_c[1] = 0.0;
   b_b1_c[2] = b_b1_c_raw;
-  
+
   b_b2_c[1] = 0.0;
   b_b2_c[2] = b_b2_c_raw;
-  
+   
   b_c[1] = 0.0;
   b_c[2] = b_c_raw;
   // handles other, but this can be ignored in post-processing
@@ -109,20 +109,44 @@ model{
   target += std_normal_lpdf(b_b1_c_raw);
   target += std_normal_lpdf(b_b2_c_raw);
   
-  
   // early
-  target += binomial_logit_lpmf(e_y | e_n, alpha[e_su] + e_ec * gamma_c + e_ecp .* b_c[e_c]) ; 
-  // late
-  target += binomial_logit_lpmf(l_y | l_n, alpha[l_su] + l_eb * gamma_b + l_ec * gamma_c + 
-                                  l_eap .* b_a_l[l_a] +
-                                  l_eb1p .* b_b1_l[l_b] + l_eb2p .* b_b1_l[l_b] +
-                                  l_ecp .* b_c[l_c]) ; 
-  // chronic
-  target += binomial_logit_lpmf(c_y | c_n, alpha[c_su] + c_eb * gamma_b + c_ec * gamma_c + 
-                                  c_eap .* b_a_c[c_a] +
-                                  c_eb1p .* b_b1_c[c_b] + c_eb2p .* b_b1_c[c_b] +
-                                  c_ecp .* b_c[c_c]) ; 
+  // target += binomial_logit_lpmf(e_y | e_n, alpha[e_su] + e_ecp * gamma_c + e_ec .* b_c[e_c]) ;
+  target += binomial_logit_lpmf(e_y | e_n, alpha[e_su] +
+                                      e_ecp * gamma_c + 
+                                      e_ec .* b_c[e_c]) ;
   
+  // late                     
+  // target += binomial_logit_lpmf(l_y | l_n, alpha[l_su] + 
+  //                                   l_ebp * gamma_b + 
+  //                                   l_ecp * gamma_c +
+  //                                   l_ea .* b_a_l[l_a] +
+  //                                   l_eb1 .* b_b1_l[l_b]
+  //                                   l_eb2 .* b_b2_l[l_b] +
+  //                                   l_ec .* b_c[l_c]
+  //                                   ) ;         
+                                    
+  target += binomial_logit_lpmf(l_y | l_n, alpha[l_su] + 
+                                    l_ebp * gamma_b + 
+                                    l_ecp * gamma_c +
+                                    l_ea .* b_a_l[l_a] +
+                                    l_eb1 .* b_b1_l[l_b] +  
+                                    l_eb2 .* b_b2_l[l_b] +
+                                    l_ec .* b_c[l_c]
+                                    ) ;    
+  // chronic
+  // target += binomial_logit_lpmf(c_y | c_n, alpha[c_su] + c_ebp * gamma_b + c_ecp * gamma_c +
+  //                                   c_ea .* b_a_c[c_a] +
+  //                                   c_eb1 .* b_b1_c[c_b] + 
+  //                                   c_eb2 .* b_b2_c[c_b] +
+  //                                   c_ec .* b_c[c_c]) ; 
+                                    
+  target += binomial_logit_lpmf(c_y | c_n, alpha[c_su] +
+                                      c_ebp * gamma_b + 
+                                      c_ecp * gamma_c +
+                                      c_ea .* b_a_c[c_a] +
+                                      c_eb1 .* b_b1_c[c_b] + 
+                                      c_eb2 .* b_b2_c[c_b] +
+                                      c_ec .* b_c[c_c]) ; 
 }
 generated quantities{
   // vector[6] p_y;
