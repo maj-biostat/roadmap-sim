@@ -9,9 +9,6 @@ log_info("Called trial-data notebook")
 ```
 
 
-
-## Introduction
-
 Trial data is simulated under the model specification, see earlier section.
 
 ```{r}

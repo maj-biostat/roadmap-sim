@@ -8,10 +8,6 @@ source("./R/init.R")
 log_info("Called model-spec notebook")
 ```
 
-
-
-## Introduction
-
 The primary outcome is treatment success at 12 months post platform entry, defined as **all of**: 
 
 1. Alive

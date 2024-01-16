@@ -10,9 +10,7 @@ log_info("Called model-implementation notebook")
 
 
 
-## Introduction
-
-Given the design, the simplest implementation I could think of split the data into silo-specific chunks, mimicking the formulation in the model specification earlier.
+The simplest implementation I could think of split the data into silo-specific chunks, mimicking the formulation in the model specification earlier.
 Nevertheless, the model is cumbersome.
 
 ```{r}
@@ -21,7 +19,7 @@ Nevertheless, the model is cumbersome.
 cat(readLines("stan/model-sim-02.stan"), sep = "\n")
 ```
 
-Below I create a data set with many more records that we will have available simple in order to see if we can get close to recovering the parameters.
+Below I create a data set with many more records that we will have available in order to see if we can recover the parameters.
 I fit the above model and then extract and summarise the posterior.
 
 ```{r}
@@ -114,7 +112,7 @@ d_fig <- cbind(d_b, post[, .(eta_med = median(value),
 ```
 
 @fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model.
-It suggests a fairly strong association between the true and estimated log-odds of treatment success for this particular dataset.
+It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset.
 
 ```{r}
 #| label: fig-post-vs-tru

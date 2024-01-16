@@ -19,7 +19,7 @@ website:
     search: true
     contents:
       - index.qmd
-      - section: "Design specification"
+      - section: "Design"
         contents:
         - notebooks/population-structure.qmd
         - notebooks/model-spec.qmd
