@@ -5,7 +5,6 @@ title: "Adaptations"
 
 ```{r, echo = FALSE}
 source("./R/init.R")
-# source("./R/data.R")
 log_info("Called adaptations notebook")
 ```
 

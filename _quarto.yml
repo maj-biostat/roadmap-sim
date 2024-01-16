@@ -25,6 +25,7 @@ website:
         - notebooks/model-spec.qmd
         - notebooks/simulation-pars.qmd
         - notebooks/trial-data.qmd
+        - notebooks/model-implementation.qmd
       - notebooks/about.qmd
           
 format:

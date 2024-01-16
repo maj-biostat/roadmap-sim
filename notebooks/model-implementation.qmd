@@ -1,0 +1,329 @@
+---
+title: "Model implementation"
+
+---
+
+```{r, echo = FALSE}
+source("./R/init.R")
+log_info("Called model-implementation notebook")
+```
+
+
+
+## Introduction
+
+```{r}
+m1 <- cmdstanr::cmdstan_model("./stan/model-sim-01.stan")
+
+set.seed(1)
+d <- get_trial_data(N = 2500)
+
+# replace text with indexes
+d_i <- copy(d[, .SD, .SDcols = !c(
+  "alpha_su", "g_a", "g_b", "g_c", "b_c", 
+  "b_a_late", "b_b1_late_one", "b_b2_late_two", 
+  "b_a_chronic", "b_b1_chronic_one", "b_b2_chronic_two")])
+setkey(d_i, id)
+
+# 999 are redundant indexes - never get referenced
+# stan doesn't like NA
+
+i_early_a <- c(dair = 1)
+i_late_a <- c(dair = 1, rev = 2)
+i_chronic_a <- c(one = 1, two = 2)
+
+i_early_qa <- c(dair = 1)
+i_late_qa <- c(one = 1, two = 2, dair = 3)
+i_chronic_qa <- c(one = 1, two = 2)
+
+i_early_b <- c(w12 = 1)
+i_late_b <- c(w06p1 = 1, w12p1 = 2, d07p2 = 1, w12p2 = 2, w12 = 3)
+i_chronic_b <- c(w06p1 = 1, w12p1 = 2, d07p2 = 1, w12p2 = 2)
+
+i_c <- c(norif = 1, rif = 2, other = 3)
+
+d_i[, silo := factor(silo, levels = c("early", "late", "chronic"))]
+d_i[, joint := factor(joint, levels = c("knee", "hip"))]
+
+d_i[, ea := as.integer(ea == "Y")]
+d_i[, eb := as.integer(eb == "Y")]
+d_i[, ec := as.integer(ec == "Y")]
+
+d_i[silo == "early", a := i_early_a[a]]
+d_i[silo == "late", a := i_late_a[a]]
+d_i[silo == "chronic", a := i_chronic_a[a]]
+d_i[, a := as.integer(a)]
+
+d_i[silo == "early", qa := i_early_qa[qa]]
+d_i[silo == "late", qa := i_late_qa[qa]]
+d_i[silo == "chronic", qa := i_chronic_qa[qa]]
+d_i[, qa := as.integer(qa)]
+
+d_i[silo == "early", b := i_early_b[b]]
+d_i[silo == "late", b := i_late_b[b]]
+d_i[silo == "chronic", b := i_chronic_b[b]]
+d_i[, b := as.integer(b)]
+
+d_i[, c := i_c[c]]
+d_i[, c := as.integer(c)]
+
+# index for intercept
+d_i[silo == "early" & joint == "knee", su := 1]
+d_i[silo == "early" & joint == "hip", su := 2]
+d_i[silo == "late" & joint == "knee", su := 3]
+d_i[silo == "late" & joint == "hip", su := 4]
+d_i[silo == "chronic" & joint == "knee", su := 5]
+d_i[silo == "chronic" & joint == "hip", su := 6]
+
+d_i
+
+# convenient reference for index meaning
+d_ref <- merge(d[, .SD, .SDcols = !c(
+  "alpha_su", "g_a", "g_b", "g_c", "b_c", 
+  "b_a_late", "b_b1_late_one", "b_b2_late_two", 
+  "b_a_chronic", "b_b1_chronic_one", "b_b2_chronic_two")], d_i, by = "id")
+
+ld <- list(
+  N_e = d_i[silo == "early", .N],
+  e_su = d_i[silo == "early", su],
+  e_y = d_i[silo == "early", y],
+  e_ec = d_i[silo == "early", ec],
+  e_ecp = d_i[silo == "early", 1-ec],
+  e_c = d_i[silo == "early", c],
+  
+  N_l = d_i[silo == "late", .N],
+  l_su = d_i[silo == "late", su],
+  l_y = d_i[silo == "late", y],
+  l_ec = d_i[silo == "late", ec],
+  l_ecp = d_i[silo == "late", 1-ec],
+  l_c = d_i[silo == "late", c],
+  l_ea = d_i[silo == "late", ea],
+  l_eap = d_i[silo == "late", 1-ea],
+  l_a = d_i[silo == "late", a],
+  l_eb = d_i[silo == "late", eb],
+  l_eb1p = d_i[silo == "late", as.integer(a == 2 & qa == 1)],
+  l_eb2p = d_i[silo == "late", as.integer(a == 2 & qa == 2)],
+  l_b = d_i[silo == "late", b],
+  
+  N_c = d_i[silo == "chronic", .N],
+  c_su = d_i[silo == "chronic", su],
+  c_y = d_i[silo == "chronic", y],
+  c_ec = d_i[silo == "chronic", ec],
+  c_ecp = d_i[silo == "chronic", 1-ec],
+  c_c = d_i[silo == "chronic", c],
+  c_ea = d_i[silo == "chronic", ea],
+  c_eap = d_i[silo == "chronic", 1-ea],
+  c_a = d_i[silo == "chronic", a],
+  c_eb = d_i[silo == "chronic", eb],
+  c_eb1p = d_i[silo == "chronic", as.integer(a == 2 & qa == 1)],
+  c_eb2p = d_i[silo == "chronic", as.integer(a == 2 & qa == 2)],
+  c_b = d_i[silo == "chronic", b]
+)
+
+
+
+f1 <- m1$sample(
+  ld, iter_warmup = 1000, iter_sampling = 2000,
+  parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F)
+
+f1$summary(variables = "alpha")
+f1$summary(variables = c("gamma_b", "gamma_c"))
+f1$summary(variables = c("b_a_l"))
+f1$summary(variables = c("b_b1_l"))
+f1$summary(variables = c("b_b2_l"))
+f1$summary(variables = c("b_a_c"))
+f1$summary(variables = c("b_b1_c"))
+f1$summary(variables = c("b_b2_c"))
+f1$summary(variables = c("b_c"))
+
+
+  
+  
+# unique(d_ref[, .(silo.x, joint.x, su)])[order(su)]
+# plogis(roadmap.data::get_sim_spec()$a_s_u)
+```
+
+```{r}
+m2 <- cmdstanr::cmdstan_model("./stan/model-sim-02.stan")
+
+d_b <- d_i[, .(y = sum(y), n = .N), keyby = .(silo, joint, su, ea, a, qa, eb, b, ec, c)]
+# sapply(d_b, class)
+
+ld <- list(
+  N_e = d_b[silo == "early", .N],
+  e_su = d_b[silo == "early", su],
+  e_y = d_b[silo == "early", y],
+  e_n = d_b[silo == "early", n],
+  e_ec = d_b[silo == "early", ec],
+  e_ecp = d_b[silo == "early", 1-ec],
+  e_c = d_b[silo == "early", c],
+  
+  N_l = d_b[silo == "late", .N],
+  l_su = d_b[silo == "late", su],
+  l_y = d_b[silo == "late", y],
+  l_n = d_b[silo == "late", n],
+  l_ec = d_b[silo == "late", ec],
+  l_ecp = d_b[silo == "late", 1-ec],
+  l_c = d_b[silo == "late", c],
+  l_ea = d_b[silo == "late", ea],
+  l_eap = d_b[silo == "late", 1-ea],
+  l_a = d_b[silo == "late", a],
+  l_eb = d_b[silo == "late", eb],
+  l_eb1p = d_b[silo == "late", as.integer(a == 2 & qa == 1)],
+  l_eb2p = d_b[silo == "late", as.integer(a == 2 & qa == 2)],
+  l_b = d_b[silo == "late", b],
+  
+  N_c = d_b[silo == "chronic", .N],
+  c_su = d_b[silo == "chronic", su],
+  c_y = d_b[silo == "chronic", y],
+  c_n = d_b[silo == "chronic", n],
+  c_ec = d_b[silo == "chronic", ec],
+  c_ecp = d_b[silo == "chronic", 1-ec],
+  c_c = d_b[silo == "chronic", c],
+  c_ea = d_b[silo == "chronic", ea],
+  c_eap = d_b[silo == "chronic", 1-ea],
+  c_a = d_b[silo == "chronic", a],
+  c_eb = d_b[silo == "chronic", eb],
+  c_eb1p = d_b[silo == "chronic", as.integer(a == 2 & qa == 1)],
+  c_eb2p = d_b[silo == "chronic", as.integer(a == 2 & qa == 2)],
+  c_b = d_b[silo == "chronic", b]
+)
+
+f2 <- m2$sample(
+  ld, iter_warmup = 1000, iter_sampling = 2000,
+  parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F)
+
+f2$summary(variables = "alpha")
+f2$summary(variables = c("gamma_b", "gamma_c"))
+f2$summary(variables = c("b_a_l"))
+f2$summary(variables = c("b_b1_l"))
+f2$summary(variables = c("b_b2_l"))
+f2$summary(variables = c("b_a_c"))
+f2$summary(variables = c("b_b1_c"))
+f2$summary(variables = c("b_b2_c"))
+f2$summary(variables = c("b_c"))
+```
+
+```{r}
+
+m2 <- cmdstanr::cmdstan_model("./stan/model-sim-02.stan")
+
+set.seed(1)
+d <- get_trial_data(N = 1000000)
+
+# replace text with indexes
+d_i <- copy(d[, .SD, .SDcols = !c(
+  "alpha_su", "g_a", "g_b", "g_c", "b_c", 
+  "b_a_late", "b_b1_late_one", "b_b2_late_two", 
+  "b_a_chronic", "b_b1_chronic_one", "b_b2_chronic_two")])
+setkey(d_i, id)
+
+# 999 are redundant indexes - never get referenced
+# stan doesn't like NA
+
+i_early_a <- c(dair = 1)
+i_late_a <- c(dair = 1, rev = 2)
+i_chronic_a <- c(one = 1, two = 2)
+
+i_early_qa <- c(dair = 1)
+i_late_qa <- c(one = 1, two = 2, dair = 3)
+i_chronic_qa <- c(one = 1, two = 2)
+
+i_early_b <- c(w12 = 1)
+i_late_b <- c(w06p1 = 1, w12p1 = 2, d07p2 = 1, w12p2 = 2, w12 = 3)
+i_chronic_b <- c(w06p1 = 1, w12p1 = 2, d07p2 = 1, w12p2 = 2)
+
+i_c <- c(norif = 1, rif = 2, other = 3)
+
+d_i[, silo := factor(silo, levels = c("early", "late", "chronic"))]
+d_i[, joint := factor(joint, levels = c("knee", "hip"))]
+
+d_i[, ea := as.integer(ea == "Y")]
+d_i[, eb := as.integer(eb == "Y")]
+d_i[, ec := as.integer(ec == "Y")]
+
+d_i[silo == "early", a := i_early_a[a]]
+d_i[silo == "late", a := i_late_a[a]]
+d_i[silo == "chronic", a := i_chronic_a[a]]
+d_i[, a := as.integer(a)]
+
+d_i[silo == "early", qa := i_early_qa[qa]]
+d_i[silo == "late", qa := i_late_qa[qa]]
+d_i[silo == "chronic", qa := i_chronic_qa[qa]]
+d_i[, qa := as.integer(qa)]
+
+d_i[silo == "early", b := i_early_b[b]]
+d_i[silo == "late", b := i_late_b[b]]
+d_i[silo == "chronic", b := i_chronic_b[b]]
+d_i[, b := as.integer(b)]
+
+d_i[, c := i_c[c]]
+d_i[, c := as.integer(c)]
+
+# index for intercept
+d_i[silo == "early" & joint == "knee", su := 1]
+d_i[silo == "early" & joint == "hip", su := 2]
+d_i[silo == "late" & joint == "knee", su := 3]
+d_i[silo == "late" & joint == "hip", su := 4]
+d_i[silo == "chronic" & joint == "knee", su := 5]
+d_i[silo == "chronic" & joint == "hip", su := 6]
+
+d_b <- d_i[, .(y = sum(y), n = .N), keyby = .(silo, joint, su, ea, a, qa, eb, b, ec, c)]
+# sapply(d_b, class)
+
+ld <- list(
+  N_e = d_b[silo == "early", .N],
+  e_su = d_b[silo == "early", su],
+  e_y = d_b[silo == "early", y],
+  e_n = d_b[silo == "early", n],
+  e_ec = d_b[silo == "early", ec],
+  e_ecp = d_b[silo == "early", 1-ec],
+  e_c = d_b[silo == "early", c],
+  
+  N_l = d_b[silo == "late", .N],
+  l_su = d_b[silo == "late", su],
+  l_y = d_b[silo == "late", y],
+  l_n = d_b[silo == "late", n],
+  l_ec = d_b[silo == "late", ec],
+  l_ecp = d_b[silo == "late", 1-ec],
+  l_c = d_b[silo == "late", c],
+  l_ea = d_b[silo == "late", ea],
+  l_eap = d_b[silo == "late", 1-ea],
+  l_a = d_b[silo == "late", a],
+  l_eb = d_b[silo == "late", eb],
+  l_eb1p = d_b[silo == "late", as.integer(a == 2 & qa == 1)],
+  l_eb2p = d_b[silo == "late", as.integer(a == 2 & qa == 2)],
+  l_b = d_b[silo == "late", b],
+  
+  N_c = d_b[silo == "chronic", .N],
+  c_su = d_b[silo == "chronic", su],
+  c_y = d_b[silo == "chronic", y],
+  c_n = d_b[silo == "chronic", n],
+  c_ec = d_b[silo == "chronic", ec],
+  c_ecp = d_b[silo == "chronic", 1-ec],
+  c_c = d_b[silo == "chronic", c],
+  c_ea = d_b[silo == "chronic", ea],
+  c_eap = d_b[silo == "chronic", 1-ea],
+  c_a = d_b[silo == "chronic", a],
+  c_eb = d_b[silo == "chronic", eb],
+  c_eb1p = d_b[silo == "chronic", as.integer(a == 2 & qa == 1)],
+  c_eb2p = d_b[silo == "chronic", as.integer(a == 2 & qa == 2)],
+  c_b = d_b[silo == "chronic", b]
+)
+
+f2 <- m2$sample(
+  ld, iter_warmup = 1000, iter_sampling = 2000,
+  parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F)
+
+f2$summary(variables = "alpha")
+f2$summary(variables = c("gamma_b", "gamma_c"))
+f2$summary(variables = c("b_a_l"))
+f2$summary(variables = c("b_b1_l"))
+f2$summary(variables = c("b_b2_l"))
+f2$summary(variables = c("b_a_c"))
+f2$summary(variables = c("b_b1_c"))
+f2$summary(variables = c("b_b2_c"))
+f2$summary(variables = c("b_c"))
+```
+
+

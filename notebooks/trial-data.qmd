@@ -28,7 +28,8 @@ d_all_grps <- d[, .(y = sum(y), .N), keyby = .(silo, joint, ea, a, qa, eb, b, ec
 ```
 
 @tbl-smry-Da shows a summary of simulated trial data for surgical domain.
-Each row comprises patients allocated to the surgical domain intervention detail plus their duration and type intervention.
+Each row comprises patients allocated to the surgical domain intervention along with whatever their duration and type interventions were.
+
 For example, late stage patients with knee joint infections receiving revision would include patients allocated to the duration options dependent on the planned surgical procedure and type options dependent on whether they were eligible for the type domain.
 
 ```{r}
@@ -63,6 +64,33 @@ gt_tbl
 #| column: page
 
 
+cols <- c("Silo", "Infection site", "Revision", "Duration", "Success", "N", "Pr(success)")
+names(cols) <- names(d_b[, .(silo, joint, qa, b, y, N, p_obs = y/N)])
+
+gt_tbl <- d_b[, .(silo, joint, qa, b, y, N, p_obs = y/N)] |> 
+  gt(
+  ) |> 
+  cols_align(
+    align = "left",
+    columns = starts_with(c("silo", "joint"))
+  ) |> 
+  fmt_number(
+    columns = starts_with(c("p_obs")),
+    decimals = 2
+  ) |>
+  cols_label(.list = cols)
+
+gt_tbl
+
+```
+
+@tbl-smry-Dc shows the analogous summary of simulated trial data for the type domain.
+
+```{r}
+#| label: tbl-smry-Dc
+#| tbl-cap: 'Summary of simulated trial data for type domain'
+#| column: page
+
 cols <- c("Silo", "Infection site", "Type", "Success", "N", "Pr(success)")
 names(cols) <- names(d_c[, .(silo, joint, c, y, N, p_obs = y/N)])
 
@@ -82,47 +110,25 @@ gt_tbl <- d_c[, .(silo, joint, c, y, N, p_obs = y/N)] |>
 gt_tbl
 ```
 
-@tbl-smry-Dc shows the analogous summary of simulated trial data for the type domain.
+@tbl-smry-all shows the analogous summary of simulated trial data across all the combinations of silo, site of infection, domain membership and treatment allocation.
+It gives a better sense of the structure of the data as seen by the model, but unfortunately, it is not possible to produce dynamic totals based on the filtered data.
 
 ```{r}
-#| label: tbl-smry-Dc
-#| tbl-cap: 'Summary of simulated trial data for type domain'
-#| column: page
-
-
-cols <- c("Silo", "Infection site", "Revision", "Duration", "Success", "N", "Pr(success)")
-names(cols) <- names(d_b[, .(silo, joint, qa, b, y, N, p_obs = y/N)])
-
-gt_tbl <- d_b[, .(silo, joint, qa, b, y, N, p_obs = y/N)] |> 
-  gt(
-  ) |> 
-  cols_align(
-    align = "left",
-    columns = starts_with(c("silo", "joint"))
-  ) |> 
-  fmt_number(
-    columns = starts_with(c("p_obs")),
-    decimals = 2
-  ) |>
-  cols_label(.list = cols)
-
-gt_tbl
-```
-
-
-
-@tbl-smry-D-all shows the analogous summary of simulated trial data for the type domain.
-
-```{r}
-#| label: tbl-smry-D-all
+#| label: tbl-smry-all
 #| tbl-cap: 'Summary of all groupings from simulated trial data'
 #| column: page
 
+d_tbl <- d_all_grps[, .(silo, joint, ea, a, qa, eb, b, ec, c, y, N, p_obs = round(y/N, 2))]
+d_tbl[, silo := factor(silo, levels = c("early", "late", "chronic"))]
+d_tbl[, joint := factor(joint, levels = c("knee", "hip"))]
 
-# cols <- c("Silo", "Infection site", "A", "A (trt)", "A (plan)", "B", "B (trt)", "C", "C (trt)", "Success", "N", "Pr(success)")
-# names(cols) <- names(d_all_grps[, .(silo, joint, ea, a, qa, eb, b, ec, c, y, N, p_obs = y/N)])
+setkey(d_tbl, silo, joint)
 
-datatable(d_all_grps[, .(silo, joint, ea, a, qa, eb, b, ec, c, y, N, p_obs = round(y/N, 2))],
+opts <- list(
+  pageLength = 20, autoWidth = TRUE
+  )
+
+datatable(d_tbl,
           rownames = FALSE,
           colnames = c(
             'Silo' = 1, 
@@ -135,13 +141,11 @@ datatable(d_all_grps[, .(silo, joint, ea, a, qa, eb, b, ec, c, y, N, p_obs = rou
             'C' = 8,
             'C (trt)' = 9,
             'Success' = 10,
-            'N' = 10,
+            'N' = 11,
             'Pr(success)' = 12
             ),
-          filter = 'top', options = list(
-            pageLength = 20, autoWidth = TRUE)
+          filter = 'top', options = opts
           )
-
 
 ```
 
