@@ -40,6 +40,7 @@ data {
   
 }
 transformed data {
+  int N = N_e + N_l + N_c;
 }
 parameters {
   vector[6] alpha;
@@ -109,21 +110,10 @@ model{
   target += std_normal_lpdf(b_b1_c_raw);
   target += std_normal_lpdf(b_b2_c_raw);
   
-  // early
-  // target += binomial_logit_lpmf(e_y | e_n, alpha[e_su] + e_ecp * gamma_c + e_ec .* b_c[e_c]) ;
+  // likelihood chunks pertaining to each silo
   target += binomial_logit_lpmf(e_y | e_n, alpha[e_su] +
                                       e_ecp * gamma_c + 
-                                      e_ec .* b_c[e_c]) ;
-  
-  // late                     
-  // target += binomial_logit_lpmf(l_y | l_n, alpha[l_su] + 
-  //                                   l_ebp * gamma_b + 
-  //                                   l_ecp * gamma_c +
-  //                                   l_ea .* b_a_l[l_a] +
-  //                                   l_eb1 .* b_b1_l[l_b]
-  //                                   l_eb2 .* b_b2_l[l_b] +
-  //                                   l_ec .* b_c[l_c]
-  //                                   ) ;         
+                                      e_ec .* b_c[e_c]) ;      
                                     
   target += binomial_logit_lpmf(l_y | l_n, alpha[l_su] + 
                                     l_ebp * gamma_b + 
@@ -133,12 +123,6 @@ model{
                                     l_eb2 .* b_b2_l[l_b] +
                                     l_ec .* b_c[l_c]
                                     ) ;    
-  // chronic
-  // target += binomial_logit_lpmf(c_y | c_n, alpha[c_su] + c_ebp * gamma_b + c_ecp * gamma_c +
-  //                                   c_ea .* b_a_c[c_a] +
-  //                                   c_eb1 .* b_b1_c[c_b] + 
-  //                                   c_eb2 .* b_b2_c[c_b] +
-  //                                   c_ec .* b_c[c_c]) ; 
                                     
   target += binomial_logit_lpmf(c_y | c_n, alpha[c_su] +
                                       c_ebp * gamma_b + 
@@ -149,6 +133,21 @@ model{
                                       c_ec .* b_c[c_c]) ; 
 }
 generated quantities{
-  // vector[6] p_y;
-  // p_y = inv_logit(alpha);
+  vector[N_e] eta_e ;
+  vector[N_l] eta_l ;
+  vector[N_c] eta_c ;
+  vector[N] eta;
+  
+  eta_e = alpha[e_su] + e_ecp * gamma_c + e_ec .* b_c[e_c];
+  eta_l = alpha[l_su] + l_ebp * gamma_b + l_ecp * gamma_c +
+    l_ea .* b_a_l[l_a] + 
+    l_eb1 .* b_b1_l[l_b] + l_eb2 .* b_b2_l[l_b] +
+    l_ec .* b_c[l_c];
+  eta_c = alpha[c_su] + c_ebp * gamma_b + c_ecp * gamma_c +
+    c_ea .* b_a_c[c_a] +
+    c_eb1 .* b_b1_c[c_b] + c_eb2 .* b_b2_c[c_b] +
+    c_ec .* b_c[c_c];
+    
+  eta = append_row(eta_e, append_row(eta_l, eta_c));
+
 }

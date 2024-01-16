@@ -15,16 +15,16 @@ log_info("Called trial-data notebook")
 Trial data is simulated under the model specification, see earlier section.
 
 ```{r}
-d <- get_trial_data(N = 2500)
+ll <- get_trial_data(N = 2500)
 
-d_a <- d[silo %in% c("late", "chronic"), .(y = sum(y), .N), keyby = .(silo, joint, ea, a)]
-d_b_late <- d[silo %in% c("late") & a == "rev", .(y = sum(y), .N), keyby = .(silo, joint, qa, eb, b)]
-d_b_chronic <- d[silo %in% c("chronic") , .(y = sum(y), .N), keyby = .(silo, joint, qa, eb, b)]
+d_a <- ll$d[silo %in% c("late", "chronic"), .(y = sum(y), .N), keyby = .(silo, joint, ea, a)]
+d_b_late <- ll$d[silo %in% c("late") & a == "rev", .(y = sum(y), .N), keyby = .(silo, joint, qa, eb, b)]
+d_b_chronic <- ll$d[silo %in% c("chronic") , .(y = sum(y), .N), keyby = .(silo, joint, qa, eb, b)]
 
 d_b <- rbind(d_b_late, d_b_chronic)
-d_c <- d[ec == "Y", .(y = sum(y), .N), keyby = .(silo, joint, ec, c)]
+d_c <- ll$d[ec == "Y", .(y = sum(y), .N), keyby = .(silo, joint, ec, c)]
 
-d_all_grps <- d[, .(y = sum(y), .N), keyby = .(silo, joint, ea, a, qa, eb, b, ec, c)]
+d_all_grps <- ll$d[, .(y = sum(y), .N), keyby = .(silo, joint, ea, a, qa, eb, b, ec, c)]
 ```
 
 @tbl-smry-Da shows a summary of simulated trial data for surgical domain.
