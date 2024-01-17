@@ -27,74 +27,14 @@ m2 <- cmdstanr::cmdstan_model("stan/model-sim-02.stan")
 
 set.seed(1)
 ll <- get_trial_data(N = 5e4)
-d_b <- ll$d_i[, .(y = sum(y), n = .N), keyby = .(silo, joint, su, ea, a, qa, eb, b, ec, c, eta)]
-# sapply(d_b, class)
-
-ld <- list(
-  N_e = d_b[silo == "early", .N],
-  e_su = d_b[silo == "early", su],
-  e_y = d_b[silo == "early", y],
-  e_n = d_b[silo == "early", n],
-  e_ec = d_b[silo == "early", ec],
-  e_ecp = d_b[silo == "early", 1-ec],
-  e_c = d_b[silo == "early", c],
-
-  N_l = d_b[silo == "late", .N],
-  l_su = d_b[silo == "late", su],
-  l_y = d_b[silo == "late", y],
-  l_n = d_b[silo == "late", n],
-  l_ec = d_b[silo == "late", ec],
-  l_ecp = d_b[silo == "late", 1-ec],
-  l_c = d_b[silo == "late", c],
-  l_ea = d_b[silo == "late", ea],
-  l_eap = d_b[silo == "late", 1-ea],
-  l_a = d_b[silo == "late", a],
-  # below a indicates revision and plan indicates one-stage
-  l_eb1 = d_b[silo == "late", as.integer(a == 2 & qa == 1)],
-  # below a indicates revision and plan indicates two-stage
-  l_eb2 = d_b[silo == "late", as.integer(a == 2 & qa == 2)],
-  l_ebp = d_b[silo == "late", 1-eb],
-  l_b = d_b[silo == "late", b],
-  
-  # chronic silo
-  N_c = d_b[silo == "chronic", .N],
-  c_su = d_b[silo == "chronic", su],
-  c_y = d_b[silo == "chronic", y],
-  c_n = d_b[silo == "chronic", n],
-  # domain c randomisation/membership
-  c_ec = d_b[silo == "chronic", ec],
-  # domain c non-randomisation/non-membership
-  c_ecp = d_b[silo == "chronic", 1-ec],
-  # domain c allocation
-  c_c = d_b[silo == "chronic", c],
-  # domain a allocation
-  c_ea = d_b[silo == "chronic", ea],
-  c_eap = d_b[silo == "chronic", 1-ea],
-  c_a = d_b[silo == "chronic", a],
-  # domain b randomisation/membership for one-stage pt
-  c_eb1 = d_b[silo == "chronic", as.integer(a == 1)],
-  # domain b randomisation/membership for two-stage pt
-  c_eb2 = d_b[silo == "chronic", as.integer(a == 2)],
-  # domain b non-randomisation/non-membership
-  c_ebp = d_b[silo == "chronic", 1-eb],
-  c_b = d_b[silo == "chronic", b]
-)
+lsd <- get_stan_data(ll$d_i)
+ld <- lsd$ld
+d_b <- copy(lsd$d_b)
 
 f2 <- m2$sample(
   ld, iter_warmup = 1000, iter_sampling = 2000,
   parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
   max_treedepth = 13)
-
-# f2$summary(variables = c("alpha"))
-# f2$summary(variables = c("gamma_b"))
-# f2$summary(variables = c("gamma_c"))
-# f2$summary(variables = c("b_a_l"))
-# f2$summary(variables = c("b_a_c"))
-# f2$summary(variables = c("b_b1_l"))
-# f2$summary(variables = c("b_b2_l"))
-# f2$summary(variables = c("b_b1_c"))
-# f2$summary(variables = c("b_b2_c"))
-# f2$summary(variables = c("b_c"))
 
 post <- data.table(f2$draws(variables = c(
   "eta"
