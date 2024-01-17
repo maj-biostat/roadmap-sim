@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/simulation-pars.html</loc>
-    <lastmod>2024-01-15T07:00:04.940Z</lastmod>
+    <lastmod>2024-01-17T07:53:50.437Z</lastmod>
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/adaptations.html</loc>
@@ -13,24 +13,28 @@
     <lastmod>2024-01-15T07:39:14.226Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/population-structure.html</loc>
-    <lastmod>2024-01-15T06:57:38.877Z</lastmod>
-  </url>
-  <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/index.html</loc>
-    <lastmod>2023-12-05T09:40:14.340Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/model-implementation.html</loc>
+    <lastmod>2024-01-17T07:54:51.008Z</lastmod>
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/model-spec.html</loc>
     <lastmod>2024-01-16T09:20:00.103Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/model-implementation.html</loc>
-    <lastmod>2024-01-16T09:23:08.060Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/index.html</loc>
+    <lastmod>2023-12-05T09:40:14.340Z</lastmod>
+  </url>
+  <url>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/population-structure.html</loc>
+    <lastmod>2024-01-15T06:57:38.877Z</lastmod>
+  </url>
+  <url>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/example-trials.html</loc>
+    <lastmod>2024-01-17T08:13:16.822Z</lastmod>
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/trial-data.html</loc>
-    <lastmod>2024-01-16T09:20:40.981Z</lastmod>
+    <lastmod>2024-01-17T01:16:25.884Z</lastmod>
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/estimands.html</loc>
