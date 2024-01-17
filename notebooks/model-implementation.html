@@ -419,100 +419,40 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-2"><a href="#cb2-2"></a></span>
 <span id="cb2-3"><a href="#cb2-3"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
 <span id="cb2-4"><a href="#cb2-4"></a>ll <span class="ot">&lt;-</span> <span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="fl">5e4</span>)</span>
-<span id="cb2-5"><a href="#cb2-5"></a>d_b <span class="ot">&lt;-</span> ll<span class="sc">$</span>d_i[, .(<span class="at">y =</span> <span class="fu">sum</span>(y), <span class="at">n =</span> .N), keyby <span class="ot">=</span> .(silo, joint, su, ea, a, qa, eb, b, ec, c, eta)]</span>
-<span id="cb2-6"><a href="#cb2-6"></a><span class="co"># sapply(d_b, class)</span></span>
-<span id="cb2-7"><a href="#cb2-7"></a></span>
-<span id="cb2-8"><a href="#cb2-8"></a>ld <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb2-9"><a href="#cb2-9"></a>  <span class="at">N_e =</span> d_b[silo <span class="sc">==</span> <span class="st">"early"</span>, .N],</span>
-<span id="cb2-10"><a href="#cb2-10"></a>  <span class="at">e_su =</span> d_b[silo <span class="sc">==</span> <span class="st">"early"</span>, su],</span>
-<span id="cb2-11"><a href="#cb2-11"></a>  <span class="at">e_y =</span> d_b[silo <span class="sc">==</span> <span class="st">"early"</span>, y],</span>
-<span id="cb2-12"><a href="#cb2-12"></a>  <span class="at">e_n =</span> d_b[silo <span class="sc">==</span> <span class="st">"early"</span>, n],</span>
-<span id="cb2-13"><a href="#cb2-13"></a>  <span class="at">e_ec =</span> d_b[silo <span class="sc">==</span> <span class="st">"early"</span>, ec],</span>
-<span id="cb2-14"><a href="#cb2-14"></a>  <span class="at">e_ecp =</span> d_b[silo <span class="sc">==</span> <span class="st">"early"</span>, <span class="dv">1</span><span class="sc">-</span>ec],</span>
-<span id="cb2-15"><a href="#cb2-15"></a>  <span class="at">e_c =</span> d_b[silo <span class="sc">==</span> <span class="st">"early"</span>, c],</span>
-<span id="cb2-16"><a href="#cb2-16"></a></span>
-<span id="cb2-17"><a href="#cb2-17"></a>  <span class="at">N_l =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, .N],</span>
-<span id="cb2-18"><a href="#cb2-18"></a>  <span class="at">l_su =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, su],</span>
-<span id="cb2-19"><a href="#cb2-19"></a>  <span class="at">l_y =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, y],</span>
-<span id="cb2-20"><a href="#cb2-20"></a>  <span class="at">l_n =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, n],</span>
-<span id="cb2-21"><a href="#cb2-21"></a>  <span class="at">l_ec =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, ec],</span>
-<span id="cb2-22"><a href="#cb2-22"></a>  <span class="at">l_ecp =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, <span class="dv">1</span><span class="sc">-</span>ec],</span>
-<span id="cb2-23"><a href="#cb2-23"></a>  <span class="at">l_c =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, c],</span>
-<span id="cb2-24"><a href="#cb2-24"></a>  <span class="at">l_ea =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, ea],</span>
-<span id="cb2-25"><a href="#cb2-25"></a>  <span class="at">l_eap =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, <span class="dv">1</span><span class="sc">-</span>ea],</span>
-<span id="cb2-26"><a href="#cb2-26"></a>  <span class="at">l_a =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, a],</span>
-<span id="cb2-27"><a href="#cb2-27"></a>  <span class="co"># below a indicates revision and plan indicates one-stage</span></span>
-<span id="cb2-28"><a href="#cb2-28"></a>  <span class="at">l_eb1 =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, <span class="fu">as.integer</span>(a <span class="sc">==</span> <span class="dv">2</span> <span class="sc">&amp;</span> qa <span class="sc">==</span> <span class="dv">1</span>)],</span>
-<span id="cb2-29"><a href="#cb2-29"></a>  <span class="co"># below a indicates revision and plan indicates two-stage</span></span>
-<span id="cb2-30"><a href="#cb2-30"></a>  <span class="at">l_eb2 =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, <span class="fu">as.integer</span>(a <span class="sc">==</span> <span class="dv">2</span> <span class="sc">&amp;</span> qa <span class="sc">==</span> <span class="dv">2</span>)],</span>
-<span id="cb2-31"><a href="#cb2-31"></a>  <span class="at">l_ebp =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, <span class="dv">1</span><span class="sc">-</span>eb],</span>
-<span id="cb2-32"><a href="#cb2-32"></a>  <span class="at">l_b =</span> d_b[silo <span class="sc">==</span> <span class="st">"late"</span>, b],</span>
-<span id="cb2-33"><a href="#cb2-33"></a>  </span>
-<span id="cb2-34"><a href="#cb2-34"></a>  <span class="co"># chronic silo</span></span>
-<span id="cb2-35"><a href="#cb2-35"></a>  <span class="at">N_c =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, .N],</span>
-<span id="cb2-36"><a href="#cb2-36"></a>  <span class="at">c_su =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, su],</span>
-<span id="cb2-37"><a href="#cb2-37"></a>  <span class="at">c_y =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, y],</span>
-<span id="cb2-38"><a href="#cb2-38"></a>  <span class="at">c_n =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, n],</span>
-<span id="cb2-39"><a href="#cb2-39"></a>  <span class="co"># domain c randomisation/membership</span></span>
-<span id="cb2-40"><a href="#cb2-40"></a>  <span class="at">c_ec =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, ec],</span>
-<span id="cb2-41"><a href="#cb2-41"></a>  <span class="co"># domain c non-randomisation/non-membership</span></span>
-<span id="cb2-42"><a href="#cb2-42"></a>  <span class="at">c_ecp =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, <span class="dv">1</span><span class="sc">-</span>ec],</span>
-<span id="cb2-43"><a href="#cb2-43"></a>  <span class="co"># domain c allocation</span></span>
-<span id="cb2-44"><a href="#cb2-44"></a>  <span class="at">c_c =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, c],</span>
-<span id="cb2-45"><a href="#cb2-45"></a>  <span class="co"># domain a allocation</span></span>
-<span id="cb2-46"><a href="#cb2-46"></a>  <span class="at">c_ea =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, ea],</span>
-<span id="cb2-47"><a href="#cb2-47"></a>  <span class="at">c_eap =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, <span class="dv">1</span><span class="sc">-</span>ea],</span>
-<span id="cb2-48"><a href="#cb2-48"></a>  <span class="at">c_a =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, a],</span>
-<span id="cb2-49"><a href="#cb2-49"></a>  <span class="co"># domain b randomisation/membership for one-stage pt</span></span>
-<span id="cb2-50"><a href="#cb2-50"></a>  <span class="at">c_eb1 =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, <span class="fu">as.integer</span>(a <span class="sc">==</span> <span class="dv">1</span>)],</span>
-<span id="cb2-51"><a href="#cb2-51"></a>  <span class="co"># domain b randomisation/membership for two-stage pt</span></span>
-<span id="cb2-52"><a href="#cb2-52"></a>  <span class="at">c_eb2 =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, <span class="fu">as.integer</span>(a <span class="sc">==</span> <span class="dv">2</span>)],</span>
-<span id="cb2-53"><a href="#cb2-53"></a>  <span class="co"># domain b non-randomisation/non-membership</span></span>
-<span id="cb2-54"><a href="#cb2-54"></a>  <span class="at">c_ebp =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, <span class="dv">1</span><span class="sc">-</span>eb],</span>
-<span id="cb2-55"><a href="#cb2-55"></a>  <span class="at">c_b =</span> d_b[silo <span class="sc">==</span> <span class="st">"chronic"</span>, b]</span>
-<span id="cb2-56"><a href="#cb2-56"></a>)</span>
-<span id="cb2-57"><a href="#cb2-57"></a></span>
-<span id="cb2-58"><a href="#cb2-58"></a>f2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb2-59"><a href="#cb2-59"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
-<span id="cb2-60"><a href="#cb2-60"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
-<span id="cb2-61"><a href="#cb2-61"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-5"><a href="#cb2-5"></a>lsd <span class="ot">&lt;-</span> <span class="fu">get_stan_data</span>(ll<span class="sc">$</span>d_i)</span>
+<span id="cb2-6"><a href="#cb2-6"></a>ld <span class="ot">&lt;-</span> lsd<span class="sc">$</span>ld</span>
+<span id="cb2-7"><a href="#cb2-7"></a>d_b <span class="ot">&lt;-</span> <span class="fu">copy</span>(lsd<span class="sc">$</span>d_b)</span>
+<span id="cb2-8"><a href="#cb2-8"></a></span>
+<span id="cb2-9"><a href="#cb2-9"></a>f2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb2-10"><a href="#cb2-10"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb2-11"><a href="#cb2-11"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
+<span id="cb2-12"><a href="#cb2-12"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 1 finished in 5.0 seconds.
-Chain 2 finished in 5.8 seconds.
+Chain 2 finished in 5.3 seconds.
+Chain 1 finished in 5.6 seconds.
 
 Both chains finished successfully.
 Mean chain execution time: 5.4 seconds.
-Total execution time: 5.8 seconds.</code></pre>
+Total execution time: 5.6 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="co"># f2$summary(variables = c("alpha"))</span></span>
-<span id="cb4-2"><a href="#cb4-2"></a><span class="co"># f2$summary(variables = c("gamma_b"))</span></span>
-<span id="cb4-3"><a href="#cb4-3"></a><span class="co"># f2$summary(variables = c("gamma_c"))</span></span>
-<span id="cb4-4"><a href="#cb4-4"></a><span class="co"># f2$summary(variables = c("b_a_l"))</span></span>
-<span id="cb4-5"><a href="#cb4-5"></a><span class="co"># f2$summary(variables = c("b_a_c"))</span></span>
-<span id="cb4-6"><a href="#cb4-6"></a><span class="co"># f2$summary(variables = c("b_b1_l"))</span></span>
-<span id="cb4-7"><a href="#cb4-7"></a><span class="co"># f2$summary(variables = c("b_b2_l"))</span></span>
-<span id="cb4-8"><a href="#cb4-8"></a><span class="co"># f2$summary(variables = c("b_b1_c"))</span></span>
-<span id="cb4-9"><a href="#cb4-9"></a><span class="co"># f2$summary(variables = c("b_b2_c"))</span></span>
-<span id="cb4-10"><a href="#cb4-10"></a><span class="co"># f2$summary(variables = c("b_c"))</span></span>
-<span id="cb4-11"><a href="#cb4-11"></a></span>
-<span id="cb4-12"><a href="#cb4-12"></a>post <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
-<span id="cb4-13"><a href="#cb4-13"></a>  <span class="st">"eta"</span></span>
-<span id="cb4-14"><a href="#cb4-14"></a>), <span class="at">format =</span> <span class="st">"matrix"</span>))</span>
-<span id="cb4-15"><a href="#cb4-15"></a></span>
-<span id="cb4-16"><a href="#cb4-16"></a><span class="co"># create index field</span></span>
-<span id="cb4-17"><a href="#cb4-17"></a>post <span class="ot">&lt;-</span> <span class="fu">melt</span>(post, <span class="at">measure.vars =</span> <span class="fu">names</span>(post))</span>
-<span id="cb4-18"><a href="#cb4-18"></a>post[, idx <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">".*</span><span class="sc">\\</span><span class="st">["</span>, <span class="st">""</span>, variable)]</span>
-<span id="cb4-19"><a href="#cb4-19"></a>post[, idx <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">]"</span>, <span class="st">""</span>, idx)]</span>
-<span id="cb4-20"><a href="#cb4-20"></a>post[, idx <span class="sc">:</span><span class="er">=</span> <span class="fu">as.integer</span>(idx)]</span>
-<span id="cb4-21"><a href="#cb4-21"></a></span>
-<span id="cb4-22"><a href="#cb4-22"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">cbind</span>(d_b, post[, .(<span class="at">eta_med =</span> <span class="fu">median</span>(value), </span>
-<span id="cb4-23"><a href="#cb4-23"></a>         <span class="at">eta_q025 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.025</span>),</span>
-<span id="cb4-24"><a href="#cb4-24"></a>         <span class="at">eta_q975 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.975</span>)), <span class="at">keyby =</span> idx])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>post <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
+<span id="cb4-2"><a href="#cb4-2"></a>  <span class="st">"eta"</span></span>
+<span id="cb4-3"><a href="#cb4-3"></a>), <span class="at">format =</span> <span class="st">"matrix"</span>))</span>
+<span id="cb4-4"><a href="#cb4-4"></a></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="co"># create index field</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a>post <span class="ot">&lt;-</span> <span class="fu">melt</span>(post, <span class="at">measure.vars =</span> <span class="fu">names</span>(post))</span>
+<span id="cb4-7"><a href="#cb4-7"></a>post[, idx <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">".*</span><span class="sc">\\</span><span class="st">["</span>, <span class="st">""</span>, variable)]</span>
+<span id="cb4-8"><a href="#cb4-8"></a>post[, idx <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">"</span><span class="sc">\\</span><span class="st">]"</span>, <span class="st">""</span>, idx)]</span>
+<span id="cb4-9"><a href="#cb4-9"></a>post[, idx <span class="sc">:</span><span class="er">=</span> <span class="fu">as.integer</span>(idx)]</span>
+<span id="cb4-10"><a href="#cb4-10"></a></span>
+<span id="cb4-11"><a href="#cb4-11"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">cbind</span>(d_b, post[, .(<span class="at">eta_med =</span> <span class="fu">median</span>(value), </span>
+<span id="cb4-12"><a href="#cb4-12"></a>         <span class="at">eta_q025 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.025</span>),</span>
+<span id="cb4-13"><a href="#cb4-13"></a>         <span class="at">eta_q975 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.975</span>)), <span class="at">keyby =</span> idx])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p><a href="#fig-post-vs-tru" class="quarto-xref">Figure&nbsp;1</a> shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model. It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset.</p>
