@@ -130,4 +130,3 @@ ggplot(d_fig, aes(x = eta, y = eta_med)) +
   ggtitle("True log-odds success vs 95% credible interval")
 ```
 
-

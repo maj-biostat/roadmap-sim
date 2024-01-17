@@ -146,4 +146,3 @@ datatable(d_tbl,
 
 ```
 
-
