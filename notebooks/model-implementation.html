@@ -211,6 +211,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Example trials</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../notebooks/simulation-results.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulation results</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item">
@@ -484,6 +490,86 @@ Total execution time: 5.7 seconds.</code></pre>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-post-vs-tru-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: Scatter plot comparing true vs estimated 95% credible interval for log-odds treatment success.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>post <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
+<span id="cb6-2"><a href="#cb6-2"></a>    <span class="st">"alpha"</span>, <span class="st">"gamma_b"</span>, <span class="st">"gamma_c"</span>, </span>
+<span id="cb6-3"><a href="#cb6-3"></a>    <span class="st">"b_a_l"</span>, </span>
+<span id="cb6-4"><a href="#cb6-4"></a>    <span class="st">"b_b1_l"</span>, </span>
+<span id="cb6-5"><a href="#cb6-5"></a>    <span class="st">"b_b2_l"</span>,</span>
+<span id="cb6-6"><a href="#cb6-6"></a>    <span class="st">"b_a_c"</span>,</span>
+<span id="cb6-7"><a href="#cb6-7"></a>    <span class="st">"b_b1_c"</span>, </span>
+<span id="cb6-8"><a href="#cb6-8"></a>    <span class="st">"b_b2_c"</span>,</span>
+<span id="cb6-9"><a href="#cb6-9"></a>    <span class="st">"b_c"</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a>  ), <span class="at">format =</span> <span class="st">"matrix"</span>))</span>
+<span id="cb6-11"><a href="#cb6-11"></a>  </span>
+<span id="cb6-12"><a href="#cb6-12"></a></span>
+<span id="cb6-13"><a href="#cb6-13"></a><span class="co"># test outcome</span></span>
+<span id="cb6-14"><a href="#cb6-14"></a>cols <span class="ot">&lt;-</span> <span class="fu">names</span>(post)</span>
+<span id="cb6-15"><a href="#cb6-15"></a>cols <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">"["</span>,<span class="st">"_"</span>,cols,<span class="at">fixed =</span> T)</span>
+<span id="cb6-16"><a href="#cb6-16"></a>cols <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">"]"</span>,<span class="st">""</span>,cols,<span class="at">fixed =</span> T)</span>
+<span id="cb6-17"><a href="#cb6-17"></a><span class="fu">names</span>(post) <span class="ot">&lt;-</span> cols</span>
+<span id="cb6-18"><a href="#cb6-18"></a>  </span>
+<span id="cb6-19"><a href="#cb6-19"></a><span class="co"># effects</span></span>
+<span id="cb6-20"><a href="#cb6-20"></a>effs <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb6-21"><a href="#cb6-21"></a>  <span class="co"># domain a, late (revision) and chronic (two-stage)</span></span>
+<span id="cb6-22"><a href="#cb6-22"></a>  <span class="st">"b_a_l_2"</span>, <span class="st">"b_a_c_2"</span>, </span>
+<span id="cb6-23"><a href="#cb6-23"></a>  <span class="co"># domain b, (late/revision one stage pts)</span></span>
+<span id="cb6-24"><a href="#cb6-24"></a>  <span class="co"># wk12p1 (ref is wk6p1)</span></span>
+<span id="cb6-25"><a href="#cb6-25"></a>  <span class="st">"b_b1_l_2"</span>, </span>
+<span id="cb6-26"><a href="#cb6-26"></a>  <span class="co"># wk12p2 (ref is day7p2)</span></span>
+<span id="cb6-27"><a href="#cb6-27"></a>  <span class="st">"b_b2_l_2"</span>, </span>
+<span id="cb6-28"><a href="#cb6-28"></a>  <span class="co"># wk12p1 (ref is wk6p1)</span></span>
+<span id="cb6-29"><a href="#cb6-29"></a>  <span class="st">"b_b1_c_2"</span>, </span>
+<span id="cb6-30"><a href="#cb6-30"></a>  <span class="co"># wk12p2 (ref is day7p2)</span></span>
+<span id="cb6-31"><a href="#cb6-31"></a>  <span class="st">"b_b2_c_2"</span>,</span>
+<span id="cb6-32"><a href="#cb6-32"></a>  <span class="co"># rif (ref is no-rif)</span></span>
+<span id="cb6-33"><a href="#cb6-33"></a>  <span class="st">"b_c_2"</span>)</span>
+<span id="cb6-34"><a href="#cb6-34"></a>  </span>
+<span id="cb6-35"><a href="#cb6-35"></a>d_beta <span class="ot">&lt;-</span> post[, .SD, .SDcols <span class="ot">=</span> effs]</span>
+<span id="cb6-36"><a href="#cb6-36"></a>d_beta <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_beta, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_beta))</span>
+<span id="cb6-37"><a href="#cb6-37"></a></span>
+<span id="cb6-38"><a href="#cb6-38"></a></span>
+<span id="cb6-39"><a href="#cb6-39"></a>parname_map <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_par_effects_mapping</span>()</span>
+<span id="cb6-40"><a href="#cb6-40"></a>d_beta[, parname <span class="sc">:</span><span class="er">=</span> parname_map[variable]]</span>
+<span id="cb6-41"><a href="#cb6-41"></a>d_beta[, parname <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(parname, <span class="at">levels =</span> roadmap.data<span class="sc">::</span><span class="fu">get_par_effects_mapping</span>())]</span>
+<span id="cb6-42"><a href="#cb6-42"></a></span>
+<span id="cb6-43"><a href="#cb6-43"></a>d_fig <span class="ot">&lt;-</span> d_beta[, .(</span>
+<span id="cb6-44"><a href="#cb6-44"></a>  <span class="at">lor_med =</span> <span class="fu">median</span>(value), </span>
+<span id="cb6-45"><a href="#cb6-45"></a>  <span class="at">lor_q025 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.025</span>),</span>
+<span id="cb6-46"><a href="#cb6-46"></a>  <span class="at">lor_q975 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.975</span>)), keyby <span class="ot">=</span> parname]</span>
+<span id="cb6-47"><a href="#cb6-47"></a></span>
+<span id="cb6-48"><a href="#cb6-48"></a>d_effects <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_sim_spec_effects</span>(roadmap.data<span class="sc">::</span><span class="fu">get_sim_spec</span>())</span>
+<span id="cb6-49"><a href="#cb6-49"></a>d_effects <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_effects, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_effects), <span class="at">value.name =</span> <span class="st">"lor"</span>)</span>
+<span id="cb6-50"><a href="#cb6-50"></a></span>
+<span id="cb6-51"><a href="#cb6-51"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">merge</span>(d_fig, d_effects, <span class="at">by.x =</span> <span class="st">"parname"</span>, <span class="at">by.y =</span> <span class="st">"variable"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p><a href="#fig-post-vs-tru" class="quarto-xref">Figure&nbsp;1</a> shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model. It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset.</p>
+<div class="cell page-columns page-full">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb7" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> parname, <span class="at">y =</span> lor_med)) <span class="sc">+</span></span>
+<span id="cb7-2"><a href="#cb7-2"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
+<span id="cb7-3"><a href="#cb7-3"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> parname, <span class="at">y =</span> lor), <span class="at">pch =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> lor_q025, <span class="at">ymax =</span> lor_q975))  <span class="sc">+</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb7-6"><a href="#cb7-6"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"Posterior log-odds-ratio (95% credible interval)"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display page-columns page-full">
+<div id="fig-post-lor" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-cap-location="margin">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-post-lor-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="model-implementation_files/figure-html/fig-post-lor-1.png" class="img-fluid figure-img" width="1800">
+</div>
+<figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-post-lor-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: Posterior estimates for log-odds-ratios (true values shown as triangles).
 </figcaption>
 </figure>
 </div>
