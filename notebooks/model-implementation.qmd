@@ -135,12 +135,12 @@ It suggests a strong association between the true and estimated log-odds of trea
 #| label: fig-post-lor
 #| fig-cap: 'Posterior estimates for log-odds-ratios (true values shown as triangles).'
 #| fig-cap-location: margin
-#| fig-height: 4
+#| fig-height: 5
 
 ggplot(d_fig, aes(x = parname, y = lor_med)) +
   geom_point() +
   geom_point(data = d_fig, aes(x = parname, y = lor), pch = 2) +
   geom_linerange(aes(ymin = lor_q025, ymax = lor_q975))  +
-  scale_x_discrete("") +
+  scale_x_discrete("", guide = guide_axis(angle = 45)) +
   scale_y_continuous("Posterior log-odds-ratio (95% credible interval)") 
 ```
