@@ -31,9 +31,11 @@ tbl_ex_trial <- function(d){
   
   d_b <- d[, .(y = sum(y), n = .N, p = plogis(unique(eta))), keyby = .(silo, joint, ea, a, qa, eb, b, ec, c)]
   d_b[, p_mle := y/n]
+  d_b[, silo := factor(silo, levels = c("early", "late", "chronic"))]
+  d_b[, joint := factor(joint, levels = c("knee", "hip"))]
   setcolorder(d_b, c("silo", "joint", "ea", "a", "qa", "eb", "b", "ec", "c", "p_mle", "p"))
-  
-  gt_tbl <- d_b |> 
+
+  gt_tbl <- d_b[order(silo, joint)] |> 
     gt(
       groupname_col = c("silo", "joint")
     ) |> 
