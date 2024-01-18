@@ -104,7 +104,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 </head>
 
-<body class="nav-sidebar floating nav-fixed">
+<body class="nav-sidebar floating nav-fixed slimcontent">
 
 <div id="quarto-search-results"></div>
   <header id="quarto-header" class="headroom fixed-top">
@@ -234,7 +234,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         
     </div>
 <!-- main -->
-<main class="content" id="quarto-document-content">
+<main class="content page-columns page-full" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/simulation-results.html">Simulation results</a></li></ol></nav>
 <div class="quarto-title">
@@ -290,85 +290,94 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-27"><a href="#cb1-27"></a>  <span class="at">b_b2_l_2 =</span> <span class="fu">as.numeric</span>(b_b2_l_2),</span>
 <span id="cb1-28"><a href="#cb1-28"></a>  <span class="at">b_b1_c_2 =</span> <span class="fu">as.numeric</span>(b_b1_c_2),</span>
 <span id="cb1-29"><a href="#cb1-29"></a>  <span class="at">b_b2_c_2 =</span> <span class="fu">as.numeric</span>(b_b2_c_2),</span>
-<span id="cb1-30"><a href="#cb1-30"></a>  <span class="at">d_sup =</span> <span class="fu">as.numeric</span>(d_sup),</span>
-<span id="cb1-31"><a href="#cb1-31"></a>  <span class="at">d_inf =</span> <span class="fu">as.numeric</span>(d_inf),</span>
-<span id="cb1-32"><a href="#cb1-32"></a>  <span class="at">d_fut =</span> <span class="fu">as.numeric</span>(d_fut)</span>
-<span id="cb1-33"><a href="#cb1-33"></a>  )]</span>
-<span id="cb1-34"><a href="#cb1-34"></a></span>
-<span id="cb1-35"><a href="#cb1-35"></a>d_win <span class="ot">&lt;-</span> <span class="fu">merge</span>(d_win, d_pars, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"sc"</span>, <span class="st">"variable"</span>))  </span>
-<span id="cb1-36"><a href="#cb1-36"></a>d_win[, lor_tru <span class="sc">:</span><span class="er">=</span> <span class="fu">as.numeric</span>(lor_tru)]</span>
-<span id="cb1-37"><a href="#cb1-37"></a>parname_map <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_par_effects_mapping</span>()</span>
-<span id="cb1-38"><a href="#cb1-38"></a>d_win[, parname <span class="sc">:</span><span class="er">=</span> parname_map[variable]]</span>
-<span id="cb1-39"><a href="#cb1-39"></a>d_win[, parname <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(parname, <span class="at">levels =</span> roadmap.data<span class="sc">::</span><span class="fu">get_par_effects_mapping</span>())]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-30"><a href="#cb1-30"></a>  <span class="at">b_c_2 =</span> <span class="fu">as.numeric</span>(b_c_2),</span>
+<span id="cb1-31"><a href="#cb1-31"></a>  <span class="at">d_sup =</span> <span class="fu">as.numeric</span>(d_sup),</span>
+<span id="cb1-32"><a href="#cb1-32"></a>  <span class="at">d_inf =</span> <span class="fu">as.numeric</span>(d_inf),</span>
+<span id="cb1-33"><a href="#cb1-33"></a>  <span class="at">d_fut =</span> <span class="fu">as.numeric</span>(d_fut)</span>
+<span id="cb1-34"><a href="#cb1-34"></a>  )]</span>
+<span id="cb1-35"><a href="#cb1-35"></a></span>
+<span id="cb1-36"><a href="#cb1-36"></a>d_win <span class="ot">&lt;-</span> <span class="fu">merge</span>(d_win, d_pars, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"sc"</span>, <span class="st">"variable"</span>))  </span>
+<span id="cb1-37"><a href="#cb1-37"></a>d_win[, lor_tru <span class="sc">:</span><span class="er">=</span> <span class="fu">as.numeric</span>(lor_tru)]</span>
+<span id="cb1-38"><a href="#cb1-38"></a>parname_map <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_par_effects_mapping</span>()</span>
+<span id="cb1-39"><a href="#cb1-39"></a>d_win[, parname <span class="sc">:</span><span class="er">=</span> parname_map[variable]]</span>
+<span id="cb1-40"><a href="#cb1-40"></a>d_win[, parname <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(parname, <span class="at">levels =</span> roadmap.data<span class="sc">::</span><span class="fu">get_par_effects_mapping</span>())]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<div class="cell">
+<div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>d_tbl <span class="ot">&lt;-</span> d_cfg[, .SD, .SDcols <span class="ot">=</span> <span class="sc">!</span><span class="fu">c</span>(<span class="st">"sc"</span>,<span class="st">"nsim"</span>, <span class="st">"mc_cores"</span>)]</span>
-<span id="cb2-2"><a href="#cb2-2"></a></span>
-<span id="cb2-3"><a href="#cb2-3"></a></span>
-<span id="cb2-4"><a href="#cb2-4"></a>g_tbl <span class="ot">&lt;-</span> d_tbl <span class="sc">|&gt;</span> <span class="fu">gt</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb2-5"><a href="#cb2-5"></a>  <span class="fu">cols_align</span>(</span>
-<span id="cb2-6"><a href="#cb2-6"></a>    <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
-<span id="cb2-7"><a href="#cb2-7"></a>    <span class="at">align =</span> <span class="st">"center"</span></span>
-<span id="cb2-8"><a href="#cb2-8"></a>  )  <span class="sc">|&gt;</span> </span>
-<span id="cb2-9"><a href="#cb2-9"></a>  <span class="fu">fmt_number</span>(</span>
-<span id="cb2-10"><a href="#cb2-10"></a>    <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
-<span id="cb2-11"><a href="#cb2-11"></a>    <span class="at">decimals =</span> <span class="dv">3</span></span>
-<span id="cb2-12"><a href="#cb2-12"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb2-13"><a href="#cb2-13"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb2-14"><a href="#cb2-14"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Surgical D&lt;sub&gt;a&lt;/sub&gt;"</span>),</span>
-<span id="cb2-15"><a href="#cb2-15"></a>    <span class="at">columns =</span> <span class="fu">c</span>(b_a_l_2, b_a_c_2)</span>
-<span id="cb2-16"><a href="#cb2-16"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb2-17"><a href="#cb2-17"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb2-18"><a href="#cb2-18"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Duration D&lt;sub&gt;b&lt;/sub&gt;"</span>),</span>
-<span id="cb2-19"><a href="#cb2-19"></a>    <span class="at">columns =</span> <span class="fu">c</span>(b_b1_l_2, b_b2_l_2, b_b1_c_2, b_b2_c_2)</span>
-<span id="cb2-20"><a href="#cb2-20"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb2-21"><a href="#cb2-21"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb2-22"><a href="#cb2-22"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Type D&lt;sub&gt;c&lt;/sub&gt;"</span>),</span>
-<span id="cb2-23"><a href="#cb2-23"></a>    <span class="at">columns =</span> <span class="fu">c</span>(b_c_2)</span>
-<span id="cb2-24"><a href="#cb2-24"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb2-25"><a href="#cb2-25"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb2-26"><a href="#cb2-26"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Decision thresholds"</span>),</span>
-<span id="cb2-27"><a href="#cb2-27"></a>    <span class="at">columns =</span> <span class="fu">c</span>(d_sup, d_inf, d_fut)</span>
-<span id="cb2-28"><a href="#cb2-28"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb2-29"><a href="#cb2-29"></a>  <span class="fu">cols_label</span>(</span>
-<span id="cb2-30"><a href="#cb2-30"></a>    <span class="at">b_a_l_2 =</span> <span class="fu">html</span>(<span class="st">"revision"</span>),</span>
-<span id="cb2-31"><a href="#cb2-31"></a>    <span class="at">b_a_c_2 =</span> <span class="fu">html</span>(<span class="st">"two-stage"</span>),</span>
-<span id="cb2-32"><a href="#cb2-32"></a>    <span class="at">b_b1_l_2 =</span> <span class="fu">html</span>(<span class="st">"wk12&lt;br&gt;(post stage 1)"</span>),</span>
-<span id="cb2-33"><a href="#cb2-33"></a>    <span class="at">b_b2_l_2 =</span> <span class="fu">html</span>(<span class="st">"wk12&lt;br&gt;(post stage 2)"</span>),</span>
-<span id="cb2-34"><a href="#cb2-34"></a>    <span class="at">b_b1_c_2 =</span> <span class="fu">html</span>(<span class="st">"wk12&lt;br&gt;(post stage 1)"</span>),</span>
-<span id="cb2-35"><a href="#cb2-35"></a>    <span class="at">b_b2_c_2 =</span> <span class="fu">html</span>(<span class="st">"wk12&lt;br&gt;(post stage 2)"</span>),</span>
-<span id="cb2-36"><a href="#cb2-36"></a>    <span class="at">b_c_2 =</span> <span class="fu">html</span>(<span class="st">"rif"</span>),</span>
-<span id="cb2-37"><a href="#cb2-37"></a>    <span class="at">d_sup =</span> <span class="fu">html</span>(<span class="st">"delta&lt;sub&gt;sup&lt;/sub&gt;"</span>),</span>
-<span id="cb2-38"><a href="#cb2-38"></a>    <span class="at">d_inf =</span> <span class="fu">html</span>(<span class="st">"delta&lt;sub&gt;inf&lt;/sub&gt;"</span>),</span>
-<span id="cb2-39"><a href="#cb2-39"></a>    <span class="at">d_fut =</span> <span class="fu">html</span>(<span class="st">"delta&lt;sub&gt;fut&lt;/sub&gt;"</span>)</span>
-<span id="cb2-40"><a href="#cb2-40"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb2-41"><a href="#cb2-41"></a>  <span class="fu">tab_options</span>(</span>
-<span id="cb2-42"><a href="#cb2-42"></a>    <span class="at">table.font.size =</span> <span class="st">"80%"</span></span>
-<span id="cb2-43"><a href="#cb2-43"></a>  ) </span>
-<span id="cb2-44"><a href="#cb2-44"></a></span>
-<span id="cb2-45"><a href="#cb2-45"></a>g_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-2"><a href="#cb2-2"></a>d_tbl <span class="ot">&lt;-</span> <span class="fu">cbind</span>(</span>
+<span id="cb2-3"><a href="#cb2-3"></a>  <span class="at">effect =</span> <span class="fu">c</span>(</span>
+<span id="cb2-4"><a href="#cb2-4"></a>    <span class="st">"null"</span>, <span class="fu">rep</span>(<span class="st">"superior"</span>, <span class="dv">5</span>), <span class="fu">rep</span>(<span class="st">"inferior"</span>, <span class="dv">2</span>)</span>
+<span id="cb2-5"><a href="#cb2-5"></a>  ), d_tbl</span>
+<span id="cb2-6"><a href="#cb2-6"></a>)</span>
+<span id="cb2-7"><a href="#cb2-7"></a></span>
+<span id="cb2-8"><a href="#cb2-8"></a></span>
+<span id="cb2-9"><a href="#cb2-9"></a>g_tbl <span class="ot">&lt;-</span> d_tbl <span class="sc">|&gt;</span> <span class="fu">gt</span>(<span class="at">rowname_col =</span> <span class="st">"effect"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb2-10"><a href="#cb2-10"></a>  <span class="fu">cols_align</span>(</span>
+<span id="cb2-11"><a href="#cb2-11"></a>    <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
+<span id="cb2-12"><a href="#cb2-12"></a>    <span class="at">align =</span> <span class="st">"center"</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a>  )  <span class="sc">|&gt;</span> </span>
+<span id="cb2-14"><a href="#cb2-14"></a>  <span class="fu">fmt_number</span>(</span>
+<span id="cb2-15"><a href="#cb2-15"></a>    <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
+<span id="cb2-16"><a href="#cb2-16"></a>    <span class="at">decimals =</span> <span class="dv">3</span></span>
+<span id="cb2-17"><a href="#cb2-17"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb2-18"><a href="#cb2-18"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb2-19"><a href="#cb2-19"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Surgical (D&lt;sub&gt;a&lt;/sub&gt;)"</span>),</span>
+<span id="cb2-20"><a href="#cb2-20"></a>    <span class="at">columns =</span> <span class="fu">c</span>(b_a_l_2, b_a_c_2)</span>
+<span id="cb2-21"><a href="#cb2-21"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb2-22"><a href="#cb2-22"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb2-23"><a href="#cb2-23"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Duration (D&lt;sub&gt;b&lt;/sub&gt;)"</span>),</span>
+<span id="cb2-24"><a href="#cb2-24"></a>    <span class="at">columns =</span> <span class="fu">c</span>(b_b1_l_2, b_b2_l_2, b_b1_c_2, b_b2_c_2)</span>
+<span id="cb2-25"><a href="#cb2-25"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb2-26"><a href="#cb2-26"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb2-27"><a href="#cb2-27"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Type (D&lt;sub&gt;c&lt;/sub&gt;)"</span>),</span>
+<span id="cb2-28"><a href="#cb2-28"></a>    <span class="at">columns =</span> <span class="fu">c</span>(b_c_2)</span>
+<span id="cb2-29"><a href="#cb2-29"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb2-30"><a href="#cb2-30"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb2-31"><a href="#cb2-31"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Decision thresholds"</span>),</span>
+<span id="cb2-32"><a href="#cb2-32"></a>    <span class="at">columns =</span> <span class="fu">c</span>(d_sup, d_inf, d_fut)</span>
+<span id="cb2-33"><a href="#cb2-33"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb2-34"><a href="#cb2-34"></a>  <span class="fu">cols_label</span>(</span>
+<span id="cb2-35"><a href="#cb2-35"></a>    <span class="at">b_a_l_2 =</span> <span class="fu">html</span>(<span class="st">"revision"</span>),</span>
+<span id="cb2-36"><a href="#cb2-36"></a>    <span class="at">b_a_c_2 =</span> <span class="fu">html</span>(<span class="st">"two-stage"</span>),</span>
+<span id="cb2-37"><a href="#cb2-37"></a>    <span class="at">b_b1_l_2 =</span> <span class="fu">html</span>(<span class="st">"wk12&lt;br&gt;(post stage 1)"</span>),</span>
+<span id="cb2-38"><a href="#cb2-38"></a>    <span class="at">b_b2_l_2 =</span> <span class="fu">html</span>(<span class="st">"wk12&lt;br&gt;(post stage 2)"</span>),</span>
+<span id="cb2-39"><a href="#cb2-39"></a>    <span class="at">b_b1_c_2 =</span> <span class="fu">html</span>(<span class="st">"wk12&lt;br&gt;(post stage 1)"</span>),</span>
+<span id="cb2-40"><a href="#cb2-40"></a>    <span class="at">b_b2_c_2 =</span> <span class="fu">html</span>(<span class="st">"wk12&lt;br&gt;(post stage 2)"</span>),</span>
+<span id="cb2-41"><a href="#cb2-41"></a>    <span class="at">b_c_2 =</span> <span class="fu">html</span>(<span class="st">"rif"</span>),</span>
+<span id="cb2-42"><a href="#cb2-42"></a>    <span class="at">d_sup =</span> <span class="fu">html</span>(<span class="st">"delta&lt;sub&gt;sup&lt;/sub&gt;"</span>),</span>
+<span id="cb2-43"><a href="#cb2-43"></a>    <span class="at">d_inf =</span> <span class="fu">html</span>(<span class="st">"delta&lt;sub&gt;inf&lt;/sub&gt;"</span>),</span>
+<span id="cb2-44"><a href="#cb2-44"></a>    <span class="at">d_fut =</span> <span class="fu">html</span>(<span class="st">"delta&lt;sub&gt;fut&lt;/sub&gt;"</span>)</span>
+<span id="cb2-45"><a href="#cb2-45"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb2-46"><a href="#cb2-46"></a>  <span class="fu">tab_options</span>(</span>
+<span id="cb2-47"><a href="#cb2-47"></a>    <span class="at">table.font.size =</span> <span class="st">"80%"</span></span>
+<span id="cb2-48"><a href="#cb2-48"></a>  ) </span>
+<span id="cb2-49"><a href="#cb2-49"></a></span>
+<span id="cb2-50"><a href="#cb2-50"></a>g_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output-display">
-<div id="hkdletwcmo" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#hkdletwcmo table {
+<div id="tbl-sim-par" class="cell quarto-float anchored page-columns page-full">
+<figure class="quarto-float quarto-float-tbl figure page-columns page-full">
+<div aria-describedby="tbl-sim-par-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
+<div class="cell-output-display column-page">
+<div id="qfvxxtadkp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#qfvxxtadkp table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#hkdletwcmo thead, #hkdletwcmo tbody, #hkdletwcmo tfoot, #hkdletwcmo tr, #hkdletwcmo td, #hkdletwcmo th {
+#qfvxxtadkp thead, #qfvxxtadkp tbody, #qfvxxtadkp tfoot, #qfvxxtadkp tr, #qfvxxtadkp td, #qfvxxtadkp th {
   border-style: none;
 }
 
-#hkdletwcmo p {
+#qfvxxtadkp p {
   margin: 0;
   padding: 0;
 }
 
-#hkdletwcmo .gt_table {
+#qfvxxtadkp .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -394,12 +403,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-left-color: #D3D3D3;
 }
 
-#hkdletwcmo .gt_caption {
+#qfvxxtadkp .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#hkdletwcmo .gt_title {
+#qfvxxtadkp .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -411,7 +420,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-width: 0;
 }
 
-#hkdletwcmo .gt_subtitle {
+#qfvxxtadkp .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -423,7 +432,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-width: 0;
 }
 
-#hkdletwcmo .gt_heading {
+#qfvxxtadkp .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -435,13 +444,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#hkdletwcmo .gt_bottom_border {
+#qfvxxtadkp .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#hkdletwcmo .gt_col_headings {
+#qfvxxtadkp .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -456,7 +465,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#hkdletwcmo .gt_col_heading {
+#qfvxxtadkp .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -476,7 +485,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#hkdletwcmo .gt_column_spanner_outer {
+#qfvxxtadkp .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -488,15 +497,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 4px;
 }
 
-#hkdletwcmo .gt_column_spanner_outer:first-child {
+#qfvxxtadkp .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#hkdletwcmo .gt_column_spanner_outer:last-child {
+#qfvxxtadkp .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#hkdletwcmo .gt_column_spanner {
+#qfvxxtadkp .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -508,11 +517,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   width: 100%;
 }
 
-#hkdletwcmo .gt_spanner_row {
+#qfvxxtadkp .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#hkdletwcmo .gt_group_heading {
+#qfvxxtadkp .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -538,7 +547,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   text-align: left;
 }
 
-#hkdletwcmo .gt_empty_group_heading {
+#qfvxxtadkp .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -553,15 +562,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: middle;
 }
 
-#hkdletwcmo .gt_from_md > :first-child {
+#qfvxxtadkp .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#hkdletwcmo .gt_from_md > :last-child {
+#qfvxxtadkp .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#hkdletwcmo .gt_row {
+#qfvxxtadkp .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -580,7 +589,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#hkdletwcmo .gt_stub {
+#qfvxxtadkp .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -593,7 +602,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#hkdletwcmo .gt_stub_row_group {
+#qfvxxtadkp .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -607,15 +616,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: top;
 }
 
-#hkdletwcmo .gt_row_group_first td {
+#qfvxxtadkp .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#hkdletwcmo .gt_row_group_first th {
+#qfvxxtadkp .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#hkdletwcmo .gt_summary_row {
+#qfvxxtadkp .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -625,16 +634,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#hkdletwcmo .gt_first_summary_row {
+#qfvxxtadkp .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#hkdletwcmo .gt_first_summary_row.thick {
+#qfvxxtadkp .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#hkdletwcmo .gt_last_summary_row {
+#qfvxxtadkp .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -644,7 +653,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#hkdletwcmo .gt_grand_summary_row {
+#qfvxxtadkp .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -654,7 +663,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#hkdletwcmo .gt_first_grand_summary_row {
+#qfvxxtadkp .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -664,7 +673,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-color: #D3D3D3;
 }
 
-#hkdletwcmo .gt_last_grand_summary_row_top {
+#qfvxxtadkp .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -674,11 +683,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#hkdletwcmo .gt_striped {
+#qfvxxtadkp .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#hkdletwcmo .gt_table_body {
+#qfvxxtadkp .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -687,7 +696,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#hkdletwcmo .gt_footnotes {
+#qfvxxtadkp .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -701,7 +710,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#hkdletwcmo .gt_footnote {
+#qfvxxtadkp .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -710,7 +719,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#hkdletwcmo .gt_sourcenotes {
+#qfvxxtadkp .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -724,7 +733,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#hkdletwcmo .gt_sourcenote {
+#qfvxxtadkp .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -732,85 +741,87 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#hkdletwcmo .gt_left {
+#qfvxxtadkp .gt_left {
   text-align: left;
 }
 
-#hkdletwcmo .gt_center {
+#qfvxxtadkp .gt_center {
   text-align: center;
 }
 
-#hkdletwcmo .gt_right {
+#qfvxxtadkp .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#hkdletwcmo .gt_font_normal {
+#qfvxxtadkp .gt_font_normal {
   font-weight: normal;
 }
 
-#hkdletwcmo .gt_font_bold {
+#qfvxxtadkp .gt_font_bold {
   font-weight: bold;
 }
 
-#hkdletwcmo .gt_font_italic {
+#qfvxxtadkp .gt_font_italic {
   font-style: italic;
 }
 
-#hkdletwcmo .gt_super {
+#qfvxxtadkp .gt_super {
   font-size: 65%;
 }
 
-#hkdletwcmo .gt_footnote_marks {
+#qfvxxtadkp .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#hkdletwcmo .gt_asterisk {
+#qfvxxtadkp .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#hkdletwcmo .gt_indent_1 {
+#qfvxxtadkp .gt_indent_1 {
   text-indent: 5px;
 }
 
-#hkdletwcmo .gt_indent_2 {
+#qfvxxtadkp .gt_indent_2 {
   text-indent: 10px;
 }
 
-#hkdletwcmo .gt_indent_3 {
+#qfvxxtadkp .gt_indent_3 {
   text-indent: 15px;
 }
 
-#hkdletwcmo .gt_indent_4 {
+#qfvxxtadkp .gt_indent_4 {
   text-indent: 20px;
 }
 
-#hkdletwcmo .gt_indent_5 {
+#qfvxxtadkp .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
 
-<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<table class="gt_table do-not-create-environment cell table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
 <colgroup>
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
-<col style="width: 10%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
 </colgroup>
 <thead>
 <tr class="header gt_col_headings gt_spanner_row">
-<th colspan="2" id="Surgical D<sub>a</sub>" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">Surgical D<sub>a</sub></span></th>
-<th colspan="4" id="Duration D<sub>b</sub>" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">Duration D<sub>b</sub></span></th>
-<th id="Type D<sub>c</sub>" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="col"><span class="gt_column_spanner">Type D<sub>c</sub></span></th>
+<th rowspan="2" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"></th>
+<th colspan="2" id="Surgical (D<sub>a</sub>)" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">Surgical (D<sub>a</sub>)</span></th>
+<th colspan="4" id="Duration (D<sub>b</sub>)" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">Duration (D<sub>b</sub>)</span></th>
+<th id="Type (D<sub>c</sub>)" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="col"><span class="gt_column_spanner">Type (D<sub>c</sub>)</span></th>
 <th colspan="3" id="Decision thresholds" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">Decision thresholds</span></th>
 </tr>
 <tr class="odd gt_col_headings">
@@ -832,100 +843,108 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody class="gt_table_body">
 <tr class="odd">
-<td class="gt_row gt_center" headers="b_a_l_2">0.000</td>
-<td class="gt_row gt_center" headers="b_a_c_2">0.000</td>
-<td class="gt_row gt_center" headers="b_b1_l_2">0.000</td>
-<td class="gt_row gt_center" headers="b_b2_l_2">0.000</td>
-<td class="gt_row gt_center" headers="b_b1_c_2">0.000</td>
-<td class="gt_row gt_center" headers="b_b2_c_2">0.000</td>
-<td class="gt_row gt_center" headers="b_c_2">0</td>
-<td class="gt_row gt_center" headers="d_sup">0.950</td>
-<td class="gt_row gt_center" headers="d_inf">0.950</td>
-<td class="gt_row gt_center" headers="d_fut">0.050</td>
+<td id="stub_1_1" class="gt_row gt_center gt_stub" data-quarto-table-cell-role="th" scope="row">null</td>
+<td class="gt_row gt_center" headers="stub_1_1 b_a_l_2">0.000</td>
+<td class="gt_row gt_center" headers="stub_1_1 b_a_c_2">0.000</td>
+<td class="gt_row gt_center" headers="stub_1_1 b_b1_l_2">0.000</td>
+<td class="gt_row gt_center" headers="stub_1_1 b_b2_l_2">0.000</td>
+<td class="gt_row gt_center" headers="stub_1_1 b_b1_c_2">0.000</td>
+<td class="gt_row gt_center" headers="stub_1_1 b_b2_c_2">0.000</td>
+<td class="gt_row gt_center" headers="stub_1_1 b_c_2">0.000</td>
+<td class="gt_row gt_center" headers="stub_1_1 d_sup">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_1 d_inf">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_1 d_fut">0.050</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_center" headers="b_a_l_2">0.182</td>
-<td class="gt_row gt_center" headers="b_a_c_2">0.182</td>
-<td class="gt_row gt_center" headers="b_b1_l_2">0.182</td>
-<td class="gt_row gt_center" headers="b_b2_l_2">0.182</td>
-<td class="gt_row gt_center" headers="b_b1_c_2">0.182</td>
-<td class="gt_row gt_center" headers="b_b2_c_2">0.182</td>
-<td class="gt_row gt_center" headers="b_c_2">0.1823216</td>
-<td class="gt_row gt_center" headers="d_sup">0.950</td>
-<td class="gt_row gt_center" headers="d_inf">0.950</td>
-<td class="gt_row gt_center" headers="d_fut">0.050</td>
+<td id="stub_1_2" class="gt_row gt_center gt_stub" data-quarto-table-cell-role="th" scope="row">superior</td>
+<td class="gt_row gt_center" headers="stub_1_2 b_a_l_2">0.182</td>
+<td class="gt_row gt_center" headers="stub_1_2 b_a_c_2">0.182</td>
+<td class="gt_row gt_center" headers="stub_1_2 b_b1_l_2">0.182</td>
+<td class="gt_row gt_center" headers="stub_1_2 b_b2_l_2">0.182</td>
+<td class="gt_row gt_center" headers="stub_1_2 b_b1_c_2">0.182</td>
+<td class="gt_row gt_center" headers="stub_1_2 b_b2_c_2">0.182</td>
+<td class="gt_row gt_center" headers="stub_1_2 b_c_2">0.182</td>
+<td class="gt_row gt_center" headers="stub_1_2 d_sup">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_2 d_inf">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_2 d_fut">0.050</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_center" headers="b_a_l_2">0.336</td>
-<td class="gt_row gt_center" headers="b_a_c_2">0.336</td>
-<td class="gt_row gt_center" headers="b_b1_l_2">0.336</td>
-<td class="gt_row gt_center" headers="b_b2_l_2">0.336</td>
-<td class="gt_row gt_center" headers="b_b1_c_2">0.336</td>
-<td class="gt_row gt_center" headers="b_b2_c_2">0.336</td>
-<td class="gt_row gt_center" headers="b_c_2">0.3364722</td>
-<td class="gt_row gt_center" headers="d_sup">0.950</td>
-<td class="gt_row gt_center" headers="d_inf">0.950</td>
-<td class="gt_row gt_center" headers="d_fut">0.050</td>
+<td id="stub_1_3" class="gt_row gt_center gt_stub" data-quarto-table-cell-role="th" scope="row">superior</td>
+<td class="gt_row gt_center" headers="stub_1_3 b_a_l_2">0.336</td>
+<td class="gt_row gt_center" headers="stub_1_3 b_a_c_2">0.336</td>
+<td class="gt_row gt_center" headers="stub_1_3 b_b1_l_2">0.336</td>
+<td class="gt_row gt_center" headers="stub_1_3 b_b2_l_2">0.336</td>
+<td class="gt_row gt_center" headers="stub_1_3 b_b1_c_2">0.336</td>
+<td class="gt_row gt_center" headers="stub_1_3 b_b2_c_2">0.336</td>
+<td class="gt_row gt_center" headers="stub_1_3 b_c_2">0.336</td>
+<td class="gt_row gt_center" headers="stub_1_3 d_sup">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_3 d_inf">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_3 d_fut">0.050</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_center" headers="b_a_l_2">0.470</td>
-<td class="gt_row gt_center" headers="b_a_c_2">0.470</td>
-<td class="gt_row gt_center" headers="b_b1_l_2">0.470</td>
-<td class="gt_row gt_center" headers="b_b2_l_2">0.470</td>
-<td class="gt_row gt_center" headers="b_b1_c_2">0.470</td>
-<td class="gt_row gt_center" headers="b_b2_c_2">0.470</td>
-<td class="gt_row gt_center" headers="b_c_2">0.4700036</td>
-<td class="gt_row gt_center" headers="d_sup">0.950</td>
-<td class="gt_row gt_center" headers="d_inf">0.950</td>
-<td class="gt_row gt_center" headers="d_fut">0.050</td>
+<td id="stub_1_4" class="gt_row gt_center gt_stub" data-quarto-table-cell-role="th" scope="row">superior</td>
+<td class="gt_row gt_center" headers="stub_1_4 b_a_l_2">0.470</td>
+<td class="gt_row gt_center" headers="stub_1_4 b_a_c_2">0.470</td>
+<td class="gt_row gt_center" headers="stub_1_4 b_b1_l_2">0.470</td>
+<td class="gt_row gt_center" headers="stub_1_4 b_b2_l_2">0.470</td>
+<td class="gt_row gt_center" headers="stub_1_4 b_b1_c_2">0.470</td>
+<td class="gt_row gt_center" headers="stub_1_4 b_b2_c_2">0.470</td>
+<td class="gt_row gt_center" headers="stub_1_4 b_c_2">0.470</td>
+<td class="gt_row gt_center" headers="stub_1_4 d_sup">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_4 d_inf">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_4 d_fut">0.050</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_center" headers="b_a_l_2">0.588</td>
-<td class="gt_row gt_center" headers="b_a_c_2">0.588</td>
-<td class="gt_row gt_center" headers="b_b1_l_2">0.588</td>
-<td class="gt_row gt_center" headers="b_b2_l_2">0.588</td>
-<td class="gt_row gt_center" headers="b_b1_c_2">0.588</td>
-<td class="gt_row gt_center" headers="b_b2_c_2">0.588</td>
-<td class="gt_row gt_center" headers="b_c_2">0.5877867</td>
-<td class="gt_row gt_center" headers="d_sup">0.950</td>
-<td class="gt_row gt_center" headers="d_inf">0.950</td>
-<td class="gt_row gt_center" headers="d_fut">0.050</td>
+<td id="stub_1_5" class="gt_row gt_center gt_stub" data-quarto-table-cell-role="th" scope="row">superior</td>
+<td class="gt_row gt_center" headers="stub_1_5 b_a_l_2">0.588</td>
+<td class="gt_row gt_center" headers="stub_1_5 b_a_c_2">0.588</td>
+<td class="gt_row gt_center" headers="stub_1_5 b_b1_l_2">0.588</td>
+<td class="gt_row gt_center" headers="stub_1_5 b_b2_l_2">0.588</td>
+<td class="gt_row gt_center" headers="stub_1_5 b_b1_c_2">0.588</td>
+<td class="gt_row gt_center" headers="stub_1_5 b_b2_c_2">0.588</td>
+<td class="gt_row gt_center" headers="stub_1_5 b_c_2">0.588</td>
+<td class="gt_row gt_center" headers="stub_1_5 d_sup">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_5 d_inf">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_5 d_fut">0.050</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_center" headers="b_a_l_2">0.693</td>
-<td class="gt_row gt_center" headers="b_a_c_2">0.693</td>
-<td class="gt_row gt_center" headers="b_b1_l_2">0.693</td>
-<td class="gt_row gt_center" headers="b_b2_l_2">0.693</td>
-<td class="gt_row gt_center" headers="b_b1_c_2">0.693</td>
-<td class="gt_row gt_center" headers="b_b2_c_2">0.693</td>
-<td class="gt_row gt_center" headers="b_c_2">0.6931472</td>
-<td class="gt_row gt_center" headers="d_sup">0.950</td>
-<td class="gt_row gt_center" headers="d_inf">0.950</td>
-<td class="gt_row gt_center" headers="d_fut">0.050</td>
+<td id="stub_1_6" class="gt_row gt_center gt_stub" data-quarto-table-cell-role="th" scope="row">superior</td>
+<td class="gt_row gt_center" headers="stub_1_6 b_a_l_2">0.693</td>
+<td class="gt_row gt_center" headers="stub_1_6 b_a_c_2">0.693</td>
+<td class="gt_row gt_center" headers="stub_1_6 b_b1_l_2">0.693</td>
+<td class="gt_row gt_center" headers="stub_1_6 b_b2_l_2">0.693</td>
+<td class="gt_row gt_center" headers="stub_1_6 b_b1_c_2">0.693</td>
+<td class="gt_row gt_center" headers="stub_1_6 b_b2_c_2">0.693</td>
+<td class="gt_row gt_center" headers="stub_1_6 b_c_2">0.693</td>
+<td class="gt_row gt_center" headers="stub_1_6 d_sup">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_6 d_inf">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_6 d_fut">0.050</td>
 </tr>
 <tr class="odd">
-<td class="gt_row gt_center" headers="b_a_l_2">−0.182</td>
-<td class="gt_row gt_center" headers="b_a_c_2">−0.182</td>
-<td class="gt_row gt_center" headers="b_b1_l_2">−0.182</td>
-<td class="gt_row gt_center" headers="b_b2_l_2">−0.182</td>
-<td class="gt_row gt_center" headers="b_b1_c_2">−0.182</td>
-<td class="gt_row gt_center" headers="b_b2_c_2">−0.182</td>
-<td class="gt_row gt_center" headers="b_c_2">-0.1823216</td>
-<td class="gt_row gt_center" headers="d_sup">0.950</td>
-<td class="gt_row gt_center" headers="d_inf">0.950</td>
-<td class="gt_row gt_center" headers="d_fut">0.050</td>
+<td id="stub_1_7" class="gt_row gt_center gt_stub" data-quarto-table-cell-role="th" scope="row">inferior</td>
+<td class="gt_row gt_center" headers="stub_1_7 b_a_l_2">−0.182</td>
+<td class="gt_row gt_center" headers="stub_1_7 b_a_c_2">−0.182</td>
+<td class="gt_row gt_center" headers="stub_1_7 b_b1_l_2">−0.182</td>
+<td class="gt_row gt_center" headers="stub_1_7 b_b2_l_2">−0.182</td>
+<td class="gt_row gt_center" headers="stub_1_7 b_b1_c_2">−0.182</td>
+<td class="gt_row gt_center" headers="stub_1_7 b_b2_c_2">−0.182</td>
+<td class="gt_row gt_center" headers="stub_1_7 b_c_2">−0.182</td>
+<td class="gt_row gt_center" headers="stub_1_7 d_sup">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_7 d_inf">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_7 d_fut">0.050</td>
 </tr>
 <tr class="even">
-<td class="gt_row gt_center" headers="b_a_l_2">−0.336</td>
-<td class="gt_row gt_center" headers="b_a_c_2">−0.336</td>
-<td class="gt_row gt_center" headers="b_b1_l_2">−0.336</td>
-<td class="gt_row gt_center" headers="b_b2_l_2">−0.336</td>
-<td class="gt_row gt_center" headers="b_b1_c_2">−0.336</td>
-<td class="gt_row gt_center" headers="b_b2_c_2">−0.336</td>
-<td class="gt_row gt_center" headers="b_c_2">-0.3364722</td>
-<td class="gt_row gt_center" headers="d_sup">0.950</td>
-<td class="gt_row gt_center" headers="d_inf">0.950</td>
-<td class="gt_row gt_center" headers="d_fut">0.050</td>
+<td id="stub_1_8" class="gt_row gt_center gt_stub" data-quarto-table-cell-role="th" scope="row">inferior</td>
+<td class="gt_row gt_center" headers="stub_1_8 b_a_l_2">−0.336</td>
+<td class="gt_row gt_center" headers="stub_1_8 b_a_c_2">−0.336</td>
+<td class="gt_row gt_center" headers="stub_1_8 b_b1_l_2">−0.336</td>
+<td class="gt_row gt_center" headers="stub_1_8 b_b2_l_2">−0.336</td>
+<td class="gt_row gt_center" headers="stub_1_8 b_b1_c_2">−0.336</td>
+<td class="gt_row gt_center" headers="stub_1_8 b_b2_c_2">−0.336</td>
+<td class="gt_row gt_center" headers="stub_1_8 b_c_2">−0.336</td>
+<td class="gt_row gt_center" headers="stub_1_8 d_sup">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_8 d_inf">0.950</td>
+<td class="gt_row gt_center" headers="stub_1_8 d_fut">0.050</td>
 </tr>
 </tbody>
 </table>
@@ -933,20 +952,31 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<div class="cell">
+<figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-tbl margin-caption" id="tbl-sim-par-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Parameters used to simulate treatment effects and decision thresholds
+</figcaption>
+</figure>
+</div>
+</div>
+<div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">ggplot</span>(d_win, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">exp</span>(lor_tru), <span class="at">y =</span> pr_win)) <span class="sc">+</span></span>
+<div class="sourceCode cell-code" id="cb3" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">ggplot</span>(d_win, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">exp</span>(lor_tru), <span class="at">y =</span> pr_win)) <span class="sc">+</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
 <span id="cb3-3"><a href="#cb3-3"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a>  <span class="fu">scale_x_continuous</span>(<span class="st">"OR"</span>, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="at">by =</span> <span class="fl">0.2</span>)) <span class="sc">+</span></span>
+<span id="cb3-4"><a href="#cb3-4"></a>  <span class="fu">scale_x_continuous</span>(<span class="st">"Odds-ratio"</span>, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">2</span>, <span class="at">by =</span> <span class="fl">0.2</span>)) <span class="sc">+</span></span>
 <span id="cb3-5"><a href="#cb3-5"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"Pr(win)"</span>, <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="dv">0</span>, <span class="dv">1</span>, <span class="at">by =</span> <span class="fl">0.1</span>)) <span class="sc">+</span></span>
 <span id="cb3-6"><a href="#cb3-6"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>parname, <span class="at">ncol =</span> <span class="dv">3</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="simulation-results_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="1800"></p>
+<div class="cell-output-display page-columns page-full">
+<div id="fig-pr-win-1" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-cap-location="margin">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-pr-win-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="simulation-results_files/figure-html/fig-pr-win-1-1.png" class="img-fluid figure-img" width="1800">
+</div>
+<figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-pr-win-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Probability of declaring superiority on parameter by effect size (all pars set with same OR).
+</figcaption>
 </figure>
 </div>
 </div>
