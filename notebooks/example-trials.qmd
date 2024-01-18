@@ -13,7 +13,7 @@ Example trials are provided to give insight into the cell sizes as well as the l
 Examples are from trials at their maximum sample size with all follow up completed.
 Sequential variants with adaptations will be added later.
 
-## Null trial 
+## Null scenario 
 
 @tbl-ex-null1 shows a summary of the treatment sucesses based on the $n$ patients associated with each combination of design variables when no treatment effects (non-membership effects still retained) in the simulated data of 2500 patients.
 Given that this is a summary of a single data set, some variation from the underlying simulation parameters is to be expected.
@@ -194,7 +194,7 @@ ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
   geom_point(data = d_fig, aes(x = trt, y = b), col = 1, pch = 2)
 ```
 
-## All domains effective
+## All domains effective scenario
 
 shows a summary of the treatment sucesses based on the $n$ patients associated with each combination of design variables when all treatment effects set to `log(2)` (with non-membership effects retained as before) in the simulated data of 2500 patients.
 

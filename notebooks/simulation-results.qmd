@@ -76,15 +76,15 @@ g_tbl <- d_tbl |> gt(rowname_col = "effect") |>
     decimals = 3
   ) |>
   tab_spanner(
-    label = html("Surgical D<sub>a</sub>"),
+    label = html("Surgical (D<sub>a</sub>)"),
     columns = c(b_a_l_2, b_a_c_2)
   ) |>
   tab_spanner(
-    label = html("Duration D<sub>b</sub>"),
+    label = html("Duration (D<sub>b</sub>)"),
     columns = c(b_b1_l_2, b_b2_l_2, b_b1_c_2, b_b2_c_2)
   ) |>
   tab_spanner(
-    label = html("Type D<sub>c</sub>"),
+    label = html("Type (D<sub>c</sub>)"),
     columns = c(b_c_2)
   ) |>
   tab_spanner(
@@ -113,7 +113,7 @@ g_tbl
 
 ```{r}
 #| label: fig-pr-win-1
-#| fig-cap: 'Probability of declaring superiority by effect size (all pars set with same OR).'
+#| fig-cap: 'Probability of declaring superiority on parameter by effect size (all pars set with same OR).'
 #| fig-cap-location: margin
 #| fig-height: 7
 
@@ -121,7 +121,7 @@ g_tbl
 ggplot(d_win, aes(x = exp(lor_tru), y = pr_win)) +
   geom_point(size = 0.5) +
   geom_line() +
-  scale_x_continuous("OR", breaks = seq(0, 2, by = 0.2)) +
+  scale_x_continuous("Odds-ratio", breaks = seq(0, 2, by = 0.2)) +
   scale_y_continuous("Pr(win)", breaks = seq(0, 1, by = 0.1)) +
   facet_wrap(~parname, ncol = 3)
 ```
