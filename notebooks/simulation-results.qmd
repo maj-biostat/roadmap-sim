@@ -1,0 +1,111 @@
+---
+title: "Simulation results"
+
+---
+
+```{r, echo = FALSE}
+source("./R/init.R")
+log_info("Called simulation-results notebook")
+```
+
+
+```{r}
+flist <- list.files("data", pattern = "sim01")
+l <- list()
+for(i in 1:length(flist)){
+  l[[i]] <- qs::qread(file.path("data", flist[i]))
+}
+
+d_win <- rbindlist(lapply(l, function(z){
+  cbind(sc = z$cfg$sc, z$d_win[, lapply(.SD, mean)])
+}))
+
+# Column `b_b1_c_2` doesn't exist.
+d_win <- melt(d_win, id.vars = "sc", value.name = "pr_win")
+
+d_cfg <- rbindlist(lapply(l, function(z){
+  data.table(do.call(cbind, z$cfg)) 
+}))
+d_pars <- melt(d_cfg[, .SD, .SDcols = !c("nsim", "mc_cores", "d_sup", "d_inf", "d_fut")], 
+               id.vars = "sc", value.name = "lor_tru")
+
+# urgh - conversion to numeric
+d_cfg[, `:=`(
+  nsim = as.numeric(nsim),
+  mc_cores = as.numeric(mc_cores),
+  b_a_l_2 = as.numeric(b_a_l_2),
+  b_a_c_2 = as.numeric(b_a_c_2),
+  b_b1_l_2 = as.numeric(b_b1_l_2),
+  b_b2_l_2 = as.numeric(b_b2_l_2),
+  b_b1_c_2 = as.numeric(b_b1_c_2),
+  b_b2_c_2 = as.numeric(b_b2_c_2),
+  d_sup = as.numeric(d_sup),
+  d_inf = as.numeric(d_inf),
+  d_fut = as.numeric(d_fut)
+  )]
+
+d_win <- merge(d_win, d_pars, by = c("sc", "variable"))  
+d_win[, lor_tru := as.numeric(lor_tru)]
+parname_map <- roadmap.data::get_par_effects_mapping()
+d_win[, parname := parname_map[variable]]
+d_win[, parname := factor(parname, levels = roadmap.data::get_par_effects_mapping())]
+```
+
+```{r}
+d_tbl <- d_cfg[, .SD, .SDcols = !c("sc","nsim", "mc_cores")]
+
+
+g_tbl <- d_tbl |> gt() |> 
+  cols_align(
+    columns = everything(),
+    align = "center"
+  )  |> 
+  fmt_number(
+    columns = everything(),
+    decimals = 3
+  ) |>
+  tab_spanner(
+    label = html("Surgical D<sub>a</sub>"),
+    columns = c(b_a_l_2, b_a_c_2)
+  ) |>
+  tab_spanner(
+    label = html("Duration D<sub>b</sub>"),
+    columns = c(b_b1_l_2, b_b2_l_2, b_b1_c_2, b_b2_c_2)
+  ) |>
+  tab_spanner(
+    label = html("Type D<sub>c</sub>"),
+    columns = c(b_c_2)
+  ) |>
+  tab_spanner(
+    label = html("Decision thresholds"),
+    columns = c(d_sup, d_inf, d_fut)
+  ) |>
+  cols_label(
+    b_a_l_2 = html("revision"),
+    b_a_c_2 = html("two-stage"),
+    b_b1_l_2 = html("wk12<br>(post stage 1)"),
+    b_b2_l_2 = html("wk12<br>(post stage 2)"),
+    b_b1_c_2 = html("wk12<br>(post stage 1)"),
+    b_b2_c_2 = html("wk12<br>(post stage 2)"),
+    b_c_2 = html("rif"),
+    d_sup = html("delta<sub>sup</sub>"),
+    d_inf = html("delta<sub>inf</sub>"),
+    d_fut = html("delta<sub>fut</sub>")
+  ) |>
+  tab_options(
+    table.font.size = "80%"
+  ) 
+
+g_tbl
+```
+
+
+```{r}
+ggplot(d_win, aes(x = exp(lor_tru), y = pr_win)) +
+  geom_point(size = 0.5) +
+  geom_line() +
+  scale_x_continuous("OR", breaks = seq(0, 2, by = 0.2)) +
+  scale_y_continuous("Pr(win)", breaks = seq(0, 1, by = 0.1)) +
+  facet_wrap(~parname, ncol = 3)
+```
+

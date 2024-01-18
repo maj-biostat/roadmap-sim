@@ -51,3 +51,15 @@ publish:
 data:
 	Rscript $(R_OPTS) ./R/data.R run_data
 
+.PHONY: sim01
+sim01:
+	#Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 config-sc01.yml
+	#Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 config-sc02.yml
+	#Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 config-sc03.yml
+	#Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 config-sc04.yml
+	#Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 config-sc05.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 config-sc06.yml
+	#Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 config-sc07.yml
+	#Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 config-sc08.yml
+
+

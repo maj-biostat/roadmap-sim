@@ -70,3 +70,76 @@ ggplot(d_fig, aes(x = eta, y = eta_med)) +
   ggtitle("True log-odds success vs 95% credible interval")
 ```
 
+
+```{r}
+post <- data.table(f2$draws(variables = c(
+    "alpha", "gamma_b", "gamma_c", 
+    "b_a_l", 
+    "b_b1_l", 
+    "b_b2_l",
+    "b_a_c",
+    "b_b1_c", 
+    "b_b2_c",
+    "b_c"
+  ), format = "matrix"))
+  
+
+# test outcome
+cols <- names(post)
+cols <- gsub("[","_",cols,fixed = T)
+cols <- gsub("]","",cols,fixed = T)
+names(post) <- cols
+  
+# effects
+effs <- c(
+  # domain a, late (revision) and chronic (two-stage)
+  "b_a_l_2", "b_a_c_2", 
+  # domain b, (late/revision one stage pts)
+  # wk12p1 (ref is wk6p1)
+  "b_b1_l_2", 
+  # wk12p2 (ref is day7p2)
+  "b_b2_l_2", 
+  # wk12p1 (ref is wk6p1)
+  "b_b1_c_2", 
+  # wk12p2 (ref is day7p2)
+  "b_b2_c_2",
+  # rif (ref is no-rif)
+  "b_c_2")
+  
+d_beta <- post[, .SD, .SDcols = effs]
+d_beta <- melt(d_beta, measure.vars = names(d_beta))
+
+
+parname_map <- roadmap.data::get_par_effects_mapping()
+d_beta[, parname := parname_map[variable]]
+d_beta[, parname := factor(parname, levels = roadmap.data::get_par_effects_mapping())]
+
+d_fig <- d_beta[, .(
+  lor_med = median(value), 
+  lor_q025 = quantile(value, prob = 0.025),
+  lor_q975 = quantile(value, prob = 0.975)), keyby = parname]
+
+d_effects <- roadmap.data::get_sim_spec_effects(roadmap.data::get_sim_spec())
+d_effects <- melt(d_effects, measure.vars = names(d_effects), value.name = "lor")
+
+d_fig <- merge(d_fig, d_effects, by.x = "parname", by.y = "variable")
+
+```
+
+
+@fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model.
+It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset.
+
+```{r}
+#| label: fig-post-lor
+#| fig-cap: 'Posterior estimates for log-odds-ratios (true values shown as triangles).'
+#| fig-cap-location: margin
+#| fig-height: 4
+
+ggplot(d_fig, aes(x = parname, y = lor_med)) +
+  geom_point() +
+  geom_point(data = d_fig, aes(x = parname, y = lor), pch = 2) +
+  geom_linerange(aes(ymin = lor_q025, ymax = lor_q975)) 
+  scale_x_discrete("") +
+  scale_y_continuous("Posterior log-odds-ratio (95% credible interval)") 
+```

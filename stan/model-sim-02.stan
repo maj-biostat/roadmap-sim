@@ -38,6 +38,15 @@ data {
   vector[N_c] c_ebp;
   array[N_c] int c_b;
   
+  // priors
+  real pri_sig_b_c;
+  real pri_sig_a_l;
+  real pri_sig_b1_l;
+  real pri_sig_b2_l;
+  real pri_sig_a_c;
+  real pri_sig_b1_c;
+  real pri_sig_b2_c;
+  
 }
 transformed data {
   int N = N_e + N_l + N_c;
@@ -100,15 +109,15 @@ model{
   target += std_normal_lpdf(gamma_b);
   target += std_normal_lpdf(gamma_c);
   // all silos
-  target += std_normal_lpdf(b_c_raw);
+  target += normal_lpdf(b_c_raw | 0, pri_sig_b_c);
   // late silo
-  target += std_normal_lpdf(b_a_l_raw);
-  target += std_normal_lpdf(b_b1_l_raw);
-  target += std_normal_lpdf(b_b2_l_raw);
+  target += normal_lpdf(b_a_l_raw | 0, pri_sig_a_l);
+  target += normal_lpdf(b_b1_l_raw | 0, pri_sig_b1_l);
+  target += normal_lpdf(b_b2_l_raw | 0, pri_sig_b2_l);
   // chronic silo
-  target += std_normal_lpdf(b_a_c_raw);
-  target += std_normal_lpdf(b_b1_c_raw);
-  target += std_normal_lpdf(b_b2_c_raw);
+  target += normal_lpdf(b_a_c_raw | 0, pri_sig_a_c);
+  target += normal_lpdf(b_b1_c_raw | 0, pri_sig_b1_c);
+  target += normal_lpdf(b_b2_c_raw | 0, pri_sig_b2_c);
   
   // likelihood chunks pertaining to each silo
   target += binomial_logit_lpmf(e_y | e_n, alpha[e_su] +

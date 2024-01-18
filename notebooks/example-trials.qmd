@@ -39,6 +39,7 @@ gt_tbl <- tbl_ex_trial(ll$d)
 gt_tbl
 ```
 
+Model the simulated data first using standard normal priors on the domain level treatment effects, then increasing the prior standard deviation to ten in order to see if there is any movement in the posterior summary.
 
 ```{r}
 lsd <- get_stan_data(ll$d_i)
@@ -47,12 +48,39 @@ d_b <- copy(lsd$d_b)
 
 m2 <- cmdstanr::cmdstan_model("stan/model-sim-02.stan")
 
-f_null <- m2$sample(
+f_null_1 <- m2$sample(
   ld, iter_warmup = 1000, iter_sampling = 2000,
   parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
   max_treedepth = 13)
 
-post <- data.table(f_null$draws(variables = c(
+post_1 <- data.table(f_null_1$draws(variables = c(
+  "alpha", "gamma_b", "gamma_c", 
+  "b_a_l", 
+  "b_b1_l", 
+  "b_b2_l",
+  "b_a_c",
+  "b_b1_c", 
+  "b_b2_c",
+  "b_c"
+), format = "matrix"))
+
+# compare when prior sd is set to 10 for trt effects
+
+pri_sd <- 10
+ld$pri_sig_b_c <- pri_sd
+ld$pri_sig_a_l <- pri_sd
+ld$pri_sig_b1_l <- pri_sd
+ld$pri_sig_b2_l <- pri_sd
+ld$pri_sig_a_c <- pri_sd
+ld$pri_sig_b1_c <- pri_sd
+ld$pri_sig_b2_c <- pri_sd
+
+f_null_2 <- m2$sample(
+  ld, iter_warmup = 1000, iter_sampling = 2000,
+  parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
+  max_treedepth = 13)
+
+post_2 <- data.table(f_null_2$draws(variables = c(
   "alpha", "gamma_b", "gamma_c", 
   "b_a_l", 
   "b_b1_l", 
@@ -66,18 +94,26 @@ post <- data.table(f_null$draws(variables = c(
 
 ```{r}
 #| label: fig-null-alpha
-#| fig-cap: 'Posterior median and 95% CI for baseline log-odds of treatment success.'
+#| fig-cap: 'Posterior median and 95% CI for baseline log-odds of treatment success (triangles show true values).'
 #| fig-cap-location: margin
 #| fig-height: 4
 
-d_fig <- post_alpha(post)
+d_fig1 <- post_alpha(post_1)
+d_fig2 <- post_alpha(post_2)
 
-ggplot(d_fig, aes(x = grp, y = a)) +
-  geom_point() +
+d_fig <- rbind(
+  cbind(prior_sd = 1, d_fig1),
+  cbind(prior_sd = pri_sd, d_fig2)
+)
+d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
+
+ggplot(d_fig, aes(x = grp, y = a, group = prior_sd, col = prior_sd)) +
   scale_x_discrete("") +
   scale_y_continuous("log-odds treatment success") + 
-  geom_point(data = d_fig, aes(x = grp, y = a_med), col = 2) +
-  geom_linerange(aes(ymin = a_q025, ymax = a_q975), col = 2)
+  scale_color_discrete("Prior sd on log-OR domain trt effects") +
+  geom_point(data = d_fig, aes(x = grp, y = a_med), position = position_dodge(width = 0.4)) +
+  geom_linerange(aes(ymin = a_q025, ymax = a_q975), position = position_dodge2(width = 0.4)) +
+  geom_point(data = d_fig, aes(x = grp, y = a), col = 1, pch = 2)
 ```
 
 ```{r}
@@ -86,19 +122,26 @@ ggplot(d_fig, aes(x = grp, y = a)) +
 #| fig-cap-location: margin
 #| fig-height: 4
 
-d_fig <- post_dom_a(post)
+d_fig1 <- post_dom_a(post_1)
+d_fig2 <- post_dom_a(post_2)
+
+d_fig <- rbind(
+  cbind(prior_sd = 1, d_fig1),
+  cbind(prior_sd = pri_sd, d_fig2)
+)
+d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
 
 # https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/
 
-ggplot(d_fig, aes(x = trt, y = b)) +
-  geom_jitter(width = 0.2, height=0.0) +
+ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
   scale_x_discrete("") +
   scale_y_continuous("log-OR") + 
-  geom_point(data = d_fig, aes(x = trt, y = b_med), col = 2) +
-  geom_linerange(aes(ymin = b_q025, ymax = b_q975), col = 2) +
+  scale_color_discrete("Prior sd on log-OR domain trt effects") +
+  geom_point(data = d_fig, aes(x = trt, y = b_med), position = position_dodge(width = 0.4)) +
+  geom_linerange(aes(ymin = b_q025, ymax = b_q975), position = position_dodge2(width = 0.4)) +
+  geom_point(data = d_fig, aes(x = trt, y = b), col = 1, pch = 2) +
   facet_grid(~silo,scale="free_x",space="free_x")
 ```
-
 
 ```{r}
 #| label: fig-null-dom-b
@@ -106,19 +149,26 @@ ggplot(d_fig, aes(x = trt, y = b)) +
 #| fig-cap-location: margin
 #| fig-height: 6
 
-d_fig <- post_dom_b(post)
+d_fig1 <- post_dom_b(post_1)
+d_fig2 <- post_dom_b(post_2)
+
+d_fig <- rbind(
+  cbind(prior_sd = 1, d_fig1),
+  cbind(prior_sd = pri_sd, d_fig2)
+)
+d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
 
 # https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/
 
-ggplot(d_fig, aes(x = trt, y = b)) +
-  geom_jitter(width = 0.2, height=0.0) +
+ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
   scale_x_discrete("") +
   scale_y_continuous("log-OR") + 
-  geom_point(data = d_fig, aes(x = trt, y = b_med), col = 2) +
-  geom_linerange(aes(ymin = b_q025, ymax = b_q975), col = 2) +
+  scale_color_discrete("Prior sd on log-OR domain trt effects") +
+  geom_point(data = d_fig, aes(x = trt, y = b_med), position = position_dodge(width = 0.4)) +
+  geom_linerange(aes(ymin = b_q025, ymax = b_q975), position = position_dodge2(width = 0.4)) +
+  geom_point(data = d_fig, aes(x = trt, y = b), col = 1, pch = 2) +
   facet_grid(paste0("Planned/assigned surgery: ", qa, "-stage")~silo,scale="free_x",space="free_x")
 ```
-
 
 ```{r}
 #| label: fig-null-dom-c
@@ -126,14 +176,22 @@ ggplot(d_fig, aes(x = trt, y = b)) +
 #| fig-cap-location: margin
 #| fig-height: 4
 
-d_fig <- post_dom_c(post)
+d_fig1 <- post_dom_c(post_1)
+d_fig2 <- post_dom_c(post_2)
 
-ggplot(d_fig, aes(x = trt, y = b)) +
-  geom_jitter(width = 0.2, height=0.0) +
+d_fig <- rbind(
+  cbind(prior_sd = 1, d_fig1),
+  cbind(prior_sd = pri_sd, d_fig2)
+)
+d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
+
+ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
   scale_x_discrete("") +
   scale_y_continuous("log-OR") + 
-  geom_point(data = d_fig, aes(x = trt, y = b_med), col = 2) +
-  geom_linerange(aes(ymin = b_q025, ymax = b_q975), col = 2) 
+  scale_color_discrete("Prior sd on log-OR domain trt effects") +
+  geom_point(data = d_fig, aes(x = trt, y = b_med), position = position_dodge(width = 0.4)) +
+  geom_linerange(aes(ymin = b_q025, ymax = b_q975), position = position_dodge2(width = 0.4)) +
+  geom_point(data = d_fig, aes(x = trt, y = b), col = 1, pch = 2)
 ```
 
 ## All domains effective
@@ -162,7 +220,6 @@ gt_tbl <- tbl_ex_trial(ll$d)
 gt_tbl
 ```
 
-
 ```{r}
 lsd <- get_stan_data(ll$d_i)
 ld <- lsd$ld
@@ -170,12 +227,39 @@ d_b <- copy(lsd$d_b)
 
 m2 <- cmdstanr::cmdstan_model("stan/model-sim-02.stan")
 
-f_alleff <- m2$sample(
+f_alleff_1 <- m2$sample(
   ld, iter_warmup = 1000, iter_sampling = 2000,
   parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
   max_treedepth = 13)
 
-post <- data.table(f_alleff$draws(variables = c(
+post_1 <- data.table(f_alleff_1$draws(variables = c(
+  "alpha", "gamma_b", "gamma_c", 
+  "b_a_l", 
+  "b_b1_l", 
+  "b_b2_l",
+  "b_a_c",
+  "b_b1_c", 
+  "b_b2_c",
+  "b_c"
+), format = "matrix"))
+
+# compare when prior sd is set to 10 for trt effects
+
+pri_sd <- 10
+ld$pri_sig_b_c <- pri_sd
+ld$pri_sig_a_l <- pri_sd
+ld$pri_sig_b1_l <- pri_sd
+ld$pri_sig_b2_l <- pri_sd
+ld$pri_sig_a_c <- pri_sd
+ld$pri_sig_b1_c <- pri_sd
+ld$pri_sig_b2_c <- pri_sd
+
+f_alleff_2 <- m2$sample(
+  ld, iter_warmup = 1000, iter_sampling = 2000,
+  parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
+  max_treedepth = 13)
+
+post_2 <- data.table(f_alleff_2$draws(variables = c(
   "alpha", "gamma_b", "gamma_c", 
   "b_a_l", 
   "b_b1_l", 
@@ -187,23 +271,28 @@ post <- data.table(f_alleff$draws(variables = c(
 ), format = "matrix"))
 ```
 
-
-
-
 ```{r}
 #| label: fig-alleff-alpha
-#| fig-cap: 'Posterior median and 95% CI for baseline log-odds of treatment success.'
+#| fig-cap: 'Posterior median and 95% CI for baseline log-odds of treatment success (triangles show true values).'
 #| fig-cap-location: margin
 #| fig-height: 4
 
-d_fig <- post_alpha(post)
+d_fig1 <- post_alpha(post_1)
+d_fig2 <- post_alpha(post_2)
 
-ggplot(d_fig, aes(x = grp, y = a)) +
-  geom_point() +
+d_fig <- rbind(
+  cbind(prior_sd = 1, d_fig1),
+  cbind(prior_sd = pri_sd, d_fig2)
+)
+d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
+
+ggplot(d_fig, aes(x = grp, y = a, group = prior_sd, col = prior_sd)) +
   scale_x_discrete("") +
   scale_y_continuous("log-odds treatment success") + 
-  geom_point(data = d_fig, aes(x = grp, y = a_med), col = 2) +
-  geom_linerange(aes(ymin = a_q025, ymax = a_q975), col = 2)
+  scale_color_discrete("Prior sd on log-OR domain trt effects") +
+  geom_point(data = d_fig, aes(x = grp, y = a_med), position = position_dodge(width = 0.4)) +
+  geom_linerange(aes(ymin = a_q025, ymax = a_q975), position = position_dodge2(width = 0.4)) +
+  geom_point(data = d_fig, aes(x = grp, y = a), col = 1, pch = 2)
 ```
 
 ```{r}
@@ -212,16 +301,24 @@ ggplot(d_fig, aes(x = grp, y = a)) +
 #| fig-cap-location: margin
 #| fig-height: 4
 
-d_fig <- post_dom_a(post)
+d_fig1 <- post_dom_a(post_1)
+d_fig2 <- post_dom_a(post_2)
+
+d_fig <- rbind(
+  cbind(prior_sd = 1, d_fig1),
+  cbind(prior_sd = pri_sd, d_fig2)
+)
+d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
 
 # https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/
 
-ggplot(d_fig, aes(x = trt, y = b)) +
-  geom_jitter(width = 0.2, height=0.0) +
+ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
   scale_x_discrete("") +
   scale_y_continuous("log-OR") + 
-  geom_point(data = d_fig, aes(x = trt, y = b_med), col = 2) +
-  geom_linerange(aes(ymin = b_q025, ymax = b_q975), col = 2) +
+  scale_color_discrete("Prior sd on log-OR domain trt effects") +
+  geom_point(data = d_fig, aes(x = trt, y = b_med), position = position_dodge(width = 0.4)) +
+  geom_linerange(aes(ymin = b_q025, ymax = b_q975), position = position_dodge2(width = 0.4)) +
+  geom_point(data = d_fig, aes(x = trt, y = b), col = 1, pch = 2) +
   facet_grid(~silo,scale="free_x",space="free_x")
 ```
 
@@ -232,16 +329,24 @@ ggplot(d_fig, aes(x = trt, y = b)) +
 #| fig-cap-location: margin
 #| fig-height: 6
 
-d_fig <- post_dom_b(post)
+d_fig1 <- post_dom_b(post_1)
+d_fig2 <- post_dom_b(post_2)
+
+d_fig <- rbind(
+  cbind(prior_sd = 1, d_fig1),
+  cbind(prior_sd = pri_sd, d_fig2)
+)
+d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
 
 # https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/
 
-ggplot(d_fig, aes(x = trt, y = b)) +
-  geom_jitter(width = 0.2, height=0.0) +
+ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
   scale_x_discrete("") +
   scale_y_continuous("log-OR") + 
-  geom_point(data = d_fig, aes(x = trt, y = b_med), col = 2) +
-  geom_linerange(aes(ymin = b_q025, ymax = b_q975), col = 2) +
+  scale_color_discrete("Prior sd on log-OR domain trt effects") +
+  geom_point(data = d_fig, aes(x = trt, y = b_med), position = position_dodge(width = 0.4)) +
+  geom_linerange(aes(ymin = b_q025, ymax = b_q975), position = position_dodge2(width = 0.4)) +
+  geom_point(data = d_fig, aes(x = trt, y = b), col = 1, pch = 2) +
   facet_grid(paste0("Planned/assigned surgery: ", qa, "-stage")~silo,scale="free_x",space="free_x")
 ```
 
@@ -252,13 +357,21 @@ ggplot(d_fig, aes(x = trt, y = b)) +
 #| fig-cap-location: margin
 #| fig-height: 4
 
-d_fig <- post_dom_c(post)
+d_fig1 <- post_dom_c(post_1)
+d_fig2 <- post_dom_c(post_2)
 
-ggplot(d_fig, aes(x = trt, y = b)) +
-  geom_jitter(width = 0.2, height=0.0) +
+d_fig <- rbind(
+  cbind(prior_sd = 1, d_fig1),
+  cbind(prior_sd = pri_sd, d_fig2)
+)
+d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
+
+ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
   scale_x_discrete("") +
   scale_y_continuous("log-OR") + 
-  geom_point(data = d_fig, aes(x = trt, y = b_med), col = 2) +
-  geom_linerange(aes(ymin = b_q025, ymax = b_q975), col = 2) 
+  scale_color_discrete("Prior sd on log-OR domain trt effects") +
+  geom_point(data = d_fig, aes(x = trt, y = b_med), position = position_dodge(width = 0.4)) +
+  geom_linerange(aes(ymin = b_q025, ymax = b_q975), position = position_dodge2(width = 0.4)) +
+  geom_point(data = d_fig, aes(x = trt, y = b), col = 1, pch = 2)
 ```
 

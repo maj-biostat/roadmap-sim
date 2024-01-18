@@ -14,7 +14,7 @@ Trial data is simulated under the model specification, see earlier section.
 ```{r}
 ll <- get_trial_data(N = 2500)
 
-d_a <- ll$d[silo %in% c("late", "chronic"), .(y = sum(y), .N), keyby = .(silo, joint, ea, a)]
+d_a <- ll$d[silo %in% c("late", "chronic"), .(y = sum(y), .N), keyby = .(silo, joint, ea, a, qa)]
 d_b_late <- ll$d[silo %in% c("late") & a == "rev", .(y = sum(y), .N), keyby = .(silo, joint, qa, eb, b)]
 d_b_chronic <- ll$d[silo %in% c("chronic") , .(y = sum(y), .N), keyby = .(silo, joint, qa, eb, b)]
 
@@ -34,10 +34,10 @@ For example, late stage patients with knee joint infections receiving revision w
 #| tbl-cap: 'Summary of simulated trial data for surgical domain'
 #| column: page
 
-cols <- c("Silo", "Infection site", "Surgery", "Success", "N", "Pr(success)")
-names(cols) <- names(d_a[, .(silo, joint, a, y, N, p_obs = y/N)])
+cols <- c("Silo", "Infection site", "Surgery", "Planned", "Success", "N", "Pr(success)")
+names(cols) <- names(d_a[, .(silo, joint, a, qa, y, N, p_obs = y/N)])
 
-gt_tbl <- d_a[, .(silo, joint, a, y, N, p_obs = y/N)] |> 
+gt_tbl <- d_a[, .(silo, joint, a, qa, y, N, p_obs = y/N)] |> 
   gt(
   ) |> 
   cols_align(
@@ -47,6 +47,12 @@ gt_tbl <- d_a[, .(silo, joint, a, y, N, p_obs = y/N)] |>
   fmt_number(
     columns = starts_with(c("p_obs")),
     decimals = 2
+  ) |>
+  grand_summary_rows(
+    columns = c("y", "N"),
+    fns = list(
+      subtotal = ~ sum(., na.rm = TRUE)
+    )
   ) |>
   cols_label(.list = cols)
 
@@ -75,6 +81,12 @@ gt_tbl <- d_b[, .(silo, joint, qa, b, y, N, p_obs = y/N)] |>
     columns = starts_with(c("p_obs")),
     decimals = 2
   ) |>
+  grand_summary_rows(
+    columns = c("y", "N"),
+    fns = list(
+      subtotal = ~ sum(., na.rm = TRUE)
+    )
+  ) |>
   cols_label(.list = cols)
 
 gt_tbl
@@ -101,6 +113,12 @@ gt_tbl <- d_c[, .(silo, joint, c, y, N, p_obs = y/N)] |>
   fmt_number(
     columns = starts_with(c("p_obs")),
     decimals = 2
+  ) |>
+  grand_summary_rows(
+    columns = c("y", "N"),
+    fns = list(
+      subtotal = ~ sum(., na.rm = TRUE)
+    )
   ) |>
   cols_label(.list = cols)
 

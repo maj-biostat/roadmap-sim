@@ -8,11 +8,15 @@ source("./R/init.R")
 log_info("Called population-structure notebook")
 ```
 
-The following data specification is for the partially factorial structure of the study.
+The following specification is for the partially factorial structure of the study.
 The outcome model is specified separately.
 
 
 ## Silo
+
+The total sample size is divided across the silos in proportion to the values described in the table below.
+These proportions are expectations. 
+Each simulated dataset will vary somewhat from these proportions due to the stochastic nature of the generation process.
 
 ::: {.column width="50%"}
 
@@ -27,6 +31,10 @@ The outcome model is specified separately.
 
 
 ## Site of infection (joint)
+
+Each silo comprises patients assumed to have primary infection in either knee or hip (not both).
+The proportion of infections associated with each joint for each silo are shown below.
+As previously, these proportions are expectations and the empirical proportions observed in simulated datasets will vary from these.
 
 ::: {.column width="70%"}
 
@@ -44,6 +52,8 @@ chronic |hip |  0.5 |
 
 ## Randomisation into surgery domain (A)
 
+Randomisation into domain A is conditional on silo membership as detailed below.
+
 ::: {.column width="50%"}
 
 Silo | Randomised ($e_a$) |  
@@ -58,7 +68,8 @@ chronic | Y |
 
 ## Surgery domain (A)
 
-Early silo does not receive randomisation; all early stage patients receive DAIR.
+Allocation probabilities (conditional on entry into domain A) are shown below.
+Early silo does not receive randomisation and all early stage patients are assumed to receive DAIR.
 
 ::: {.column width="70%"}
 
@@ -75,9 +86,10 @@ chronic |two-stage |  0.5 |
 
 ## Intended surgery
 
-Late stage infections will be randomised to DAIR vs revision where revision is one or two-stage.
-Conditional on late-stage infection and allocation to revision, assume equal chance of indended revision type (one vs two stage); intended revision type is not randomised.
-All bar late-stage infection revision have intended surgery set to allocated surgery.
+Late stage infections will be randomised to DAIR vs revision where revision would be planned as one or two-stage, determined by the treating clinician, i.e. not randomised.
+As we do not know the assignment mechanism for one vs two-stage for the late-stage infection patients allocated to revision, we simply assume an equal chance of receiving one vs two stage.
+
+In all other cases, the intended surgery is set to allocated surgery.
 
 ::: {.column width="70%"}
 
@@ -95,7 +107,7 @@ chronic |two-stage |  two-stage | - |
 
 ## Randomisation into duration domain (B)
 
-Conditional on intended surgery.
+Entry into domain B is dependent on the domain A entry and allocation and is detailed below.
 
 ::: {.column width="70%"}
 
@@ -111,6 +123,7 @@ two-stage |  Y |
 
 ## Duration domain (B)
 
+The treatment options and allocation probabilities for domain B are detailed below.
 Duration of antibiotic is conditional on allocated (intended) surgery type, see above.
 Patients receiving DAIR are assumed to have 12 wk duration (not randomised).
 
@@ -129,7 +142,7 @@ two-stage | 12 wk post 2  |  0.5 |
 
 ## Randomisation into adjunctive domain (C)
 
-60% of cohort enter into domain, the rest are flagged as ineligible
+60% of cohort enter into domain, the rest are flagged as ineligible as detailed below.
 
 ::: {.column width="70%"}
 
@@ -143,6 +156,8 @@ chronic |  Y |  0.6 |
 :::  
 
 ## Adjunctive domain (C)
+
+The treatment options and allocation probabilities for domain C are detailed below.
 
 ::: {.column width="70%"}
 
