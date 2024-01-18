@@ -1,7 +1,7 @@
 # simulation configuration (all OR = log(1.2))
 default:
   sc: "sc02"
-  nsim: 10
+  nsim: 100
   mc_cores: 5
   b_a_l_2: 0.1823216 # b_a_late_rev
   b_a_c_2: 0.1823216 # b_a_chronic_two
