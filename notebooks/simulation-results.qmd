@@ -39,6 +39,7 @@ d_cfg[, `:=`(
   b_b2_l_2 = as.numeric(b_b2_l_2),
   b_b1_c_2 = as.numeric(b_b1_c_2),
   b_b2_c_2 = as.numeric(b_b2_c_2),
+  b_c_2 = as.numeric(b_c_2),
   d_sup = as.numeric(d_sup),
   d_inf = as.numeric(d_inf),
   d_fut = as.numeric(d_fut)
@@ -52,10 +53,20 @@ d_win[, parname := factor(parname, levels = roadmap.data::get_par_effects_mappin
 ```
 
 ```{r}
+#| label: tbl-sim-par
+#| tbl-cap: 'Parameters used to simulate treatment effects and decision thresholds'
+#| column: page
+
+
 d_tbl <- d_cfg[, .SD, .SDcols = !c("sc","nsim", "mc_cores")]
+d_tbl <- cbind(
+  effect = c(
+    "null", rep("superior", 5), rep("inferior", 2)
+  ), d_tbl
+)
 
 
-g_tbl <- d_tbl |> gt() |> 
+g_tbl <- d_tbl |> gt(rowname_col = "effect") |> 
   cols_align(
     columns = everything(),
     align = "center"
@@ -101,6 +112,12 @@ g_tbl
 
 
 ```{r}
+#| label: fig-pr-win-1
+#| fig-cap: 'Probability of declaring superiority by effect size (all pars set with same OR).'
+#| fig-cap-location: margin
+#| fig-height: 7
+
+
 ggplot(d_win, aes(x = exp(lor_tru), y = pr_win)) +
   geom_point(size = 0.5) +
   geom_line() +
