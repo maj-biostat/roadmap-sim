@@ -8,6 +8,7 @@ source("./R/init.R")
 log_info("Called simulation-results notebook")
 ```
 
+Summarises superiority for fixed trial when all domains treatment effects are set to the same values ranging from $\log(1/1.4)$ to $\log(2)$, see @tbl-sim-par.
 
 ```{r}
 flist <- list.files("data", pattern = "sim01")
@@ -110,6 +111,12 @@ g_tbl <- d_tbl |> gt(rowname_col = "effect") |>
 g_tbl
 ```
 
+@fig-pr-win-1 summarises the change in the probability of declaring superiority on each parameter as the effects sizes vary.
+All domains are set so that the treatment effects are all equal, e.g. all set to $\log(2)$ etc.
+The parameters are log-odds-ratios relative to the relevant reference values.
+
+For example, `b_a_late_rev` is the effect revision relative to dair specific to the late silo.
+Similarly, `b_a_chronic_two` is the effect of two-stage procedure relative to the one-stage specific to the chronic silo.
 
 ```{r}
 #| label: fig-pr-win-1
@@ -117,12 +124,11 @@ g_tbl
 #| fig-cap-location: margin
 #| fig-height: 7
 
-
 ggplot(d_win, aes(x = exp(lor_tru), y = pr_win)) +
   geom_point(size = 0.5) +
   geom_line() +
   scale_x_continuous("Odds-ratio", breaks = seq(0, 2, by = 0.2)) +
-  scale_y_continuous("Pr(win)", breaks = seq(0, 1, by = 0.1)) +
+  scale_y_continuous("Pr(decide superior)", breaks = seq(0, 1, by = 0.1)) +
   facet_wrap(~parname, ncol = 3)
 ```
 
