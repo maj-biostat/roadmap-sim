@@ -296,9 +296,10 @@ window.Quarto = {
 <div class="cell">
 
 </div>
-<p>The following data specification is for the partially factorial structure of the study. The outcome model is specified separately.</p>
+<p>The following specification is for the partially factorial structure of the study. The outcome model is specified separately.</p>
 <section id="silo" class="level2">
 <h2 class="anchored" data-anchor-id="silo">Silo</h2>
+<p>The total sample size is divided across the silos in proportion to the values described in the table below. These proportions are expectations. Each simulated dataset will vary somewhat from these proportions due to the stochastic nature of the generation process.</p>
 <div class="column" style="width:50%;">
 <table class="table-striped table-hover table">
 <caption>Silo categories (<span class="math inline">\(\pi\)</span> denotes probability of membership)</caption>
@@ -327,6 +328,7 @@ window.Quarto = {
 </section>
 <section id="site-of-infection-joint" class="level2">
 <h2 class="anchored" data-anchor-id="site-of-infection-joint">Site of infection (joint)</h2>
+<p>Each silo comprises patients assumed to have primary infection in either knee or hip (not both). The proportion of infections associated with each joint for each silo are shown below. As previously, these proportions are expectations and the empirical proportions observed in simulated datasets will vary from these.</p>
 <div class="column" style="width:70%;">
 <table class="table-striped table-hover table">
 <caption>Site of infection (<span class="math inline">\(\pi\)</span> denotes probability of site infection conditional on silo membership)</caption>
@@ -381,6 +383,7 @@ window.Quarto = {
 </section>
 <section id="randomisation-into-surgery-domain-a" class="level2">
 <h2 class="anchored" data-anchor-id="randomisation-into-surgery-domain-a">Randomisation into surgery domain (A)</h2>
+<p>Randomisation into domain A is conditional on silo membership as detailed below.</p>
 <div class="column" style="width:50%;">
 <table class="table-striped table-hover table">
 <caption>Randomisation within domain A</caption>
@@ -409,7 +412,7 @@ window.Quarto = {
 </section>
 <section id="surgery-domain-a" class="level2">
 <h2 class="anchored" data-anchor-id="surgery-domain-a">Surgery domain (A)</h2>
-<p>Early silo does not receive randomisation; all early stage patients receive DAIR.</p>
+<p>Allocation probabilities (conditional on entry into domain A) are shown below. Early silo does not receive randomisation and all early stage patients are assumed to receive DAIR.</p>
 <div class="column" style="width:70%;">
 <table class="table-striped table-hover table">
 <caption>Allocation within domain A (<span class="math inline">\(\pi\)</span> denotes probability allocation to surgery type conditional on silo membership)</caption>
@@ -458,7 +461,8 @@ window.Quarto = {
 </section>
 <section id="intended-surgery" class="level2">
 <h2 class="anchored" data-anchor-id="intended-surgery">Intended surgery</h2>
-<p>Late stage infections will be randomised to DAIR vs revision where revision is one or two-stage. Conditional on late-stage infection and allocation to revision, assume equal chance of indended revision type (one vs two stage); intended revision type is not randomised. All bar late-stage infection revision have intended surgery set to allocated surgery.</p>
+<p>Late stage infections will be randomised to DAIR vs revision where revision would be planned as one or two-stage, determined by the treating clinician, i.e.&nbsp;not randomised. As we do not know the assignment mechanism for one vs two-stage for the late-stage infection patients allocated to revision, we simply assume an equal chance of receiving one vs two stage.</p>
+<p>In all other cases, the intended surgery is set to allocated surgery.</p>
 <div class="column" style="width:70%;">
 <table class="table-striped table-hover table">
 <caption>Indended surgical approach (<span class="math inline">\(\pi\)</span> denotes probability allocation to surgery type conditional on silo membership)</caption>
@@ -520,7 +524,7 @@ window.Quarto = {
 </section>
 <section id="randomisation-into-duration-domain-b" class="level2">
 <h2 class="anchored" data-anchor-id="randomisation-into-duration-domain-b">Randomisation into duration domain (B)</h2>
-<p>Conditional on intended surgery.</p>
+<p>Entry into domain B is dependent on the domain A entry and allocation and is detailed below.</p>
 <div class="column" style="width:70%;">
 <table class="table-striped table-hover table">
 <caption>Randomisation within domain B</caption>
@@ -558,7 +562,7 @@ window.Quarto = {
 </section>
 <section id="duration-domain-b" class="level2">
 <h2 class="anchored" data-anchor-id="duration-domain-b">Duration domain (B)</h2>
-<p>Duration of antibiotic is conditional on allocated (intended) surgery type, see above. Patients receiving DAIR are assumed to have 12 wk duration (not randomised).</p>
+<p>The treatment options and allocation probabilities for domain B are detailed below. Duration of antibiotic is conditional on allocated (intended) surgery type, see above. Patients receiving DAIR are assumed to have 12 wk duration (not randomised).</p>
 <div class="column" style="width:70%;">
 <table class="table-striped table-hover table">
 <caption>Allocation within duration domain (<span class="math inline">\(\pi\)</span> denotes probability allocation to surgery type conditional on allocated/intended surgery)</caption>
@@ -601,7 +605,7 @@ window.Quarto = {
 </section>
 <section id="randomisation-into-adjunctive-domain-c" class="level2">
 <h2 class="anchored" data-anchor-id="randomisation-into-adjunctive-domain-c">Randomisation into adjunctive domain (C)</h2>
-<p>60% of cohort enter into domain, the rest are flagged as ineligible</p>
+<p>60% of cohort enter into domain, the rest are flagged as ineligible as detailed below.</p>
 <div class="column" style="width:70%;">
 <table class="table-striped table-hover table">
 <caption>Randomisation within domain C (<span class="math inline">\(\pi\)</span> denotes probability patient is indicated as eligible for domain)</caption>
@@ -634,6 +638,7 @@ window.Quarto = {
 </section>
 <section id="adjunctive-domain-c" class="level2">
 <h2 class="anchored" data-anchor-id="adjunctive-domain-c">Adjunctive domain (C)</h2>
+<p>The treatment options and allocation probabilities for domain C are detailed below.</p>
 <div class="column" style="width:70%;">
 <table class="table-striped table-hover table">
 <caption>Allocation within adjunctive domain (<span class="math inline">\(\pi\)</span> denotes probability that an eligible patient is allocated to no rif vs rif)</caption>
@@ -817,7 +822,7 @@ $r_c
 
   d
 }
-&lt;bytecode: 0x1116d0910&gt;
+&lt;bytecode: 0x116a1e0e0&gt;
 &lt;environment: namespace:roadmap.data&gt;</code></pre>
 </div>
 </div>

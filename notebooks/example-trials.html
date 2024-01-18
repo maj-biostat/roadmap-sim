@@ -1755,6 +1755,7 @@ Table&nbsp;1: Summary of simulated trial data when no treatment effects present
 </figure>
 </div>
 </div>
+<p>Model the simulated data first using standard normal priors on the domain level treatment effects, then increasing the prior standard deviation to ten in order to see if there is any movement in the posterior summary.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1764,7 +1765,7 @@ Table&nbsp;1: Summary of simulated trial data when no treatment effects present
 <span id="cb2-4"><a href="#cb2-4"></a></span>
 <span id="cb2-5"><a href="#cb2-5"></a>m2 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">"stan/model-sim-02.stan"</span>)</span>
 <span id="cb2-6"><a href="#cb2-6"></a></span>
-<span id="cb2-7"><a href="#cb2-7"></a>f_null <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb2-7"><a href="#cb2-7"></a>f_null_1 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
 <span id="cb2-8"><a href="#cb2-8"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
 <span id="cb2-9"><a href="#cb2-9"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
 <span id="cb2-10"><a href="#cb2-10"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1781,7 +1782,7 @@ Total execution time: 1.6 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>post <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f_null<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>post_1 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f_null_1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
 <span id="cb4-2"><a href="#cb4-2"></a>  <span class="st">"alpha"</span>, <span class="st">"gamma_b"</span>, <span class="st">"gamma_c"</span>, </span>
 <span id="cb4-3"><a href="#cb4-3"></a>  <span class="st">"b_a_l"</span>, </span>
 <span id="cb4-4"><a href="#cb4-4"></a>  <span class="st">"b_b1_l"</span>, </span>
@@ -1790,20 +1791,67 @@ Total execution time: 1.6 seconds.</code></pre>
 <span id="cb4-7"><a href="#cb4-7"></a>  <span class="st">"b_b1_c"</span>, </span>
 <span id="cb4-8"><a href="#cb4-8"></a>  <span class="st">"b_b2_c"</span>,</span>
 <span id="cb4-9"><a href="#cb4-9"></a>  <span class="st">"b_c"</span></span>
-<span id="cb4-10"><a href="#cb4-10"></a>), <span class="at">format =</span> <span class="st">"matrix"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb4-10"><a href="#cb4-10"></a>), <span class="at">format =</span> <span class="st">"matrix"</span>))</span>
+<span id="cb4-11"><a href="#cb4-11"></a></span>
+<span id="cb4-12"><a href="#cb4-12"></a><span class="co"># compare when prior sd is set to 10 for trt effects</span></span>
+<span id="cb4-13"><a href="#cb4-13"></a></span>
+<span id="cb4-14"><a href="#cb4-14"></a>pri_sd <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb4-15"><a href="#cb4-15"></a>ld<span class="sc">$</span>pri_sig_b_c <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb4-16"><a href="#cb4-16"></a>ld<span class="sc">$</span>pri_sig_a_l <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb4-17"><a href="#cb4-17"></a>ld<span class="sc">$</span>pri_sig_b1_l <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb4-18"><a href="#cb4-18"></a>ld<span class="sc">$</span>pri_sig_b2_l <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb4-19"><a href="#cb4-19"></a>ld<span class="sc">$</span>pri_sig_a_c <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb4-20"><a href="#cb4-20"></a>ld<span class="sc">$</span>pri_sig_b1_c <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb4-21"><a href="#cb4-21"></a>ld<span class="sc">$</span>pri_sig_b2_c <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb4-22"><a href="#cb4-22"></a></span>
+<span id="cb4-23"><a href="#cb4-23"></a>f_null_2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb4-24"><a href="#cb4-24"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb4-25"><a href="#cb4-25"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
+<span id="cb4-26"><a href="#cb4-26"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Running MCMC with 2 parallel chains...
+
+Chain 2 finished in 1.8 seconds.
+Chain 1 finished in 1.9 seconds.
+
+Both chains finished successfully.
+Mean chain execution time: 1.9 seconds.
+Total execution time: 2.0 seconds.</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>post_2 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f_null_2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
+<span id="cb6-2"><a href="#cb6-2"></a>  <span class="st">"alpha"</span>, <span class="st">"gamma_b"</span>, <span class="st">"gamma_c"</span>, </span>
+<span id="cb6-3"><a href="#cb6-3"></a>  <span class="st">"b_a_l"</span>, </span>
+<span id="cb6-4"><a href="#cb6-4"></a>  <span class="st">"b_b1_l"</span>, </span>
+<span id="cb6-5"><a href="#cb6-5"></a>  <span class="st">"b_b2_l"</span>,</span>
+<span id="cb6-6"><a href="#cb6-6"></a>  <span class="st">"b_a_c"</span>,</span>
+<span id="cb6-7"><a href="#cb6-7"></a>  <span class="st">"b_b1_c"</span>, </span>
+<span id="cb6-8"><a href="#cb6-8"></a>  <span class="st">"b_b2_c"</span>,</span>
+<span id="cb6-9"><a href="#cb6-9"></a>  <span class="st">"b_c"</span></span>
+<span id="cb6-10"><a href="#cb6-10"></a>), <span class="at">format =</span> <span class="st">"matrix"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">post_alpha</span>(post)</span>
-<span id="cb5-2"><a href="#cb5-2"></a></span>
-<span id="cb5-3"><a href="#cb5-3"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> grp, <span class="at">y =</span> a)) <span class="sc">+</span></span>
-<span id="cb5-4"><a href="#cb5-4"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb5-5"><a href="#cb5-5"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb5-6"><a href="#cb5-6"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-odds treatment success"</span>) <span class="sc">+</span> </span>
-<span id="cb5-7"><a href="#cb5-7"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> grp, <span class="at">y =</span> a_med), <span class="at">col =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb5-8"><a href="#cb5-8"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> a_q025, <span class="at">ymax =</span> a_q975), <span class="at">col =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>d_fig1 <span class="ot">&lt;-</span> <span class="fu">post_alpha</span>(post_1)</span>
+<span id="cb7-2"><a href="#cb7-2"></a>d_fig2 <span class="ot">&lt;-</span> <span class="fu">post_alpha</span>(post_2)</span>
+<span id="cb7-3"><a href="#cb7-3"></a></span>
+<span id="cb7-4"><a href="#cb7-4"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb7-5"><a href="#cb7-5"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> <span class="dv">1</span>, d_fig1),</span>
+<span id="cb7-6"><a href="#cb7-6"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> pri_sd, d_fig2)</span>
+<span id="cb7-7"><a href="#cb7-7"></a>)</span>
+<span id="cb7-8"><a href="#cb7-8"></a>d_fig[, prior_sd <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(prior_sd, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, pri_sd))]</span>
+<span id="cb7-9"><a href="#cb7-9"></a></span>
+<span id="cb7-10"><a href="#cb7-10"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> grp, <span class="at">y =</span> a, <span class="at">group =</span> prior_sd, <span class="at">col =</span> prior_sd)) <span class="sc">+</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb7-12"><a href="#cb7-12"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-odds treatment success"</span>) <span class="sc">+</span> </span>
+<span id="cb7-13"><a href="#cb7-13"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">"Prior sd on log-OR domain trt effects"</span>) <span class="sc">+</span></span>
+<span id="cb7-14"><a href="#cb7-14"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> grp, <span class="at">y =</span> a_med), <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb7-15"><a href="#cb7-15"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> a_q025, <span class="at">ymax =</span> a_q975), <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb7-16"><a href="#cb7-16"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> grp, <span class="at">y =</span> a), <span class="at">col =</span> <span class="dv">1</span>, <span class="at">pch =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display page-columns page-full">
 <div id="fig-null-alpha" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-cap-location="margin">
@@ -1812,7 +1860,7 @@ Total execution time: 1.6 seconds.</code></pre>
 <img src="example-trials_files/figure-html/fig-null-alpha-1.png" class="img-fluid figure-img" width="1800">
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-null-alpha-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment success.
+Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment success (triangles show true values).
 </figcaption>
 </figure>
 </div>
@@ -1821,17 +1869,25 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">post_dom_a</span>(post)</span>
-<span id="cb6-2"><a href="#cb6-2"></a></span>
-<span id="cb6-3"><a href="#cb6-3"></a><span class="co"># https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/</span></span>
-<span id="cb6-4"><a href="#cb6-4"></a></span>
-<span id="cb6-5"><a href="#cb6-5"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b)) <span class="sc">+</span></span>
-<span id="cb6-6"><a href="#cb6-6"></a>  <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="fl">0.2</span>, <span class="at">height=</span><span class="fl">0.0</span>) <span class="sc">+</span></span>
-<span id="cb6-7"><a href="#cb6-7"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb6-8"><a href="#cb6-8"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
-<span id="cb6-9"><a href="#cb6-9"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b_med), <span class="at">col =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb6-10"><a href="#cb6-10"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> b_q025, <span class="at">ymax =</span> b_q975), <span class="at">col =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb6-11"><a href="#cb6-11"></a>  <span class="fu">facet_grid</span>(<span class="sc">~</span>silo,<span class="at">scale=</span><span class="st">"free_x"</span>,<span class="at">space=</span><span class="st">"free_x"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>d_fig1 <span class="ot">&lt;-</span> <span class="fu">post_dom_a</span>(post_1)</span>
+<span id="cb8-2"><a href="#cb8-2"></a>d_fig2 <span class="ot">&lt;-</span> <span class="fu">post_dom_a</span>(post_2)</span>
+<span id="cb8-3"><a href="#cb8-3"></a></span>
+<span id="cb8-4"><a href="#cb8-4"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb8-5"><a href="#cb8-5"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> <span class="dv">1</span>, d_fig1),</span>
+<span id="cb8-6"><a href="#cb8-6"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> pri_sd, d_fig2)</span>
+<span id="cb8-7"><a href="#cb8-7"></a>)</span>
+<span id="cb8-8"><a href="#cb8-8"></a>d_fig[, prior_sd <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(prior_sd, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, pri_sd))]</span>
+<span id="cb8-9"><a href="#cb8-9"></a></span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="co"># https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a></span>
+<span id="cb8-12"><a href="#cb8-12"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b, <span class="at">col =</span> prior_sd)) <span class="sc">+</span></span>
+<span id="cb8-13"><a href="#cb8-13"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb8-14"><a href="#cb8-14"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
+<span id="cb8-15"><a href="#cb8-15"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">"Prior sd on log-OR domain trt effects"</span>) <span class="sc">+</span></span>
+<span id="cb8-16"><a href="#cb8-16"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b_med), <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb8-17"><a href="#cb8-17"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> b_q025, <span class="at">ymax =</span> b_q975), <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb8-18"><a href="#cb8-18"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b), <span class="at">col =</span> <span class="dv">1</span>, <span class="at">pch =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb8-19"><a href="#cb8-19"></a>  <span class="fu">facet_grid</span>(<span class="sc">~</span>silo,<span class="at">scale=</span><span class="st">"free_x"</span>,<span class="at">space=</span><span class="st">"free_x"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display page-columns page-full">
 <div id="fig-null-dom-a" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-cap-location="margin">
@@ -1849,17 +1905,25 @@ Figure&nbsp;2: Posterior median and 95% CI for baseline log-odds of treatment su
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb7" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">post_dom_b</span>(post)</span>
-<span id="cb7-2"><a href="#cb7-2"></a></span>
-<span id="cb7-3"><a href="#cb7-3"></a><span class="co"># https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/</span></span>
-<span id="cb7-4"><a href="#cb7-4"></a></span>
-<span id="cb7-5"><a href="#cb7-5"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b)) <span class="sc">+</span></span>
-<span id="cb7-6"><a href="#cb7-6"></a>  <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="fl">0.2</span>, <span class="at">height=</span><span class="fl">0.0</span>) <span class="sc">+</span></span>
-<span id="cb7-7"><a href="#cb7-7"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb7-8"><a href="#cb7-8"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
-<span id="cb7-9"><a href="#cb7-9"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b_med), <span class="at">col =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb7-10"><a href="#cb7-10"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> b_q025, <span class="at">ymax =</span> b_q975), <span class="at">col =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb7-11"><a href="#cb7-11"></a>  <span class="fu">facet_grid</span>(<span class="fu">paste0</span>(<span class="st">"Planned/assigned surgery: "</span>, qa, <span class="st">"-stage"</span>)<span class="sc">~</span>silo,<span class="at">scale=</span><span class="st">"free_x"</span>,<span class="at">space=</span><span class="st">"free_x"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>d_fig1 <span class="ot">&lt;-</span> <span class="fu">post_dom_b</span>(post_1)</span>
+<span id="cb9-2"><a href="#cb9-2"></a>d_fig2 <span class="ot">&lt;-</span> <span class="fu">post_dom_b</span>(post_2)</span>
+<span id="cb9-3"><a href="#cb9-3"></a></span>
+<span id="cb9-4"><a href="#cb9-4"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb9-5"><a href="#cb9-5"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> <span class="dv">1</span>, d_fig1),</span>
+<span id="cb9-6"><a href="#cb9-6"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> pri_sd, d_fig2)</span>
+<span id="cb9-7"><a href="#cb9-7"></a>)</span>
+<span id="cb9-8"><a href="#cb9-8"></a>d_fig[, prior_sd <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(prior_sd, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, pri_sd))]</span>
+<span id="cb9-9"><a href="#cb9-9"></a></span>
+<span id="cb9-10"><a href="#cb9-10"></a><span class="co"># https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/</span></span>
+<span id="cb9-11"><a href="#cb9-11"></a></span>
+<span id="cb9-12"><a href="#cb9-12"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b, <span class="at">col =</span> prior_sd)) <span class="sc">+</span></span>
+<span id="cb9-13"><a href="#cb9-13"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb9-14"><a href="#cb9-14"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
+<span id="cb9-15"><a href="#cb9-15"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">"Prior sd on log-OR domain trt effects"</span>) <span class="sc">+</span></span>
+<span id="cb9-16"><a href="#cb9-16"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b_med), <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb9-17"><a href="#cb9-17"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> b_q025, <span class="at">ymax =</span> b_q975), <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb9-18"><a href="#cb9-18"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b), <span class="at">col =</span> <span class="dv">1</span>, <span class="at">pch =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb9-19"><a href="#cb9-19"></a>  <span class="fu">facet_grid</span>(<span class="fu">paste0</span>(<span class="st">"Planned/assigned surgery: "</span>, qa, <span class="st">"-stage"</span>)<span class="sc">~</span>silo,<span class="at">scale=</span><span class="st">"free_x"</span>,<span class="at">space=</span><span class="st">"free_x"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display page-columns page-full">
 <div id="fig-null-dom-b" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-cap-location="margin">
@@ -1877,14 +1941,22 @@ Figure&nbsp;3: Posterior median and 95% CI for baseline log-odds of treatment su
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">post_dom_c</span>(post)</span>
-<span id="cb8-2"><a href="#cb8-2"></a></span>
-<span id="cb8-3"><a href="#cb8-3"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b)) <span class="sc">+</span></span>
-<span id="cb8-4"><a href="#cb8-4"></a>  <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="fl">0.2</span>, <span class="at">height=</span><span class="fl">0.0</span>) <span class="sc">+</span></span>
-<span id="cb8-5"><a href="#cb8-5"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb8-6"><a href="#cb8-6"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
-<span id="cb8-7"><a href="#cb8-7"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b_med), <span class="at">col =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb8-8"><a href="#cb8-8"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> b_q025, <span class="at">ymax =</span> b_q975), <span class="at">col =</span> <span class="dv">2</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>d_fig1 <span class="ot">&lt;-</span> <span class="fu">post_dom_c</span>(post_1)</span>
+<span id="cb10-2"><a href="#cb10-2"></a>d_fig2 <span class="ot">&lt;-</span> <span class="fu">post_dom_c</span>(post_2)</span>
+<span id="cb10-3"><a href="#cb10-3"></a></span>
+<span id="cb10-4"><a href="#cb10-4"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb10-5"><a href="#cb10-5"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> <span class="dv">1</span>, d_fig1),</span>
+<span id="cb10-6"><a href="#cb10-6"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> pri_sd, d_fig2)</span>
+<span id="cb10-7"><a href="#cb10-7"></a>)</span>
+<span id="cb10-8"><a href="#cb10-8"></a>d_fig[, prior_sd <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(prior_sd, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, pri_sd))]</span>
+<span id="cb10-9"><a href="#cb10-9"></a></span>
+<span id="cb10-10"><a href="#cb10-10"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b, <span class="at">col =</span> prior_sd)) <span class="sc">+</span></span>
+<span id="cb10-11"><a href="#cb10-11"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb10-12"><a href="#cb10-12"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
+<span id="cb10-13"><a href="#cb10-13"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">"Prior sd on log-OR domain trt effects"</span>) <span class="sc">+</span></span>
+<span id="cb10-14"><a href="#cb10-14"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b_med), <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb10-15"><a href="#cb10-15"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> b_q025, <span class="at">ymax =</span> b_q975), <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb10-16"><a href="#cb10-16"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b), <span class="at">col =</span> <span class="dv">1</span>, <span class="at">pch =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display page-columns page-full">
 <div id="fig-null-dom-c" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-cap-location="margin">
@@ -1906,21 +1978,21 @@ Figure&nbsp;4: Posterior median and 95% CI for baseline log-odds of treatment su
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>sim_spec <span class="ot">&lt;-</span> <span class="fu">get_sim_spec</span>()</span>
-<span id="cb9-2"><a href="#cb9-2"></a>sim_spec<span class="sc">$</span>b_a_late[<span class="st">"rev"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
-<span id="cb9-3"><a href="#cb9-3"></a>sim_spec<span class="sc">$</span>b_a_chronic[<span class="st">"two"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
-<span id="cb9-4"><a href="#cb9-4"></a>sim_spec<span class="sc">$</span>b_b1_late_one[<span class="st">"w12p1"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
-<span id="cb9-5"><a href="#cb9-5"></a>sim_spec<span class="sc">$</span>b_b2_late_two[<span class="st">"w12p2"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
-<span id="cb9-6"><a href="#cb9-6"></a>sim_spec<span class="sc">$</span>b_b1_chronic_one[<span class="st">"w12p1"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
-<span id="cb9-7"><a href="#cb9-7"></a>sim_spec<span class="sc">$</span>b_b2_chronic_two[<span class="st">"w12p2"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
-<span id="cb9-8"><a href="#cb9-8"></a>sim_spec<span class="sc">$</span>b_c[<span class="st">"rif"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
-<span id="cb9-9"><a href="#cb9-9"></a></span>
-<span id="cb9-10"><a href="#cb9-10"></a><span class="fu">set.seed</span>(<span class="dv">222</span>)</span>
-<span id="cb9-11"><a href="#cb9-11"></a>ll <span class="ot">&lt;-</span> <span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="dv">2500</span>, <span class="at">pop_spec =</span> <span class="cn">NULL</span>, <span class="at">sim_spec =</span> sim_spec)</span>
-<span id="cb9-12"><a href="#cb9-12"></a></span>
-<span id="cb9-13"><a href="#cb9-13"></a><span class="co"># just wrapped table generation up into a function to save space and min repitition, see util.R</span></span>
-<span id="cb9-14"><a href="#cb9-14"></a>gt_tbl <span class="ot">&lt;-</span> <span class="fu">tbl_ex_trial</span>(ll<span class="sc">$</span>d)</span>
-<span id="cb9-15"><a href="#cb9-15"></a>gt_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>sim_spec <span class="ot">&lt;-</span> <span class="fu">get_sim_spec</span>()</span>
+<span id="cb11-2"><a href="#cb11-2"></a>sim_spec<span class="sc">$</span>b_a_late[<span class="st">"rev"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
+<span id="cb11-3"><a href="#cb11-3"></a>sim_spec<span class="sc">$</span>b_a_chronic[<span class="st">"two"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
+<span id="cb11-4"><a href="#cb11-4"></a>sim_spec<span class="sc">$</span>b_b1_late_one[<span class="st">"w12p1"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
+<span id="cb11-5"><a href="#cb11-5"></a>sim_spec<span class="sc">$</span>b_b2_late_two[<span class="st">"w12p2"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
+<span id="cb11-6"><a href="#cb11-6"></a>sim_spec<span class="sc">$</span>b_b1_chronic_one[<span class="st">"w12p1"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
+<span id="cb11-7"><a href="#cb11-7"></a>sim_spec<span class="sc">$</span>b_b2_chronic_two[<span class="st">"w12p2"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
+<span id="cb11-8"><a href="#cb11-8"></a>sim_spec<span class="sc">$</span>b_c[<span class="st">"rif"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
+<span id="cb11-9"><a href="#cb11-9"></a></span>
+<span id="cb11-10"><a href="#cb11-10"></a><span class="fu">set.seed</span>(<span class="dv">222</span>)</span>
+<span id="cb11-11"><a href="#cb11-11"></a>ll <span class="ot">&lt;-</span> <span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="dv">2500</span>, <span class="at">pop_spec =</span> <span class="cn">NULL</span>, <span class="at">sim_spec =</span> sim_spec)</span>
+<span id="cb11-12"><a href="#cb11-12"></a></span>
+<span id="cb11-13"><a href="#cb11-13"></a><span class="co"># just wrapped table generation up into a function to save space and min repitition, see util.R</span></span>
+<span id="cb11-14"><a href="#cb11-14"></a>gt_tbl <span class="ot">&lt;-</span> <span class="fu">tbl_ex_trial</span>(ll<span class="sc">$</span>d)</span>
+<span id="cb11-15"><a href="#cb11-15"></a>gt_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div id="tbl-ex-alleff" class="cell quarto-float anchored page-columns page-full">
 <figure class="quarto-float quarto-float-tbl figure page-columns page-full">
@@ -3370,16 +3442,16 @@ Table&nbsp;2: Summary of simulated trial data when no treatment effects present
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>lsd <span class="ot">&lt;-</span> <span class="fu">get_stan_data</span>(ll<span class="sc">$</span>d_i)</span>
-<span id="cb10-2"><a href="#cb10-2"></a>ld <span class="ot">&lt;-</span> lsd<span class="sc">$</span>ld</span>
-<span id="cb10-3"><a href="#cb10-3"></a>d_b <span class="ot">&lt;-</span> <span class="fu">copy</span>(lsd<span class="sc">$</span>d_b)</span>
-<span id="cb10-4"><a href="#cb10-4"></a></span>
-<span id="cb10-5"><a href="#cb10-5"></a>m2 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">"stan/model-sim-02.stan"</span>)</span>
-<span id="cb10-6"><a href="#cb10-6"></a></span>
-<span id="cb10-7"><a href="#cb10-7"></a>f_alleff <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb10-8"><a href="#cb10-8"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
-<span id="cb10-9"><a href="#cb10-9"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
-<span id="cb10-10"><a href="#cb10-10"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>lsd <span class="ot">&lt;-</span> <span class="fu">get_stan_data</span>(ll<span class="sc">$</span>d_i)</span>
+<span id="cb12-2"><a href="#cb12-2"></a>ld <span class="ot">&lt;-</span> lsd<span class="sc">$</span>ld</span>
+<span id="cb12-3"><a href="#cb12-3"></a>d_b <span class="ot">&lt;-</span> <span class="fu">copy</span>(lsd<span class="sc">$</span>d_b)</span>
+<span id="cb12-4"><a href="#cb12-4"></a></span>
+<span id="cb12-5"><a href="#cb12-5"></a>m2 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">"stan/model-sim-02.stan"</span>)</span>
+<span id="cb12-6"><a href="#cb12-6"></a></span>
+<span id="cb12-7"><a href="#cb12-7"></a>f_alleff_1 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb12-8"><a href="#cb12-8"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb12-9"><a href="#cb12-9"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
+<span id="cb12-10"><a href="#cb12-10"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
@@ -3388,34 +3460,81 @@ Chain 2 finished in 1.2 seconds.
 Chain 1 finished in 1.3 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 1.3 seconds.
+Mean chain execution time: 1.2 seconds.
 Total execution time: 1.4 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>post <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f_alleff<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
-<span id="cb12-2"><a href="#cb12-2"></a>  <span class="st">"alpha"</span>, <span class="st">"gamma_b"</span>, <span class="st">"gamma_c"</span>, </span>
-<span id="cb12-3"><a href="#cb12-3"></a>  <span class="st">"b_a_l"</span>, </span>
-<span id="cb12-4"><a href="#cb12-4"></a>  <span class="st">"b_b1_l"</span>, </span>
-<span id="cb12-5"><a href="#cb12-5"></a>  <span class="st">"b_b2_l"</span>,</span>
-<span id="cb12-6"><a href="#cb12-6"></a>  <span class="st">"b_a_c"</span>,</span>
-<span id="cb12-7"><a href="#cb12-7"></a>  <span class="st">"b_b1_c"</span>, </span>
-<span id="cb12-8"><a href="#cb12-8"></a>  <span class="st">"b_b2_c"</span>,</span>
-<span id="cb12-9"><a href="#cb12-9"></a>  <span class="st">"b_c"</span></span>
-<span id="cb12-10"><a href="#cb12-10"></a>), <span class="at">format =</span> <span class="st">"matrix"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>post_1 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f_alleff_1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
+<span id="cb14-2"><a href="#cb14-2"></a>  <span class="st">"alpha"</span>, <span class="st">"gamma_b"</span>, <span class="st">"gamma_c"</span>, </span>
+<span id="cb14-3"><a href="#cb14-3"></a>  <span class="st">"b_a_l"</span>, </span>
+<span id="cb14-4"><a href="#cb14-4"></a>  <span class="st">"b_b1_l"</span>, </span>
+<span id="cb14-5"><a href="#cb14-5"></a>  <span class="st">"b_b2_l"</span>,</span>
+<span id="cb14-6"><a href="#cb14-6"></a>  <span class="st">"b_a_c"</span>,</span>
+<span id="cb14-7"><a href="#cb14-7"></a>  <span class="st">"b_b1_c"</span>, </span>
+<span id="cb14-8"><a href="#cb14-8"></a>  <span class="st">"b_b2_c"</span>,</span>
+<span id="cb14-9"><a href="#cb14-9"></a>  <span class="st">"b_c"</span></span>
+<span id="cb14-10"><a href="#cb14-10"></a>), <span class="at">format =</span> <span class="st">"matrix"</span>))</span>
+<span id="cb14-11"><a href="#cb14-11"></a></span>
+<span id="cb14-12"><a href="#cb14-12"></a><span class="co"># compare when prior sd is set to 10 for trt effects</span></span>
+<span id="cb14-13"><a href="#cb14-13"></a></span>
+<span id="cb14-14"><a href="#cb14-14"></a>pri_sd <span class="ot">&lt;-</span> <span class="dv">10</span></span>
+<span id="cb14-15"><a href="#cb14-15"></a>ld<span class="sc">$</span>pri_sig_b_c <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb14-16"><a href="#cb14-16"></a>ld<span class="sc">$</span>pri_sig_a_l <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb14-17"><a href="#cb14-17"></a>ld<span class="sc">$</span>pri_sig_b1_l <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb14-18"><a href="#cb14-18"></a>ld<span class="sc">$</span>pri_sig_b2_l <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb14-19"><a href="#cb14-19"></a>ld<span class="sc">$</span>pri_sig_a_c <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb14-20"><a href="#cb14-20"></a>ld<span class="sc">$</span>pri_sig_b1_c <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb14-21"><a href="#cb14-21"></a>ld<span class="sc">$</span>pri_sig_b2_c <span class="ot">&lt;-</span> pri_sd</span>
+<span id="cb14-22"><a href="#cb14-22"></a></span>
+<span id="cb14-23"><a href="#cb14-23"></a>f_alleff_2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb14-24"><a href="#cb14-24"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb14-25"><a href="#cb14-25"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
+<span id="cb14-26"><a href="#cb14-26"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Running MCMC with 2 parallel chains...
+
+Chain 1 finished in 1.7 seconds.
+Chain 2 finished in 1.7 seconds.
+
+Both chains finished successfully.
+Mean chain execution time: 1.7 seconds.
+Total execution time: 1.8 seconds.</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>post_2 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f_alleff_2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
+<span id="cb16-2"><a href="#cb16-2"></a>  <span class="st">"alpha"</span>, <span class="st">"gamma_b"</span>, <span class="st">"gamma_c"</span>, </span>
+<span id="cb16-3"><a href="#cb16-3"></a>  <span class="st">"b_a_l"</span>, </span>
+<span id="cb16-4"><a href="#cb16-4"></a>  <span class="st">"b_b1_l"</span>, </span>
+<span id="cb16-5"><a href="#cb16-5"></a>  <span class="st">"b_b2_l"</span>,</span>
+<span id="cb16-6"><a href="#cb16-6"></a>  <span class="st">"b_a_c"</span>,</span>
+<span id="cb16-7"><a href="#cb16-7"></a>  <span class="st">"b_b1_c"</span>, </span>
+<span id="cb16-8"><a href="#cb16-8"></a>  <span class="st">"b_b2_c"</span>,</span>
+<span id="cb16-9"><a href="#cb16-9"></a>  <span class="st">"b_c"</span></span>
+<span id="cb16-10"><a href="#cb16-10"></a>), <span class="at">format =</span> <span class="st">"matrix"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb13" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">post_alpha</span>(post)</span>
-<span id="cb13-2"><a href="#cb13-2"></a></span>
-<span id="cb13-3"><a href="#cb13-3"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> grp, <span class="at">y =</span> a)) <span class="sc">+</span></span>
-<span id="cb13-4"><a href="#cb13-4"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
-<span id="cb13-5"><a href="#cb13-5"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb13-6"><a href="#cb13-6"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-odds treatment success"</span>) <span class="sc">+</span> </span>
-<span id="cb13-7"><a href="#cb13-7"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> grp, <span class="at">y =</span> a_med), <span class="at">col =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb13-8"><a href="#cb13-8"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> a_q025, <span class="at">ymax =</span> a_q975), <span class="at">col =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>d_fig1 <span class="ot">&lt;-</span> <span class="fu">post_alpha</span>(post_1)</span>
+<span id="cb17-2"><a href="#cb17-2"></a>d_fig2 <span class="ot">&lt;-</span> <span class="fu">post_alpha</span>(post_2)</span>
+<span id="cb17-3"><a href="#cb17-3"></a></span>
+<span id="cb17-4"><a href="#cb17-4"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb17-5"><a href="#cb17-5"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> <span class="dv">1</span>, d_fig1),</span>
+<span id="cb17-6"><a href="#cb17-6"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> pri_sd, d_fig2)</span>
+<span id="cb17-7"><a href="#cb17-7"></a>)</span>
+<span id="cb17-8"><a href="#cb17-8"></a>d_fig[, prior_sd <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(prior_sd, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, pri_sd))]</span>
+<span id="cb17-9"><a href="#cb17-9"></a></span>
+<span id="cb17-10"><a href="#cb17-10"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> grp, <span class="at">y =</span> a, <span class="at">group =</span> prior_sd, <span class="at">col =</span> prior_sd)) <span class="sc">+</span></span>
+<span id="cb17-11"><a href="#cb17-11"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb17-12"><a href="#cb17-12"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-odds treatment success"</span>) <span class="sc">+</span> </span>
+<span id="cb17-13"><a href="#cb17-13"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">"Prior sd on log-OR domain trt effects"</span>) <span class="sc">+</span></span>
+<span id="cb17-14"><a href="#cb17-14"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> grp, <span class="at">y =</span> a_med), <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb17-15"><a href="#cb17-15"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> a_q025, <span class="at">ymax =</span> a_q975), <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb17-16"><a href="#cb17-16"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> grp, <span class="at">y =</span> a), <span class="at">col =</span> <span class="dv">1</span>, <span class="at">pch =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display page-columns page-full">
 <div id="fig-alleff-alpha" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-cap-location="margin">
@@ -3424,7 +3543,7 @@ Total execution time: 1.4 seconds.</code></pre>
 <img src="example-trials_files/figure-html/fig-alleff-alpha-1.png" class="img-fluid figure-img" width="1800">
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-alleff-alpha-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;5: Posterior median and 95% CI for baseline log-odds of treatment success.
+Figure&nbsp;5: Posterior median and 95% CI for baseline log-odds of treatment success (triangles show true values).
 </figcaption>
 </figure>
 </div>
@@ -3433,17 +3552,25 @@ Figure&nbsp;5: Posterior median and 95% CI for baseline log-odds of treatment su
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb14" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">post_dom_a</span>(post)</span>
-<span id="cb14-2"><a href="#cb14-2"></a></span>
-<span id="cb14-3"><a href="#cb14-3"></a><span class="co"># https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/</span></span>
-<span id="cb14-4"><a href="#cb14-4"></a></span>
-<span id="cb14-5"><a href="#cb14-5"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b)) <span class="sc">+</span></span>
-<span id="cb14-6"><a href="#cb14-6"></a>  <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="fl">0.2</span>, <span class="at">height=</span><span class="fl">0.0</span>) <span class="sc">+</span></span>
-<span id="cb14-7"><a href="#cb14-7"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb14-8"><a href="#cb14-8"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
-<span id="cb14-9"><a href="#cb14-9"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b_med), <span class="at">col =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb14-10"><a href="#cb14-10"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> b_q025, <span class="at">ymax =</span> b_q975), <span class="at">col =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb14-11"><a href="#cb14-11"></a>  <span class="fu">facet_grid</span>(<span class="sc">~</span>silo,<span class="at">scale=</span><span class="st">"free_x"</span>,<span class="at">space=</span><span class="st">"free_x"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>d_fig1 <span class="ot">&lt;-</span> <span class="fu">post_dom_a</span>(post_1)</span>
+<span id="cb18-2"><a href="#cb18-2"></a>d_fig2 <span class="ot">&lt;-</span> <span class="fu">post_dom_a</span>(post_2)</span>
+<span id="cb18-3"><a href="#cb18-3"></a></span>
+<span id="cb18-4"><a href="#cb18-4"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb18-5"><a href="#cb18-5"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> <span class="dv">1</span>, d_fig1),</span>
+<span id="cb18-6"><a href="#cb18-6"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> pri_sd, d_fig2)</span>
+<span id="cb18-7"><a href="#cb18-7"></a>)</span>
+<span id="cb18-8"><a href="#cb18-8"></a>d_fig[, prior_sd <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(prior_sd, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, pri_sd))]</span>
+<span id="cb18-9"><a href="#cb18-9"></a></span>
+<span id="cb18-10"><a href="#cb18-10"></a><span class="co"># https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/</span></span>
+<span id="cb18-11"><a href="#cb18-11"></a></span>
+<span id="cb18-12"><a href="#cb18-12"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b, <span class="at">col =</span> prior_sd)) <span class="sc">+</span></span>
+<span id="cb18-13"><a href="#cb18-13"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb18-14"><a href="#cb18-14"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
+<span id="cb18-15"><a href="#cb18-15"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">"Prior sd on log-OR domain trt effects"</span>) <span class="sc">+</span></span>
+<span id="cb18-16"><a href="#cb18-16"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b_med), <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb18-17"><a href="#cb18-17"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> b_q025, <span class="at">ymax =</span> b_q975), <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb18-18"><a href="#cb18-18"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b), <span class="at">col =</span> <span class="dv">1</span>, <span class="at">pch =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb18-19"><a href="#cb18-19"></a>  <span class="fu">facet_grid</span>(<span class="sc">~</span>silo,<span class="at">scale=</span><span class="st">"free_x"</span>,<span class="at">space=</span><span class="st">"free_x"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display page-columns page-full">
 <div id="fig-alleff-dom-a" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-cap-location="margin">
@@ -3461,17 +3588,25 @@ Figure&nbsp;6: Posterior median and 95% CI for baseline log-odds of treatment su
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb15" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">post_dom_b</span>(post)</span>
-<span id="cb15-2"><a href="#cb15-2"></a></span>
-<span id="cb15-3"><a href="#cb15-3"></a><span class="co"># https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/</span></span>
-<span id="cb15-4"><a href="#cb15-4"></a></span>
-<span id="cb15-5"><a href="#cb15-5"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b)) <span class="sc">+</span></span>
-<span id="cb15-6"><a href="#cb15-6"></a>  <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="fl">0.2</span>, <span class="at">height=</span><span class="fl">0.0</span>) <span class="sc">+</span></span>
-<span id="cb15-7"><a href="#cb15-7"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb15-8"><a href="#cb15-8"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
-<span id="cb15-9"><a href="#cb15-9"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b_med), <span class="at">col =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb15-10"><a href="#cb15-10"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> b_q025, <span class="at">ymax =</span> b_q975), <span class="at">col =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb15-11"><a href="#cb15-11"></a>  <span class="fu">facet_grid</span>(<span class="fu">paste0</span>(<span class="st">"Planned/assigned surgery: "</span>, qa, <span class="st">"-stage"</span>)<span class="sc">~</span>silo,<span class="at">scale=</span><span class="st">"free_x"</span>,<span class="at">space=</span><span class="st">"free_x"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>d_fig1 <span class="ot">&lt;-</span> <span class="fu">post_dom_b</span>(post_1)</span>
+<span id="cb19-2"><a href="#cb19-2"></a>d_fig2 <span class="ot">&lt;-</span> <span class="fu">post_dom_b</span>(post_2)</span>
+<span id="cb19-3"><a href="#cb19-3"></a></span>
+<span id="cb19-4"><a href="#cb19-4"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb19-5"><a href="#cb19-5"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> <span class="dv">1</span>, d_fig1),</span>
+<span id="cb19-6"><a href="#cb19-6"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> pri_sd, d_fig2)</span>
+<span id="cb19-7"><a href="#cb19-7"></a>)</span>
+<span id="cb19-8"><a href="#cb19-8"></a>d_fig[, prior_sd <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(prior_sd, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, pri_sd))]</span>
+<span id="cb19-9"><a href="#cb19-9"></a></span>
+<span id="cb19-10"><a href="#cb19-10"></a><span class="co"># https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/</span></span>
+<span id="cb19-11"><a href="#cb19-11"></a></span>
+<span id="cb19-12"><a href="#cb19-12"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b, <span class="at">col =</span> prior_sd)) <span class="sc">+</span></span>
+<span id="cb19-13"><a href="#cb19-13"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb19-14"><a href="#cb19-14"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
+<span id="cb19-15"><a href="#cb19-15"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">"Prior sd on log-OR domain trt effects"</span>) <span class="sc">+</span></span>
+<span id="cb19-16"><a href="#cb19-16"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b_med), <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb19-17"><a href="#cb19-17"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> b_q025, <span class="at">ymax =</span> b_q975), <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb19-18"><a href="#cb19-18"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b), <span class="at">col =</span> <span class="dv">1</span>, <span class="at">pch =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="cb19-19"><a href="#cb19-19"></a>  <span class="fu">facet_grid</span>(<span class="fu">paste0</span>(<span class="st">"Planned/assigned surgery: "</span>, qa, <span class="st">"-stage"</span>)<span class="sc">~</span>silo,<span class="at">scale=</span><span class="st">"free_x"</span>,<span class="at">space=</span><span class="st">"free_x"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display page-columns page-full">
 <div id="fig-alleff-dom-b" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-cap-location="margin">
@@ -3489,14 +3624,22 @@ Figure&nbsp;7: Posterior median and 95% CI for baseline log-odds of treatment su
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb16" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">post_dom_c</span>(post)</span>
-<span id="cb16-2"><a href="#cb16-2"></a></span>
-<span id="cb16-3"><a href="#cb16-3"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b)) <span class="sc">+</span></span>
-<span id="cb16-4"><a href="#cb16-4"></a>  <span class="fu">geom_jitter</span>(<span class="at">width =</span> <span class="fl">0.2</span>, <span class="at">height=</span><span class="fl">0.0</span>) <span class="sc">+</span></span>
-<span id="cb16-5"><a href="#cb16-5"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
-<span id="cb16-6"><a href="#cb16-6"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
-<span id="cb16-7"><a href="#cb16-7"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b_med), <span class="at">col =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
-<span id="cb16-8"><a href="#cb16-8"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> b_q025, <span class="at">ymax =</span> b_q975), <span class="at">col =</span> <span class="dv">2</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>d_fig1 <span class="ot">&lt;-</span> <span class="fu">post_dom_c</span>(post_1)</span>
+<span id="cb20-2"><a href="#cb20-2"></a>d_fig2 <span class="ot">&lt;-</span> <span class="fu">post_dom_c</span>(post_2)</span>
+<span id="cb20-3"><a href="#cb20-3"></a></span>
+<span id="cb20-4"><a href="#cb20-4"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb20-5"><a href="#cb20-5"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> <span class="dv">1</span>, d_fig1),</span>
+<span id="cb20-6"><a href="#cb20-6"></a>  <span class="fu">cbind</span>(<span class="at">prior_sd =</span> pri_sd, d_fig2)</span>
+<span id="cb20-7"><a href="#cb20-7"></a>)</span>
+<span id="cb20-8"><a href="#cb20-8"></a>d_fig[, prior_sd <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(prior_sd, <span class="at">levels =</span> <span class="fu">c</span>(<span class="dv">1</span>, pri_sd))]</span>
+<span id="cb20-9"><a href="#cb20-9"></a></span>
+<span id="cb20-10"><a href="#cb20-10"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b, <span class="at">col =</span> prior_sd)) <span class="sc">+</span></span>
+<span id="cb20-11"><a href="#cb20-11"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb20-12"><a href="#cb20-12"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
+<span id="cb20-13"><a href="#cb20-13"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">"Prior sd on log-OR domain trt effects"</span>) <span class="sc">+</span></span>
+<span id="cb20-14"><a href="#cb20-14"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b_med), <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb20-15"><a href="#cb20-15"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> b_q025, <span class="at">ymax =</span> b_q975), <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
+<span id="cb20-16"><a href="#cb20-16"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> trt, <span class="at">y =</span> b), <span class="at">col =</span> <span class="dv">1</span>, <span class="at">pch =</span> <span class="dv">2</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display page-columns page-full">
 <div id="fig-alleff-dom-c" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-cap-location="margin">
