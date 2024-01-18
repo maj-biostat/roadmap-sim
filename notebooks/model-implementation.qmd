@@ -29,6 +29,7 @@ set.seed(1)
 ll <- get_trial_data(N = 5e4)
 lsd <- get_stan_data(ll$d_i)
 ld <- lsd$ld
+# cbind(ld$l_su, ld$l_y, ld$l_n, ld$l_ea, ld$l_eap, ld$l_a)
 d_b <- copy(lsd$d_b)
 
 f2 <- m2$sample(
@@ -139,7 +140,7 @@ It suggests a strong association between the true and estimated log-odds of trea
 ggplot(d_fig, aes(x = parname, y = lor_med)) +
   geom_point() +
   geom_point(data = d_fig, aes(x = parname, y = lor), pch = 2) +
-  geom_linerange(aes(ymin = lor_q025, ymax = lor_q975)) 
+  geom_linerange(aes(ymin = lor_q025, ymax = lor_q975))  +
   scale_x_discrete("") +
   scale_y_continuous("Posterior log-odds-ratio (95% credible interval)") 
 ```
