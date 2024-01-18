@@ -451,7 +451,7 @@ Chain 1 finished in 5.7 seconds.
 
 Both chains finished successfully.
 Mean chain execution time: 5.6 seconds.
-Total execution time: 5.7 seconds.</code></pre>
+Total execution time: 5.9 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -575,6 +575,67 @@ Figure&nbsp;2: Posterior estimates for log-odds-ratios (true values shown as tri
 </figure>
 </div>
 </div>
+</div>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>m3 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">"stan/model-sim-03.stan"</span>)</span>
+<span id="cb8-2"><a href="#cb8-2"></a></span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb8-4"><a href="#cb8-4"></a></span>
+<span id="cb8-5"><a href="#cb8-5"></a>sim_spec <span class="ot">&lt;-</span> <span class="fu">get_sim_spec</span>()</span>
+<span id="cb8-6"><a href="#cb8-6"></a>sim_spec<span class="sc">$</span>gamma[, , <span class="st">"early"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a>sim_spec<span class="sc">$</span>gamma[, , <span class="st">"late"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb8-8"><a href="#cb8-8"></a>sim_spec<span class="sc">$</span>gamma[, , <span class="st">"chronic"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a></span>
+<span id="cb8-10"><a href="#cb8-10"></a>sim_spec<span class="sc">$</span>b_a_late[<span class="st">"rev"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
+<span id="cb8-11"><a href="#cb8-11"></a>sim_spec<span class="sc">$</span>b_a_chronic[<span class="st">"two"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb8-12"><a href="#cb8-12"></a>sim_spec<span class="sc">$</span>b_b1_late_one[<span class="st">"w12p1"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb8-13"><a href="#cb8-13"></a>sim_spec<span class="sc">$</span>b_b2_late_two[<span class="st">"w12p2"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb8-14"><a href="#cb8-14"></a>sim_spec<span class="sc">$</span>b_b1_chronic_one[<span class="st">"w12p1"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb8-15"><a href="#cb8-15"></a>sim_spec<span class="sc">$</span>b_b2_chronic_two[<span class="st">"w12p2"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb8-16"><a href="#cb8-16"></a>sim_spec<span class="sc">$</span>b_c[<span class="st">"rif"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb8-17"><a href="#cb8-17"></a></span>
+<span id="cb8-18"><a href="#cb8-18"></a></span>
+<span id="cb8-19"><a href="#cb8-19"></a>ll <span class="ot">&lt;-</span> <span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="dv">100</span>, <span class="at">pop_spec =</span> <span class="cn">NULL</span>, <span class="at">sim_spec =</span> sim_spec)</span>
+<span id="cb8-20"><a href="#cb8-20"></a>ll<span class="sc">$</span>d</span>
+<span id="cb8-21"><a href="#cb8-21"></a></span>
+<span id="cb8-22"><a href="#cb8-22"></a>lsd <span class="ot">&lt;-</span> <span class="fu">get_stan_data</span>(ll<span class="sc">$</span>d_i)</span>
+<span id="cb8-23"><a href="#cb8-23"></a>ld <span class="ot">&lt;-</span> lsd<span class="sc">$</span>ld</span>
+<span id="cb8-24"><a href="#cb8-24"></a><span class="co"># cbind(ld$l_su, ld$l_y, ld$l_n, ld$l_ea, ld$l_eap, ld$l_a)</span></span>
+<span id="cb8-25"><a href="#cb8-25"></a>d_b <span class="ot">&lt;-</span> <span class="fu">copy</span>(lsd<span class="sc">$</span>d_b)</span>
+<span id="cb8-26"><a href="#cb8-26"></a></span>
+<span id="cb8-27"><a href="#cb8-27"></a>f3 <span class="ot">&lt;-</span> m3<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb8-28"><a href="#cb8-28"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb8-29"><a href="#cb8-29"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
+<span id="cb8-30"><a href="#cb8-30"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span>
+<span id="cb8-31"><a href="#cb8-31"></a></span>
+<span id="cb8-32"><a href="#cb8-32"></a>post <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f3<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
+<span id="cb8-33"><a href="#cb8-33"></a>    <span class="st">"alpha"</span>, </span>
+<span id="cb8-34"><a href="#cb8-34"></a>    <span class="st">"b_a_l"</span></span>
+<span id="cb8-35"><a href="#cb8-35"></a>  ), <span class="at">format =</span> <span class="st">"matrix"</span>))</span>
+<span id="cb8-36"><a href="#cb8-36"></a>  </span>
+<span id="cb8-37"><a href="#cb8-37"></a></span>
+<span id="cb8-38"><a href="#cb8-38"></a><span class="co"># test outcome</span></span>
+<span id="cb8-39"><a href="#cb8-39"></a>cols <span class="ot">&lt;-</span> <span class="fu">names</span>(post)</span>
+<span id="cb8-40"><a href="#cb8-40"></a>cols <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">"["</span>,<span class="st">"_"</span>,cols,<span class="at">fixed =</span> T)</span>
+<span id="cb8-41"><a href="#cb8-41"></a>cols <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">"]"</span>,<span class="st">""</span>,cols,<span class="at">fixed =</span> T)</span>
+<span id="cb8-42"><a href="#cb8-42"></a><span class="fu">names</span>(post) <span class="ot">&lt;-</span> cols</span>
+<span id="cb8-43"><a href="#cb8-43"></a>  </span>
+<span id="cb8-44"><a href="#cb8-44"></a><span class="co"># effects</span></span>
+<span id="cb8-45"><a href="#cb8-45"></a>effs <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb8-46"><a href="#cb8-46"></a>  <span class="co"># domain a, late (revision) and chronic (two-stage)</span></span>
+<span id="cb8-47"><a href="#cb8-47"></a>  <span class="st">"b_a_l_2"</span>)</span>
+<span id="cb8-48"><a href="#cb8-48"></a>  </span>
+<span id="cb8-49"><a href="#cb8-49"></a>d_beta <span class="ot">&lt;-</span> post[, .SD, .SDcols <span class="ot">=</span> effs]</span>
+<span id="cb8-50"><a href="#cb8-50"></a>d_beta <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_beta, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_beta))</span>
+<span id="cb8-51"><a href="#cb8-51"></a></span>
+<span id="cb8-52"><a href="#cb8-52"></a></span>
+<span id="cb8-53"><a href="#cb8-53"></a>d_fig <span class="ot">&lt;-</span> d_beta[, .(</span>
+<span id="cb8-54"><a href="#cb8-54"></a>  <span class="at">lor_med =</span> <span class="fu">median</span>(value), </span>
+<span id="cb8-55"><a href="#cb8-55"></a>  <span class="at">lor_q025 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.025</span>),</span>
+<span id="cb8-56"><a href="#cb8-56"></a>  <span class="at">lor_q975 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.975</span>)), keyby <span class="ot">=</span> variable]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
 
 
