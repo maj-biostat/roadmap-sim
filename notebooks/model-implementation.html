@@ -435,12 +435,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-4"><a href="#cb2-4"></a>ll <span class="ot">&lt;-</span> <span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="fl">5e4</span>)</span>
 <span id="cb2-5"><a href="#cb2-5"></a>lsd <span class="ot">&lt;-</span> <span class="fu">get_stan_data</span>(ll<span class="sc">$</span>d_i)</span>
 <span id="cb2-6"><a href="#cb2-6"></a>ld <span class="ot">&lt;-</span> lsd<span class="sc">$</span>ld</span>
-<span id="cb2-7"><a href="#cb2-7"></a>d_b <span class="ot">&lt;-</span> <span class="fu">copy</span>(lsd<span class="sc">$</span>d_b)</span>
-<span id="cb2-8"><a href="#cb2-8"></a></span>
-<span id="cb2-9"><a href="#cb2-9"></a>f2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb2-10"><a href="#cb2-10"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
-<span id="cb2-11"><a href="#cb2-11"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
-<span id="cb2-12"><a href="#cb2-12"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-7"><a href="#cb2-7"></a><span class="co"># cbind(ld$l_su, ld$l_y, ld$l_n, ld$l_ea, ld$l_eap, ld$l_a)</span></span>
+<span id="cb2-8"><a href="#cb2-8"></a>d_b <span class="ot">&lt;-</span> <span class="fu">copy</span>(lsd<span class="sc">$</span>d_b)</span>
+<span id="cb2-9"><a href="#cb2-9"></a></span>
+<span id="cb2-10"><a href="#cb2-10"></a>f2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb2-11"><a href="#cb2-11"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb2-12"><a href="#cb2-12"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
+<span id="cb2-13"><a href="#cb2-13"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
@@ -449,7 +450,7 @@ Chain 2 finished in 5.4 seconds.
 Chain 1 finished in 5.7 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 5.5 seconds.
+Mean chain execution time: 5.6 seconds.
 Total execution time: 5.7 seconds.</code></pre>
 </div>
 <details class="code-fold">
@@ -559,7 +560,7 @@ Figure&nbsp;1: Scatter plot comparing true vs estimated 95% credible interval fo
 <span id="cb7-2"><a href="#cb7-2"></a>  <span class="fu">geom_point</span>() <span class="sc">+</span></span>
 <span id="cb7-3"><a href="#cb7-3"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> parname, <span class="at">y =</span> lor), <span class="at">pch =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
 <span id="cb7-4"><a href="#cb7-4"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> lor_q025, <span class="at">ymax =</span> lor_q975))  <span class="sc">+</span></span>
-<span id="cb7-5"><a href="#cb7-5"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
+<span id="cb7-5"><a href="#cb7-5"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>, <span class="at">guide =</span> <span class="fu">guide_axis</span>(<span class="at">angle =</span> <span class="dv">45</span>)) <span class="sc">+</span></span>
 <span id="cb7-6"><a href="#cb7-6"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"Posterior log-odds-ratio (95% credible interval)"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display page-columns page-full">
