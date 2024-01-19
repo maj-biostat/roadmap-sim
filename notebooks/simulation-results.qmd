@@ -8,6 +8,8 @@ source("./R/init.R")
 log_info("Called simulation-results notebook")
 ```
 
+## All treatments effective
+
 Summarises superiority for fixed trial when all domains treatment effects are set to the same values ranging from $\log(1/1.4)$ to $\log(2)$, see @tbl-sim-par.
 
 ```{r}
@@ -131,4 +133,12 @@ ggplot(d_win, aes(x = exp(lor_tru), y = pr_win)) +
   scale_y_continuous("Pr(decide superior)", breaks = seq(0, 1, by = 0.1)) +
   facet_wrap(~parname, ncol = 3)
 ```
+
+## One effective treatment
+
+
+## One effective treatment, one harmful
+
+
+
 

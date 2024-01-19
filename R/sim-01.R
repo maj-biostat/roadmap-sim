@@ -58,7 +58,7 @@ run_trial <- function(ix){
     max_treedepth = 13)
   
   post_1 <- data.table(f1$draws(variables = c(
-    "alpha", "gamma_b", "gamma_c", 
+    "alpha", "gamma_c", 
     "b_a_l", 
     "b_b1_l", 
     "b_b2_l",

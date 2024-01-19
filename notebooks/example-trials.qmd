@@ -54,7 +54,7 @@ f_null_1 <- m2$sample(
   max_treedepth = 13)
 
 post_1 <- data.table(f_null_1$draws(variables = c(
-  "alpha", "gamma_b", "gamma_c", 
+  "alpha", "gamma_c", 
   "b_a_l", 
   "b_b1_l", 
   "b_b2_l",
@@ -81,7 +81,7 @@ f_null_2 <- m2$sample(
   max_treedepth = 13)
 
 post_2 <- data.table(f_null_2$draws(variables = c(
-  "alpha", "gamma_b", "gamma_c", 
+  "alpha", "gamma_c", 
   "b_a_l", 
   "b_b1_l", 
   "b_b2_l",
@@ -233,7 +233,7 @@ f_alleff_1 <- m2$sample(
   max_treedepth = 13)
 
 post_1 <- data.table(f_alleff_1$draws(variables = c(
-  "alpha", "gamma_b", "gamma_c", 
+  "alpha", "gamma_c", 
   "b_a_l", 
   "b_b1_l", 
   "b_b2_l",
@@ -260,7 +260,7 @@ f_alleff_2 <- m2$sample(
   max_treedepth = 13)
 
 post_2 <- data.table(f_alleff_2$draws(variables = c(
-  "alpha", "gamma_b", "gamma_c", 
+  "alpha", "gamma_c", 
   "b_a_l", 
   "b_b1_l", 
   "b_b2_l",

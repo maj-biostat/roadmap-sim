@@ -53,7 +53,7 @@ transformed data {
 }
 parameters {
   vector[6] alpha;
-  real gamma_b;
+  // real gamma_b;
   real gamma_c;
   real b_a_l_raw;
   real b_b1_l_raw;
@@ -106,7 +106,7 @@ transformed parameters{
 model{
   target += normal_lpdf(alpha | 0, 1.5);
   
-  target += std_normal_lpdf(gamma_b);
+  // target += std_normal_lpdf(gamma_b);
   target += std_normal_lpdf(gamma_c);
   // all silos
   target += normal_lpdf(b_c_raw | 0, pri_sig_b_c);
@@ -125,7 +125,6 @@ model{
                                       e_ec .* b_c[e_c]) ;      
                                     
   target += binomial_logit_lpmf(l_y | l_n, alpha[l_su] + 
-                                    l_ebp * gamma_b + 
                                     l_ecp * gamma_c +
                                     l_ea .* b_a_l[l_a] +
                                     l_eb1 .* b_b1_l[l_b] +  
@@ -134,7 +133,6 @@ model{
                                     ) ;    
                                     
   target += binomial_logit_lpmf(c_y | c_n, alpha[c_su] +
-                                      c_ebp * gamma_b + 
                                       c_ecp * gamma_c +
                                       c_ea .* b_a_c[c_a] +
                                       c_eb1 .* b_b1_c[c_b] + 
@@ -148,11 +146,11 @@ generated quantities{
   vector[N] eta;
   
   eta_e = alpha[e_su] + e_ecp * gamma_c + e_ec .* b_c[e_c];
-  eta_l = alpha[l_su] + l_ebp * gamma_b + l_ecp * gamma_c +
+  eta_l = alpha[l_su] + l_ecp * gamma_c +
     l_ea .* b_a_l[l_a] + 
     l_eb1 .* b_b1_l[l_b] + l_eb2 .* b_b2_l[l_b] +
     l_ec .* b_c[l_c];
-  eta_c = alpha[c_su] + c_ebp * gamma_b + c_ecp * gamma_c +
+  eta_c = alpha[c_su] + c_ecp * gamma_c +
     c_ea .* b_a_c[c_a] +
     c_eb1 .* b_b1_c[c_b] + c_eb2 .* b_b2_c[c_b] +
     c_ec .* b_c[c_c];

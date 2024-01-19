@@ -66,9 +66,10 @@ Patients allocated to revision for whom the plan is to undertake a two-stage pro
 $\zeta$ again comprises terms that characterise the effects of non-membership in domains $A$, $B$ and $C$ (60% of the cohort are assumed to enter into domain C irrespetive of their membership in domains $A$ and $B$) along with terms to model the effects of treatment allocation within each domain.
 All patients are assumed to enter the surgical domain and so $\gamma_{A}$ can be omitted.
 Patients allocated to dair, would contribute to the estimation of $\gamma_{B}$ and $\gamma_{C}$ is as previously defined.
+However, the inclusion of $\gamma_{B}$ creates an identifiability issue for $\alpha$ and $\beta_A$ and therefore is not included for the purposes of the simulations.
 
 \begin{aligned}
-\zeta_i &= \gamma_{B} \mathbb{I}_{B^\prime(i)} + \gamma_{C} \mathbb{I}_{C^\prime(i)} + \beta_{A,s(i),d_{A,j(i)}}\mathbb{I}_{A(i)} + \\
+\zeta_i &= \gamma_{C} \mathbb{I}_{C^\prime(i)} + \beta_{A,s(i),d_{A,j(i)}}\mathbb{I}_{A(i)} + \\
 &\qquad  \beta_{B_{1},s(i),d_{B_1,j(i)}}\mathbb{I}_{one-stage(i)}  +  \beta_{B_{2},s(i),d_{B_2,j(i)}}\mathbb{I}_{two-stage(i)} +  \beta_{C,d_{C,j(i)}}\mathbb{I}_{C(i)}
 \end{aligned}
 

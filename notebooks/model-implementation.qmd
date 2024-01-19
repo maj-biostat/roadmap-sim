@@ -11,7 +11,6 @@ log_info("Called model-implementation notebook")
 
 
 The simplest implementation I could think of split the data into silo-specific chunks, mimicking the formulation in the model specification earlier.
-Nevertheless, the model is cumbersome.
 
 ```{r}
 #| class-output: stan
@@ -19,14 +18,15 @@ Nevertheless, the model is cumbersome.
 cat(readLines("stan/model-sim-02.stan"), sep = "\n")
 ```
 
-Below I create a data set with many more records that we will have available in order to see if we can recover the parameters.
-I fit the above model and then extract and summarise the posterior.
+Below I create a data set with a million patients (orders of magnitude more than we will have available) to see if we can get anywhere close to recovering the parameters - if we cannot recover the parameters with this many records, we are certainly not going to be able to do so with 2500 patients.
+
+Then I fit the stan model and extract and summarise the posterior.
 
 ```{r}
 m2 <- cmdstanr::cmdstan_model("stan/model-sim-02.stan")
 
 set.seed(1)
-ll <- get_trial_data(N = 5e4)
+ll <- get_trial_data(N = 1e6)
 lsd <- get_stan_data(ll$d_i)
 ld <- lsd$ld
 # cbind(ld$l_su, ld$l_y, ld$l_n, ld$l_ea, ld$l_eap, ld$l_a)
@@ -74,7 +74,7 @@ ggplot(d_fig, aes(x = eta, y = eta_med)) +
 
 ```{r}
 post <- data.table(f2$draws(variables = c(
-    "alpha", "gamma_b", "gamma_c", 
+    "alpha", "gamma_c", 
     "b_a_l", 
     "b_b1_l", 
     "b_b2_l",
@@ -109,6 +109,7 @@ effs <- c(
   
 d_beta <- post[, .SD, .SDcols = effs]
 d_beta <- melt(d_beta, measure.vars = names(d_beta))
+# unique(d_beta$variable)
 
 
 parname_map <- roadmap.data::get_par_effects_mapping()
@@ -127,7 +128,6 @@ d_fig <- merge(d_fig, d_effects, by.x = "parname", by.y = "variable")
 
 ```
 
-
 @fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model.
 It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset.
 
@@ -145,44 +145,16 @@ ggplot(d_fig, aes(x = parname, y = lor_med)) +
   scale_y_continuous("Posterior log-odds-ratio (95% credible interval)") 
 ```
 
-
-
-
-```{r, eval = F}
-m3 <- cmdstanr::cmdstan_model("stan/model-sim-03.stan")
-
-set.seed(1)
-
-sim_spec <- get_sim_spec()
-sim_spec$gamma[, , "early"] <- 0
-sim_spec$gamma[, , "late"] <- 0
-sim_spec$gamma[, , "chronic"] <- 0
-
-sim_spec$b_a_late["rev"] <- log(2)
-sim_spec$b_a_chronic["two"] <- 0
-sim_spec$b_b1_late_one["w12p1"] <- 0
-sim_spec$b_b2_late_two["w12p2"] <- 0
-sim_spec$b_b1_chronic_one["w12p1"] <- 0
-sim_spec$b_b2_chronic_two["w12p2"] <- 0
-sim_spec$b_c["rif"] <- 0
-
-
-ll <- get_trial_data(N = 100, pop_spec = NULL, sim_spec = sim_spec)
-ll$d
-
-lsd <- get_stan_data(ll$d_i)
-ld <- lsd$ld
-# cbind(ld$l_su, ld$l_y, ld$l_n, ld$l_ea, ld$l_eap, ld$l_a)
-d_b <- copy(lsd$d_b)
-
-f3 <- m3$sample(
-  ld, iter_warmup = 1000, iter_sampling = 2000,
-  parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
-  max_treedepth = 13)
-
-post <- data.table(f3$draws(variables = c(
-    "alpha", 
-    "b_a_l"
+```{r}
+post <- data.table(f2$draws(variables = c(
+    "alpha", "gamma_c", 
+    "b_a_l", 
+    "b_b1_l", 
+    "b_b2_l",
+    "b_a_c",
+    "b_b1_c", 
+    "b_b2_c",
+    "b_c"
   ), format = "matrix"))
   
 
@@ -193,16 +165,50 @@ cols <- gsub("]","",cols,fixed = T)
 names(post) <- cols
   
 # effects
-effs <- c(
+pars <- c(
+  "alpha", "gamma_c", 
   # domain a, late (revision) and chronic (two-stage)
-  "b_a_l_2")
+  "b_a_l_2", "b_a_c_2", 
+  # domain b, (late/revision one stage pts)
+  # wk12p1 (ref is wk6p1)
+  "b_b1_l_2", 
+  # wk12p2 (ref is day7p2)
+  "b_b2_l_2", 
+  # wk12p1 (ref is wk6p1)
+  "b_b1_c_2", 
+  # wk12p2 (ref is day7p2)
+  "b_b2_c_2",
+  # rif (ref is no-rif)
+  "b_c_2")
   
-d_beta <- post[, .SD, .SDcols = effs]
-d_beta <- melt(d_beta, measure.vars = names(d_beta))
+d_pars <- post[, .SD, .SDcols = effs]
+m_cor <- d_pars[, cor(.SD)]
+d_cor <- data.table(cbind(var1 = rownames(m_cor), m_cor))
+d_cor <- melt(d_cor, id.vars = "var1", variable.name = "var2")
+d_cor[, value := as.numeric(value)]
 
+d_cor[, `:=`(
+  var1 = factor(var1, levels = c(pars[length(pars):1])),
+  var2 = factor(var2, levels = c(pars[length(pars):1]))
+)]
 
-d_fig <- d_beta[, .(
-  lor_med = median(value), 
-  lor_q025 = quantile(value, prob = 0.025),
-  lor_q975 = quantile(value, prob = 0.975)), keyby = variable]
+```
+
+@fig-post-cor shows the correlation between parameters estimated from the model.
+
+```{r}
+#| label: fig-post-cor
+#| fig-cap: 'Parameter correlation (white indicates zero correlation)'
+#| fig-cap-location: margin
+#| fig-height: 4
+
+ggplot(d_cor, aes(x = var1, y = var2, fill = value)) +
+  geom_tile(color = "white",
+            lwd = 1.5,
+            linetype = 1) +
+  geom_text(aes(label = round(value, 2)), color = "white", size = 4) +
+  scale_x_discrete("",position = "top", limits=rev) +
+  scale_y_discrete("") + 
+  scale_fill_gradient2("Pearson correlation") +
+  coord_fixed()
 ```
