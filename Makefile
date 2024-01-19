@@ -75,3 +75,15 @@ sim02:
 	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc02-08.yml
 
 
+.PHONY: sim03
+sim03:
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-01.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-02.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-03.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-04.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-05.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-06.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-07.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-08.yml
+
+
