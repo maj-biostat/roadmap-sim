@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>ROADMAP - design notes and simulations - Simulation settings</title>
+<title>ROADMAP - design notes and simulations - Simulation setup</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -107,6 +107,35 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   });
 </script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -146,7 +175,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/simulation-pars.html">Simulation settings</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/simulation-pars.html">Simulation setup</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -196,7 +225,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../notebooks/simulation-pars.html" class="sidebar-item-text sidebar-link active">
- <span class="menu-text">Simulation settings</span></a>
+ <span class="menu-text">Simulation setup</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -247,15 +276,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#missingness" id="toc-missingness" class="nav-link" data-scroll-target="#missingness">Missingness</a></li>
   <li><a href="#non-differential-follow-up" id="toc-non-differential-follow-up" class="nav-link" data-scroll-target="#non-differential-follow-up">Non-differential follow-up</a></li>
   <li><a href="#simulation-scenarios" id="toc-simulation-scenarios" class="nav-link" data-scroll-target="#simulation-scenarios">Simulation scenarios</a></li>
+  <li><a href="#statistical-quantities" id="toc-statistical-quantities" class="nav-link" data-scroll-target="#statistical-quantities">Statistical quantities</a>
+  <ul>
+  <li><a href="#superiority" id="toc-superiority" class="nav-link" data-scroll-target="#superiority">Superiority</a></li>
+  <li><a href="#inferiority" id="toc-inferiority" class="nav-link" data-scroll-target="#inferiority">Inferiority</a></li>
+  <li><a href="#futility" id="toc-futility" class="nav-link" data-scroll-target="#futility">Futility</a></li>
+  </ul></li>
+  <li><a href="#decision-thresholds" id="toc-decision-thresholds" class="nav-link" data-scroll-target="#decision-thresholds">Decision thresholds</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content page-columns page-full" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/simulation-pars.html">Simulation settings</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/simulation-pars.html">Simulation setup</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Simulation settings</h1>
+<h1 class="title">Simulation setup</h1>
 </div>
 
 
@@ -390,6 +426,32 @@ Figure&nbsp;1: Expected accrual
 <li>Single effective - single cell effective (OR = 1.5) for single domain and silo</li>
 <li>Single harmful - single cell harmful (OR = 1/1.5) for single domain and silo</li>
 </ul>
+</section>
+<section id="statistical-quantities" class="level2">
+<h2 class="anchored" data-anchor-id="statistical-quantities">Statistical quantities</h2>
+<p>We consider treatment superiority, inferiority and futility.</p>
+<section id="superiority" class="level3">
+<h3 class="anchored" data-anchor-id="superiority">Superiority</h3>
+<span class="math display">\[\begin{aligned}
+\phi_{sup} = Pr(OR &gt; 1)
+\end{aligned}\]</span>
+<p>and conclude superiority if <span class="math inline">\(\phi_{sup} &gt; \delta_{sup}\)</span>.</p>
+</section>
+<section id="inferiority" class="level3">
+<h3 class="anchored" data-anchor-id="inferiority">Inferiority</h3>
+<span class="math display">\[\begin{aligned}
+\phi_{inf} = 1 - \phi_{sup}
+\end{aligned}\]</span>
+<p>and conclude inferiority if <span class="math inline">\(\phi_{inf} &gt; \delta_{inf}\)</span>.</p>
+</section>
+<section id="futility" class="level3">
+<h3 class="anchored" data-anchor-id="futility">Futility</h3>
+<p>Is simply defined in relation to superiority with futility concluded if <span class="math inline">\(\phi_{sup} &lt; \delta_{fut}\)</span>.</p>
+</section>
+</section>
+<section id="decision-thresholds" class="level2">
+<h2 class="anchored" data-anchor-id="decision-thresholds">Decision thresholds</h2>
+<p>Decision thresholds are documented with the simulation results.</p>
 
 
 </section>
