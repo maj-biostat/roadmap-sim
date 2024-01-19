@@ -52,6 +52,8 @@ format:
     link-external-icon: true
     link-external-newwindow: true
     link-external-filter: '^(?:http:|https:)\/\/github\.com'
+    comments:
+      hypothesis: true
 
 
 
