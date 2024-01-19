@@ -264,7 +264,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 
 </div>
-<p>The simplest implementation I could think of split the data into silo-specific chunks, mimicking the formulation in the model specification earlier. Nevertheless, the model is cumbersome.</p>
+<p>The simplest implementation I could think of split the data into silo-specific chunks, mimicking the formulation in the model specification earlier.</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <div class="sourceCode" id="cb1"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb1-1"><a href="#cb1-1"></a><span class="kw">data</span> {</span>
@@ -322,7 +322,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-53"><a href="#cb1-53"></a>}</span>
 <span id="cb1-54"><a href="#cb1-54"></a><span class="kw">parameters</span> {</span>
 <span id="cb1-55"><a href="#cb1-55"></a>  <span class="dt">vector</span>[<span class="dv">6</span>] alpha;</span>
-<span id="cb1-56"><a href="#cb1-56"></a>  <span class="dt">real</span> gamma_b;</span>
+<span id="cb1-56"><a href="#cb1-56"></a>  <span class="co">// real gamma_b;</span></span>
 <span id="cb1-57"><a href="#cb1-57"></a>  <span class="dt">real</span> gamma_c;</span>
 <span id="cb1-58"><a href="#cb1-58"></a>  <span class="dt">real</span> b_a_l_raw;</span>
 <span id="cb1-59"><a href="#cb1-59"></a>  <span class="dt">real</span> b_b1_l_raw;</span>
@@ -375,7 +375,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-106"><a href="#cb1-106"></a><span class="kw">model</span>{</span>
 <span id="cb1-107"><a href="#cb1-107"></a>  <span class="kw">target +=</span> normal_lpdf(alpha | <span class="dv">0</span>, <span class="fl">1.5</span>);</span>
 <span id="cb1-108"><a href="#cb1-108"></a>  </span>
-<span id="cb1-109"><a href="#cb1-109"></a>  <span class="kw">target +=</span> std_normal_lpdf(gamma_b);</span>
+<span id="cb1-109"><a href="#cb1-109"></a>  <span class="co">// target += std_normal_lpdf(gamma_b);</span></span>
 <span id="cb1-110"><a href="#cb1-110"></a>  <span class="kw">target +=</span> std_normal_lpdf(gamma_c);</span>
 <span id="cb1-111"><a href="#cb1-111"></a>  <span class="co">// all silos</span></span>
 <span id="cb1-112"><a href="#cb1-112"></a>  <span class="kw">target +=</span> normal_lpdf(b_c_raw | <span class="dv">0</span>, pri_sig_b_c);</span>
@@ -394,51 +394,50 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-125"><a href="#cb1-125"></a>                                      e_ec .* b_c[e_c]) ;      </span>
 <span id="cb1-126"><a href="#cb1-126"></a>                                    </span>
 <span id="cb1-127"><a href="#cb1-127"></a>  <span class="kw">target +=</span> binomial_logit_lpmf(l_y | l_n, alpha[l_su] + </span>
-<span id="cb1-128"><a href="#cb1-128"></a>                                    l_ebp * gamma_b + </span>
-<span id="cb1-129"><a href="#cb1-129"></a>                                    l_ecp * gamma_c +</span>
-<span id="cb1-130"><a href="#cb1-130"></a>                                    l_ea .* b_a_l[l_a] +</span>
-<span id="cb1-131"><a href="#cb1-131"></a>                                    l_eb1 .* b_b1_l[l_b] +  </span>
-<span id="cb1-132"><a href="#cb1-132"></a>                                    l_eb2 .* b_b2_l[l_b] +</span>
-<span id="cb1-133"><a href="#cb1-133"></a>                                    l_ec .* b_c[l_c]</span>
-<span id="cb1-134"><a href="#cb1-134"></a>                                    ) ;    </span>
-<span id="cb1-135"><a href="#cb1-135"></a>                                    </span>
-<span id="cb1-136"><a href="#cb1-136"></a>  <span class="kw">target +=</span> binomial_logit_lpmf(c_y | c_n, alpha[c_su] +</span>
-<span id="cb1-137"><a href="#cb1-137"></a>                                      c_ebp * gamma_b + </span>
-<span id="cb1-138"><a href="#cb1-138"></a>                                      c_ecp * gamma_c +</span>
-<span id="cb1-139"><a href="#cb1-139"></a>                                      c_ea .* b_a_c[c_a] +</span>
-<span id="cb1-140"><a href="#cb1-140"></a>                                      c_eb1 .* b_b1_c[c_b] + </span>
-<span id="cb1-141"><a href="#cb1-141"></a>                                      c_eb2 .* b_b2_c[c_b] +</span>
-<span id="cb1-142"><a href="#cb1-142"></a>                                      c_ec .* b_c[c_c]) ; </span>
-<span id="cb1-143"><a href="#cb1-143"></a>}</span>
-<span id="cb1-144"><a href="#cb1-144"></a><span class="kw">generated quantities</span>{</span>
-<span id="cb1-145"><a href="#cb1-145"></a>  <span class="dt">vector</span>[N_e] eta_e ;</span>
-<span id="cb1-146"><a href="#cb1-146"></a>  <span class="dt">vector</span>[N_l] eta_l ;</span>
-<span id="cb1-147"><a href="#cb1-147"></a>  <span class="dt">vector</span>[N_c] eta_c ;</span>
-<span id="cb1-148"><a href="#cb1-148"></a>  <span class="dt">vector</span>[N] eta;</span>
-<span id="cb1-149"><a href="#cb1-149"></a>  </span>
-<span id="cb1-150"><a href="#cb1-150"></a>  eta_e = alpha[e_su] + e_ecp * gamma_c + e_ec .* b_c[e_c];</span>
-<span id="cb1-151"><a href="#cb1-151"></a>  eta_l = alpha[l_su] + l_ebp * gamma_b + l_ecp * gamma_c +</span>
-<span id="cb1-152"><a href="#cb1-152"></a>    l_ea .* b_a_l[l_a] + </span>
-<span id="cb1-153"><a href="#cb1-153"></a>    l_eb1 .* b_b1_l[l_b] + l_eb2 .* b_b2_l[l_b] +</span>
-<span id="cb1-154"><a href="#cb1-154"></a>    l_ec .* b_c[l_c];</span>
-<span id="cb1-155"><a href="#cb1-155"></a>  eta_c = alpha[c_su] + c_ebp * gamma_b + c_ecp * gamma_c +</span>
-<span id="cb1-156"><a href="#cb1-156"></a>    c_ea .* b_a_c[c_a] +</span>
-<span id="cb1-157"><a href="#cb1-157"></a>    c_eb1 .* b_b1_c[c_b] + c_eb2 .* b_b2_c[c_b] +</span>
-<span id="cb1-158"><a href="#cb1-158"></a>    c_ec .* b_c[c_c];</span>
-<span id="cb1-159"><a href="#cb1-159"></a>    </span>
-<span id="cb1-160"><a href="#cb1-160"></a>  eta = append_row(eta_e, append_row(eta_l, eta_c));</span>
-<span id="cb1-161"><a href="#cb1-161"></a></span>
-<span id="cb1-162"><a href="#cb1-162"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-128"><a href="#cb1-128"></a>                                    l_ecp * gamma_c +</span>
+<span id="cb1-129"><a href="#cb1-129"></a>                                    l_ea .* b_a_l[l_a] +</span>
+<span id="cb1-130"><a href="#cb1-130"></a>                                    l_eb1 .* b_b1_l[l_b] +  </span>
+<span id="cb1-131"><a href="#cb1-131"></a>                                    l_eb2 .* b_b2_l[l_b] +</span>
+<span id="cb1-132"><a href="#cb1-132"></a>                                    l_ec .* b_c[l_c]</span>
+<span id="cb1-133"><a href="#cb1-133"></a>                                    ) ;    </span>
+<span id="cb1-134"><a href="#cb1-134"></a>                                    </span>
+<span id="cb1-135"><a href="#cb1-135"></a>  <span class="kw">target +=</span> binomial_logit_lpmf(c_y | c_n, alpha[c_su] +</span>
+<span id="cb1-136"><a href="#cb1-136"></a>                                      c_ecp * gamma_c +</span>
+<span id="cb1-137"><a href="#cb1-137"></a>                                      c_ea .* b_a_c[c_a] +</span>
+<span id="cb1-138"><a href="#cb1-138"></a>                                      c_eb1 .* b_b1_c[c_b] + </span>
+<span id="cb1-139"><a href="#cb1-139"></a>                                      c_eb2 .* b_b2_c[c_b] +</span>
+<span id="cb1-140"><a href="#cb1-140"></a>                                      c_ec .* b_c[c_c]) ; </span>
+<span id="cb1-141"><a href="#cb1-141"></a>}</span>
+<span id="cb1-142"><a href="#cb1-142"></a><span class="kw">generated quantities</span>{</span>
+<span id="cb1-143"><a href="#cb1-143"></a>  <span class="dt">vector</span>[N_e] eta_e ;</span>
+<span id="cb1-144"><a href="#cb1-144"></a>  <span class="dt">vector</span>[N_l] eta_l ;</span>
+<span id="cb1-145"><a href="#cb1-145"></a>  <span class="dt">vector</span>[N_c] eta_c ;</span>
+<span id="cb1-146"><a href="#cb1-146"></a>  <span class="dt">vector</span>[N] eta;</span>
+<span id="cb1-147"><a href="#cb1-147"></a>  </span>
+<span id="cb1-148"><a href="#cb1-148"></a>  eta_e = alpha[e_su] + e_ecp * gamma_c + e_ec .* b_c[e_c];</span>
+<span id="cb1-149"><a href="#cb1-149"></a>  eta_l = alpha[l_su] + l_ecp * gamma_c +</span>
+<span id="cb1-150"><a href="#cb1-150"></a>    l_ea .* b_a_l[l_a] + </span>
+<span id="cb1-151"><a href="#cb1-151"></a>    l_eb1 .* b_b1_l[l_b] + l_eb2 .* b_b2_l[l_b] +</span>
+<span id="cb1-152"><a href="#cb1-152"></a>    l_ec .* b_c[l_c];</span>
+<span id="cb1-153"><a href="#cb1-153"></a>  eta_c = alpha[c_su] + c_ecp * gamma_c +</span>
+<span id="cb1-154"><a href="#cb1-154"></a>    c_ea .* b_a_c[c_a] +</span>
+<span id="cb1-155"><a href="#cb1-155"></a>    c_eb1 .* b_b1_c[c_b] + c_eb2 .* b_b2_c[c_b] +</span>
+<span id="cb1-156"><a href="#cb1-156"></a>    c_ec .* b_c[c_c];</span>
+<span id="cb1-157"><a href="#cb1-157"></a>    </span>
+<span id="cb1-158"><a href="#cb1-158"></a>  eta = append_row(eta_e, append_row(eta_l, eta_c));</span>
+<span id="cb1-159"><a href="#cb1-159"></a></span>
+<span id="cb1-160"><a href="#cb1-160"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
-<p>Below I create a data set with many more records that we will have available in order to see if we can recover the parameters. I fit the above model and then extract and summarise the posterior.</p>
+<p>Below I create a data set with a million patients (orders of magnitude more than we will have available) to see if we can get anywhere close to recovering the parameters - if we cannot recover the parameters with this many records, we are certainly not going to be able to do so with 2500 patients.</p>
+<p>Then I fit the stan model and extract and summarise the posterior.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>m2 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">"stan/model-sim-02.stan"</span>)</span>
 <span id="cb2-2"><a href="#cb2-2"></a></span>
 <span id="cb2-3"><a href="#cb2-3"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb2-4"><a href="#cb2-4"></a>ll <span class="ot">&lt;-</span> <span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="fl">5e4</span>)</span>
+<span id="cb2-4"><a href="#cb2-4"></a>ll <span class="ot">&lt;-</span> <span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="fl">1e6</span>)</span>
 <span id="cb2-5"><a href="#cb2-5"></a>lsd <span class="ot">&lt;-</span> <span class="fu">get_stan_data</span>(ll<span class="sc">$</span>d_i)</span>
 <span id="cb2-6"><a href="#cb2-6"></a>ld <span class="ot">&lt;-</span> lsd<span class="sc">$</span>ld</span>
 <span id="cb2-7"><a href="#cb2-7"></a><span class="co"># cbind(ld$l_su, ld$l_y, ld$l_n, ld$l_ea, ld$l_eap, ld$l_a)</span></span>
@@ -452,12 +451,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 2 finished in 5.4 seconds.
-Chain 1 finished in 5.7 seconds.
+Chain 1 finished in 0.4 seconds.
+Chain 2 finished in 0.5 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 5.5 seconds.
-Total execution time: 5.7 seconds.</code></pre>
+Mean chain execution time: 0.5 seconds.
+Total execution time: 0.6 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -506,7 +505,7 @@ Figure&nbsp;1: Scatter plot comparing true vs estimated 95% credible interval fo
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>post <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
-<span id="cb6-2"><a href="#cb6-2"></a>    <span class="st">"alpha"</span>, <span class="st">"gamma_b"</span>, <span class="st">"gamma_c"</span>, </span>
+<span id="cb6-2"><a href="#cb6-2"></a>    <span class="st">"alpha"</span>, <span class="st">"gamma_c"</span>, </span>
 <span id="cb6-3"><a href="#cb6-3"></a>    <span class="st">"b_a_l"</span>, </span>
 <span id="cb6-4"><a href="#cb6-4"></a>    <span class="st">"b_b1_l"</span>, </span>
 <span id="cb6-5"><a href="#cb6-5"></a>    <span class="st">"b_b2_l"</span>,</span>
@@ -541,21 +540,22 @@ Figure&nbsp;1: Scatter plot comparing true vs estimated 95% credible interval fo
 <span id="cb6-34"><a href="#cb6-34"></a>  </span>
 <span id="cb6-35"><a href="#cb6-35"></a>d_beta <span class="ot">&lt;-</span> post[, .SD, .SDcols <span class="ot">=</span> effs]</span>
 <span id="cb6-36"><a href="#cb6-36"></a>d_beta <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_beta, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_beta))</span>
-<span id="cb6-37"><a href="#cb6-37"></a></span>
+<span id="cb6-37"><a href="#cb6-37"></a><span class="co"># unique(d_beta$variable)</span></span>
 <span id="cb6-38"><a href="#cb6-38"></a></span>
-<span id="cb6-39"><a href="#cb6-39"></a>parname_map <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_par_effects_mapping</span>()</span>
-<span id="cb6-40"><a href="#cb6-40"></a>d_beta[, parname <span class="sc">:</span><span class="er">=</span> parname_map[variable]]</span>
-<span id="cb6-41"><a href="#cb6-41"></a>d_beta[, parname <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(parname, <span class="at">levels =</span> roadmap.data<span class="sc">::</span><span class="fu">get_par_effects_mapping</span>())]</span>
-<span id="cb6-42"><a href="#cb6-42"></a></span>
-<span id="cb6-43"><a href="#cb6-43"></a>d_fig <span class="ot">&lt;-</span> d_beta[, .(</span>
-<span id="cb6-44"><a href="#cb6-44"></a>  <span class="at">lor_med =</span> <span class="fu">median</span>(value), </span>
-<span id="cb6-45"><a href="#cb6-45"></a>  <span class="at">lor_q025 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.025</span>),</span>
-<span id="cb6-46"><a href="#cb6-46"></a>  <span class="at">lor_q975 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.975</span>)), keyby <span class="ot">=</span> parname]</span>
-<span id="cb6-47"><a href="#cb6-47"></a></span>
-<span id="cb6-48"><a href="#cb6-48"></a>d_effects <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_sim_spec_effects</span>(roadmap.data<span class="sc">::</span><span class="fu">get_sim_spec</span>())</span>
-<span id="cb6-49"><a href="#cb6-49"></a>d_effects <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_effects, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_effects), <span class="at">value.name =</span> <span class="st">"lor"</span>)</span>
-<span id="cb6-50"><a href="#cb6-50"></a></span>
-<span id="cb6-51"><a href="#cb6-51"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">merge</span>(d_fig, d_effects, <span class="at">by.x =</span> <span class="st">"parname"</span>, <span class="at">by.y =</span> <span class="st">"variable"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb6-39"><a href="#cb6-39"></a></span>
+<span id="cb6-40"><a href="#cb6-40"></a>parname_map <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_par_effects_mapping</span>()</span>
+<span id="cb6-41"><a href="#cb6-41"></a>d_beta[, parname <span class="sc">:</span><span class="er">=</span> parname_map[variable]]</span>
+<span id="cb6-42"><a href="#cb6-42"></a>d_beta[, parname <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(parname, <span class="at">levels =</span> roadmap.data<span class="sc">::</span><span class="fu">get_par_effects_mapping</span>())]</span>
+<span id="cb6-43"><a href="#cb6-43"></a></span>
+<span id="cb6-44"><a href="#cb6-44"></a>d_fig <span class="ot">&lt;-</span> d_beta[, .(</span>
+<span id="cb6-45"><a href="#cb6-45"></a>  <span class="at">lor_med =</span> <span class="fu">median</span>(value), </span>
+<span id="cb6-46"><a href="#cb6-46"></a>  <span class="at">lor_q025 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.025</span>),</span>
+<span id="cb6-47"><a href="#cb6-47"></a>  <span class="at">lor_q975 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.975</span>)), keyby <span class="ot">=</span> parname]</span>
+<span id="cb6-48"><a href="#cb6-48"></a></span>
+<span id="cb6-49"><a href="#cb6-49"></a>d_effects <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_sim_spec_effects</span>(roadmap.data<span class="sc">::</span><span class="fu">get_sim_spec</span>())</span>
+<span id="cb6-50"><a href="#cb6-50"></a>d_effects <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_effects, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_effects), <span class="at">value.name =</span> <span class="st">"lor"</span>)</span>
+<span id="cb6-51"><a href="#cb6-51"></a></span>
+<span id="cb6-52"><a href="#cb6-52"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">merge</span>(d_fig, d_effects, <span class="at">by.x =</span> <span class="st">"parname"</span>, <span class="at">by.y =</span> <span class="st">"variable"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p><a href="#fig-post-vs-tru" class="quarto-xref">Figure&nbsp;1</a> shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model. It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset.</p>
@@ -585,63 +585,79 @@ Figure&nbsp;2: Posterior estimates for log-odds-ratios (true values shown as tri
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>m3 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">"stan/model-sim-03.stan"</span>)</span>
-<span id="cb8-2"><a href="#cb8-2"></a></span>
-<span id="cb8-3"><a href="#cb8-3"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb8-4"><a href="#cb8-4"></a></span>
-<span id="cb8-5"><a href="#cb8-5"></a>sim_spec <span class="ot">&lt;-</span> <span class="fu">get_sim_spec</span>()</span>
-<span id="cb8-6"><a href="#cb8-6"></a>sim_spec<span class="sc">$</span>gamma[, , <span class="st">"early"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb8-7"><a href="#cb8-7"></a>sim_spec<span class="sc">$</span>gamma[, , <span class="st">"late"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb8-8"><a href="#cb8-8"></a>sim_spec<span class="sc">$</span>gamma[, , <span class="st">"chronic"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb8-9"><a href="#cb8-9"></a></span>
-<span id="cb8-10"><a href="#cb8-10"></a>sim_spec<span class="sc">$</span>b_a_late[<span class="st">"rev"</span>] <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
-<span id="cb8-11"><a href="#cb8-11"></a>sim_spec<span class="sc">$</span>b_a_chronic[<span class="st">"two"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb8-12"><a href="#cb8-12"></a>sim_spec<span class="sc">$</span>b_b1_late_one[<span class="st">"w12p1"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb8-13"><a href="#cb8-13"></a>sim_spec<span class="sc">$</span>b_b2_late_two[<span class="st">"w12p2"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb8-14"><a href="#cb8-14"></a>sim_spec<span class="sc">$</span>b_b1_chronic_one[<span class="st">"w12p1"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb8-15"><a href="#cb8-15"></a>sim_spec<span class="sc">$</span>b_b2_chronic_two[<span class="st">"w12p2"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb8-16"><a href="#cb8-16"></a>sim_spec<span class="sc">$</span>b_c[<span class="st">"rif"</span>] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb8-17"><a href="#cb8-17"></a></span>
-<span id="cb8-18"><a href="#cb8-18"></a></span>
-<span id="cb8-19"><a href="#cb8-19"></a>ll <span class="ot">&lt;-</span> <span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="dv">100</span>, <span class="at">pop_spec =</span> <span class="cn">NULL</span>, <span class="at">sim_spec =</span> sim_spec)</span>
-<span id="cb8-20"><a href="#cb8-20"></a>ll<span class="sc">$</span>d</span>
-<span id="cb8-21"><a href="#cb8-21"></a></span>
-<span id="cb8-22"><a href="#cb8-22"></a>lsd <span class="ot">&lt;-</span> <span class="fu">get_stan_data</span>(ll<span class="sc">$</span>d_i)</span>
-<span id="cb8-23"><a href="#cb8-23"></a>ld <span class="ot">&lt;-</span> lsd<span class="sc">$</span>ld</span>
-<span id="cb8-24"><a href="#cb8-24"></a><span class="co"># cbind(ld$l_su, ld$l_y, ld$l_n, ld$l_ea, ld$l_eap, ld$l_a)</span></span>
-<span id="cb8-25"><a href="#cb8-25"></a>d_b <span class="ot">&lt;-</span> <span class="fu">copy</span>(lsd<span class="sc">$</span>d_b)</span>
-<span id="cb8-26"><a href="#cb8-26"></a></span>
-<span id="cb8-27"><a href="#cb8-27"></a>f3 <span class="ot">&lt;-</span> m3<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb8-28"><a href="#cb8-28"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
-<span id="cb8-29"><a href="#cb8-29"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
-<span id="cb8-30"><a href="#cb8-30"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span>
-<span id="cb8-31"><a href="#cb8-31"></a></span>
-<span id="cb8-32"><a href="#cb8-32"></a>post <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f3<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
-<span id="cb8-33"><a href="#cb8-33"></a>    <span class="st">"alpha"</span>, </span>
-<span id="cb8-34"><a href="#cb8-34"></a>    <span class="st">"b_a_l"</span></span>
-<span id="cb8-35"><a href="#cb8-35"></a>  ), <span class="at">format =</span> <span class="st">"matrix"</span>))</span>
-<span id="cb8-36"><a href="#cb8-36"></a>  </span>
-<span id="cb8-37"><a href="#cb8-37"></a></span>
-<span id="cb8-38"><a href="#cb8-38"></a><span class="co"># test outcome</span></span>
-<span id="cb8-39"><a href="#cb8-39"></a>cols <span class="ot">&lt;-</span> <span class="fu">names</span>(post)</span>
-<span id="cb8-40"><a href="#cb8-40"></a>cols <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">"["</span>,<span class="st">"_"</span>,cols,<span class="at">fixed =</span> T)</span>
-<span id="cb8-41"><a href="#cb8-41"></a>cols <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">"]"</span>,<span class="st">""</span>,cols,<span class="at">fixed =</span> T)</span>
-<span id="cb8-42"><a href="#cb8-42"></a><span class="fu">names</span>(post) <span class="ot">&lt;-</span> cols</span>
-<span id="cb8-43"><a href="#cb8-43"></a>  </span>
-<span id="cb8-44"><a href="#cb8-44"></a><span class="co"># effects</span></span>
-<span id="cb8-45"><a href="#cb8-45"></a>effs <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb8-46"><a href="#cb8-46"></a>  <span class="co"># domain a, late (revision) and chronic (two-stage)</span></span>
-<span id="cb8-47"><a href="#cb8-47"></a>  <span class="st">"b_a_l_2"</span>)</span>
-<span id="cb8-48"><a href="#cb8-48"></a>  </span>
-<span id="cb8-49"><a href="#cb8-49"></a>d_beta <span class="ot">&lt;-</span> post[, .SD, .SDcols <span class="ot">=</span> effs]</span>
-<span id="cb8-50"><a href="#cb8-50"></a>d_beta <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_beta, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_beta))</span>
-<span id="cb8-51"><a href="#cb8-51"></a></span>
-<span id="cb8-52"><a href="#cb8-52"></a></span>
-<span id="cb8-53"><a href="#cb8-53"></a>d_fig <span class="ot">&lt;-</span> d_beta[, .(</span>
-<span id="cb8-54"><a href="#cb8-54"></a>  <span class="at">lor_med =</span> <span class="fu">median</span>(value), </span>
-<span id="cb8-55"><a href="#cb8-55"></a>  <span class="at">lor_q025 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.025</span>),</span>
-<span id="cb8-56"><a href="#cb8-56"></a>  <span class="at">lor_q975 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.975</span>)), keyby <span class="ot">=</span> variable]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>post <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
+<span id="cb8-2"><a href="#cb8-2"></a>    <span class="st">"alpha"</span>, <span class="st">"gamma_c"</span>, </span>
+<span id="cb8-3"><a href="#cb8-3"></a>    <span class="st">"b_a_l"</span>, </span>
+<span id="cb8-4"><a href="#cb8-4"></a>    <span class="st">"b_b1_l"</span>, </span>
+<span id="cb8-5"><a href="#cb8-5"></a>    <span class="st">"b_b2_l"</span>,</span>
+<span id="cb8-6"><a href="#cb8-6"></a>    <span class="st">"b_a_c"</span>,</span>
+<span id="cb8-7"><a href="#cb8-7"></a>    <span class="st">"b_b1_c"</span>, </span>
+<span id="cb8-8"><a href="#cb8-8"></a>    <span class="st">"b_b2_c"</span>,</span>
+<span id="cb8-9"><a href="#cb8-9"></a>    <span class="st">"b_c"</span></span>
+<span id="cb8-10"><a href="#cb8-10"></a>  ), <span class="at">format =</span> <span class="st">"matrix"</span>))</span>
+<span id="cb8-11"><a href="#cb8-11"></a>  </span>
+<span id="cb8-12"><a href="#cb8-12"></a></span>
+<span id="cb8-13"><a href="#cb8-13"></a><span class="co"># test outcome</span></span>
+<span id="cb8-14"><a href="#cb8-14"></a>cols <span class="ot">&lt;-</span> <span class="fu">names</span>(post)</span>
+<span id="cb8-15"><a href="#cb8-15"></a>cols <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">"["</span>,<span class="st">"_"</span>,cols,<span class="at">fixed =</span> T)</span>
+<span id="cb8-16"><a href="#cb8-16"></a>cols <span class="ot">&lt;-</span> <span class="fu">gsub</span>(<span class="st">"]"</span>,<span class="st">""</span>,cols,<span class="at">fixed =</span> T)</span>
+<span id="cb8-17"><a href="#cb8-17"></a><span class="fu">names</span>(post) <span class="ot">&lt;-</span> cols</span>
+<span id="cb8-18"><a href="#cb8-18"></a>  </span>
+<span id="cb8-19"><a href="#cb8-19"></a><span class="co"># effects</span></span>
+<span id="cb8-20"><a href="#cb8-20"></a>pars <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb8-21"><a href="#cb8-21"></a>  <span class="st">"alpha"</span>, <span class="st">"gamma_c"</span>, </span>
+<span id="cb8-22"><a href="#cb8-22"></a>  <span class="co"># domain a, late (revision) and chronic (two-stage)</span></span>
+<span id="cb8-23"><a href="#cb8-23"></a>  <span class="st">"b_a_l_2"</span>, <span class="st">"b_a_c_2"</span>, </span>
+<span id="cb8-24"><a href="#cb8-24"></a>  <span class="co"># domain b, (late/revision one stage pts)</span></span>
+<span id="cb8-25"><a href="#cb8-25"></a>  <span class="co"># wk12p1 (ref is wk6p1)</span></span>
+<span id="cb8-26"><a href="#cb8-26"></a>  <span class="st">"b_b1_l_2"</span>, </span>
+<span id="cb8-27"><a href="#cb8-27"></a>  <span class="co"># wk12p2 (ref is day7p2)</span></span>
+<span id="cb8-28"><a href="#cb8-28"></a>  <span class="st">"b_b2_l_2"</span>, </span>
+<span id="cb8-29"><a href="#cb8-29"></a>  <span class="co"># wk12p1 (ref is wk6p1)</span></span>
+<span id="cb8-30"><a href="#cb8-30"></a>  <span class="st">"b_b1_c_2"</span>, </span>
+<span id="cb8-31"><a href="#cb8-31"></a>  <span class="co"># wk12p2 (ref is day7p2)</span></span>
+<span id="cb8-32"><a href="#cb8-32"></a>  <span class="st">"b_b2_c_2"</span>,</span>
+<span id="cb8-33"><a href="#cb8-33"></a>  <span class="co"># rif (ref is no-rif)</span></span>
+<span id="cb8-34"><a href="#cb8-34"></a>  <span class="st">"b_c_2"</span>)</span>
+<span id="cb8-35"><a href="#cb8-35"></a>  </span>
+<span id="cb8-36"><a href="#cb8-36"></a>d_pars <span class="ot">&lt;-</span> post[, .SD, .SDcols <span class="ot">=</span> effs]</span>
+<span id="cb8-37"><a href="#cb8-37"></a>m_cor <span class="ot">&lt;-</span> d_pars[, <span class="fu">cor</span>(.SD)]</span>
+<span id="cb8-38"><a href="#cb8-38"></a>d_cor <span class="ot">&lt;-</span> <span class="fu">data.table</span>(<span class="fu">cbind</span>(<span class="at">var1 =</span> <span class="fu">rownames</span>(m_cor), m_cor))</span>
+<span id="cb8-39"><a href="#cb8-39"></a>d_cor <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_cor, <span class="at">id.vars =</span> <span class="st">"var1"</span>, <span class="at">variable.name =</span> <span class="st">"var2"</span>)</span>
+<span id="cb8-40"><a href="#cb8-40"></a>d_cor[, value <span class="sc">:</span><span class="er">=</span> <span class="fu">as.numeric</span>(value)]</span>
+<span id="cb8-41"><a href="#cb8-41"></a></span>
+<span id="cb8-42"><a href="#cb8-42"></a>d_cor[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(</span>
+<span id="cb8-43"><a href="#cb8-43"></a>  <span class="at">var1 =</span> <span class="fu">factor</span>(var1, <span class="at">levels =</span> <span class="fu">c</span>(pars[<span class="fu">length</span>(pars)<span class="sc">:</span><span class="dv">1</span>])),</span>
+<span id="cb8-44"><a href="#cb8-44"></a>  <span class="at">var2 =</span> <span class="fu">factor</span>(var2, <span class="at">levels =</span> <span class="fu">c</span>(pars[<span class="fu">length</span>(pars)<span class="sc">:</span><span class="dv">1</span>]))</span>
+<span id="cb8-45"><a href="#cb8-45"></a>)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
+</div>
+<p><a href="#fig-post-cor" class="quarto-xref">Figure&nbsp;3</a> shows the correlation between parameters estimated from the model.</p>
+<div class="cell page-columns page-full">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb9" data-cap-location="margin"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="fu">ggplot</span>(d_cor, <span class="fu">aes</span>(<span class="at">x =</span> var1, <span class="at">y =</span> var2, <span class="at">fill =</span> value)) <span class="sc">+</span></span>
+<span id="cb9-2"><a href="#cb9-2"></a>  <span class="fu">geom_tile</span>(<span class="at">color =</span> <span class="st">"white"</span>,</span>
+<span id="cb9-3"><a href="#cb9-3"></a>            <span class="at">lwd =</span> <span class="fl">1.5</span>,</span>
+<span id="cb9-4"><a href="#cb9-4"></a>            <span class="at">linetype =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb9-5"><a href="#cb9-5"></a>  <span class="fu">geom_text</span>(<span class="fu">aes</span>(<span class="at">label =</span> <span class="fu">round</span>(value, <span class="dv">2</span>)), <span class="at">color =</span> <span class="st">"white"</span>, <span class="at">size =</span> <span class="dv">4</span>) <span class="sc">+</span></span>
+<span id="cb9-6"><a href="#cb9-6"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>,<span class="at">position =</span> <span class="st">"top"</span>, <span class="at">limits=</span>rev) <span class="sc">+</span></span>
+<span id="cb9-7"><a href="#cb9-7"></a>  <span class="fu">scale_y_discrete</span>(<span class="st">""</span>) <span class="sc">+</span> </span>
+<span id="cb9-8"><a href="#cb9-8"></a>  <span class="fu">scale_fill_gradient2</span>(<span class="st">"Pearson correlation"</span>) <span class="sc">+</span></span>
+<span id="cb9-9"><a href="#cb9-9"></a>  <span class="fu">coord_fixed</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output-display page-columns page-full">
+<div id="fig-post-cor" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full" data-cap-location="margin">
+<figure class="quarto-float quarto-float-fig figure page-columns page-full">
+<div aria-describedby="fig-post-cor-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="model-implementation_files/figure-html/fig-post-cor-1.png" class="img-fluid figure-img" width="1800">
+</div>
+<figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-post-cor-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Parameter correlation (white indicates zero correlation)
+</figcaption>
+</figure>
+</div>
+</div>
 </div>
 
 
