@@ -8,7 +8,7 @@ args = commandArgs(trailingOnly=TRUE)
 if (length(args)<1) {
   log_info("Setting default run method (does nothing)")
   args[1] = "run_none_sim_01"
-  args[2] = "config-sc06.yml"
+  args[2] = "cfg-sim01-sc06.yml"
 } else {
   log_info("Run method ", args[1])
   log_info("Scenario config ", args[2])

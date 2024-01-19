@@ -8,7 +8,7 @@ is_html <- knitr::is_html_output()
 
 
 # Config - store of local OS file system
-f_cfg <- file.path("./etc", "config.yml")
+f_cfg <- file.path("./etc", "cfg.yml")
 g_cfg <- config::get(file = f_cfg)
 stopifnot("Config is null" = !is.null(g_cfg))
 
