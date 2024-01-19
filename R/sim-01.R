@@ -92,12 +92,17 @@ run_trial <- function(ix){
     "b_c_2")
   
   pr_sup <- post_1[, sapply(.SD, function(z){mean(z>0)}), .SDcols = effs]
-  win <- pr_sup > g_cfgsc$d_sup
+  pr_inf <- post_1[, sapply(.SD, function(z){mean(z<0)}), .SDcols = effs]
+  
+  
+  sup <- pr_sup > g_cfgsc$d_sup
+  inf <- pr_inf > g_cfgsc$d_inf
+  fut <- pr_sup < g_cfgsc$d_fut
   
   # return results
   list(
     pr_sup = pr_sup, 
-    win = win
+    sup = sup
   )
   
   
@@ -124,12 +129,12 @@ run_sim_01 <- function(){
     })
   
   d_pr_sup <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$pr_sup } )))
-  d_win <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$win } )))
+  d_sup <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$sup } )))
   
   l <- list(
     cfg = g_cfgsc,
     d_pr_sup = d_pr_sup, 
-    d_win = d_win
+    d_sup = d_sup
     )
   
   fname <- paste0("data/sim01-", g_cfgsc$sc, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs")

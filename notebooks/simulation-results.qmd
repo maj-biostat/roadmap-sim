@@ -10,7 +10,7 @@ log_info("Called simulation-results notebook")
 
 ## All treatments effective
 
-Summarises superiority for fixed trial when all domains treatment effects are set to the same values ranging from $\log(1/1.4)$ to $\log(2)$, see @tbl-sim-par.
+Summarises superiority for fixed trial when all domains treatment effects are set to the same values ranging from $\log(1/1.4)$ to $\log(2)$ and with one-side decision mechanisms using fixed thresholds, see @tbl-sim-par.
 
 ```{r}
 flist <- list.files("data", pattern = "sim01")
@@ -19,12 +19,12 @@ for(i in 1:length(flist)){
   l[[i]] <- qs::qread(file.path("data", flist[i]))
 }
 
-d_win <- rbindlist(lapply(l, function(z){
-  cbind(sc = z$cfg$sc, z$d_win[, lapply(.SD, mean)])
+d_sup <- rbindlist(lapply(l, function(z){
+  cbind(sc = z$cfg$sc, z$d_sup[, lapply(.SD, mean)])
 }))
 
 # Column `b_b1_c_2` doesn't exist.
-d_win <- melt(d_win, id.vars = "sc", value.name = "pr_win")
+d_sup <- melt(d_sup, id.vars = "sc", value.name = "pr_win")
 
 d_cfg <- rbindlist(lapply(l, function(z){
   data.table(do.call(cbind, z$cfg)) 
@@ -48,11 +48,11 @@ d_cfg[, `:=`(
   d_fut = as.numeric(d_fut)
   )]
 
-d_win <- merge(d_win, d_pars, by = c("sc", "variable"))  
-d_win[, lor_tru := as.numeric(lor_tru)]
+d_sup <- merge(d_sup, d_pars, by = c("sc", "variable"))  
+d_sup[, lor_tru := as.numeric(lor_tru)]
 parname_map <- roadmap.data::get_par_effects_mapping()
-d_win[, parname := parname_map[variable]]
-d_win[, parname := factor(parname, levels = roadmap.data::get_par_effects_mapping())]
+d_sup[, parname := parname_map[variable]]
+d_sup[, parname := factor(parname, levels = roadmap.data::get_par_effects_mapping())]
 ```
 
 ```{r}
@@ -126,7 +126,7 @@ Similarly, `b_a_chronic_two` is the effect of two-stage procedure relative to th
 #| fig-cap-location: margin
 #| fig-height: 7
 
-ggplot(d_win, aes(x = exp(lor_tru), y = pr_win)) +
+ggplot(d_sup, aes(x = exp(lor_tru), y = pr_win)) +
   geom_point(size = 0.5) +
   geom_line() +
   scale_x_continuous("Odds-ratio", breaks = seq(0, 2, by = 0.2)) +
