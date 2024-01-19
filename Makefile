@@ -53,13 +53,13 @@ data:
 
 .PHONY: sim01
 sim01:
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc01.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc02.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc04.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc05.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc06.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc07.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc08.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc01-01.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc01-02.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc01-03.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc01-04.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc01-05.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc01-06.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc01-07.yml
+	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc01-08.yml
 
 
