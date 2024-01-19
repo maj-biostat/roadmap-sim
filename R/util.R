@@ -249,3 +249,13 @@ post_dom_c <- function(post){
   
   d_fig
 }
+
+
+add_effect_field <- function(d_x, d_pars){
+  d_x <- merge(d_x, d_pars, by = c("sc", "v", "variable"))  
+  d_x[, lor_tru := as.numeric(lor_tru)]
+  parname_map <- roadmap.data::get_par_effects_mapping()
+  d_x[, parname := parname_map[variable]]
+  d_x[, parname := factor(parname, levels = roadmap.data::get_par_effects_mapping())]
+  d_x
+}

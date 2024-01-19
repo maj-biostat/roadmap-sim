@@ -5,33 +5,37 @@ title: "Simulation results"
 
 ```{r, echo = FALSE}
 source("./R/init.R")
+source("./R/util.R")
 log_info("Called simulation-results notebook")
 ```
 
 ## All treatments effective
 
-Summarises superiority for fixed trial when all domains treatment effects are set to the same values ranging from $\log(1/1.4)$ to $\log(2)$ and with one-side decision mechanisms using fixed thresholds, see @tbl-sim-par.
-
 ```{r}
-flist <- list.files("data", pattern = "sim01")
+flist <- list.files("data", pattern = "sim01-sc01")
 l <- list()
 for(i in 1:length(flist)){
   l[[i]] <- qs::qread(file.path("data", flist[i]))
 }
 
 d_sup <- rbindlist(lapply(l, function(z){
-  cbind(sc = z$cfg$sc, z$d_sup[, lapply(.SD, mean)])
+  cbind(sc = z$cfg$sc, v = z$cfg$v, z$d_sup[, lapply(.SD, mean)])
 }))
+d_sup <- melt(d_sup, id.vars = c("sc", "v"), value.name = "pr_sup")
 
-# Column `b_b1_c_2` doesn't exist.
-d_sup <- melt(d_sup, id.vars = "sc", value.name = "pr_win")
+d_inf <- rbindlist(lapply(l, function(z){
+  cbind(sc = z$cfg$sc, v = z$cfg$v, z$d_inf[, lapply(.SD, mean)])
+}))
+d_inf <- melt(d_inf, id.vars = c("sc", "v"), value.name = "pr_inf")
+
+d_fut <- rbindlist(lapply(l, function(z){
+  cbind(sc = z$cfg$sc, v = z$cfg$v, z$d_fut[, lapply(.SD, mean)])
+}))
+d_fut <- melt(d_fut, id.vars = c("sc", "v"), value.name = "pr_fut")
 
 d_cfg <- rbindlist(lapply(l, function(z){
   data.table(do.call(cbind, z$cfg)) 
 }))
-d_pars <- melt(d_cfg[, .SD, .SDcols = !c("nsim", "mc_cores", "d_sup", "d_inf", "d_fut")], 
-               id.vars = "sc", value.name = "lor_tru")
-
 # urgh - conversion to numeric
 d_cfg[, `:=`(
   nsim = as.numeric(nsim),
@@ -48,12 +52,35 @@ d_cfg[, `:=`(
   d_fut = as.numeric(d_fut)
   )]
 
-d_sup <- merge(d_sup, d_pars, by = c("sc", "variable"))  
-d_sup[, lor_tru := as.numeric(lor_tru)]
-parname_map <- roadmap.data::get_par_effects_mapping()
-d_sup[, parname := parname_map[variable]]
-d_sup[, parname := factor(parname, levels = roadmap.data::get_par_effects_mapping())]
+
+n_sims <- d_cfg$nsim[1]
+N_pt <- d_cfg$N_pt[1]
+
+
+d_pars <- melt(d_cfg[
+  , .SD, .SDcols = c("sc", "v", 
+                     "b_a_l_2", "b_a_c_2", 
+                     "b_b1_l_2", "b_b2_l_2", "b_b1_c_2", "b_b2_c_2", 
+                     "b_c_2")], 
+  id.vars = c("sc", "v"), value.name = "lor_tru")
+
+
+d_sup <- add_effect_field(d_sup, d_pars)
+d_inf <- add_effect_field(d_inf, d_pars)
+d_fut <- add_effect_field(d_fut, d_pars)
+
+
+d_fig <- merge(d_sup, d_inf, by = c("sc", "v", "variable", "lor_tru", "parname"))
+d_fig <- merge(d_fig, d_fut, by = c("sc", "v", "variable", "lor_tru", "parname"))
+d_fig <- melt(d_fig, measure.vars = c("pr_sup", "pr_inf", "pr_fut"), variable.name = "decision_type")
+d_fig[decision_type == "pr_sup", decision_type := "Superiority"]
+d_fig[decision_type == "pr_inf", decision_type := "Inferiority"]
+d_fig[decision_type == "pr_fut", decision_type := "Futility"]
 ```
+
+Summarises superiority for fixed trial when all domains treatment effects are set to the same values ranging from $\log(1/1.4)$ to $\log(2)$ and with one-side decision mechanisms using fixed thresholds, see @tbl-sim-par.
+
+Results based on `r n_sims` simulations for a cohort sample size of `r N_pt`.
 
 ```{r}
 #| label: tbl-sim-par
@@ -113,7 +140,7 @@ g_tbl <- d_tbl |> gt(rowname_col = "effect") |>
 g_tbl
 ```
 
-@fig-pr-win-1 summarises the change in the probability of declaring superiority on each parameter as the effects sizes vary.
+@fig-pr-1 summarises the variation in the probability of declaring each decision type on each parameter with increasing effects size (odds ratios).
 All domains are set so that the treatment effects are all equal, e.g. all set to $\log(2)$ etc.
 The parameters are log-odds-ratios relative to the relevant reference values.
 
@@ -121,24 +148,104 @@ For example, `b_a_late_rev` is the effect revision relative to dair specific to 
 Similarly, `b_a_chronic_two` is the effect of two-stage procedure relative to the one-stage specific to the chronic silo.
 
 ```{r}
-#| label: fig-pr-win-1
+#| label: fig-pr-1
 #| fig-cap: 'Probability of declaring superiority on parameter by effect size (all pars set with same OR).'
 #| fig-cap-location: margin
 #| fig-height: 7
 
-ggplot(d_sup, aes(x = exp(lor_tru), y = pr_win)) +
+ggplot(d_fig, aes(x = exp(lor_tru), y = value, group = decision_type, col = decision_type)) +
   geom_point(size = 0.5) +
   geom_line() +
+  scale_color_discrete("") +
   scale_x_continuous("Odds-ratio", breaks = seq(0, 2, by = 0.2)) +
   scale_y_continuous("Pr(decide superior)", breaks = seq(0, 1, by = 0.1)) +
   facet_wrap(~parname, ncol = 3)
 ```
 
-## One effective treatment
+
+```{r}
+flist <- list.files("data", pattern = "sim01-sc02")
+l <- list()
+for(i in 1:length(flist)){
+  l[[i]] <- qs::qread(file.path("data", flist[i]))
+}
+
+d_sup <- rbindlist(lapply(l, function(z){
+  cbind(sc = z$cfg$sc, v = z$cfg$v, z$d_sup[, lapply(.SD, mean)])
+}))
+d_sup <- melt(d_sup, id.vars = c("sc", "v"), value.name = "pr_sup")
+
+d_inf <- rbindlist(lapply(l, function(z){
+  cbind(sc = z$cfg$sc, v = z$cfg$v, z$d_inf[, lapply(.SD, mean)])
+}))
+d_inf <- melt(d_inf, id.vars = c("sc", "v"), value.name = "pr_inf")
+
+d_fut <- rbindlist(lapply(l, function(z){
+  cbind(sc = z$cfg$sc, v = z$cfg$v, z$d_fut[, lapply(.SD, mean)])
+}))
+d_fut <- melt(d_fut, id.vars = c("sc", "v"), value.name = "pr_fut")
+
+d_cfg <- rbindlist(lapply(l, function(z){
+  data.table(do.call(cbind, z$cfg)) 
+}))
+# urgh - conversion to numeric
+d_cfg[, `:=`(
+  nsim = as.numeric(nsim),
+  mc_cores = as.numeric(mc_cores),
+  b_a_l_2 = as.numeric(b_a_l_2),
+  b_a_c_2 = as.numeric(b_a_c_2),
+  b_b1_l_2 = as.numeric(b_b1_l_2),
+  b_b2_l_2 = as.numeric(b_b2_l_2),
+  b_b1_c_2 = as.numeric(b_b1_c_2),
+  b_b2_c_2 = as.numeric(b_b2_c_2),
+  b_c_2 = as.numeric(b_c_2),
+  d_sup = as.numeric(d_sup),
+  d_inf = as.numeric(d_inf),
+  d_fut = as.numeric(d_fut)
+  )]
 
 
-## One effective treatment, one harmful
+n_sims <- d_cfg$nsim[1]
+N_pt <- d_cfg$N_pt[1]
 
+
+d_pars <- melt(d_cfg[
+  , .SD, .SDcols = c("sc", "v", 
+                     "b_a_l_2", "b_a_c_2", 
+                     "b_b1_l_2", "b_b2_l_2", "b_b1_c_2", "b_b2_c_2", 
+                     "b_c_2")], 
+  id.vars = c("sc", "v"), value.name = "lor_tru")
+
+
+d_sup <- add_effect_field(d_sup, d_pars)
+d_inf <- add_effect_field(d_inf, d_pars)
+d_fut <- add_effect_field(d_fut, d_pars)
+
+
+d_fig <- merge(d_sup, d_inf, by = c("sc", "v", "variable", "lor_tru", "parname"))
+d_fig <- merge(d_fig, d_fut, by = c("sc", "v", "variable", "lor_tru", "parname"))
+d_fig <- melt(d_fig, measure.vars = c("pr_sup", "pr_inf", "pr_fut"), variable.name = "decision_type")
+d_fig[decision_type == "pr_sup", decision_type := "Superiority"]
+d_fig[decision_type == "pr_inf", decision_type := "Inferiority"]
+d_fig[decision_type == "pr_fut", decision_type := "Futility"]
+```
+
+Repeating the simulations (`r n_sims` iterations) based on a total cohort size of `r N_pt`.
+
+```{r}
+#| label: fig-pr-2
+#| fig-cap: 'Probability of declaring superiority on parameter by effect size (all pars set with same OR).'
+#| fig-cap-location: margin
+#| fig-height: 7
+
+ggplot(d_fig, aes(x = exp(lor_tru), y = value, group = decision_type, col = decision_type)) +
+  geom_point(size = 0.5) +
+  geom_line() +
+  scale_color_discrete("") +
+  scale_x_continuous("Odds-ratio", breaks = seq(0, 2, by = 0.2)) +
+  scale_y_continuous("Pr(decide superior)", breaks = seq(0, 1, by = 0.1)) +
+  facet_wrap(~parname, ncol = 3)
+```
 
 
 

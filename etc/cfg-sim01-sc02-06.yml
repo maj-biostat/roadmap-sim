@@ -1,10 +1,10 @@
 # simulation configuration (all OR = log(2))
 default:
-  sc: "sc01"
+  sc: "sc02"
   v: "v06"
   nsim: 500
   mc_cores: 5
-  N_pt: 2500
+  N_pt: 1000
   b_a_l_2: 0.6931472 # b_a_late_rev
   b_a_c_2: 0.6931472 # b_a_chronic_two
   b_b1_l_2: 0.6931472 # b_b1_late_one_w12p1

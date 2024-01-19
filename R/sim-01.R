@@ -8,7 +8,7 @@ args = commandArgs(trailingOnly=TRUE)
 if (length(args)<1) {
   log_info("Setting default run method (does nothing)")
   args[1] = "run_none_sim_01"
-  args[2] = "cfg-sim01-sc06.yml"
+  args[2] = "cfg-sim01-sc02-01.yml"
 } else {
   log_info("Run method ", args[1])
   log_info("Scenario config ", args[2])
@@ -47,7 +47,7 @@ run_trial <- function(ix){
   
   # just create data, nothing else
   log_debug("Create data", ix)
-  ll <- get_trial_data(N = 2500, pop_spec = NULL, sim_spec = sim_spec)
+  ll <- get_trial_data(N = g_cfgsc$N_pt, pop_spec = NULL, sim_spec = sim_spec)
   
   # analyses
   lsd <- get_stan_data(ll$d_i)
@@ -92,17 +92,17 @@ run_trial <- function(ix){
     "b_c_2")
   
   pr_sup <- post_1[, sapply(.SD, function(z){mean(z>0)}), .SDcols = effs]
-  pr_inf <- post_1[, sapply(.SD, function(z){mean(z<0)}), .SDcols = effs]
-  
-  
+
   sup <- pr_sup > g_cfgsc$d_sup
-  inf <- pr_inf > g_cfgsc$d_inf
+  inf <- (1-pr_sup) > g_cfgsc$d_inf
   fut <- pr_sup < g_cfgsc$d_fut
   
   # return results
   list(
     pr_sup = pr_sup, 
-    sup = sup
+    sup = sup,
+    inf = inf,
+    fut = fut
   )
   
   
@@ -130,14 +130,18 @@ run_sim_01 <- function(){
   
   d_pr_sup <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$pr_sup } )))
   d_sup <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$sup } )))
+  d_inf <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$inf } )))
+  d_fut <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$fut } )))
   
   l <- list(
     cfg = g_cfgsc,
     d_pr_sup = d_pr_sup, 
-    d_sup = d_sup
+    d_sup = d_sup,
+    d_inf = d_inf,
+    d_fut = d_fut
     )
   
-  fname <- paste0("data/sim01-", g_cfgsc$sc, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs")
+  fname <- paste0("data/sim01-", g_cfgsc$sc, "-", g_cfgsc$v, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs")
   qs::qsave(l, file = fname)
 }
 
@@ -152,3 +156,5 @@ main_sim_01 <- function(){
 }
 
 main_sim_01()
+
+
