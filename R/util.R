@@ -259,3 +259,60 @@ add_effect_field <- function(d_x, d_pars){
   d_x[, parname := factor(parname, levels = roadmap.data::get_par_effects_mapping())]
   d_x
 }
+
+
+get_effect_label <- function(parname = "b_a_c_2", do_html = T){
+  if(is.null(parname)){ return(NULL) }
+  
+  out <- ""
+  if(do_html){
+    switch(
+      parname,
+      b_a_l_2 = {out <- html("revision")},
+      b_a_c_2 = {out <- html("two-stage")},
+      b_b1_l_2 = {out <- html("wk12<br>(post stage 1)")},
+      b_b2_l_2 = {out <- html("wk12<br>(post stage 2)")},
+      b_b1_c_2 = {out <- html("wk12<br>(post stage 1)")},
+      b_b2_c_2 = {out <- html("wk12<br>(post stage 2)")},
+      b_c_2 = {out <- html("rif")}
+    )
+  } else{
+    switch(
+      parname,
+      b_a_l_2 = {out <- "revision"},
+      b_a_c_2 = {out <- ("two-stage")},
+      b_b1_l_2 = {out <- ("wk12 (post stage 1)")},
+      b_b2_l_2 = {out <- ("wk12 (post stage 2)")},
+      b_b1_c_2 = {out <- ("wk12 (post stage 1)")},
+      b_b2_c_2 = {out <- ("wk12 (post stage 2)")},
+      b_c_2 = {out <- ("rif")}
+    )
+  }
+  
+  out
+} 
+
+get_effect_label <- Vectorize(get_effect_label)
+
+
+get_effect_ref_lev <- function(parname = "b_a_c_2"){
+  if(is.null(parname)){ return(NULL) }
+  
+  out <- ""
+  
+  switch(
+    parname,
+    b_a_l_2 = {out <- html("dair")},
+    b_a_c_2 = {out <- html("one-stage")},
+    b_b1_l_2 = {out <- html("wk6 (post stage 1)")},
+    b_b2_l_2 = {out <- html("d7 (post stage 2)")},
+    b_b1_c_2 = {out <- html("wk6 (post stage 1)")},
+    b_b2_c_2 = {out <- html("d7 (post stage 2)")},
+    b_c_2 = {out <- html("norif")}
+  )
+  
+  
+  out
+} 
+
+get_effect_ref_lev <- Vectorize(get_effect_ref_lev)

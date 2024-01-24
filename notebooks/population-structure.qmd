@@ -87,7 +87,7 @@ chronic |two-stage |  0.5 |
 ## Intended surgery
 
 Late stage infections will be randomised to DAIR vs revision where revision would be planned as one or two-stage, determined by the treating clinician, i.e. not randomised.
-As we do not know the assignment mechanism for one vs two-stage for the late-stage infection patients allocated to revision, we simply assume an equal chance of receiving one vs two stage.
+As we do not know the assignment mechanism for one vs two-stage for the late-stage infection patients allocated to revision, we simply assume an equal chance of receiving one vs two stage^[That is, the data generating process assumes the choice of one vs two-stage in the late acute silo is completely random (not at risk of confounding by risk). At some stage we will need to explore the consequences of non-random choice.].
 
 In all other cases, the intended surgery is set to allocated surgery.
 
@@ -127,22 +127,29 @@ The treatment options and allocation probabilities for domain B are detailed bel
 Duration of antibiotic is conditional on allocated (intended) surgery type, see above.
 Patients receiving DAIR are assumed to have 12 wk duration (not randomised).
 
+
+
 ::: {.column width="70%"}
 
-Allocation/Intended surgery ($q$) | Allocation ($b$) | $\pi$ |
------|----|---|
-dair | 12 wk |  - | 
-one-stage | 6 wk |  0.5 | 
-one-stage | 12 wk |  0.5 | 
-two-stage | 7 day post 2  |  0.5 | 
-two-stage | 12 wk post 2  |  0.5 | 
+Silo | Allocation/Intended surgery ($q$) | Allocation ($b$) | $\pi$ |
+-----|-----|----|---|
+early | dair | 12 wk |  - | 
+late | one-stage | 6 wk |  0.5 | 
+late | one-stage | 12 wk |  0.5 | 
+late | two-stage | 7 day post 2  |  0.5 | 
+late | two-stage | 12 wk post 2  |  0.5 | 
+chronic | one-stage | 6 wk |  0.5 | 
+chronic | one-stage | 12 wk |  0.5 | 
+chronic | two-stage | 7 day post 2  |  0.5 | 
+chronic | two-stage | 12 wk post 2  |  0.5 | 
 
 : Allocation within duration domain ($\pi$ denotes probability allocation to surgery type conditional on allocated/intended surgery)  {.striped .hover}
 :::
 
 ## Randomisation into adjunctive domain (C)
 
-60% of cohort enter into domain, the rest are flagged as ineligible as detailed below.
+The data generating process assume that 60% of the cohort enter into this domain at random, unrelated to risk factors.
+The remainder are held out so that we do not over-estimate the operating characteristics, such as power.
 
 ::: {.column width="70%"}
 

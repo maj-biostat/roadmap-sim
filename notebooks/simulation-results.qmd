@@ -1,5 +1,6 @@
 ---
-title: "Simulation results"
+title: "Simulation results 1"
+subtitle: "Fixed design with single look at data"
 
 ---
 
@@ -78,7 +79,8 @@ d_fig[decision_type == "pr_inf", decision_type := "Inferiority"]
 d_fig[decision_type == "pr_fut", decision_type := "Futility"]
 ```
 
-Summarises superiority for fixed trial when all domains treatment effects are set to the same values ranging from $\log(1/1.4)$ to $\log(2)$ and with one-side decision mechanisms using fixed thresholds, see @tbl-sim-par.
+@tbl-sim-par summarises the setup for the simulated effect sizes (from $\log(1/1.4)$ to $\log(2)$). 
+All parameters are simulated to have the same effect size such that all parameters are effective, show no effect or are harmful.
 
 Results based on `r n_sims` simulations for a cohort sample size of `r N_pt`.
 

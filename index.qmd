@@ -8,6 +8,9 @@ All the code can be found on github, just use the icon to the top right.
 The functionality herein has a dependency on the `roadmap.data` R package, which can also be found via the above link (see the readme for this repo).
 If you find any issues, let me know and I will prioritise accordingly.
 
+## Notes
+
++ Does not explore impact of effect heterogeneity on $C$
 
 
 

@@ -43,6 +43,7 @@ While terms for non-membership in domain $C$ are relevant, there are no randomis
 Therefore, non-membership terms for $A$ and $B$ are not required in the linear predictor for this silo^[In practice, it may be the case that non-membership for domain $B$ is relevant. For example, if an early stage patient receives a one or two-stage surgical procedure.].
 
 For those patients entering into the antibiotic type domain, there is a parameter that charactersises the effect of treatment(s) $\beta_{C,d_{C,j(i)}}$ that is shared across silos^[As such, silo-specific decisions on antibiotic type are not possible.] and for which $d_{C,j}$ is a treatment index.
+By definition, this negates the possibility of characterising effect heterogeneity.
 The treatment effect is included (or not) in the linear predictor based on an indicator of domain membership $\mathbb{I}_{C(i)}$ for each patient $i$.
 
 \begin{aligned}
@@ -177,7 +178,7 @@ A hierarchical structure could also be considered for this domain.
 The 'average' across silos could be obtained by sampling from the posterior assuming normality based on the parameter for the group variance.
 With three groups the extent of the partial pooling is going to be heavily influenced by the prior rather than the data.
 
-Currently we adopt a standard normal prior for the treatment effects in this domain, which are pooled across silos.
+Currently we adopt a standard normal prior for the treatment effects in this domain, which are completely pooled across silos.
 
 \begin{aligned}
 \beta_{C,d_{C,j}} \sim \mathcal{N}(0, 1)

@@ -60,6 +60,7 @@ It suggests a strong association between the true and estimated log-odds of trea
 #| fig-cap: 'Scatter plot comparing true vs estimated 95% credible interval for log-odds treatment success.'
 #| fig-cap-location: margin
 #| fig-height: 6
+#| fig-width: 6
 
 ggplot(d_fig, aes(x = eta, y = eta_med)) +
   # geom_point() +
@@ -135,7 +136,8 @@ It suggests a strong association between the true and estimated log-odds of trea
 #| label: fig-post-lor
 #| fig-cap: 'Posterior estimates for log-odds-ratios (true values shown as triangles).'
 #| fig-cap-location: margin
-#| fig-height: 5
+#| fig-height: 4
+#| fig-width: 5
 
 ggplot(d_fig, aes(x = parname, y = lor_med)) +
   geom_point() +
@@ -200,7 +202,8 @@ d_cor[, `:=`(
 #| label: fig-post-cor
 #| fig-cap: 'Parameter correlation (white indicates zero correlation)'
 #| fig-cap-location: margin
-#| fig-height: 4
+#| fig-height: 7
+#| fig-width: 7
 
 ggplot(d_cor, aes(x = var1, y = var2, fill = value)) +
   geom_tile(color = "white",

@@ -102,6 +102,9 @@ We consider a range of simulation settings:
 
 We consider treatment superiority, inferiority and futility.
 
+As a set, whatever quantities are used, need to be mutually exclusive.
+For example, with the current set of quantities, if a parameter is superior, then it cannot be either inferior and futile.
+
 ### Superiority
 
 \begin{aligned}

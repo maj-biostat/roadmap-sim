@@ -21,4 +21,18 @@ log_appender(appender_file(f_log))
 # message(Sys.time(), " Log file initialised ", f_log)
 log_info("*** START UP ***")
 
-
+# pars/effects of interest
+g_pars <- c(
+  "alpha", "gamma_c", 
+  "b_a_l", 
+  "b_b1_l", "b_b2_l","b_a_c","b_b1_c", "b_b2_c",
+  "b_c"
+)
+g_effs <- c(
+  "b_a_l_2", "b_a_c_2",  # domain a, late (revision) and chronic (two-stage)
+  "b_b1_l_2", # domain b, (late/revision one stage pts) wk12p1 (ref is wk6p1)
+  "b_b2_l_2", # wk12p2 (ref is day7p2)
+  "b_b1_c_2", # wk12p1 (ref is wk6p1)
+  "b_b2_c_2", # wk12p2 (ref is day7p2)
+  "b_c_2" # rif (ref is no-rif)
+)
