@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/simulation-pars.html</loc>
-    <lastmod>2024-01-19T14:36:49.416Z</lastmod>
+    <lastmod>2024-01-22T02:43:47.111Z</lastmod>
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/adaptations.html</loc>
@@ -13,16 +13,20 @@
     <lastmod>2024-01-15T07:39:14.226Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/model-implementation.html</loc>
-    <lastmod>2024-01-19T03:40:17.530Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/sim-design2-results.html</loc>
+    <lastmod>2024-01-24T01:51:17.381Z</lastmod>
+  </url>
+  <url>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/simulation-results.html</loc>
+    <lastmod>2024-01-24T00:28:37.944Z</lastmod>
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/population-structure.html</loc>
-    <lastmod>2024-01-18T01:18:30.594Z</lastmod>
+    <lastmod>2024-01-22T08:41:00.228Z</lastmod>
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/index.html</loc>
-    <lastmod>2024-01-17T08:44:05.112Z</lastmod>
+    <lastmod>2024-01-21T23:01:04.774Z</lastmod>
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/etc/readme.html</loc>
@@ -30,11 +34,15 @@
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/model-spec.html</loc>
-    <lastmod>2024-01-19T03:50:32.461Z</lastmod>
+    <lastmod>2024-01-23T07:04:54.847Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/simulation-results.html</loc>
-    <lastmod>2024-01-19T14:21:25.906Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/misc-notes.html</loc>
+    <lastmod>2024-01-23T06:54:55.875Z</lastmod>
+  </url>
+  <url>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/model-implementation.html</loc>
+    <lastmod>2024-01-23T07:20:59.596Z</lastmod>
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/example-trials.html</loc>

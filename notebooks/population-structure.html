@@ -249,7 +249,13 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../notebooks/simulation-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results</span></a>
+ <span class="menu-text">Simulation results 1</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../notebooks/sim-design2-results.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulation results 2</span></a>
   </div>
 </li>
       </ul>
@@ -473,7 +479,7 @@ window.Quarto = {
 </section>
 <section id="intended-surgery" class="level2">
 <h2 class="anchored" data-anchor-id="intended-surgery">Intended surgery</h2>
-<p>Late stage infections will be randomised to DAIR vs revision where revision would be planned as one or two-stage, determined by the treating clinician, i.e.&nbsp;not randomised. As we do not know the assignment mechanism for one vs two-stage for the late-stage infection patients allocated to revision, we simply assume an equal chance of receiving one vs two stage.</p>
+<p>Late stage infections will be randomised to DAIR vs revision where revision would be planned as one or two-stage, determined by the treating clinician, i.e.&nbsp;not randomised. As we do not know the assignment mechanism for one vs two-stage for the late-stage infection patients allocated to revision, we simply assume an equal chance of receiving one vs two stage<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
 <p>In all other cases, the intended surgery is set to allocated surgery.</p>
 <div class="column" style="width:70%;">
 <table class="table-striped table-hover table">
@@ -580,6 +586,7 @@ window.Quarto = {
 <caption>Allocation within duration domain (<span class="math inline">\(\pi\)</span> denotes probability allocation to surgery type conditional on allocated/intended surgery)</caption>
 <thead>
 <tr class="header">
+<th>Silo</th>
 <th>Allocation/Intended surgery (<span class="math inline">\(q\)</span>)</th>
 <th>Allocation (<span class="math inline">\(b\)</span>)</th>
 <th><span class="math inline">\(\pi\)</span></th>
@@ -587,26 +594,55 @@ window.Quarto = {
 </thead>
 <tbody>
 <tr class="odd">
+<td>early</td>
 <td>dair</td>
 <td>12 wk</td>
 <td>-</td>
 </tr>
 <tr class="even">
+<td>late</td>
 <td>one-stage</td>
 <td>6 wk</td>
 <td>0.5</td>
 </tr>
 <tr class="odd">
+<td>late</td>
 <td>one-stage</td>
 <td>12 wk</td>
 <td>0.5</td>
 </tr>
 <tr class="even">
+<td>late</td>
 <td>two-stage</td>
 <td>7 day post 2</td>
 <td>0.5</td>
 </tr>
 <tr class="odd">
+<td>late</td>
+<td>two-stage</td>
+<td>12 wk post 2</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>chronic</td>
+<td>one-stage</td>
+<td>6 wk</td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td>chronic</td>
+<td>one-stage</td>
+<td>12 wk</td>
+<td>0.5</td>
+</tr>
+<tr class="even">
+<td>chronic</td>
+<td>two-stage</td>
+<td>7 day post 2</td>
+<td>0.5</td>
+</tr>
+<tr class="odd">
+<td>chronic</td>
 <td>two-stage</td>
 <td>12 wk post 2</td>
 <td>0.5</td>
@@ -617,7 +653,7 @@ window.Quarto = {
 </section>
 <section id="randomisation-into-adjunctive-domain-c" class="level2">
 <h2 class="anchored" data-anchor-id="randomisation-into-adjunctive-domain-c">Randomisation into adjunctive domain (C)</h2>
-<p>60% of cohort enter into domain, the rest are flagged as ineligible as detailed below.</p>
+<p>The data generating process assume that 60% of the cohort enter into this domain at random, unrelated to risk factors. The remainder are held out so that we do not over-estimate the operating characteristics, such as power.</p>
 <div class="column" style="width:70%;">
 <table class="table-striped table-hover table">
 <caption>Randomisation within domain C (<span class="math inline">\(\pi\)</span> denotes probability patient is indicated as eligible for domain)</caption>
@@ -728,12 +764,16 @@ $r_eb
 4:  two    Y
 
 $r_b
-     qa     b   p
-1: dair   w12 1.0
-2:  one w06p1 0.5
-3:  one w12p1 0.5
-4:  two d07p2 0.5
-5:  two w12p2 0.5
+      silo   qa     b   p
+1:   early dair   w12 1.0
+2:    late  one w06p1 0.5
+3:    late  one w12p1 0.5
+4:    late  two d07p2 0.5
+5:    late  two w12p2 0.5
+6: chronic  one w06p1 0.5
+7: chronic  one w12p1 0.5
+8: chronic  two d07p2 0.5
+9: chronic  two w12p2 0.5
 
 $r_ec
       silo rand   p
@@ -754,7 +794,7 @@ $r_c
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>roadmap.data<span class="sc">::</span>get_design</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>function(N = 100000, pop_spec = NULL){
+<pre><code>function(N = 100000, pop_spec = NULL, idx_s = 1){
 
   if(is.null(pop_spec)){
     pop_spec &lt;- get_pop_spec()
@@ -762,7 +802,7 @@ $r_c
 
   d &lt;- data.table()
   # pt id
-  d[, id := 1:N]
+  d[, id := idx_s:(N+idx_s - 1)]
   d[, silo := sample(pop_spec$r_silo$silo, size = N, replace = T, prob = pop_spec$r_silo$p)]
   setkey(d, silo)
   setkey(pop_spec$r_joint, silo)
@@ -802,13 +842,24 @@ $r_c
   # all dair get 12wk
   d["dair", b := pop_spec$r_b["dair", unique(b)]]
 
-  setkey(d, qa)
-  setkey(pop_spec$r_b, qa)
+  setkey(d, silo, qa)
+  setkey(pop_spec$r_b, silo, qa)
 
-  z &lt;- "one"
-  d[z, b := sample(pop_spec$r_b[z, b], size = .N, replace = T, prob = pop_spec$r_b[z, p])]
-  z &lt;- "two"
-  d[z, b := sample(pop_spec$r_b[z, b], size = .N, replace = T, prob = pop_spec$r_b[z, p])]
+  # do these separately so that triggers can coordinate silo specific adaptations
+  d[.("late", "one"), b := sample(
+    pop_spec$r_b[.("late", "one"), b], size = .N, replace = T,
+    prob = pop_spec$r_b[.("late", "one"), p])]
+  d[.("late", "two"), b := sample(
+    pop_spec$r_b[.("late", "two"), b], size = .N, replace = T,
+    prob = pop_spec$r_b[.("late", "two"), p])]
+
+  d[.("chronic", "one"), b := sample(
+    pop_spec$r_b[.("chronic", "one"), b], size = .N, replace = T,
+    prob = pop_spec$r_b[.("chronic", "one"), p])]
+  d[.("chronic", "two"), b := sample(
+    pop_spec$r_b[.("chronic", "two"), b], size = .N, replace = T,
+    prob = pop_spec$r_b[.("chronic", "two"), p])]
+
   setkey(d, id)
 
   # Antibiotic type domain (C)
@@ -834,7 +885,7 @@ $r_c
 
   d
 }
-&lt;bytecode: 0x107a03ee8&gt;
+&lt;bytecode: 0x11a5f1838&gt;
 &lt;environment: namespace:roadmap.data&gt;</code></pre>
 </div>
 </div>
@@ -914,7 +965,13 @@ $r_c
 
 </section>
 
-</main> <!-- /main -->
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>That is, the data generating process assumes the choice of one vs two-stage in the late acute silo is completely random (not at risk of confounding by risk). At some stage we will need to explore the consequences of non-random choice.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

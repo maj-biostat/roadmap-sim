@@ -215,7 +215,13 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../notebooks/simulation-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results</span></a>
+ <span class="menu-text">Simulation results 1</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../notebooks/sim-design2-results.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulation results 2</span></a>
   </div>
 </li>
       </ul>
@@ -300,7 +306,7 @@ window.Quarto = {
 <p>Patients with early stage infection are only randomised into the antibiotic type domain; the surgical intervention is fixed to be dair and the antibiotic duration is fixed at 12 weeks. In other words, there are no treatment comparisons in the surgical nor duration domain for the early stage infection patients; neither do they contribute to the estimation of parameters in the late or chronic silos.</p>
 <p><span class="math inline">\(\zeta\)</span> comprises terms that characterise the effects of non-membership in domains <span class="math inline">\(A\)</span>, <span class="math inline">\(B\)</span> and <span class="math inline">\(C\)</span> (60% of the cohort are assumed to enter into domain C irrespetive of their membership in domains <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span>). Non-membership parameters are shared across all silos. <span class="math inline">\(\zeta\)</span> also includes a term to model the effect of treatment allocation within domain <span class="math inline">\(C\)</span>.</p>
 <p>The <span class="math inline">\(\gamma\)</span> terms denote the effect of non-membership with subscript indicating domain and incorporated into the linear predictor based on an indicator of domain non-membership <span class="math inline">\(\mathbb{I}_{A^\prime(i)}\)</span> for each patient <span class="math inline">\(i\)</span>. In the simulated data, for early stage infection patients, both <span class="math inline">\(\mathbb{I}_{A^\prime(i)}\)</span> and <span class="math inline">\(\mathbb{I}_{B^\prime(i)}\)</span> would evaluate to true for all patients. While terms for non-membership in domain <span class="math inline">\(C\)</span> are relevant, there are no randomisation options available for early infections in domain <span class="math inline">\(A\)</span> nor <span class="math inline">\(B\)</span>. Therefore, non-membership terms for <span class="math inline">\(A\)</span> and <span class="math inline">\(B\)</span> are not required in the linear predictor for this silo<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
-<p>For those patients entering into the antibiotic type domain, there is a parameter that charactersises the effect of treatment(s) <span class="math inline">\(\beta_{C,d_{C,j(i)}}\)</span> that is shared across silos<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> and for which <span class="math inline">\(d_{C,j}\)</span> is a treatment index. The treatment effect is included (or not) in the linear predictor based on an indicator of domain membership <span class="math inline">\(\mathbb{I}_{C(i)}\)</span> for each patient <span class="math inline">\(i\)</span>.</p>
+<p>For those patients entering into the antibiotic type domain, there is a parameter that charactersises the effect of treatment(s) <span class="math inline">\(\beta_{C,d_{C,j(i)}}\)</span> that is shared across silos<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> and for which <span class="math inline">\(d_{C,j}\)</span> is a treatment index. By definition, this negates the possibility of characterising effect heterogeneity. The treatment effect is included (or not) in the linear predictor based on an indicator of domain membership <span class="math inline">\(\mathbb{I}_{C(i)}\)</span> for each patient <span class="math inline">\(i\)</span>.</p>
 <span class="math display">\[\begin{aligned}
 \zeta_i = \gamma_{C} \mathbb{I}_{C^\prime(i)} + \beta_{C,d_{C,j(i)}} \mathbb{I}_{C(i)}
 \end{aligned}\]</span>
@@ -408,7 +414,7 @@ window.Quarto = {
 <section id="antibiotic-type-domain" class="level4">
 <h4 class="anchored" data-anchor-id="antibiotic-type-domain">Antibiotic type domain</h4>
 <p>A hierarchical structure could also be considered for this domain. The ‘average’ across silos could be obtained by sampling from the posterior assuming normality based on the parameter for the group variance. With three groups the extent of the partial pooling is going to be heavily influenced by the prior rather than the data.</p>
-<p>Currently we adopt a standard normal prior for the treatment effects in this domain, which are pooled across silos.</p>
+<p>Currently we adopt a standard normal prior for the treatment effects in this domain, which are completely pooled across silos.</p>
 <span class="math display">\[\begin{aligned}
 \beta_{C,d_{C,j}} \sim \mathcal{N}(0, 1)
 \end{aligned}\]</span>
