@@ -1,0 +1,7 @@
+# think ignore all w/o ext
+*
+!/**/
+!*.*
+
+.DS_Store
+
