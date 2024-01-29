@@ -102,6 +102,98 @@ However, since all patients are assumed to enter the surgical and duration domai
 
 With definitions for the terms as above.
 
+## Interpretation
+
+Some additional more detailed and narrative is perhaps useful on the interpretation of parameters.
+
+As noted previously, the baseline reference groups are defined as follows:
+
+::: {.column width="50%"}
+
+| Silo |  A | B | C | 
+|------|-----|---|---|
+| early |  - | - | no-rif | 
+| late  | dair | - | no-rif |
+| chronic | one | 6wk | no-rif |
+
+: Groups corresponding to baseline log-odds of treatment success {.striped .hover}
+:::
+
+As such, we have:
+
++ $\alpha_{[early, \cdot]} \quad$ - this parameter describes the log-odds of treatment success for the sample members with early infection who are randomised within Domain C (that is, were not part of the 40% Domain C exclusion set) to no-rif and had no randomisation options for domains A and B. The parameter makes no adjustment for what surgery a patient received, nor how long their duration of antibiotic was. 
+
++ $\alpha_{[late, \cdot]} \quad$ - this parameter describes the log-odds of treatment success for the sample members with late infection who were randomised to dair in Domain A, had no randomisation options for Domain B, which is a deterministic consequence of being randomised to dair in Domain A, and were randomised to no-rif in Domain C.
+
++ $\alpha_{[chronic, \cdot]} \quad$ - this parameter describes the log-odds of treatment success for the sample members with chronic infection who were randomised to one-stage in Domain A, were randomised to 6wksp1 in Domain B and were randomised to no-rif in Domain C. 
+
+
+```{r, eval = F, echo = F}
+p <- c(0.7, 0.5, 0.6)
+pr_grp <- c(0.3, 0.5, 0.2)
+nsim <- 10000
+m <- matrix(NA, ncol = 2, nrow = nsim)
+
+eta_tru <- sum(qlogis(p) * pr_grp)
+
+
+for(i in 1:nsim){
+  d <- data.table(
+    ii = sample(1:3, 134, replace = T, prob = pr_grp)
+  )
+  d[, y := rbinom(.N, 1, prob = p[ii])]
+  
+  d_mod <- d[, .(y = sum(y), .N), keyby = ii]
+  d_mod[, p_obs := y/N]
+  d_mod[, eta := qlogis(p_obs)]
+  f1 <- glm(cbind(y, N-y) ~ 1, data = d_mod, family = "binomial" )
+  s1 <- summary(f1)
+  m[i, ] <- c(d_mod[, sum(eta * N)/sum(d_mod$N)], s1$coefficients[1,1])
+}
+
+d_fig <- data.table(
+  observed = m[, 1],
+  estimated = m[, 2],
+  true = eta_tru
+)
+
+d_fig <- melt(d_fig, measure.vars = names(d_fig))
+
+
+ggplot(d_fig, aes(x = variable, y = value)) +
+  geom_point() +
+  geom_hline(data = d_fig[, .(value = mean(value)), keyby = variable], 
+             aes(yintercept = value, col = variable, group = variable))
+```
+
+
+
+::: callout-note
+The following are incomplete:
+:::
+
+### Late infection
+
+In the surgical domain, we consider the effect (log-odds-ratio) of revision relative to dair.
+Within revision, patients may receive one or two-stage procedures.
+The log-odds of treatment success for those receiving a one-stage procedure, are randomised to 6wk duration and receive no-rif is $\alpha_{late,\cdot}$.
+Similarly, this is true for those receiving a (non-randomised) two-stage procedure, are randomised to 7day duration and receive no-rif.
+
+The effect of revision relative to dair is thus in the context of some weighted average of the response under the one-stage and two-stage procedures.
+
+The model characterises associations between the log-odds of treatment success and each of the parameters.
+The effect of each term is considered while holding all others constant.
+
+:::callout-note
+Is overlap and extrapolation an issue here???
+:::
+
+
+### Chronic infection
+
+
+TODO
+
 ## Priors
 
 As with the linear predictor, the priors are currently targeted towards the simulation work but may be appropriate for the final model.

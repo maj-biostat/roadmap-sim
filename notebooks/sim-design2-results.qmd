@@ -186,36 +186,6 @@ g_tbl <- d_tbl |> gt(rowname_col = "parname") |>
 g_tbl
 ```
 
-Some commentary is necessary on the interpretation of parameters.
-As noted previously, the baseline reference groups are defined as follows:
-
-::: {.column width="50%"}
-
-| Silo |  A | B | C | 
-|------|-----|---|---|
-| early |  - | - | no-rif | 
-| late  | dair | - | no-rif |
-| chronic | one | 6wk | no-rif |
-
-: Groups corresponding to baseline log-odds of treatment success {.striped .hover}
-:::
-
-Specifically:
-
-+ $\alpha_{[early, \cdot]}$ term in the model describes the log-odds of treatment success for early infection silo members who were randomised^[That is, not part of the 40% exclusion set from domain C] to no-rif and had no randomisation options for domains A and B.
-+ $\alpha_{[late, \cdot]}$ term in the model describes the log-odds of treatment success for late infection silo members who were randomised to dair in Domain A, had no randomisation options for Domain B^[A deterministic consequence of being randomised to dair in Domain A] and were randomised to no-rif in Domain C.
-+ $\alpha_{[chronic, \cdot]}$ term in the model describes the log-odds of treatment success for chronic infection silo members who were randomised to one in Domain A, day07 in Domain B and to no-rif in Domain C.
-
-::: callout-note
-The following are incomplete:
-:::
-
-+ In the late infection patients, the effect of revision relative to dair is interpreted as ...
-+ In the chronic infection patients, the effect of two-stage relative to one is ...
-+ In the late infection patients who were randomised to revision, the effect of 12wk relative to 6wk is  ...
-+ In the chronic infection patients who were randomised to one-stage surgery, the effect of 12wk relative to 6wk is  ...
-+ In the chronic infection patients who were randomised to one-stage surgery, the effect of 12wk relative to 7days (both post stage 2) is  ...
-+ Across all silos, the effect of rif relative to no rif is ...
 
 
 ```{r}
