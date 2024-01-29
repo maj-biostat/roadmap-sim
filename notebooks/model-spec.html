@@ -245,6 +245,11 @@ window.Quarto = {
   <li><a href="#early-infection" id="toc-early-infection" class="nav-link active" data-scroll-target="#early-infection">Early infection</a></li>
   <li><a href="#late-infection" id="toc-late-infection" class="nav-link" data-scroll-target="#late-infection">Late infection</a></li>
   <li><a href="#chronic-infection" id="toc-chronic-infection" class="nav-link" data-scroll-target="#chronic-infection">Chronic infection</a></li>
+  <li><a href="#interpretation" id="toc-interpretation" class="nav-link" data-scroll-target="#interpretation">Interpretation</a>
+  <ul>
+  <li><a href="#late-infection-1" id="toc-late-infection-1" class="nav-link" data-scroll-target="#late-infection-1">Late infection</a></li>
+  <li><a href="#chronic-infection-1" id="toc-chronic-infection-1" class="nav-link" data-scroll-target="#chronic-infection-1">Chronic infection</a></li>
+  </ul></li>
   <li><a href="#priors" id="toc-priors" class="nav-link" data-scroll-target="#priors">Priors</a>
   <ul>
   <li><a href="#intercepts" id="toc-intercepts" class="nav-link" data-scroll-target="#intercepts">Intercepts</a></li>
@@ -337,6 +342,89 @@ window.Quarto = {
 &amp;\qquad  \beta_{B_{1},s(i),d_{B_1,j(i)}}\mathbb{I}_{one-stage(i)}  +  \beta_{B_{2},s(i),d_{B_2,j(i)}}\mathbb{I}_{two-stage(i)} +  \beta_{C,d_{C,j(i)}}\mathbb{I}_{C(i)}
 \end{aligned}\]</span>
 <p>With definitions for the terms as above.</p>
+</section>
+<section id="interpretation" class="level2">
+<h2 class="anchored" data-anchor-id="interpretation">Interpretation</h2>
+<p>Some additional more detailed and narrative is perhaps useful on the interpretation of parameters.</p>
+<p>As noted previously, the baseline reference groups are defined as follows:</p>
+<div class="column" style="width:50%;">
+<table class="table-striped table-hover table">
+<caption>Groups corresponding to baseline log-odds of treatment success</caption>
+<thead>
+<tr class="header">
+<th>Silo</th>
+<th>A</th>
+<th>B</th>
+<th>C</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>early</td>
+<td>-</td>
+<td>-</td>
+<td>no-rif</td>
+</tr>
+<tr class="even">
+<td>late</td>
+<td>dair</td>
+<td>-</td>
+<td>no-rif</td>
+</tr>
+<tr class="odd">
+<td>chronic</td>
+<td>one</td>
+<td>6wk</td>
+<td>no-rif</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>As such, we have:</p>
+<ul>
+<li><p><span class="math inline">\(\alpha_{[early, \cdot]} \quad\)</span> - this parameter describes the log-odds of treatment success for the sample members with early infection who are randomised within Domain C (that is, were not part of the 40% Domain C exclusion set) to no-rif and had no randomisation options for domains A and B. The parameter makes no adjustment for what surgery a patient received, nor how long their duration of antibiotic was.</p></li>
+<li><p><span class="math inline">\(\alpha_{[late, \cdot]} \quad\)</span> - this parameter describes the log-odds of treatment success for the sample members with late infection who were randomised to dair in Domain A, had no randomisation options for Domain B, which is a deterministic consequence of being randomised to dair in Domain A, and were randomised to no-rif in Domain C.</p></li>
+<li><p><span class="math inline">\(\alpha_{[chronic, \cdot]} \quad\)</span> - this parameter describes the log-odds of treatment success for the sample members with chronic infection who were randomised to one-stage in Domain A, were randomised to 6wksp1 in Domain B and were randomised to no-rif in Domain C.</p></li>
+</ul>
+<div class="cell">
+
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The following are incomplete:</p>
+</div>
+</div>
+<section id="late-infection-1" class="level3">
+<h3 class="anchored" data-anchor-id="late-infection-1">Late infection</h3>
+<p>In the surgical domain, we consider the effect (log-odds-ratio) of revision relative to dair. Within revision, patients may receive one or two-stage procedures. The log-odds of treatment success for those receiving a one-stage procedure, are randomised to 6wk duration and receive no-rif is <span class="math inline">\(\alpha_{late,\cdot}\)</span>. Similarly, this is true for those receiving a (non-randomised) two-stage procedure, are randomised to 7day duration and receive no-rif.</p>
+<p>The effect of revision relative to dair is thus in the context of some weighted average of the response under the one-stage and two-stage procedures.</p>
+<p>The model characterises associations between the log-odds of treatment success and each of the parameters. The effect of each term is considered while holding all others constant.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Is overlap and extrapolation an issue here???</p>
+</div>
+</div>
+</section>
+<section id="chronic-infection-1" class="level3">
+<h3 class="anchored" data-anchor-id="chronic-infection-1">Chronic infection</h3>
+<p>TODO</p>
+</section>
 </section>
 <section id="priors" class="level2">
 <h2 class="anchored" data-anchor-id="priors">Priors</h2>
