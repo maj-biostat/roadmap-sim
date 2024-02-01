@@ -19,6 +19,3 @@ suppressPackageStartupMessages(library("pracma"))
 suppressPackageStartupMessages(library("roadmap.data"))
 
 
-ggplot2::theme_set(theme_bw() + theme(
-  legend.position = "bottom"
-))
