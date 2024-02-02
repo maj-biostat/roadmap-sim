@@ -1,0 +1,147 @@
+---
+title: "Misc notes"
+editor: source
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, echo = FALSE}
+source("./R/init.R")
+log_info("Called misc-notes notebook")
+```
+
+## Thought 1
+
+What is the effect of treating a patient with joint infection with a revision surgical procedure compared to a less invasive procedure, known as dair?
+What about the effect of treating with long relative to short duration antibiotic where the definition (and action) of long vs short duration are different within each level (i.e. a nested design rather than crossed).
+The usual experimental approach here is to apply random assignment of all possible treatment combinations, which with two levels 
+
+
+
+Imagine a situation where we have a nested factorial design with factors A (control vs active) and B (control vs active).
+Contrary to the usual situation, we assume that active for A comes in two flavours, active-1 and active-2.
+Usually, we assume that the control vs active for B are different under each level of A.
+Here, we assume that control vs active for B are different under each of the possibilities for A.
+
+
+
+
+trial with control vs treatment with a single dichotomous covariate in the model (X) and where the outcome is death by day 30. 
+We specify a conditional logistic regression model with linear predictor $\eta = \beta_0 + \beta_1 I(trt_i == 1) + \beta_2 I(sex = male)$. 
+By chance, all the control group are male and all the treatment group are female. 
+Logically, we would not be able to separate the effect of treatment from sex, but model it anyway.
+
+```{r, eval = F}
+N <- 10000
+d <- data.table(id = 1:N)
+d[, trt := rbinom(.N, 1, 0.5)]
+d[trt == 0, sex := 1]
+d[trt == 1, sex := 0]
+beta_0 <- qlogis(0.7)
+beta_trt <- log(2)
+beta_sex <- log(0.2)
+d[, eta := beta_0 + beta_trt * trt + beta_sex * sex]
+d[, y := rbinom(.N, 1, prob = plogis(eta))]
+head(d)
+```
+
+Basic logistic regression.
+
+```{r, eval = F}
+#| class-output: stan
+#| echo: false
+cat(readLines("stan/logistic-demo-01.stan"), sep = "\n")
+```
+
+Fit the model and extract posterior.
+
+```{r, eval = F}
+m1 <- cmdstanr::cmdstan_model("stan/logistic-demo-01.stan")
+
+d_grp <- d[, .(y = sum(y), n = length(y)), keyby = .(trt, sex)]
+ld <- list(
+  N = nrow(d_grp), 
+  y = d_grp$y, n = d_grp$n, trt = d_grp$trt, sex = d_grp$sex
+)
+f1 <- m1$sample(
+  ld, iter_warmup = 1000, iter_sampling = 2000,
+  parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
+  max_treedepth = 13)
+
+post <- data.table(f1$draws(variables = c(
+  "b0", "b_trt", "b_sex"
+), format = "matrix"))
+
+```
+
+Summarise the posterior draws:
+
+```{r, eval = F}
+d_tbl <- melt(post[, 2:3], measure.vars = names(post)[2:3])
+d_tbl <- d_tbl[, .(mu = mean(value), 
+          sd = sd(value),
+          q_025 = quantile(value, prob = 0.025), 
+          q_975 = quantile(value, prob = 0.975)), by = variable]
+
+b_tru <- c(beta_trt, beta_sex)
+names(b_tru) <- c("b_trt", "b_sex")
+d_tbl[, b_tru := b_tru[variable]]
+d_tbl
+```
+
+So, the posterior mean is nowhere near our known true value that we simulated the data with.
+
+<!-- The model addresses the question of what is the value of knowing sex after knowing treatment assignment. -->
+<!-- Given that all those treated were female and all those under control, there is no value in the additional covariate. -->
+
+<!-- The joint posterior of the two effects parameters makes this more clear. -->
+
+```{r, eval = F, echo = F}
+#| label: fig-misc1
+#| fig-cap: 'Joint posterior for treatment and sex effects.'
+#| fig-width: 3.5
+#| fig-height: 3.5
+#| fig-dpi: 300
+
+d_fig <- copy(post)
+
+# from pt to mm : mm = pt / ggplot2::.pt
+
+ggplot2::theme_update(text = element_text(size = 18 / ggplot2::.pt))
+ggplot2::theme_update(axis.text.x = element_text(size = 18 / ggplot2::.pt))
+ggplot2::theme_update(axis.text.y = element_text(size = 18 / ggplot2::.pt))
+ggplot2::theme_update(legend.position = "top")
+
+ggplot(d_fig, aes(x = b_trt, y = b_sex)) +
+  geom_point(alpha = 0.2)
+```
+
+<!-- The linear predictor is actually this: -->
+
+<!-- \begin{aligned} -->
+<!-- \eta_i = \beta_0 + \beta_{trt} trt_i + \beta_{sex} (1 - trt_i) -->
+<!-- \end{aligned} -->
+
+<!-- So, for those that receive control, the contribution to the likelihood is $\eta_i = \beta_0 + \beta_{sex}$. -->
+<!-- And for those that receive treatment, the contribution to the likelihood is $\eta_i = \beta_0 + \beta_{trt}$. -->
+<!-- In aggregate, we can recover our true log odds of response in  -->
+
+```{r, eval = F, echo = F}
+d_fig[, eta_0 := b0 + b_sex]
+d_fig[, eta_1 := b0 + b_trt]
+
+d_tbl <- melt(d_fig[, 4:5], measure.vars = names(d_fig)[4:5])
+d_tbl <- d_tbl[, .(mu = mean(value), 
+          sd = sd(value),
+          q_025 = quantile(value, prob = 0.025), 
+          q_975 = quantile(value, prob = 0.975)), by = variable]
+
+eta_tru <- c(beta_0 + beta_sex, beta_0 + beta_trt)
+names(eta_tru) <- c("eta_0", "eta_1")
+d_tbl[, eta_tru := eta_tru[variable]]
+d_tbl
+
+```
+
+
+<!-- Now consider the setting where we compare dair vs review with a covariate for  -->
