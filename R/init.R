@@ -6,6 +6,12 @@ is_html <- knitr::is_html_output()
 # is_pdf <- knitr::is_latex_output()
 # is_word <- !is_html & !is_pdf
 
+ggplot2::theme_set(ggplot2::theme_bw())
+ggplot2::theme_update(text = element_text(size = 8))
+ggplot2::theme_update(legend.position = "bottom")
+# ggplot2::theme_update(legend.title = element_blank())
+ggplot2::theme_update(axis.text.x = element_text(size = 8))
+ggplot2::theme_update(axis.text.y = element_text(size = 8))
 
 # Config - store of local OS file system
 f_cfg <- file.path("./etc", "cfg.yml")

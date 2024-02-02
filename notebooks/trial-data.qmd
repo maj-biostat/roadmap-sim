@@ -294,3 +294,6 @@ gt_tbl <- d_tbl |>
 
 gt_tbl
 ```
+
+
+
