@@ -386,9 +386,8 @@ Duration, $D$, is randomised, however, the duration options depends upon the cho
 flowchart LR
   R --> A --> Y
   S --> A
-  S --> D
+  A --> D
   D --> Y
-  Z(Z) --> S & A
   UD((U<sub>D)) -.-> D
   US((U<sub>S)) -.-> S
   UR((U<sub>R)) -.-> R
@@ -405,7 +404,7 @@ $$
 \mathbb{E}[Y|R,S,D] = \text{expit}(\beta_0 + \beta_1R + \beta_2RS + \beta_3RD + \beta_4RDS)
 $$
 
-so $\beta_1$ is the shift associated with one-stage long duration, $\beta_2$ the shift associated with two-stage long duration, $\beta_3$ the relative shift for short duration given one-stage, and $\beta_$ the relative shift for short duration given two-stage.
+so $\beta_1$ is the shift associated with one-stage long duration, $\beta_2$ the shift associated with two-stage long duration, $\beta_3$ the relative shift for short duration given one-stage, and $\beta_4$ the relative shift for short duration given two-stage.
 
 In this case we could compare (randomised comparison) either: revision long vs. DAIR or revision short vs. DAIR, but no other combinations.
 
