@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>ROADMAP - design notes and simulations - notes</title>
+<title>ROADMAP - design notes and simulations - Misc notes</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -141,7 +175,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">notes</li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item">Misc notes</li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -224,6 +258,12 @@ window.Quarto = {
  <span class="menu-text">Simulation results 2</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../notebooks/design-notes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Design Notes</span></a>
+  </div>
+</li>
       </ul>
   </li>
         <li class="sidebar-item">
@@ -242,7 +282,7 @@ window.Quarto = {
     <h2 id="toc-title">Contents</h2>
    
   <ul>
-  <li><a href="#late-infection-2024-01-19" id="toc-late-infection-2024-01-19" class="nav-link active" data-scroll-target="#late-infection-2024-01-19">Late infection (2024-01-19)</a></li>
+  <li><a href="#thought-1" id="toc-thought-1" class="nav-link active" data-scroll-target="#thought-1">Thought 1</a></li>
   </ul>
 </nav>
     </div>
@@ -251,7 +291,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">notes</h1>
+<h1 class="title">Misc notes</h1>
 </div>
 
 
@@ -268,48 +308,89 @@ window.Quarto = {
 </header>
 
 
-<section id="late-infection-2024-01-19" class="level2">
-<h2 class="anchored" data-anchor-id="late-infection-2024-01-19">Late infection (2024-01-19)</h2>
-<p>[JT]</p>
-<p>Given that we assume the effect of revision is conditional on the nature of that revision, it’s not clear to me what “DAIR vs.&nbsp;Revision” means for late infection silo,</p>
-<p>Just thinking through it for myself…</p>
-<p>The options are:</p>
-<ul>
-<li>A = DAIR -&gt; B = 12w</li>
-<li>A = Revision(one) -&gt; B in {12w, 6w}</li>
-<li>A = Revision(two) -&gt; B in {12w, 7d}</li>
-<li>C in (no rifampicin, rifampicin)</li>
-</ul>
-<p>Currently, (just focusing on surgery/duration, and making 12w the reference for all groups rather than 7w/6d) cell parameters as specified in the model are:</p>
-<span class="math display">\[\begin{aligned}
-\begin{pmatrix}
-DAIR &amp; \alpha \\
-Rev (one), 12w &amp; \alpha + \beta_A \\
-Rev (two), 12w &amp; \alpha + \beta_A \\
-Rev (one), 6w &amp; \alpha + \beta_A + \beta_{B1} \\
-Rev (two), 7d &amp; \alpha + \beta_A + \beta_{B2} \\
-\end{pmatrix}
-\end{aligned}\]</span>
-<p>So, effect of one-stage + 12 w assumed equal to the effect of two-stage + 12w, then revision type specific deviations from those. And “DAIR vs Revision” (beta_A) is really DAIR vs.&nbsp;weighted average of one-stage 12w and two-stage 12w, i.e.&nbsp;ignores the duration options.</p>
-<p>I’m guessing this is the only randomised comparison we can make: a weighted average of one/two + 12w is the “default” revision.</p>
-<p>As an alternative, I assume it’s plausible that one-stage 12w and two-stage 12w differ due to clinician selection of one/two stage. So there may be preference (or maybe it just makes things messy) to have something like</p>
-<span class="math display">\[\begin{aligned}
-\begin{pmatrix}
-DAIR &amp; \alpha \\
-Rev (one), 12w &amp; \alpha + \beta_{A1} \\
-Rev (two), 12w &amp; \alpha + \beta_{A2} \\
-Rev (one), 6w &amp; \alpha + \beta_{A1} + \beta_{B1} \\
-Rev (two), 7d &amp; \alpha + \beta_{A2} + \beta_{B2} \\
-\end{pmatrix}
-\end{aligned}\]</span>
-<p>Noting that <span class="math inline">\(\beta_{A1}\)</span> and <span class="math inline">\(\beta_{A2}\)</span> aren’t “causal” in the sense that any differences could just be due to selection bias rather than differences in effectiveness of one/two stage.</p>
-<p>The effect of revision versus DAIR will depend on what “revision” means, is it everyone gets one-stage 12 w? 25% get each of the 4 options? Everyone gets two-stage then 50/50 to 12w/7d?</p>
-<p>Assume that <span class="math inline">\(p_{A1}\)</span> is the proportion randomised to revision who are selected to receive one-stage and <span class="math inline">\(1 - p_{A1}\)</span> the proportion selected to receive two-stage. Then the comparison for any revision versus DAIR might be taken to mean</p>
-<span class="math display">\[\begin{aligned}
-p_{A1} (0.5 \beta_{A1} + 0.5 (\beta_{A1} + \beta_{B1})) +  (1 0 p_{A1})(0.5\beta_{A2} + 0.5(\beta_{A2} + \beta_{B2}))
-\end{aligned}\]</span>
-<p>which just explicitly allows for the differences. Or some other combination of groups, where we assume that selection of one/two stage in the trial is the same in the population. Presumably though there are issues in interpreting such a comparison as “causal”, unless also adjust for factors determining one/two stage selection.</p>
-<p>Now that I’ve written this out, I think that the model as currently stated is probably the better one to use given it sticks with what’s randomised. So long as it’s clear that “DAIR vs.&nbsp;Revision” is really “DAIR vs weighted average of 12w one/two stage”.</p>
+<div class="cell">
+
+</div>
+<section id="thought-1" class="level2">
+<h2 class="anchored" data-anchor-id="thought-1">Thought 1</h2>
+<p>What is the effect of treating a patient with joint infection with a revision surgical procedure compared to a less invasive procedure, known as dair? What about the effect of treating with long relative to short duration antibiotic where the definition (and action) of long vs short duration are different within each level (i.e.&nbsp;a nested design rather than crossed). The usual experimental approach here is to apply random assignment of all possible treatment combinations, which with two levels</p>
+<p>Imagine a situation where we have a nested factorial design with factors A (control vs active) and B (control vs active). Contrary to the usual situation, we assume that active for A comes in two flavours, active-1 and active-2. Usually, we assume that the control vs active for B are different under each level of A. Here, we assume that control vs active for B are different under each of the possibilities for A.</p>
+<p>trial with control vs treatment with a single dichotomous covariate in the model (X) and where the outcome is death by day 30. We specify a conditional logistic regression model with linear predictor <span class="math inline">\(\eta = \beta_0 + \beta_1 I(trt_i == 1) + \beta_2 I(sex = male)\)</span>. By chance, all the control group are male and all the treatment group are female. Logically, we would not be able to separate the effect of treatment from sex, but model it anyway.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>N <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>d <span class="ot">&lt;-</span> <span class="fu">data.table</span>(<span class="at">id =</span> <span class="dv">1</span><span class="sc">:</span>N)</span>
+<span id="cb1-3"><a href="#cb1-3"></a>d[, trt <span class="sc">:</span><span class="er">=</span> <span class="fu">rbinom</span>(.N, <span class="dv">1</span>, <span class="fl">0.5</span>)]</span>
+<span id="cb1-4"><a href="#cb1-4"></a>d[trt <span class="sc">==</span> <span class="dv">0</span>, sex <span class="sc">:</span><span class="er">=</span> <span class="dv">1</span>]</span>
+<span id="cb1-5"><a href="#cb1-5"></a>d[trt <span class="sc">==</span> <span class="dv">1</span>, sex <span class="sc">:</span><span class="er">=</span> <span class="dv">0</span>]</span>
+<span id="cb1-6"><a href="#cb1-6"></a>beta_0 <span class="ot">&lt;-</span> <span class="fu">qlogis</span>(<span class="fl">0.7</span>)</span>
+<span id="cb1-7"><a href="#cb1-7"></a>beta_trt <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="dv">2</span>)</span>
+<span id="cb1-8"><a href="#cb1-8"></a>beta_sex <span class="ot">&lt;-</span> <span class="fu">log</span>(<span class="fl">0.2</span>)</span>
+<span id="cb1-9"><a href="#cb1-9"></a>d[, eta <span class="sc">:</span><span class="er">=</span> beta_0 <span class="sc">+</span> beta_trt <span class="sc">*</span> trt <span class="sc">+</span> beta_sex <span class="sc">*</span> sex]</span>
+<span id="cb1-10"><a href="#cb1-10"></a>d[, y <span class="sc">:</span><span class="er">=</span> <span class="fu">rbinom</span>(.N, <span class="dv">1</span>, <span class="at">prob =</span> <span class="fu">plogis</span>(eta))]</span>
+<span id="cb1-11"><a href="#cb1-11"></a><span class="fu">head</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Basic logistic regression.</p>
+<div class="cell">
+
+</div>
+<p>Fit the model and extract posterior.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>m1 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">"stan/logistic-demo-01.stan"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2"></a></span>
+<span id="cb2-3"><a href="#cb2-3"></a>d_grp <span class="ot">&lt;-</span> d[, .(<span class="at">y =</span> <span class="fu">sum</span>(y), <span class="at">n =</span> <span class="fu">length</span>(y)), keyby <span class="ot">=</span> .(trt, sex)]</span>
+<span id="cb2-4"><a href="#cb2-4"></a>ld <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb2-5"><a href="#cb2-5"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d_grp), </span>
+<span id="cb2-6"><a href="#cb2-6"></a>  <span class="at">y =</span> d_grp<span class="sc">$</span>y, <span class="at">n =</span> d_grp<span class="sc">$</span>n, <span class="at">trt =</span> d_grp<span class="sc">$</span>trt, <span class="at">sex =</span> d_grp<span class="sc">$</span>sex</span>
+<span id="cb2-7"><a href="#cb2-7"></a>)</span>
+<span id="cb2-8"><a href="#cb2-8"></a>f1 <span class="ot">&lt;-</span> m1<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb2-9"><a href="#cb2-9"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb2-10"><a href="#cb2-10"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
+<span id="cb2-11"><a href="#cb2-11"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span>
+<span id="cb2-12"><a href="#cb2-12"></a></span>
+<span id="cb2-13"><a href="#cb2-13"></a>post <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(</span>
+<span id="cb2-14"><a href="#cb2-14"></a>  <span class="st">"b0"</span>, <span class="st">"b_trt"</span>, <span class="st">"b_sex"</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a>), <span class="at">format =</span> <span class="st">"matrix"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Summarise the posterior draws:</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>d_tbl <span class="ot">&lt;-</span> <span class="fu">melt</span>(post[, <span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>], <span class="at">measure.vars =</span> <span class="fu">names</span>(post)[<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>])</span>
+<span id="cb3-2"><a href="#cb3-2"></a>d_tbl <span class="ot">&lt;-</span> d_tbl[, .(<span class="at">mu =</span> <span class="fu">mean</span>(value), </span>
+<span id="cb3-3"><a href="#cb3-3"></a>          <span class="at">sd =</span> <span class="fu">sd</span>(value),</span>
+<span id="cb3-4"><a href="#cb3-4"></a>          <span class="at">q_025 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.025</span>), </span>
+<span id="cb3-5"><a href="#cb3-5"></a>          <span class="at">q_975 =</span> <span class="fu">quantile</span>(value, <span class="at">prob =</span> <span class="fl">0.975</span>)), by <span class="ot">=</span> variable]</span>
+<span id="cb3-6"><a href="#cb3-6"></a></span>
+<span id="cb3-7"><a href="#cb3-7"></a>b_tru <span class="ot">&lt;-</span> <span class="fu">c</span>(beta_trt, beta_sex)</span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="fu">names</span>(b_tru) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"b_trt"</span>, <span class="st">"b_sex"</span>)</span>
+<span id="cb3-9"><a href="#cb3-9"></a>d_tbl[, b_tru <span class="sc">:</span><span class="er">=</span> b_tru[variable]]</span>
+<span id="cb3-10"><a href="#cb3-10"></a>d_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>So, the posterior mean is nowhere near our known true value that we simulated the data with.</p>
+<!-- The model addresses the question of what is the value of knowing sex after knowing treatment assignment. -->
+<!-- Given that all those treated were female and all those under control, there is no value in the additional covariate. -->
+<!-- The joint posterior of the two effects parameters makes this more clear. -->
+<div class="cell">
+
+</div>
+<!-- The linear predictor is actually this: -->
+<!-- \begin{aligned} -->
+<!-- \eta_i = \beta_0 + \beta_{trt} trt_i + \beta_{sex} (1 - trt_i) -->
+<!-- \end{aligned} -->
+<!-- So, for those that receive control, the contribution to the likelihood is $\eta_i = \beta_0 + \beta_{sex}$. -->
+<!-- And for those that receive treatment, the contribution to the likelihood is $\eta_i = \beta_0 + \beta_{trt}$. -->
+<!-- In aggregate, we can recover our true log odds of response in  -->
+<div class="cell">
+
+</div>
+<!-- Now consider the setting where we compare dair vs review with a covariate for  -->
 
 
 </section>
