@@ -423,8 +423,6 @@ generate_data_2 <- function(
   y10 <- rbinom(n, 1, plogis(f(s, s + 1, 0)))
   y11 <- rbinom(n, 1, plogis(f(s, s + 1, 1)))
   y <- (1 - r) * y0 + r * ((1 - d) * y10 + d * y11)
-  # y <- rbinom(n, 1, plogis(f(s, a, d, z)))
-  w <- mean(s) # Selection probability
   D <- data.table(r = r, s = s, a = a, d = d, y0 = y0, y10 = y10, y11 = y11, y = y)[
     ,
     `:=`(
