@@ -386,7 +386,6 @@ Duration, $D$, is randomised, however, the duration options depends upon the cho
 flowchart LR
   R --> A --> Y
   S --> A
-  A --> D
   D --> Y
   UD((U<sub>D)) -.-> D
   US((U<sub>S)) -.-> S
@@ -394,7 +393,7 @@ flowchart LR
   UY((U<sub>Y)) -.-> Y
 ```
 
-Now have two interventions: $R$ which has downstream unknown effects due to revision type assigned, and $D$ which is partially a consequence of revision type. 
+Now have two interventions: $R$ which has downstream unknown effects due to revision type assigned, and $D$ which is randomised, but it's effect is a consequence of revision type. 
 
 The simplest approach is to analyse these separately. I.e. restrict the analysis to only those patients who were assigned to one-stage, then have an RCT for duration in that subset. Similarly, restrict analysis to only those assigned to two-stage, then have an RCT for duration in that subset. However, we would like to have a joint model so that other effects can be shared (site/surgeon/age/whatever else). In the joint model, duration effect needs to be conditional on revision type.
 
