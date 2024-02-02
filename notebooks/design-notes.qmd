@@ -385,7 +385,7 @@ Duration, $D$, is randomised, however, the duration options depends upon the cho
 }}%%
 flowchart LR
   R --> A --> Y
-  S --> A
+  S --> A & D
   D --> Y
   UD((U<sub>D)) -.-> D
   US((U<sub>S)) -.-> S
