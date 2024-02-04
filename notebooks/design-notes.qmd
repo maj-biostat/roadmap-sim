@@ -164,6 +164,80 @@ generate_data_1 <- function(
     )
   ]
 }
+```
+
+```{r}
+#| label: simulate-1-null
+#| code-summary: Simulate null effect
+set.seed(123)
+D <- generate_data_1(f = \(s, a, x) -1 + s)
+fit1 <- glm(y ~ r_fac, data = D, family = binomial())
+fit2 <- glm(y ~ a_fac, data = D, family = binomial())
+fit1s <- glm(y ~ r_fac + s_fac, data = D, family = binomial())
+fit2s <- glm(y ~ a_fac + s_fac, data = D, family = binomial())
+```
+
+```{r}
+#| label: simulate-1-null-quantities
+#| code-summary: Null effect quantities
+
+w <- mean(D$a == 2) / mean(D$a %in% c(1, 2))
+w_s1 <- mean(D[r == 0]$s == 1)
+w_s2 <- mean(D[r == 1]$s == 1)
+
+b1 <- unname(coef(fit1))
+b2 <- unname(coef(fit2))
+b1s <- unname(coef(fit1s))
+b2s <- unname(coef(fit2s))
+
+EY_R0_2 <- expit(b2[1])
+EY_R1_2 <- (1 - w) * expit(b2[1] + b2[2]) + w * expit(b2[1] + b2[3])
+
+EY_R0_1_S0 <- expit(b1s[1])
+EY_R0_1_S1 <- expit(b1s[1] + b1s[3])
+EY_R1_1_S0 <- expit(b1s[1] + b1s[2])
+EY_R1_1_S1 <- expit(b1s[1] + b1s[2] + b1s[3])
+EY_R0_1 <- (1 - w_s1) * EY_R0_1_S0 + w_s1 * EY_R0_1_S1
+EY_R1_1 <- (1 - w_s2) * EY_R1_1_S0 + w_s2 * EY_R1_1_S1
+
+EY_R0_2_S0 <- expit(b2s[1])
+EY_R0_2_S1 <- expit(b2s[1] + b2s[4])
+EY_R1_2_S0 <- expit(b2s[1] + b2s[2]) # Pr(A = 2 | S = 0) = 0
+EY_R1_2_S1 <- expit(b2s[1] + b2s[3] + b2s[4]) # Pr(A = 2 | S = 1) = 1
+EY_R0_2 <- (1 - w_s1) * EY_R0_2_S0 + w_s1 * EY_R0_2_S1
+EY_R1_2 <- (1 - w_s2) * EY_R1_2_S0 + w_s2 * EY_R1_2_S1
+
+EY_R1_2_S0w <- expit(b2s[1] + (1 - w) * b2s[2] + w * b2s[3])
+EY_R1_2_S1w <- expit(b2s[1] + (1 - w) * b2s[2] + w * b2s[3] + b2s[4])
+EY_R1_2w <- (1 - w_s2) * EY_R1_2_S0w + w_s2 * EY_R1_2_S1w
+
+rbind(
+  "True conditional (S = 0) log-odds ratio" =
+    qlogis(mean(D[r == 1 & s == 0]$y)) - qlogis(mean(D[r == 0 & s == 0]$y)),
+  "True conditional (S = 1) log-odds ratio" =
+    qlogis(mean(D[r == 1 & s == 1]$y)) - qlogis(mean(D[r == 0 & s == 1]$y)),
+  "True marginal log-odds ratio" = qlogis(mean(D[r == 1]$y)) - qlogis(mean(D[r == 0]$y)),
+  "True weighted log-odds ratio" =
+    (1 - w) * qlogis(mean(D[a == 1]$y)) + w * qlogis(mean(D[a == 2]$y)) -
+      qlogis(mean(D[r == 0]$y)),
+  "True weighted conditional log-odds ratio" =
+    (1 - w) * (qlogis(mean(D[r == 1 & s == 0]$y)) - qlogis(mean(D[r == 0 & s == 0]$y))) +
+      w * (qlogis(mean(D[r == 1 & s == 1]$y)) - qlogis(mean(D[r == 0 & s == 1]$y))),
+  "fit1 marginal log-odds ratio" = b1[2],
+  "fit2 marginal log-odds ratio" = qlogis(EY_R1_2) - qlogis(EY_R0_2),
+  "fit2 conditional (weighted) log-odds ratio" = (1 - w) * b2[2] + w * b2[3],
+  "fit1s conditional log-odds ratio" = b1s[2], # Don't know what this targets
+  "fit1s marginal log-odds ratio" = qlogis(EY_R1_1) - qlogis(EY_R0_1),
+  "fit2s conditional (S = 0) log-odds ratio" = qlogis(EY_R1_2_S0) - qlogis(EY_R0_2_S0),
+  "fit2s conditional (S = 1) log-odds ratio" = qlogis(EY_R1_2_S1) - qlogis(EY_R0_2_S1),
+  "fit2s marginal log-odds ratio" = qlogis(EY_R1_2) - qlogis(EY_R0_2),
+  "fit2s conditional (weighted) log-odds ratio" = (1 - w) * b2s[2] + w * b2s[3]
+)
+```
+
+```{r}
+#| label: simulate-1
+#| code-summary: Simulate effect
 set.seed(123)
 D <- generate_data_1()
 fit1 <- glm(y ~ r_fac, data = D, family = binomial())
@@ -173,7 +247,7 @@ fit2s <- glm(y ~ a_fac + s_fac, data = D, family = binomial())
 ```
 
 ```{r}
-#| label: generate-data-1-quantities
+#| label: simulate-1-quantities
 #| code-summary: Effect quantities
 
 w <- mean(D$a == 2) / mean(D$a %in% c(1, 2))
@@ -265,7 +339,25 @@ $$
 \end{aligned}
 $$
 
-then our model without $S$ assumes
+Then if our model does condition on $S$,
+
+$$
+\begin{aligned}
+\mathbb{E}[Y|R,X] &= \mathbb{E}[\mathbb{E}[Y|R,X,A,S]|R,X] \\
+&= \sum_{s=0}^1\sum_{a=0}^2 
+\text{expit}(\beta_0 + \beta_1\mathbb{I}(a=1) + \beta_2\mathbb{I}(a=2) + \beta_3s+\beta_4X)
+\mathbb{P}(A=a|S=s,R,X)\mathbb{P}(S=s|R,X) \\
+\mathbb{E}[Y|R=0,X] &= \text{expit}(\beta_0 + \beta_4X)\mathbb{P}(S=0|R=0,X) + 
+\text{expit}(\beta_0 + \beta_3 + \beta_4X)\mathbb{P}(S=1|R=0,X) \\ 
+\mathbb{E}[Y|R=1,X] &= \text{expit}(\beta_0 + \beta_1 + \beta_4X)\mathbb{P}(S=0|R=0,X) + 
+\text{expit}(\beta_0 + \beta_2 + \beta_3 + \beta_4X)\mathbb{P}(S=1|R=0,X) \\
+\ln\frac{\text{odds}(Y|R=1,X)}{\text{odds}(Y|R=0,X)} &= \text{logit}(\mathbb{E}[Y|R=1,X]) - \text{logit}(\mathbb{E}[Y|R=0,X])
+\end{aligned}
+$$
+
+Due to randomisation, $\mathbb{P}(S=s|R,X) = \mathbb{P}(S=s|X)$.
+
+The model without $S$ assumes
 
 $$
 \begin{aligned}
@@ -281,7 +373,7 @@ Forget $S$ for the moment.
 ```{r}
 #| label: generate-data-2
 #| code-summary: Generate data with covariate
-set.seed(8712)
+set.seed(6124)
 D <- generate_data_1(
   f = \(s, a, x) -1 + s + x + 0.25 * I(a == 1) + 0.75 * I(a == 2)
 )
@@ -297,6 +389,11 @@ fit2s <- glm(y ~ a_fac + s_fac + x, data = D, family = binomial())
 
 w <- mean(D$a == 2) / mean(D$r == 1)
 w_s <- mean(D$s == 1)
+w_s_x0_r0 <- mean(D[x==0&r==0]$s)
+w_s_x1_r0 <- mean(D[x==1&r==0]$s)
+w_s_x0_r1 <- mean(D[x==0&r==1]$s)
+w_s_x1_r1 <- mean(D[x==1&r==1]$s)
+
 w_x0 <- mean(D$x == 0)
 w_x1 <- mean(D$x == 1)
 w_a1_x0 <- mean(D[x == 0]$a == 1) / mean(D[x == 0]$r == 1)
@@ -307,6 +404,7 @@ w_a2_x1 <- mean(D[x == 1]$a == 2) / mean(D[x == 1]$r == 1)
 b1 <- unname(coef(fit1))
 b2 <- unname(coef(fit2))
 b1s <- unname(coef(fit1s))
+b2s <- unname(coef(fit2s))
 
 EY_R0_1_X0 <- expit(b1[1])
 EY_R0_1_X1 <- expit(b1[1] + b1[3])
@@ -322,6 +420,13 @@ EY_R1_2_X1 <- w_a1_x1 * expit(b2[1] + b2[2] + b2[4]) + w_a2_x1 * expit(b2[1] + b
 EY_R0_2 <- w_x0 * EY_R0_2_X0 + w_x1 * EY_R0_2_X1
 EY_R1_2 <- w_x0 * EY_R1_2_X0 + w_x1 * EY_R1_2_X1
 
+EY_R0_2s_X0 <- expit(b2s[1]) * (1 - w_s_x0_r0) + expit(b2s[1] + b2s[4]) * w_s_x0_r0
+EY_R0_2s_X1 <- expit(b2s[1] + b2s[5]) * (1 - w_s_x1_r0) + expit(b2s[1] + b2s[4] + b2s[5]) * w_s_x1_r0
+EY_R1_2s_X0 <- expit(b2s[1] + b2s[2]) * (1 - w_s_x0_r1) + expit(b2s[1] + b2s[3] + b2s[4]) * w_s_x0_r1
+EY_R1_2s_X1 <- expit(b2s[1] + b2s[2] + b2s[5]) * (1 - w_s_x1_r1) + expit(b2s[1] + b2s[3] + b2s[4] + b2s[5]) * w_s_x1_r1
+EY_R0_2s <- w_x0 * EY_R0_2s_X0 + w_x1 * EY_R0_2s_X1
+EY_R1_2s <- w_x0 * EY_R1_2s_X0 + w_x1 * EY_R1_2s_X1
+
 rbind(
   "True conditional (X = 0) log-odds ratio" =
     qlogis(mean(D[r == 1 & x == 0]$y)) - qlogis(mean(D[r == 0 & x == 0]$y)),
@@ -334,7 +439,10 @@ rbind(
   "fit2 conditional (X = 1) log-odds ratio" = qlogis(EY_R1_2_X1) - qlogis(EY_R0_2_X1),
   "fit2 marginal log-odds ratio" = qlogis(EY_R1_2) - qlogis(EY_R0_2),
   "fit2 conditional (weighted) log-odds ratio" = (1 - w) * b2[2] + w * b2[3],
-  "fit1s conditional log-odds ratio" = b1s[2]
+  "fit1s conditional log-odds ratio" = b1s[2],
+  "fit2s conditional (X = 0) log-odds ratio" = qlogis(EY_R1_2s_X0) - qlogis(EY_R0_2s_X0),
+  "fit2s conditional (X = 1) log-odds ratio" = qlogis(EY_R1_2s_X1) - qlogis(EY_R0_2s_X1),
+  "fit2s marginal log-odds ratio" = qlogis(EY_R1_2s) - qlogis(EY_R0_2s)
 )
 ```
 
