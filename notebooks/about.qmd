@@ -9,7 +9,7 @@ log_info("Called about notebook")
 
 # About {.unnumbered}
 
-Version of quarto used for this site is `r system("/Applications/quarto/bin/quarto --version", intern = TRUE, ignore.stderr = TRUE)`.
+Version of quarto used for this site is `r system("$(which quarto) --version", intern = TRUE, ignore.stderr = TRUE)`.
 
 ::: callout-warning
 There is usually a version of quarto installed with RStudio.
