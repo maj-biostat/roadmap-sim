@@ -13,10 +13,10 @@ I just want to work through from a basic scenario to more involved ones to check
 
 As a starting point, consider the following:
 
-- R: randomised surgery - 0: DAIR, 1: revision
-- S: preferred revision - 0: one-stage, 1: two-stage
-- A: allocated surgery - 0: DAIR, 1: one-stage, 2: two-stage
-- Y: treatment success - 0: no, 1: yes
+-   R: randomised surgery - 0: DAIR, 1: revision
+-   S: preferred revision - 0: one-stage, 1: two-stage
+-   A: allocated surgery - 0: DAIR, 1: one-stage, 2: two-stage
+-   Y: treatment success - 0: no, 1: yes
 
 Patients are randomised to a surgery type, $R$: DAIR or revision. For every patient, if they *were* to have been allocated to revision, there is some preference/plan for one/two stage, $S$. The value of $S$ is determined by the surgeon/patient and I'm considering it here as just an attribute of the patient. The actual allocated treatment is a deterministic function of $R$ and $S$, i.e. $A = R \times (S + 1)$. Note that I'm assuming that $S$ is known for *every* patient before $R$ is revealed to the surgeon, irrespective of whether they are eventually assigned to DAIR or revision (if that it *isn't the case* then perhaps some issues might arise, but I don't think that it matters too much for what's being considered here given randomisation).
 
@@ -66,7 +66,7 @@ $$
 \mathbb{E}[Y | R, S] = \text{expit}(\beta_0 + \beta_1R + \beta_2RS) \\
 $$
 
-The first targets the thing we actually want to compare, the log-odds ratio of revision versus DAIR. The second splits this out into one and two stage which we would need to combine to get the overall revision effect. 
+The first targets the thing we actually want to compare, the log-odds ratio of revision versus DAIR. The second splits this out into one and two stage which we would need to combine to get the overall revision effect.
 
 These models could also adjust for $S$, i.e. in addition to any actual *effect* of one/two stage revision, the patients for whom a two-stage would be preferred may differ from those for who a one-stage is the preference. Interpretation of model parameters then changes of course.
 
@@ -94,7 +94,7 @@ $$
 \text{logit}\left[\text{expit}(\beta_0 + \beta_1)\mathbb{P}(A=1|R=1) + \text{expit}(\beta_0 + \beta_2)\mathbb{P}(A=2|R=1)\right] - \beta_0.
 $$
 
-We don't know $\mathbb{P}(A=a|R=1)$ so estimate it from the sample. 
+We don't know $\mathbb{P}(A=a|R=1)$ so estimate it from the sample.
 
 If the model also conditions on $S$, then, given that $\mathbb{P}(A=0|R=0,S)=1$ and $\mathbb{P}(A = S + 1 | R = 1, S) = 1$.
 
@@ -316,30 +316,30 @@ Suppose we introduce a covariate $X$ because it's predictive of the outcome, e.g
 
 $$
 \begin{aligned}
-\mathbb{E}[Y|A,X] &= \text{expit}(\beta_0 + \beta_1\mathbb{I}(A=1) + \beta_2\mathbb{I}(A=2) + \beta_3X) \\
-\mathbb{E}[Y|R,X] &= \mathbb{E}[\mathbb{E}[Y|A,X]|R,X] \\
-&= \sum_{a=0}^2 \text{expit}(\beta_0 + \beta_1\mathbb{I}(A=1) + \beta_2\mathbb{I}(A=2) + \beta_3X)\mathbb{P}(A=a|R,X) \\
+\mathbb{E}[Y|R,S,X] &= \text{expit}(\beta_0 + \beta_1R + \beta_2RS + \beta_3X) \\
+\mathbb{E}[Y|R,X] &= \mathbb{E}[\mathbb{E}[Y|R,S,X]|R,X] \\
+&= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1R + \beta_2Rs + \beta_3X)\mathbb{P}(S=s|R,X) \\
 \mathbb{E}[Y|R=0,X] &= \text{expit}(\beta_0 + \beta_3X) \\
-\mathbb{E}[Y|R=1,X] &= \text{expit}(\beta_0 + \beta_1 + \beta_3X)\mathbb{P}(A=1|R=1,X)  \\
-&\quad \ + \text{expit}(\beta_0 + \beta_2 + \beta_3X)\mathbb{P}(A=2|R=1,X)
+\mathbb{E}[Y|R=1,X] &= \text{expit}(\beta_0 + \beta_1 + \beta_3X)\mathbb{P}(S=0|R=1,X)  \\
+&\quad \ + \text{expit}(\beta_0 + \beta_1 + \beta_2 + \beta_3X)\mathbb{P}(S=1|R=1,X)
 \end{aligned}
 $$
 
-The conditional (on $X$) log-odds ratio of revision versus DAIR depends on the value of $X$ (i.e. is not the same effect for every $X=x$) and cannot be simplified. It is 
+The conditional (on $X$) log-odds ratio of revision versus DAIR depends on the value of $X$ (i.e. is not the same effect for every $X=x$) and cannot be simplified. It is
 
 $$
 \text{logit}(\mathbb{E}[Y|R=1,X]) - (\beta_0 + \beta_3X).
 $$
 
-By marginalising over type of revision surgery (which is necessary), we lose our one number summary. No way to avoid that other than perhaps considering fitting separate models for surgery and duration.
+By marginalising over type of revision type (which is necessary for the comparison we want), we lose our one number summary. No way to avoid that other than perhaps considering fitting separate models for surgery and duration.
 
 If $S$ has an effect, say in truth,
 
 $$
 \begin{aligned}
-\mathbb{E}[Y|S,A,X] &= \text{expit}(\beta_0 + \beta_1\mathbb{I}(A=1) + \beta_2\mathbb{I}(A=2) + \beta_3X + \beta_4S) \\
-\mathbb{E}[Y|A,X] &= \mathbb{E}[\mathbb{E}[Y|S,A,X]|A,X] \\
-&= \sum_{s=0}^1 \mathbb{E}[Y|S=s,A,X]\mathbb{P}(S=s|A,X)
+\mathbb{E}[Y|S,R,X] &= \text{expit}(\beta_0 + \beta_1R + \beta_2RS + \beta_3S + \beta_4X) \\
+\mathbb{E}[Y|R,X] &= \mathbb{E}[\mathbb{E}[Y|S,R,X]|R,X] \\
+&= \sum_{s=0}^1 \mathbb{E}[Y|S=s,R,X]\mathbb{P}(S=s|R,X)
 \end{aligned}
 $$
 
@@ -347,26 +347,26 @@ Then if our model does condition on $S$,
 
 $$
 \begin{aligned}
-\mathbb{E}[Y|R,X] &= \mathbb{E}[\mathbb{E}[Y|R,X,A,S]|R,X] \\
-&= \sum_{s=0}^1\sum_{a=0}^2 
-\text{expit}(\beta_0 + \beta_1\mathbb{I}(a=1) + \beta_2\mathbb{I}(a=2) + \beta_3s+\beta_4X)
-\mathbb{P}(A=a|S=s,R,X)\mathbb{P}(S=s|R,X) \\
+\mathbb{E}[Y|R,X] &= \mathbb{E}[\mathbb{E}[Y|R,X,S]|R,X] \\
+&= \sum_{s=0}^1 
+\text{expit}(\beta_0 + \beta_1R + \beta_2Rs + \beta_3s+\beta_4X)
+\mathbb{P}(S=s|R,X) \\
 \mathbb{E}[Y|R=0,X] &= \text{expit}(\beta_0 + \beta_4X)\mathbb{P}(S=0|R=0,X) + 
 \text{expit}(\beta_0 + \beta_3 + \beta_4X)\mathbb{P}(S=1|R=0,X) \\ 
 \mathbb{E}[Y|R=1,X] &= \text{expit}(\beta_0 + \beta_1 + \beta_4X)\mathbb{P}(S=0|R=0,X) + 
-\text{expit}(\beta_0 + \beta_2 + \beta_3 + \beta_4X)\mathbb{P}(S=1|R=0,X) \\
+\text{expit}(\beta_0 + \beta_1 + \beta_2 + \beta_3 + \beta_4X)\mathbb{P}(S=1|R=0,X) \\
 \ln\frac{\text{odds}(Y|R=1,X)}{\text{odds}(Y|R=0,X)} &= \text{logit}(\mathbb{E}[Y|R=1,X]) - \text{logit}(\mathbb{E}[Y|R=0,X])
 \end{aligned}
 $$
 
 Due to randomisation, $\mathbb{P}(S=s|R,X) = \mathbb{P}(S=s|X)$.
 
-The model without $S$ assumes
+The model without adjustment for $S$ assumes
 
 $$
 \begin{aligned}
-\mathbb{E}[Y|A,X] &= \text{expit}(\alpha_0 + \alpha_1\mathbb{I}(A=1) + \alpha_2\mathbb{I}(A=2) + \alpha_3X) \\
-&= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1\mathbb{I}(A=1) + \beta_2\mathbb{I}(A=2) + \beta_3X + \beta_4s)\mathbb{P}(S=s|A,X)
+\mathbb{E}[Y|R,S,X] &= \text{expit}(\alpha_0 + \alpha_1R + \alpha_2RS + \alpha_3X) \\
+&= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1R + \beta_2RS + \beta_3X + \beta_4s)\mathbb{P}(S=s|R,X)
 \end{aligned}
 $$
 
@@ -425,11 +425,11 @@ round(rbind(tt, m), 3)
 
 The above hides some complexity because we assume everything is correctly specified. Suppose we introduce some unmeasured factor which influences which patients are preferred for a given revision type. Consider the following:
 
-- R: randomised surgery - 0: DAIR, 1: revision
-- S: preferred revision - 0: one-stage, 1: two-stage
-- A: allocated surgery - 0: DAIR, 1: one-stage, 2: two-stage
-- Y: treatment success - 0: no, 1: yes
-- Z: unmeasured factor, patient attributes/type - continuous
+-   R: randomised surgery - 0: DAIR, 1: revision
+-   S: preferred revision - 0: one-stage, 1: two-stage
+-   A: allocated surgery - 0: DAIR, 1: one-stage, 2: two-stage
+-   Y: treatment success - 0: no, 1: yes
+-   Z: unmeasured factor, patient attributes/type - continuous
 
 We assume $Z$ is some immeasurable combination of factors which partly determines a patients risk of failure. We also think that this $Z$ partly determines the surgeons choice of one/two stage. Say patients with higher values of $Z$ are less likely to have successful treatment. However, the surgeon has some knowledge/experience/expertise/intuition which means that they are more likely to prefer a two-stage revision for patients with higher values of $Z$, as they expect those types of patients will have better outcomes under two-stage. The allocated treatment and the underlying patient risk determines the patients outcome, $Y$.
 
@@ -476,7 +476,7 @@ flowchart LR
   UY((U<sub>Y)) -.-> Y
 ```
 
-Now have two interventions: $R$ which has downstream unknown effects due to revision type assigned, and $D$ which is randomised, but it's effect is a consequence of revision type. 
+Now have two interventions: $R$ which has downstream unknown effects due to revision type assigned, and $D$ which is randomised, but it's effect is a consequence of revision type.
 
 The simplest approach is to analyse these separately. I.e. restrict the analysis to only those patients who were assigned to one-stage, then have an RCT for duration in that subset. Similarly, restrict analysis to only those assigned to two-stage, then have an RCT for duration in that subset. However, we would like to have a joint model so that other effects can be shared (site/surgeon/age/whatever else). In the joint model, duration effect needs to be conditional on revision type.
 
