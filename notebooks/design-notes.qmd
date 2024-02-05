@@ -76,52 +76,54 @@ $$
 
 We don't really care about the difference due to $S$, as the revision type effects may still be confounded by other factors anyway. Due to the randomisation, I think that both the version with and without $S$ are targeting the same estimand for revision vs. DAIR (the distribution of $S$ is the same (in expectation) amongst DAIR and revision patients, so is not be a confounder, but obviously, $S$ is known exactly to be $A-1$ when $R=1$).
 
-For the second model above without $S$
+For the second model above, in terms of $R$ and $S$, without adjustment for $S$
 
 $$
 \begin{aligned}
-\mathbb{E}[Y | R] &= \mathbb{E}[\mathbb{E}[Y | A, R] | R] \\
-&= \sum_{a=0}^2 \text{expit}(\beta_0 + \beta_1\mathbb{I}(a=1) + \beta_2\mathbb{I}(a=2))\mathbb{P}(A = a | R) \\
+\mathbb{E}[Y | R] &= \mathbb{E}[\mathbb{E}[Y | S, R] | R] \\
+&= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1R + \beta_2Rs)\mathbb{P}(S = s | R) \\
 \mathbb{E}[Y|R =0] &= \text{expit}(\beta_0) \\
-\mathbb{E}[Y|R = 1] &=  \text{expit}(\beta_0 + \beta_1)\mathbb{P}(A=1|R=1) \\
-& \quad \ + \text{expit}(\beta_0 + \beta_2)\mathbb{P}(A=2|R=1)
+\mathbb{E}[Y|R = 1] &=  \text{expit}(\beta_0 + \beta_1)\mathbb{P}(S=0|R=1) \\
+& \quad \ + \text{expit}(\beta_0 + \beta_1 + \beta_2)\mathbb{P}(S=1|R=1)
 \end{aligned}
 $$
 
-so the log-odds ratio for revision vs. DAIR is
+so the log-odds ratio for the marginal success probability for revision vs. DAIR is
 
 $$
-\text{logit}\left[\text{expit}(\beta_0 + \beta_1)\mathbb{P}(A=1|R=1) + \text{expit}(\beta_0 + \beta_2)\mathbb{P}(A=2|R=1)\right] - \beta_0.
+\ln\frac{\text{odds}(Y|R=1)}{\text{odds}(Y|R=0)} = \text{logit}\left[\text{expit}(\beta_0 + \beta_1)\mathbb{P}(S=0|R=1) + 
+\text{expit}(\beta_0 + \beta_1 + \beta_2)\mathbb{P}(S=1|R=1)\right] - 
+\beta_0.
 $$
 
-We don't know $\mathbb{P}(A=a|R=1)$ so estimate it from the sample.
+We don't know $\mathbb{P}(S=s|R)$ so estimate it from the sample. Due to randomisation $\mathbb{P}(S=s|R) = \mathbb{P}(S=s)$.
 
-If the model also conditions on $S$, then, given that $\mathbb{P}(A=0|R=0,S)=1$ and $\mathbb{P}(A = S + 1 | R = 1, S) = 1$.
+An alternative to the above is to consider the "average" conditional log-odds ratio rather than the odds ratio of the marginal probabilities.
+
+$$
+\mathbb{E}\left[\ln\frac{\text{odds}(Y|R=1,S)}{\text{odds}(Y|R=0,S)}\right] = \mathbb{E}[\beta_1 + \beta_2S] = \beta_1 + \beta_2\mathbb{E}[S]
+$$
+
+
+If the model also adjusts for $S$, then
 
 $$
 \begin{aligned}
-\mathbb{E}[Y | R, S] &= \mathbb{E}[\mathbb{E}[Y | A, S, R] | R, S] \\
-&= \sum_{a=0}^2 \text{expit}(\beta_0 + \beta_1\mathbb{I}(a=1) + \beta_2\mathbb{I}(a=2) + \beta_3S)\mathbb{P}(A = a | R, S) \\
-\mathbb{E}[Y|R = 0, S = 0] &= \text{expit}(\beta_0) \\
-\mathbb{E}[Y|R = 0, S = 1] &= \text{expit}(\beta_0 + \beta_3) \\
-\mathbb{E}[Y|R = 1, S = 0] &= \text{expit}(\beta_0 + \beta_1) \\
-\mathbb{E}[Y|R = 1, S = 1] &= \text{expit}(\beta_0 + \beta_2 + \beta_3) \\
-\mathbb{E}[Y|R] &= \mathbb{E}[Y|R, S = 0]\mathbb{P}[S=0|R] + \mathbb{E}[Y|R, S = 1]\mathbb{P}[S=1|R] \\
-&=   \mathbb{E}[Y|R, S = 0]\mathbb{P}[S=0] + \mathbb{E}[Y|R, S = 1]\mathbb{P}[S=1]
+\mathbb{E}[Y | R] &= \mathbb{E}[\mathbb{E}[Y | S, R] | R] \\
+&= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1R + \beta_2Rs + \beta_3s)\mathbb{P}(S = s | R) \\
+\mathbb{E}[Y|R = 0] &= \text{expit}(\beta_0)\mathbb{P}(S = 0 | R=0) + \text{expit}(\beta_0 + \beta_3)\mathbb{P}(S=1|R=0)\\
+\mathbb{E}[Y|R = 1] &= \text{expit}(\beta_0 + \beta_1)\mathbb{P}(S = 0 | R = 1) + \text{expit}(\beta_0 + \beta_1 + \beta_2 + \beta_3)\mathbb{P}(S=1 | R = 1) \\
+\ln\frac{\text{odds}(Y|R=1)}{\text{odds}(Y|R=0)} &= \text{logit}(\mathbb{E}[Y|R = 1]) - \text{logit}(\mathbb{E}[Y|R = 0])
 \end{aligned}
 $$
 
-so the conditional and marginal log-odds ratio for revision vs. DAIR
+Again, an alternative, simpler quantity is the average conditional log-odds ratio
 
 $$
-\begin{aligned}
-\ln\left(\text{OR}[S=0]\right) &= \beta_1 \\
-\ln\left(\text{OR}[S=1]\right) &= \beta_3 \\
-\ln\left(\text{OR}\right) &= \text{logit}(\mathbb{E}[Y|R=1]) - \text{logit}(\mathbb{E}[Y|R=0]).
-\end{aligned}
+\mathbb{E}\left[\ln\frac{\text{odds}(Y|R=1,S)}{\text{odds}(Y|R=0,S)}\right] = \mathbb{E}[\beta_1 + \beta_2S] = \beta_1 + \beta_2\mathbb{E}[S]
 $$
 
-Cannot separate the effect of $A$ from effect of $S$.
+This quantity contains the same terms as without adjustment for $S$, but the parameter values will differ.
 
 ### Example
 
@@ -302,17 +304,27 @@ So in the basic case, as $n\to\infty$, these models are all in a sense equivalen
 More generally, can just use g-computation rather than analytic expressions
 
 ```{r}
-c(
-  "G-comp marginal mean" = avg_comparisons(fit2s, variables = "r", comparison = "lnoravg")$estimate,
-  "G-comp average log-odds" = avg_comparisons(fit2s, variables = "r", comparison = "lnor")$estimate,
-  "G-comp conditional average log-odds" =
+m <- rbind(
+  "G-comp marginal mean" =
+    c(avg_comparisons(fit2, variables = "r", comparison = "lnoravg")$estimate, NA_real_),
+  "G-comp marginal mean (adjust s)" =
+    c(avg_comparisons(fit2s, variables = "r", comparison = "lnoravg")$estimate, NA_real_),
+  "G-comp average log-odds" =
+    c(avg_comparisons(fit2, variables = "r", comparison = "lnor")$estimate, NA_real_),
+  "G-comp average log-odds (adjust s)" = 
+    c(avg_comparisons(fit2s, variables = "r", comparison = "lnor")$estimate, NA_real_),
+  "G-comp conditional (S) average log-odds" =
+    avg_comparisons(fit2, variables = "r", comparison = "lnor", by = "s")$estimate,
+  "G-comp conditional (S) average log-odds (adjust s)" =
     avg_comparisons(fit2s, variables = "r", comparison = "lnor", by = "s")$estimate
 )
+colnames(m) <- c("S = 0", "S = 1")
+m
 ```
 
 ## Covariate
 
-Suppose we introduce a covariate $X$ because it's predictive of the outcome, e.g. sex. Our model is
+Suppose we introduce a covariate $X$ because it's predictive of the outcome, e.g. sex. Our model, which does not adjust for $S$, is
 
 $$
 \begin{aligned}
@@ -325,13 +337,20 @@ $$
 \end{aligned}
 $$
 
-The conditional (on $X$) log-odds ratio of revision versus DAIR depends on the value of $X$ (i.e. is not the same effect for every $X=x$) and cannot be simplified. It is
+The conditional (on $X$) log-odds ratio of marginal success probability for revision versus DAIR depends on the value of $X$ (i.e. is not the same effect for every $X=x$) and cannot be simplified. It is
 
 $$
 \text{logit}(\mathbb{E}[Y|R=1,X]) - (\beta_0 + \beta_3X).
 $$
 
 By marginalising over type of revision type (which is necessary for the comparison we want), we lose our one number summary. No way to avoid that other than perhaps considering fitting separate models for surgery and duration.
+
+To maintain a one-number-summary, again an alternative is to consider the average conditional log-odds
+
+$$
+\mathbb{E}\left[\ln\frac{\text{odds}(Y|R=1|S,X)}{\text{odds}(Y|R=0|S,X)}\right] = \beta_1 + \beta_2\mathbb{E}[S].
+$$
+
 
 If $S$ has an effect, say in truth,
 
@@ -452,6 +471,16 @@ flowchart LR
 ```
 
 Given the randomisation, this does not really change anything, except making explicit that differences between one/two stage may just be due to confounding rather than effect of treatment. We can't tell which without adjusting for all confounders.
+
+## Checkpoint
+
+So, perhaps the easiest quantity to consider is the average conditional log-odds, i.e.
+
+$$
+\mathbb{E}[\ln\frac{\text{odds}(Y|R=1,S,X,...)}{\text{odds}(Y|R=0,S,X,...)}] = \beta_1 + \beta_2\mathbb{E}[S].
+$$
+
+Is this sufficiently meaningful?
 
 ## Duration
 
@@ -605,6 +634,73 @@ rbind(
 rbind(
   avg_comparisons(fit2, variables = "r", by = c("d", "x"), comparison = "lnoravg"),
   avg_comparisons(fit2s, variables = "r", by = c("d", "x"), comparison = "lnoravg")
+)
+
+# Short vs Long (one-stage) and short vs. long (two-stage)
+rbind(
+  avg_comparisons(fit2, variables = "d", by = "s", comparison = "lnoravg"),
+  avg_comparisons(fit2s, variables = "d", by = "s", comparison = "lnoravg")
+)
+
+# Short vs long conditional on x
+avg_comparisons(fit2, variables = "d", by = c("s", "x"), comparison = "lnoravg")
+```
+
+## Other Domains
+
+The desire for a single model is incorporation of multiple silos and domains. Suppose we introduce the antibiotic type (rifampicin) domain, which is denoted by $F$. Assume everyone were eligible. Our base model would be
+
+$$
+\mathbb{E}[Y|R,S,D,F] = \text{expit}(\beta_0 + \beta_1S + \beta_2R + \beta_3RS + \beta_4RD + \beta_5RDS + \beta_6F)
+$$
+
+
+```{r}
+#| label: generate-data-rifampicin
+#| code-summary: Generate rifampicin data
+
+generate_data_3 <- function(
+    n = 1000000,
+    g = \(x, r, s, d, f) -1 + x + s + r + 0.5 * r * s - 0.25 * r * d - 0.15 * r * s * d + 0.2 * f) {
+  x <- rbinom(n, 1, 0.25)
+  s <- rbinom(n, 1, 0.7)
+  r <- rbinom(n, 1, 0.5)
+  f <- rbinom(n, 1, 0.5)
+  a <- r * (s + 1)
+  d <- as.numeric((a > 0) * rbinom(n, 1, 0.5))
+  y <- rbinom(n, 1, plogis(g(x, r, s, d, f)))
+  D <- data.table(x = x, r = r, s = s, a = a, d = d, f = f, y = y)
+}
+set.seed(1246)
+D <- generate_data_3()
+fit2 <- glm(y ~ x + r + f + r:s + r:d + r:s:d, data = D, family = binomial())
+fit2s <- glm(y ~ x + s + r + f + r:s + r:d + r:s:d, data = D, family = binomial())
+```
+
+```{r}
+# Revision vs. DAIR
+rbind(
+  avg_comparisons(fit2, variables = "r", comparison = "lnoravg"),
+  avg_comparisons(fit2s, variables = "r", comparison = "lnoravg")
+)
+rbind(
+  avg_comparisons(fit2, variables = "r", comparison = "lnor"),
+  avg_comparisons(fit2s, variables = "r", comparison = "lnor")
+)
+# Revision vs. DAIR conditional
+rbind(
+  avg_comparisons(fit2, variables = "r", by = c("f", "x", "d"), comparison = "lnoravg"),
+  avg_comparisons(fit2s, variables = "r", by = c("f", "x", "d"), comparison = "lnoravg")
+)
+# Revision (long) vs. DAIR and Revision (short) vs. DAIR
+rbind(
+  avg_comparisons(fit2, variables = "r", by = "d", comparison = "lnoravg"),
+  avg_comparisons(fit2s, variables = "r", by = "d", comparison = "lnoravg")
+)
+# Rifampicin vs not
+rbind(
+  avg_comparisons(fit2, variables = "f", comparison = "lnoravg"),
+  avg_comparisons(fit2s, variables = "f", comparison = "lnoravg")
 )
 
 # Short vs Long (one-stage) and short vs. long (two-stage)
