@@ -131,6 +131,7 @@ Herein I am just assuming $n\approx \infty$, i.e. checking consistency.
 #| label: setup
 #| code-summary: Setup
 library(data.table)
+library(marginaleffects)
 
 odds <- function(p) p / (1 - p)
 expit <- function(x) plogis(x)
@@ -171,10 +172,10 @@ generate_data_1 <- function(
 #| code-summary: Simulate null effect
 set.seed(123)
 D <- generate_data_1(f = \(s, a, x) -1 + s)
-fit1 <- glm(y ~ r_fac, data = D, family = binomial())
-fit2 <- glm(y ~ a_fac, data = D, family = binomial())
-fit1s <- glm(y ~ r_fac + s_fac, data = D, family = binomial())
-fit2s <- glm(y ~ a_fac + s_fac, data = D, family = binomial())
+fit1 <- glm(y ~ r, data = D, family = binomial())
+fit2 <- glm(y ~ r + r:s, data = D, family = binomial())
+fit1s <- glm(y ~ r + s, data = D, family = binomial())
+fit2s <- glm(y ~ r + r:s + s, data = D, family = binomial())
 ```
 
 ```{r}
@@ -191,7 +192,7 @@ b1s <- unname(coef(fit1s))
 b2s <- unname(coef(fit2s))
 
 EY_R0_2 <- expit(b2[1])
-EY_R1_2 <- (1 - w) * expit(b2[1] + b2[2]) + w * expit(b2[1] + b2[3])
+EY_R1_2 <- (1 - w) * expit(b2[1] + b2[2]) + w * expit(b2[1] + b2[2] + b2[3])
 
 EY_R0_1_S0 <- expit(b1s[1])
 EY_R0_1_S1 <- expit(b1s[1] + b1s[3])
@@ -200,16 +201,12 @@ EY_R1_1_S1 <- expit(b1s[1] + b1s[2] + b1s[3])
 EY_R0_1 <- (1 - w_s1) * EY_R0_1_S0 + w_s1 * EY_R0_1_S1
 EY_R1_1 <- (1 - w_s2) * EY_R1_1_S0 + w_s2 * EY_R1_1_S1
 
-EY_R0_2_S0 <- expit(b2s[1])
-EY_R0_2_S1 <- expit(b2s[1] + b2s[4])
-EY_R1_2_S0 <- expit(b2s[1] + b2s[2]) # Pr(A = 2 | S = 0) = 0
-EY_R1_2_S1 <- expit(b2s[1] + b2s[3] + b2s[4]) # Pr(A = 2 | S = 1) = 1
-EY_R0_2 <- (1 - w_s1) * EY_R0_2_S0 + w_s1 * EY_R0_2_S1
-EY_R1_2 <- (1 - w_s2) * EY_R1_2_S0 + w_s2 * EY_R1_2_S1
-
-EY_R1_2_S0w <- expit(b2s[1] + (1 - w) * b2s[2] + w * b2s[3])
-EY_R1_2_S1w <- expit(b2s[1] + (1 - w) * b2s[2] + w * b2s[3] + b2s[4])
-EY_R1_2w <- (1 - w_s2) * EY_R1_2_S0w + w_s2 * EY_R1_2_S1w
+EY_R0_2s_S0 <- expit(b2s[1])
+EY_R0_2s_S1 <- expit(b2s[1] + b2s[3])
+EY_R1_2s_S0 <- expit(b2s[1] + b2s[2]) # Pr(A = 2 | S = 0) = 0
+EY_R1_2s_S1 <- expit(b2s[1] + b2s[2] + b2s[3] + b2s[4]) # Pr(A = 2 | S = 1) = 1
+EY_R0_2s <- (1 - w_s1) * EY_R0_2s_S0 + w_s1 * EY_R0_2s_S1
+EY_R1_2s <- (1 - w_s2) * EY_R1_2s_S0 + w_s2 * EY_R1_2s_S1
 
 rbind(
   "True conditional (S = 0) log-odds ratio" =
@@ -220,18 +217,18 @@ rbind(
   "True weighted log-odds ratio" =
     (1 - w) * qlogis(mean(D[a == 1]$y)) + w * qlogis(mean(D[a == 2]$y)) -
       qlogis(mean(D[r == 0]$y)),
-  "True weighted conditional log-odds ratio" =
+  "True avergage weighted log-odds ratio" =
     (1 - w) * (qlogis(mean(D[r == 1 & s == 0]$y)) - qlogis(mean(D[r == 0 & s == 0]$y))) +
       w * (qlogis(mean(D[r == 1 & s == 1]$y)) - qlogis(mean(D[r == 0 & s == 1]$y))),
   "fit1 marginal log-odds ratio" = b1[2],
   "fit2 marginal log-odds ratio" = qlogis(EY_R1_2) - qlogis(EY_R0_2),
-  "fit2 conditional (weighted) log-odds ratio" = (1 - w) * b2[2] + w * b2[3],
+  "fit2 conditional (weighted) log-odds ratio" = b2[2] + w * b2[3],
   "fit1s conditional log-odds ratio" = b1s[2], # Don't know what this targets
   "fit1s marginal log-odds ratio" = qlogis(EY_R1_1) - qlogis(EY_R0_1),
-  "fit2s conditional (S = 0) log-odds ratio" = qlogis(EY_R1_2_S0) - qlogis(EY_R0_2_S0),
-  "fit2s conditional (S = 1) log-odds ratio" = qlogis(EY_R1_2_S1) - qlogis(EY_R0_2_S1),
-  "fit2s marginal log-odds ratio" = qlogis(EY_R1_2) - qlogis(EY_R0_2),
-  "fit2s conditional (weighted) log-odds ratio" = (1 - w) * b2s[2] + w * b2s[3]
+  "fit2s conditional (S = 0) log-odds ratio" = qlogis(EY_R1_2s_S0) - qlogis(EY_R0_2s_S0),
+  "fit2s conditional (S = 1) log-odds ratio" = qlogis(EY_R1_2s_S1) - qlogis(EY_R0_2s_S1),
+  "fit2s marginal log-odds ratio" = qlogis(EY_R1_2s) - qlogis(EY_R0_2s),
+  "fit2s avergage (weighted) log-odds ratio" = b2s[2] + w * b2s[4]
 )
 ```
 
@@ -240,10 +237,10 @@ rbind(
 #| code-summary: Simulate effect
 set.seed(123)
 D <- generate_data_1()
-fit1 <- glm(y ~ r_fac, data = D, family = binomial())
-fit2 <- glm(y ~ a_fac, data = D, family = binomial())
-fit1s <- glm(y ~ r_fac + s_fac, data = D, family = binomial())
-fit2s <- glm(y ~ a_fac + s_fac, data = D, family = binomial())
+fit1 <- glm(y ~ r, data = D, family = binomial())
+fit2 <- glm(y ~ r + r:s, data = D, family = binomial())
+fit1s <- glm(y ~ r + s, data = D, family = binomial())
+fit2s <- glm(y ~ r + r:s + s, data = D, family = binomial())
 ```
 
 ```{r}
@@ -260,7 +257,7 @@ b1s <- unname(coef(fit1s))
 b2s <- unname(coef(fit2s))
 
 EY_R0_2 <- expit(b2[1])
-EY_R1_2 <- (1 - w) * expit(b2[1] + b2[2]) + w * expit(b2[1] + b2[3])
+EY_R1_2 <- (1 - w) * expit(b2[1] + b2[2]) + w * expit(b2[1] + b2[2] + b2[3])
 
 EY_R0_1_S0 <- expit(b1s[1])
 EY_R0_1_S1 <- expit(b1s[1] + b1s[3])
@@ -269,16 +266,12 @@ EY_R1_1_S1 <- expit(b1s[1] + b1s[2] + b1s[3])
 EY_R0_1 <- (1 - w_s1) * EY_R0_1_S0 + w_s1 * EY_R0_1_S1
 EY_R1_1 <- (1 - w_s2) * EY_R1_1_S0 + w_s2 * EY_R1_1_S1
 
-EY_R0_2_S0 <- expit(b2s[1])
-EY_R0_2_S1 <- expit(b2s[1] + b2s[4])
-EY_R1_2_S0 <- expit(b2s[1] + b2s[2]) # Pr(A = 2 | S = 0) = 0
-EY_R1_2_S1 <- expit(b2s[1] + b2s[3] + b2s[4]) # Pr(A = 2 | S = 1) = 1
-EY_R0_2 <- (1 - w_s1) * EY_R0_2_S0 + w_s1 * EY_R0_2_S1
-EY_R1_2 <- (1 - w_s2) * EY_R1_2_S0 + w_s2 * EY_R1_2_S1
-
-EY_R1_2_S0w <- expit(b2s[1] + (1 - w) * b2s[2] + w * b2s[3])
-EY_R1_2_S1w <- expit(b2s[1] + (1 - w) * b2s[2] + w * b2s[3] + b2s[4])
-EY_R1_2w <- (1 - w_s2) * EY_R1_2_S0w + w_s2 * EY_R1_2_S1w
+EY_R0_2s_S0 <- expit(b2s[1])
+EY_R0_2s_S1 <- expit(b2s[1] + b2s[3])
+EY_R1_2s_S0 <- expit(b2s[1] + b2s[2]) # Pr(A = 2 | S = 0) = 0
+EY_R1_2s_S1 <- expit(b2s[1] + b2s[2] + b2s[3] + b2s[4]) # Pr(A = 2 | S = 1) = 1
+EY_R0_2s <- (1 - w_s1) * EY_R0_2s_S0 + w_s1 * EY_R0_2s_S1
+EY_R1_2s <- (1 - w_s2) * EY_R1_2s_S0 + w_s2 * EY_R1_2s_S1
 
 rbind(
   "True conditional (S = 0) log-odds ratio" =
@@ -289,22 +282,33 @@ rbind(
   "True weighted log-odds ratio" =
     (1 - w) * qlogis(mean(D[a == 1]$y)) + w * qlogis(mean(D[a == 2]$y)) -
       qlogis(mean(D[r == 0]$y)),
-  "True weighted conditional log-odds ratio" =
+  "True average weighted log-odds ratio" =
     (1 - w) * (qlogis(mean(D[r == 1 & s == 0]$y)) - qlogis(mean(D[r == 0 & s == 0]$y))) +
       w * (qlogis(mean(D[r == 1 & s == 1]$y)) - qlogis(mean(D[r == 0 & s == 1]$y))),
   "fit1 marginal log-odds ratio" = b1[2],
   "fit2 marginal log-odds ratio" = qlogis(EY_R1_2) - qlogis(EY_R0_2),
-  "fit2 conditional (weighted) log-odds ratio" = (1 - w) * b2[2] + w * b2[3],
+  "fit2 conditional (weighted) log-odds ratio" = b2[2] + w * b2[3],
   "fit1s conditional log-odds ratio" = b1s[2], # Don't know what this targets
   "fit1s marginal log-odds ratio" = qlogis(EY_R1_1) - qlogis(EY_R0_1),
-  "fit2s conditional (S = 0) log-odds ratio" = qlogis(EY_R1_2_S0) - qlogis(EY_R0_2_S0),
-  "fit2s conditional (S = 1) log-odds ratio" = qlogis(EY_R1_2_S1) - qlogis(EY_R0_2_S1),
-  "fit2s marginal log-odds ratio" = qlogis(EY_R1_2) - qlogis(EY_R0_2),
-  "fit2s conditional (weighted) log-odds ratio" = (1 - w) * b2s[2] + w * b2s[3]
+  "fit2s conditional (S = 0) log-odds ratio" = qlogis(EY_R1_2s_S0) - qlogis(EY_R0_2s_S0),
+  "fit2s conditional (S = 1) log-odds ratio" = qlogis(EY_R1_2s_S1) - qlogis(EY_R0_2s_S1),
+  "fit2s marginal log-odds ratio" = qlogis(EY_R1_2s) - qlogis(EY_R0_2s),
+  "fit2s average (weighted) log-odds ratio" = b2s[2] + w * b2s[4]
 )
 ```
 
 So in the basic case, as $n\to\infty$, these models are all in a sense equivalent, in that they are consistent for the treatment efffects of interest.
+
+More generally, can just use g-computation rather than analytic expressions
+
+```{r}
+c(
+  "G-comp marginal mean" = avg_comparisons(fit2s, variables = "r", comparison = "lnoravg")$estimate,
+  "G-comp average log-odds" = avg_comparisons(fit2s, variables = "r", comparison = "lnor")$estimate,
+  "G-comp conditional average log-odds" =
+    avg_comparisons(fit2s, variables = "r", comparison = "lnor", by = "s")$estimate
+)
+```
 
 ## Covariate
 
@@ -377,73 +381,44 @@ set.seed(6124)
 D <- generate_data_1(
   f = \(s, a, x) -1 + s + x + 0.25 * I(a == 1) + 0.75 * I(a == 2)
 )
-fit1 <- glm(y ~ r_fac + x, data = D, family = binomial())
-fit2 <- glm(y ~ a_fac + x, data = D, family = binomial())
-fit1s <- glm(y ~ r_fac + s_fac + x, data = D, family = binomial())
-fit2s <- glm(y ~ a_fac + s_fac + x, data = D, family = binomial())
+fit1 <- glm(y ~ r + x, data = D, family = binomial())
+fit2 <- glm(y ~ r + r:s + x, data = D, family = binomial())
+fit1s <- glm(y ~ r + s + x, data = D, family = binomial())
+fit2s <- glm(y ~ r + s + r:s + x, data = D, family = binomial())
 ```
 
 ```{r}
 #| label: generate-data-2-quantities
 #| code-summary: Effect quantities
-
-w <- mean(D$a == 2) / mean(D$r == 1)
-w_s <- mean(D$s == 1)
-w_s_x0_r0 <- mean(D[x==0&r==0]$s)
-w_s_x1_r0 <- mean(D[x==1&r==0]$s)
-w_s_x0_r1 <- mean(D[x==0&r==1]$s)
-w_s_x1_r1 <- mean(D[x==1&r==1]$s)
-
-w_x0 <- mean(D$x == 0)
-w_x1 <- mean(D$x == 1)
-w_a1_x0 <- mean(D[x == 0]$a == 1) / mean(D[x == 0]$r == 1)
-w_a1_x1 <- mean(D[x == 1]$a == 1) / mean(D[x == 1]$r == 1)
-w_a2_x0 <- mean(D[x == 0]$a == 2) / mean(D[x == 0]$r == 1)
-w_a2_x1 <- mean(D[x == 1]$a == 2) / mean(D[x == 1]$r == 1)
-
-b1 <- unname(coef(fit1))
-b2 <- unname(coef(fit2))
-b1s <- unname(coef(fit1s))
-b2s <- unname(coef(fit2s))
-
-EY_R0_1_X0 <- expit(b1[1])
-EY_R0_1_X1 <- expit(b1[1] + b1[3])
-EY_R1_1_X0 <- expit(b1[1] + b1[2])
-EY_R1_1_X1 <- expit(b1[1] + b1[2] + b1[3])
-EY_R0_1 <- w_x0 * EY_R0_1_X0 + w_x1 * EY_R0_1_X1
-EY_R1_1 <- w_x0 * EY_R1_1_X0 + w_x1 * EY_R1_1_X1
-
-EY_R0_2_X0 <- expit(b2[1])
-EY_R0_2_X1 <- expit(b2[1] + b2[4])
-EY_R1_2_X0 <- w_a1_x0 * expit(b2[1] + b2[2]) + w_a2_x0 * expit(b2[1] + b2[3])
-EY_R1_2_X1 <- w_a1_x1 * expit(b2[1] + b2[2] + b2[4]) + w_a2_x1 * expit(b2[1] + b2[3] + b2[4])
-EY_R0_2 <- w_x0 * EY_R0_2_X0 + w_x1 * EY_R0_2_X1
-EY_R1_2 <- w_x0 * EY_R1_2_X0 + w_x1 * EY_R1_2_X1
-
-EY_R0_2s_X0 <- expit(b2s[1]) * (1 - w_s_x0_r0) + expit(b2s[1] + b2s[4]) * w_s_x0_r0
-EY_R0_2s_X1 <- expit(b2s[1] + b2s[5]) * (1 - w_s_x1_r0) + expit(b2s[1] + b2s[4] + b2s[5]) * w_s_x1_r0
-EY_R1_2s_X0 <- expit(b2s[1] + b2s[2]) * (1 - w_s_x0_r1) + expit(b2s[1] + b2s[3] + b2s[4]) * w_s_x0_r1
-EY_R1_2s_X1 <- expit(b2s[1] + b2s[2] + b2s[5]) * (1 - w_s_x1_r1) + expit(b2s[1] + b2s[3] + b2s[4] + b2s[5]) * w_s_x1_r1
-EY_R0_2s <- w_x0 * EY_R0_2s_X0 + w_x1 * EY_R0_2s_X1
-EY_R1_2s <- w_x0 * EY_R1_2s_X0 + w_x1 * EY_R1_2s_X1
-
-rbind(
-  "True conditional (X = 0) log-odds ratio" =
-    qlogis(mean(D[r == 1 & x == 0]$y)) - qlogis(mean(D[r == 0 & x == 0]$y)),
-  "True conditional (X = 1) log-odds ratio" =
-    qlogis(mean(D[r == 1 & x == 1]$y)) - qlogis(mean(D[r == 0 & x == 1]$y)),
-  "True marginal log-odds ratio" = qlogis(mean(D[r == 1]$y)) - qlogis(mean(D[r == 0]$y)),
-  "fit1 conditional log-odds ratio" = b1[2],
-  "fit1 marginal log-odds ratio" = qlogis(EY_R1_1) - qlogis(EY_R0_1),
-  "fit2 conditional (X = 0) log-odds ratio" = qlogis(EY_R1_2_X0) - qlogis(EY_R0_2_X0),
-  "fit2 conditional (X = 1) log-odds ratio" = qlogis(EY_R1_2_X1) - qlogis(EY_R0_2_X1),
-  "fit2 marginal log-odds ratio" = qlogis(EY_R1_2) - qlogis(EY_R0_2),
-  "fit2 conditional (weighted) log-odds ratio" = (1 - w) * b2[2] + w * b2[3],
-  "fit1s conditional log-odds ratio" = b1s[2],
-  "fit2s conditional (X = 0) log-odds ratio" = qlogis(EY_R1_2s_X0) - qlogis(EY_R0_2s_X0),
-  "fit2s conditional (X = 1) log-odds ratio" = qlogis(EY_R1_2s_X1) - qlogis(EY_R0_2s_X1),
-  "fit2s marginal log-odds ratio" = qlogis(EY_R1_2s) - qlogis(EY_R0_2s)
+tt <- cbind(
+  qlogis(mean(D[r==1]$y)) - qlogis(mean(D[r==0]$y)),
+  NA,
+  qlogis(mean(D[r==1 & x == 0]$y)) - qlogis(mean(D[r==0 & x == 0]$y)),
+  qlogis(mean(D[r==1 & x == 1]$y)) - qlogis(mean(D[r==0 & x == 1]$y))
 )
+rownames(tt) <- "True"
+m1 <- rbind(
+  avg_comparisons(fit1, variables = "r", comparison = "lnoravg")$estimate,
+  avg_comparisons(fit2, variables = "r", comparison = "lnoravg")$estimate,
+  avg_comparisons(fit1s, variables = "r", comparison = "lnoravg")$estimate,
+  avg_comparisons(fit2s, variables = "r", comparison = "lnoravg")$estimate
+)
+m2 <- rbind(
+  avg_comparisons(fit1, variables = "r", comparison = "lnor")$estimate,
+  avg_comparisons(fit2, variables = "r", comparison = "lnor")$estimate,
+  avg_comparisons(fit1s, variables = "r", comparison = "lnor")$estimate,
+  avg_comparisons(fit2s, variables = "r", comparison = "lnor")$estimate
+)
+m3 <- rbind(
+  avg_comparisons(fit1, variables = "r", comparison = "lnoravg", by = "x")$estimate,
+  avg_comparisons(fit2, variables = "r", comparison = "lnoravg", by = "x")$estimate,
+  avg_comparisons(fit1s, variables = "r", comparison = "lnoravg", by = "x")$estimate,
+  avg_comparisons(fit2s, variables = "r", comparison = "lnoravg", by = "x")$estimate
+)
+m <- cbind(m1, m2, m3)
+colnames(m) <- c("Marginal log-odds ratio", "Average log-odds ratio", "Conditional (X = 0)", "Conditional (X = 1)")
+rownames(m) <- c("fit1", "fit2", "fit1s", "fit2s")
+round(rbind(tt, m), 3)
 ```
 
 ## Unmeasured Confounder
@@ -515,22 +490,30 @@ so $\beta_1$ is the shift associated with one-stage long duration, $\beta_2$ the
 
 In this case we could compare (randomised comparison) either: revision long vs. DAIR or revision short vs. DAIR, but no other combinations.
 
+$$
+\begin{aligned}
+\mathbb{E}[Y|R=1,D=0] &= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1 + \beta_2s)\mathbb{P}(S=s|R=1,D=0) \\
+\mathbb{E}[Y|R=1,D=1] &= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1 + \beta_2s + \beta_3 + \beta_4s)\mathbb{P}(S=s|R=1,D=1)
+\end{aligned}
+$$
+
 ```{r}
 #| label: generate-data-duration
 #| code-summary: Generate duration data
 
 generate_data_2 <- function(
     n = 1000000,
-    f = \(s, a, d) -1 + s + (a == 1) + 0.5 * (a == 2) - 0.5 * (a == 1) * (d == 1) - 0.25 * (a == 2) * (d == 1)) {
+    f = \(s, x, a, d) -1 + x + s + (a == 1) + 0.5 * (a == 2) - 0.5 * (a == 1) * (d == 1) - 0.25 * (a == 2) * (d == 1)) {
+  x <- rbinom(n, 1, 0.25)
   s <- rbinom(n, 1, 0.7)
   r <- rbinom(n, 1, 0.5)
   a <- r * (s + 1)
   d <- as.numeric((a > 0) * rbinom(n, 1, 0.5))
-  y0 <- rbinom(n, 1, plogis(f(s, 0, 0)))
-  y10 <- rbinom(n, 1, plogis(f(s, s + 1, 0)))
-  y11 <- rbinom(n, 1, plogis(f(s, s + 1, 1)))
+  y0 <- rbinom(n, 1, plogis(f(s, x, 0, 0)))
+  y10 <- rbinom(n, 1, plogis(f(s, x, s + 1, 0)))
+  y11 <- rbinom(n, 1, plogis(f(s, x, s + 1, 1)))
   y <- (1 - r) * y0 + r * ((1 - d) * y10 + d * y11)
-  D <- data.table(r = r, s = s, a = a, d = d, y0 = y0, y10 = y10, y11 = y11, y = y)[
+  D <- data.table(x = x, r = r, s = s, a = a, d = d, y0 = y0, y10 = y10, y11 = y11, y = y)[
     ,
     `:=`(
       a1d1 = as.numeric(a == 1 & d == 1),
@@ -544,9 +527,49 @@ generate_data_2 <- function(
   ]
 }
 set.seed(1246)
+D <- generate_data_2(f = \(s, x, a, d) -1 + s + x)
+fit2 <- glm(y ~ r + r:s + r:d + r:s:d, data = D, family = binomial())
+fit2s <- glm(y ~ r + r:s + r:d + r:s:d + s, data = D, family = binomial())
+```
+
+```{r}
+# Revision vs. DAIR
+avg_comparisons(fit2, variables = "r", comparison = "lnoravg")
+avg_comparisons(fit2s, variables = "r", comparison = "lnoravg")
+# Revision (long) vs. DAIR and Revision (short) vs. DAIR
+avg_comparisons(fit2, variables = "r", by = "d", comparison = "lnoravg")
+avg_comparisons(fit2s, variables = "r", by = "d", comparison = "lnoravg")
+# Conditional on X
+avg_comparisons(fit2, variables = "r", by = c("d", "x"), comparison = "lnoravg")
+avg_comparisons(fit2s, variables = "r", by = c("d", "x"), comparison = "lnoravg")
+
+# Short vs Long (one-stage) and short vs. long (two-stage)
+avg_comparisons(fit2, variables = "d", by = "s", comparison = "lnoravg")
+avg_comparisons(fit2s, variables = "d", by = "s", comparison = "lnoravg")
+
+avg_comparisons(fit2, variables = "d", by = c("s", "x"), comparison = "lnoravg")
+```
+
+```{r}
 D <- generate_data_2()
-fit1 <- glm(y ~ r_fac + a1d1 + a2d1, data = D, family = binomial())
-fit2 <- glm(y ~ a_fac + a1d1 + a2d1, data = D, family = binomial())
-fit1s <- glm(y ~ r_fac + a1d1 + a2d1 + s_fac, data = D, family = binomial())
-fit2s <- glm(y ~ a_fac + a1d1 + a2d1 + s_fac, data = D, family = binomial())
+fit2 <- glm(y ~ r + r:s + r:d + r:s:d, data = D, family = binomial())
+fit2s <- glm(y ~ r + r:s + r:d + r:s:d + s, data = D, family = binomial())
+```
+
+```{r}
+# Revision vs. DAIR
+avg_comparisons(fit2, variables = "r", comparison = "lnoravg")
+avg_comparisons(fit2s, variables = "r", comparison = "lnoravg")
+# Revision (long) vs. DAIR and Revision (short) vs. DAIR
+avg_comparisons(fit2, variables = "r", by = "d", comparison = "lnoravg")
+avg_comparisons(fit2s, variables = "r", by = "d", comparison = "lnoravg")
+# Conditional on X
+avg_comparisons(fit2, variables = "r", by = c("d", "x"), comparison = "lnoravg")
+avg_comparisons(fit2s, variables = "r", by = c("d", "x"), comparison = "lnoravg")
+
+# Short vs Long (one-stage) and short vs. long (two-stage)
+avg_comparisons(fit2, variables = "d", by = "s", comparison = "lnoravg")
+avg_comparisons(fit2s, variables = "d", by = "s", comparison = "lnoravg")
+
+avg_comparisons(fit2, variables = "d", by = c("s", "x"), comparison = "lnoravg")
 ```
