@@ -145,13 +145,13 @@ expit <- function(x) plogis(x)
 # Precision will of course vary by approach at small sample sizes
 generate_data_1 <- function(
     n = 1000000,
-    f = \(s, a, x) -1 + s + 0.25 * I(a == 1) + 0.75 * I(a == 2)) {
+    f = \(r, s, x) -1 + s + 0.25 * r + 0.25 * r * s) {
   s <- rbinom(n, 1, 0.7)
   r <- rbinom(n, 1, 0.5)
   x <- rbinom(n, 1, 0.25)
   a <- r * (s + 1)
-  y0 <- rbinom(n, 1, plogis(f(s, 0, x)))
-  y1 <- rbinom(n, 1, plogis(f(s, s + 1, x)))
+  y0 <- rbinom(n, 1, plogis(f(0, s, x)))
+  y1 <- rbinom(n, 1, plogis(f(1, s, x)))
   y <- (1 - r) * y0 + r * y1
   w <- mean(s) # Selection probability
   D <- data.table(r = r, x = x, s = s, a = a, y0 = y0, y1 = y1, y = y)[
@@ -171,7 +171,7 @@ generate_data_1 <- function(
 #| label: simulate-1-null
 #| code-summary: Simulate null effect
 set.seed(123)
-D <- generate_data_1(f = \(s, a, x) -1 + s)
+D <- generate_data_1(f = \(r, s, x) -1 + s)
 fit1 <- glm(y ~ r, data = D, family = binomial())
 fit2 <- glm(y ~ r + r:s, data = D, family = binomial())
 fit1s <- glm(y ~ r + s, data = D, family = binomial())
@@ -297,7 +297,7 @@ rbind(
 )
 ```
 
-So in the basic case, as $n\to\infty$, these models are all in a sense equivalent, in that they are consistent for the treatment efffects of interest.
+So in the basic case, as $n\to\infty$, these models are all in a sense equivalent, in that they are consistent for the treatment effects of interest.
 
 More generally, can just use g-computation rather than analytic expressions
 
@@ -372,14 +372,12 @@ $$
 
 ### Example
 
-Forget $S$ for the moment.
-
 ```{r}
 #| label: generate-data-2
 #| code-summary: Generate data with covariate
 set.seed(6124)
 D <- generate_data_1(
-  f = \(s, a, x) -1 + s + x + 0.25 * I(a == 1) + 0.75 * I(a == 2)
+  f = \(r, s, x) -1 + s + x + 0.25 * r + 0.25 * r * s
 )
 fit1 <- glm(y ~ r + x, data = D, family = binomial())
 fit2 <- glm(y ~ r + r:s + x, data = D, family = binomial())
@@ -387,14 +385,16 @@ fit1s <- glm(y ~ r + s + x, data = D, family = binomial())
 fit2s <- glm(y ~ r + s + r:s + x, data = D, family = binomial())
 ```
 
+Using G-computation to marginalise over $S$ and $X$.
+
 ```{r}
 #| label: generate-data-2-quantities
 #| code-summary: Effect quantities
 tt <- cbind(
-  qlogis(mean(D[r==1]$y)) - qlogis(mean(D[r==0]$y)),
+  qlogis(mean(D[r == 1]$y)) - qlogis(mean(D[r == 0]$y)),
   NA,
-  qlogis(mean(D[r==1 & x == 0]$y)) - qlogis(mean(D[r==0 & x == 0]$y)),
-  qlogis(mean(D[r==1 & x == 1]$y)) - qlogis(mean(D[r==0 & x == 1]$y))
+  qlogis(mean(D[r == 1 & x == 0]$y)) - qlogis(mean(D[r == 0 & x == 0]$y)),
+  qlogis(mean(D[r == 1 & x == 1]$y)) - qlogis(mean(D[r == 0 & x == 1]$y))
 )
 rownames(tt) <- "True"
 m1 <- rbind(
@@ -455,7 +455,7 @@ Given the randomisation, this does not really change anything, except making exp
 
 ## Duration
 
-Duration, $D$, is randomised, however, the duration options depends upon the chosen revision type, $S$. So it is random conditional on $S$. Nothing else alters the distribution of $D$. We expect that duration has an effect on the outcome. Below we just use $D=0$ for long and $D=1$ for short, but note that the meaning of these is conditional on $S$/$A$ (i.e. short for one-stage different to short for two-stage)
+Duration, $D$, is randomised, however, the duration options depends upon assignment to revision $R$, and the chosen revision type, $S$. So it is random conditional on $R$ and $S$. Nothing else alters the distribution of $D$. We expect that duration has an effect on the outcome. Below we just use $D=0$ for long and $D=1$ for short, but note that the meaning of these is conditional on $R/S$ (i.e. short for one-stage different to short for two-stage and only applies to revision)
 
 ```{mermaid}
 %%| label: fig-scenario-3
@@ -469,6 +469,7 @@ Duration, $D$, is randomised, however, the duration options depends upon the cho
 flowchart LR
   R --> A --> Y
   S --> A & D
+  R --> D
   D --> Y
   UD((U<sub>D)) -.-> D
   US((U<sub>S)) -.-> S
@@ -476,24 +477,45 @@ flowchart LR
   UY((U<sub>Y)) -.-> Y
 ```
 
-Now have two interventions: $R$ which has downstream unknown effects due to revision type assigned, and $D$ which is randomised, but it's effect is a consequence of revision type.
+Now there are two interventions: $R$ which has downstream unknown effects partly due to the unknown revision type, $S$, which is selected, and $D$ which is randomised.
 
-The simplest approach is to analyse these separately. I.e. restrict the analysis to only those patients who were assigned to one-stage, then have an RCT for duration in that subset. Similarly, restrict analysis to only those assigned to two-stage, then have an RCT for duration in that subset. However, we would like to have a joint model so that other effects can be shared (site/surgeon/age/whatever else). In the joint model, duration effect needs to be conditional on revision type.
+The simplest approach is to analyse these separately. I.e. restrict the analysis to only those patients who were assigned to one-stage, then have an RCT for duration in embedded in that subset. Similarly, restrict analysis to only those assigned to two-stage, then have an RCT for duration in that subset. However, we would like to have a joint model so that other effects can be shared (other domains/site/surgeon/age/whatever else). In the joint model, duration effect needs to be conditional on revision type.
 
 Say the true model were something like
 
 $$
-\mathbb{E}[Y|R,S,D] = \text{expit}(\beta_0 + \beta_1R + \beta_2RS + \beta_3RD + \beta_4RDS)
+\mathbb{E}[Y|R,S,D] = \text{expit}(\beta_0 + \beta_1S + \beta_2R + \beta_3RS + \beta_4RD + \beta_5RDS)
 $$
 
-so $\beta_1$ is the shift associated with one-stage long duration, $\beta_2$ the shift associated with two-stage long duration, $\beta_3$ the relative shift for short duration given one-stage, and $\beta_4$ the relative shift for short duration given two-stage.
+so
 
-In this case we could compare (randomised comparison) either: revision long vs. DAIR or revision short vs. DAIR, but no other combinations.
+-   $\beta_2$ is the shift associated with revision and long duration
+-   $\beta_3$ the additional shift associated with two-stage long duration,
+-   $\beta_4$ the relative shift for short duration given revision,
+-   $\beta_5$ the relative shift for short duration given two-stage.
+
+We might choose to setup the design matrix so that it is orthonormal so that a-priori we don't assign more uncertainty to a specific revision type. E.g.
+
+$$
+\mathbb{E}[Y|R,S] = \text{expit}(\beta_0 + \beta_1(S - 0.5) + \beta_2R + \beta_3R(S-0.5) + \beta_4R(D-0.5) + \beta_5R(D-0.5)(S-0.5)
+$$
+
+but for simplicity, not doing this here.
+
+In this case we could compare (randomised comparison) any of: 
+
+- revision long vs. DAIR
+- revision short vs. DAIR, but no other combinations of revision.
+- one-stage short + two-stage long vs. DAIR
+- two-stage short + one-stage long vs. DAIR
+
+Always needs to marginalise over $S$.
 
 $$
 \begin{aligned}
-\mathbb{E}[Y|R=1,D=0] &= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1 + \beta_2s)\mathbb{P}(S=s|R=1,D=0) \\
-\mathbb{E}[Y|R=1,D=1] &= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1 + \beta_2s + \beta_3 + \beta_4s)\mathbb{P}(S=s|R=1,D=1)
+\mathbb{E}[Y|R=0] &= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1s)\mathbb{P}(S=s|R=0) \\
+\mathbb{E}[Y|R=1,D=0] &= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1s + \beta_2 + \beta_3s)\mathbb{P}(S=s|R=1,D=0) \\
+\mathbb{E}[Y|R=1,D=1] &= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1s + \beta_2 + \beta_3s + \beta_4 + \beta_5s)\mathbb{P}(S=s|R=1,D=1)
 \end{aligned}
 $$
 
@@ -503,15 +525,15 @@ $$
 
 generate_data_2 <- function(
     n = 1000000,
-    f = \(s, x, a, d) -1 + x + s + (a == 1) + 0.5 * (a == 2) - 0.5 * (a == 1) * (d == 1) - 0.25 * (a == 2) * (d == 1)) {
+    f = \(x, r, s, d) -1 + x + s + r + 0.5 * r * s - 0.5 * r * d - 0.25 * r * s * d) {
   x <- rbinom(n, 1, 0.25)
   s <- rbinom(n, 1, 0.7)
   r <- rbinom(n, 1, 0.5)
   a <- r * (s + 1)
   d <- as.numeric((a > 0) * rbinom(n, 1, 0.5))
-  y0 <- rbinom(n, 1, plogis(f(s, x, 0, 0)))
-  y10 <- rbinom(n, 1, plogis(f(s, x, s + 1, 0)))
-  y11 <- rbinom(n, 1, plogis(f(s, x, s + 1, 1)))
+  y0 <- rbinom(n, 1, plogis(f(x, 0, s, 0)))
+  y10 <- rbinom(n, 1, plogis(f(x, 1, s, 0)))
+  y11 <- rbinom(n, 1, plogis(f(x, 1, s, 1)))
   y <- (1 - r) * y0 + r * ((1 - d) * y10 + d * y11)
   D <- data.table(x = x, r = r, s = s, a = a, d = d, y0 = y0, y10 = y10, y11 = y11, y = y)[
     ,
@@ -522,54 +544,75 @@ generate_data_2 <- function(
       a_fac = factor(a),
       s_fac = factor(s),
       a_cen = r * (a - 1 - mean(a[r == 1] - 1)),
-      s_cen = s - mean(s)
+      s_cen = s - mean(s),
+      s_ort = s - 0.5
     )
   ]
 }
 set.seed(1246)
-D <- generate_data_2(f = \(s, x, a, d) -1 + s + x)
-fit2 <- glm(y ~ r + r:s + r:d + r:s:d, data = D, family = binomial())
-fit2s <- glm(y ~ r + r:s + r:d + r:s:d + s, data = D, family = binomial())
+D <- generate_data_2(f = \(x, r, s, d) -1 + s + x)
+fit2 <- glm(y ~ x + r + r:s + r:d + r:s:d, data = D, family = binomial())
+fit2s <- glm(y ~ x + s + r + r:s + r:d + r:s:d, data = D, family = binomial())
 ```
 
 ```{r}
 # Revision vs. DAIR
-avg_comparisons(fit2, variables = "r", comparison = "lnoravg")
-avg_comparisons(fit2s, variables = "r", comparison = "lnoravg")
+rbind(
+  avg_comparisons(fit2, variables = "r", comparison = "lnoravg"),
+  avg_comparisons(fit2s, variables = "r", comparison = "lnoravg")
+)
 # Revision (long) vs. DAIR and Revision (short) vs. DAIR
-avg_comparisons(fit2, variables = "r", by = "d", comparison = "lnoravg")
-avg_comparisons(fit2s, variables = "r", by = "d", comparison = "lnoravg")
+rbind(
+  avg_comparisons(fit2, variables = "r", by = "d", comparison = "lnoravg"),
+  avg_comparisons(fit2s, variables = "r", by = "d", comparison = "lnoravg")
+)
+
 # Conditional on X
-avg_comparisons(fit2, variables = "r", by = c("d", "x"), comparison = "lnoravg")
-avg_comparisons(fit2s, variables = "r", by = c("d", "x"), comparison = "lnoravg")
+rbind(
+  avg_comparisons(fit2, variables = "r", by = c("d", "x"), comparison = "lnoravg"),
+  avg_comparisons(fit2s, variables = "r", by = c("d", "x"), comparison = "lnoravg")
+)
 
 # Short vs Long (one-stage) and short vs. long (two-stage)
-avg_comparisons(fit2, variables = "d", by = "s", comparison = "lnoravg")
-avg_comparisons(fit2s, variables = "d", by = "s", comparison = "lnoravg")
+rbind(
+  avg_comparisons(fit2, variables = "d", by = "s", comparison = "lnoravg"),
+  avg_comparisons(fit2s, variables = "d", by = "s", comparison = "lnoravg")
+)
 
+# Short vs long conditional on x
 avg_comparisons(fit2, variables = "d", by = c("s", "x"), comparison = "lnoravg")
 ```
 
 ```{r}
 D <- generate_data_2()
-fit2 <- glm(y ~ r + r:s + r:d + r:s:d, data = D, family = binomial())
-fit2s <- glm(y ~ r + r:s + r:d + r:s:d + s, data = D, family = binomial())
+fit2 <- glm(y ~ x + r + r:s + r:d + r:s:d, data = D, family = binomial())
+fit2s <- glm(y ~ x + s + r + r:s + r:d + r:s:d, data = D, family = binomial())
 ```
 
 ```{r}
 # Revision vs. DAIR
-avg_comparisons(fit2, variables = "r", comparison = "lnoravg")
-avg_comparisons(fit2s, variables = "r", comparison = "lnoravg")
+rbind(
+  avg_comparisons(fit2, variables = "r", comparison = "lnoravg"),
+  avg_comparisons(fit2s, variables = "r", comparison = "lnoravg")
+)
 # Revision (long) vs. DAIR and Revision (short) vs. DAIR
-avg_comparisons(fit2, variables = "r", by = "d", comparison = "lnoravg")
-avg_comparisons(fit2s, variables = "r", by = "d", comparison = "lnoravg")
+rbind(
+  avg_comparisons(fit2, variables = "r", by = "d", comparison = "lnoravg"),
+  avg_comparisons(fit2s, variables = "r", by = "d", comparison = "lnoravg")
+)
+
 # Conditional on X
-avg_comparisons(fit2, variables = "r", by = c("d", "x"), comparison = "lnoravg")
-avg_comparisons(fit2s, variables = "r", by = c("d", "x"), comparison = "lnoravg")
+rbind(
+  avg_comparisons(fit2, variables = "r", by = c("d", "x"), comparison = "lnoravg"),
+  avg_comparisons(fit2s, variables = "r", by = c("d", "x"), comparison = "lnoravg")
+)
 
 # Short vs Long (one-stage) and short vs. long (two-stage)
-avg_comparisons(fit2, variables = "d", by = "s", comparison = "lnoravg")
-avg_comparisons(fit2s, variables = "d", by = "s", comparison = "lnoravg")
+rbind(
+  avg_comparisons(fit2, variables = "d", by = "s", comparison = "lnoravg"),
+  avg_comparisons(fit2s, variables = "d", by = "s", comparison = "lnoravg")
+)
 
+# Short vs long conditional on x
 avg_comparisons(fit2, variables = "d", by = c("s", "x"), comparison = "lnoravg")
 ```
