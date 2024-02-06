@@ -722,3 +722,21 @@ rbind(
 # Short vs long conditional on x
 avg_comparisons(fit2, variables = "d", by = c("s", "x"), comparison = "lnoravg")
 ```
+
+## Silos
+
+The above has considered the late-acute silo in isolation. Suppose we also had a chronic silo with the same limitations: randomise to DAIR vs. revision, then revision type is determined by the surgeon/patient, duration is randomised. Then nothing really changes, we can just stratify by silo. For lack of letters, let $G$ denote group (silo). Then
+
+$$
+\mathbb{E}[Y|G=g,R,S,D] = \text{expit}(\beta_{0,g} + \beta_{1,g}R + \beta_{2,g}S + \beta_{3,g}RS + \beta_{4,g}RD + \beta_{5,g}RSD + \gamma_g^\mathsf{T}X)
+$$
+
+We might choose to assume that some of the conditional effects are equal across groups. E.g. $\gamma_g=\gamma$ for all $g$. Or $\beta_{4,g} = \beta_4$ and $\beta_{5,g}=\beta_5$. Depends how realistic we think these assumptions may be and whether we have sufficient data to meaningfully estimate silo-specific effects.
+
+Perhaps the only new issue is that now $\mathbb{P}(S=s|G=1)\ne\mathbb{P}(S=s|G=2)$, so need to weight things within silo.
+
+## Revision Type
+
+In all the above I've been assuming that the revision type, $S$, is an attribute of the patient. E.g. all surgeons would choose the same $S$ for the same patient. More realistically, $S$ might also partly depend on the surgeon (e.g. say a surgeon would choose $S=1$ for all patients, but another would choose $S=0$ for all patients, now $S$ is conditional on the surgeon rather than the patient). Assume $S$ is an attribute of the patient/surgeon combination rather than either alone. Do we need to change anything? How to interpret "revision effect"? An average effect over patients and surgeons?
+
+Already expect that we should at least condition on the site/surgeon, but do we need anything extra to account for $S$? Distribution of $S$ conditional on surgeon?
