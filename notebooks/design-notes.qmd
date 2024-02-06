@@ -548,6 +548,16 @@ $$
 \end{aligned}
 $$
 
+Again, can alternatively consider the average conditional log-odds ratio
+
+$$
+\begin{aligned}
+\mathbb{E}\left[\ln\frac{\text{odds}(Y|R=1,S,D)}{\text{odds}(Y|R=0,S,D)}|D_0,D_1\right] &= \beta_2+\beta_3\mathbb{E}[S] + \beta_4D_0 + \beta_5D_1\mathbb{E}[S]
+\end{aligned}
+$$
+
+where I've made it explicit that $D_0$ (one-stage short) and $D_1$ (two-stage short) may differ.
+
 ```{r}
 #| label: generate-data-duration
 #| code-summary: Generate duration data
