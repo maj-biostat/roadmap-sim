@@ -380,13 +380,13 @@ window.Quarto = {
 <tr class="odd">
 <td>late</td>
 <td>knee</td>
-<td>0.3</td>
+<td>0.7</td>
 <td></td>
 </tr>
 <tr class="even">
 <td>late</td>
 <td>hip</td>
-<td>0.7</td>
+<td>0.3</td>
 <td></td>
 </tr>
 <tr class="odd">
@@ -428,7 +428,7 @@ window.Quarto = {
 </tr>
 <tr class="odd">
 <td>chronic</td>
-<td>Y</td>
+<td>N</td>
 </tr>
 </tbody>
 </table>
@@ -436,7 +436,7 @@ window.Quarto = {
 </section>
 <section id="surgery-domain-a" class="level2">
 <h2 class="anchored" data-anchor-id="surgery-domain-a">Surgery domain (A)</h2>
-<p>Allocation probabilities (conditional on entry into domain A) are shown below. Early silo does not receive randomisation and all early stage patients are assumed to receive DAIR.</p>
+<p>Allocation probabilities (conditional on entry into domain A) are shown below. Early stage patients do not receive randomisation and are assumed to receive DAIR. Chronic stage patients do not receive randomisation and are assumed to receive DAIR, one-stage and two-stage based on clinician assessment.</p>
 <div class="column" style="width:70%;">
 <table class="table-striped table-hover table">
 <caption>Allocation within domain A (<span class="math inline">\(\pi\)</span> denotes probability allocation to surgery type conditional on silo membership)</caption>
@@ -469,14 +469,20 @@ window.Quarto = {
 </tr>
 <tr class="even">
 <td>chronic</td>
-<td>one-stage</td>
-<td>0.5</td>
+<td>dair</td>
+<td>-</td>
 <td></td>
 </tr>
 <tr class="odd">
 <td>chronic</td>
+<td>one-stage</td>
+<td>-</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>chronic</td>
 <td>two-stage</td>
-<td>0.5</td>
+<td>-</td>
 <td></td>
 </tr>
 </tbody>
@@ -485,7 +491,8 @@ window.Quarto = {
 </section>
 <section id="intended-surgery" class="level2">
 <h2 class="anchored" data-anchor-id="intended-surgery">Intended surgery</h2>
-<p>Late stage infections will be randomised to DAIR vs revision where revision would be planned as one or two-stage, determined by the treating clinician, i.e.&nbsp;not randomised. As we do not know the assignment mechanism for one vs two-stage for the late-stage infection patients allocated to revision, we simply assume an equal chance of receiving one vs two stage<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
+<p>Late stage infections will be randomised to DAIR vs revision where revision would be planned as one or two-stage, determined by the treating clinician, i.e.&nbsp;not randomised.</p>
+<p>We do not know the assignment mechanism for one vs two-stage for the late-stage infection patients. We do the same for chronic stage patients.</p>
 <p>In all other cases, the intended surgery is set to allocated surgery.</p>
 <div class="column" style="width:70%;">
 <table class="table-striped table-hover table">
@@ -518,28 +525,35 @@ window.Quarto = {
 <td>late</td>
 <td>revision</td>
 <td>one-stage</td>
-<td>0.5</td>
+<td>0.3</td>
 <td></td>
 </tr>
 <tr class="even">
 <td>late</td>
 <td>revision</td>
 <td>two-stage</td>
-<td>0.5</td>
+<td>0.7</td>
 <td></td>
 </tr>
 <tr class="odd">
 <td>chronic</td>
-<td>one-stage</td>
-<td>one-stage</td>
-<td>-</td>
+<td>dair</td>
+<td>dair</td>
+<td>0.2</td>
 <td></td>
 </tr>
 <tr class="even">
 <td>chronic</td>
+<td>one-stage</td>
+<td>one-stage</td>
+<td>0.2</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>chronic</td>
 <td>two-stage</td>
 <td>two-stage</td>
-<td>-</td>
+<td>0.6</td>
 <td></td>
 </tr>
 </tbody>
@@ -734,8 +748,8 @@ $r_joint
       silo joint   p
 1:   early  knee 0.4
 2:   early   hip 0.6
-3:    late  knee 0.3
-4:    late   hip 0.7
+3:    late  knee 0.7
+4:    late   hip 0.3
 5: chronic  knee 0.5
 6: chronic   hip 0.5
 
@@ -757,8 +771,8 @@ $r_a_q
       silo    a   qa   p
 1:   early dair dair  NA
 2:    late dair dair  NA
-3:    late  rev  one 0.5
-4:    late  rev  two 0.5
+3:    late  rev  one 0.3
+4:    late  rev  two 0.7
 5: chronic  one  one  NA
 6: chronic  two  two  NA
 
@@ -800,98 +814,74 @@ $r_c
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>roadmap.data<span class="sc">::</span>get_design</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>function(N = 100000, pop_spec = NULL, idx_s = 1){
-
-  if(is.null(pop_spec)){
-    pop_spec &lt;- get_pop_spec()
-  }
-
-  d &lt;- data.table()
-  # pt id
-  d[, id := idx_s:(N+idx_s - 1)]
-  d[, silo := sample(pop_spec$r_silo$silo, size = N, replace = T, prob = pop_spec$r_silo$p)]
-  setkey(d, silo)
-  setkey(pop_spec$r_joint, silo)
-  setkey(pop_spec$r_ea, silo)
-  for(z in pop_spec$r_silo$silo){
-    d[z, joint :=
-        sample(pop_spec$r_joint[z, joint], size = .N, replace = T, prob = pop_spec$r_joint[z, p])
-    ]
-
-    # might as well set ea (eligibility for domain a)
-    d[z, ea := pop_spec$r_ea[z, rand]]
-  }
-
-  # Surgery domain (A)
-  setkey(pop_spec$r_a, silo)
-  d["early", a := "dair"]
-  z &lt;- "late"
-  d[z, a := sample(pop_spec$r_a[z, a], size = .N, replace = T, prob = pop_spec$r_a[z, p])]
-  z &lt;- "chronic"
-  d[z, a := sample(pop_spec$r_a[z, a], size = .N, replace = T, prob = pop_spec$r_a[z, p])]
-
-  # introduce the intended surgical approach (for late stage allocated to revision)
-  setkey(d, silo, a)
-  setkey(pop_spec$r_a_q, silo, a)
-  d[.("late", "rev"), qa :=
-      sample(pop_spec$r_a_q[.("late", "rev"), qa], size = .N, replace = T, prob = pop_spec$r_a_q[.("late", "rev"), p])]
-  d[is.na(qa), qa := copy(a)]
-
-  # Duration domain (B)
-  # eligibility based on a
-  d &lt;- merge(d, pop_spec$r_eb[, .(qa, eb = rand)], by = c("qa"), all.x = T)
-  setcolorder(d, c("id", "silo", "joint", "ea", "a", "qa","eb"))
-  setkey(d, id)
-
-  setkey(d, qa)
-  setkey(pop_spec$r_b, qa)
-  # all dair get 12wk
-  d["dair", b := pop_spec$r_b["dair", unique(b)]]
-
-  setkey(d, silo, qa)
-  setkey(pop_spec$r_b, silo, qa)
-
-  # do these separately so that triggers can coordinate silo specific adaptations
-  d[.("late", "one"), b := sample(
-    pop_spec$r_b[.("late", "one"), b], size = .N, replace = T,
-    prob = pop_spec$r_b[.("late", "one"), p])]
-  d[.("late", "two"), b := sample(
-    pop_spec$r_b[.("late", "two"), b], size = .N, replace = T,
-    prob = pop_spec$r_b[.("late", "two"), p])]
-
-  d[.("chronic", "one"), b := sample(
-    pop_spec$r_b[.("chronic", "one"), b], size = .N, replace = T,
-    prob = pop_spec$r_b[.("chronic", "one"), p])]
-  d[.("chronic", "two"), b := sample(
-    pop_spec$r_b[.("chronic", "two"), b], size = .N, replace = T,
-    prob = pop_spec$r_b[.("chronic", "two"), p])]
-
-  setkey(d, id)
-
-  # Antibiotic type domain (C)
-
-  # Here I make eligibility random to reflect that some of our cohort will not
-  # enter into this domain, irrespective of their randomisation in other domains.
-  # Each silo is allowed to have a different proportion of pts entering into
-  # domain C.
-  setkey(d, silo)
-  setkey(pop_spec$r_ec, silo)
-
-  for(z in pop_spec$r_ec$silo){
-    d[z, ec :=
-        sample(c("Y","N"), size = .N, replace = T, prob = c(pop_spec$r_ec[z, p], 1- pop_spec$r_ec[z, p]))
-    ]
-  }
-
-  d[ec == "Y",
-    c := sample(pop_spec$r_c[, c], size = .N, replace = T, prob = pop_spec$r_c[, p])]
-  d[ec == "N", c := "other"]
-
-  setkey(d, id)
-
-  d
+<pre><code>function (N = 1e+05, pop_spec = NULL, idx_s = 1) 
+{
+    if (is.null(pop_spec)) {
+        pop_spec &lt;- get_pop_spec()
+    }
+    d &lt;- data.table()
+    d[, `:=`(id, idx_s:(N + idx_s - 1))]
+    d[, `:=`(silo, sample(pop_spec$r_silo$silo, size = N, replace = T, 
+        prob = pop_spec$r_silo$p))]
+    setkey(d, silo)
+    setkey(pop_spec$r_joint, silo)
+    setkey(pop_spec$r_ea, silo)
+    for (z in pop_spec$r_silo$silo) {
+        d[z, `:=`(joint, sample(pop_spec$r_joint[z, joint], size = .N, 
+            replace = T, prob = pop_spec$r_joint[z, p]))]
+        d[z, `:=`(ea, pop_spec$r_ea[z, rand])]
+    }
+    setkey(pop_spec$r_a, silo)
+    d["early", `:=`(a, "dair")]
+    z &lt;- "late"
+    d[z, `:=`(a, sample(pop_spec$r_a[z, a], size = .N, replace = T, 
+        prob = pop_spec$r_a[z, p]))]
+    z &lt;- "chronic"
+    d[z, `:=`(a, sample(pop_spec$r_a[z, a], size = .N, replace = T, 
+        prob = pop_spec$r_a[z, p]))]
+    setkey(d, silo, a)
+    setkey(pop_spec$r_a_q, silo, a)
+    d[.("late", "rev"), `:=`(qa, sample(pop_spec$r_a_q[.("late", 
+        "rev"), qa], size = .N, replace = T, prob = pop_spec$r_a_q[.("late", 
+        "rev"), p]))]
+    d[is.na(qa), `:=`(qa, copy(a))]
+    d &lt;- merge(d, pop_spec$r_eb[, .(qa, eb = rand)], by = c("qa"), 
+        all.x = T)
+    setcolorder(d, c("id", "silo", "joint", "ea", "a", "qa", 
+        "eb"))
+    setkey(d, id)
+    setkey(d, qa)
+    setkey(pop_spec$r_b, qa)
+    d["dair", `:=`(b, pop_spec$r_b["dair", unique(b)])]
+    setkey(d, silo, qa)
+    setkey(pop_spec$r_b, silo, qa)
+    d[.("late", "one"), `:=`(b, sample(pop_spec$r_b[.("late", 
+        "one"), b], size = .N, replace = T, prob = pop_spec$r_b[.("late", 
+        "one"), p]))]
+    d[.("late", "two"), `:=`(b, sample(pop_spec$r_b[.("late", 
+        "two"), b], size = .N, replace = T, prob = pop_spec$r_b[.("late", 
+        "two"), p]))]
+    d[.("chronic", "one"), `:=`(b, sample(pop_spec$r_b[.("chronic", 
+        "one"), b], size = .N, replace = T, prob = pop_spec$r_b[.("chronic", 
+        "one"), p]))]
+    d[.("chronic", "two"), `:=`(b, sample(pop_spec$r_b[.("chronic", 
+        "two"), b], size = .N, replace = T, prob = pop_spec$r_b[.("chronic", 
+        "two"), p]))]
+    setkey(d, id)
+    setkey(d, silo)
+    setkey(pop_spec$r_ec, silo)
+    for (z in pop_spec$r_ec$silo) {
+        d[z, `:=`(ec, sample(c("Y", "N"), size = .N, replace = T, 
+            prob = c(pop_spec$r_ec[z, p], 1 - pop_spec$r_ec[z, 
+                p])))]
+    }
+    d[ec == "Y", `:=`(c, sample(pop_spec$r_c[, c], size = .N, 
+        replace = T, prob = pop_spec$r_c[, p]))]
+    d[ec == "N", `:=`(c, "other")]
+    setkey(d, id)
+    d
 }
-&lt;bytecode: 0x11cc02400&gt;
+&lt;bytecode: 0x113baaa90&gt;
 &lt;environment: namespace:roadmap.data&gt;</code></pre>
 </div>
 </div>
@@ -971,13 +961,7 @@ $r_c
 
 </section>
 
-
-<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
-
-<ol>
-<li id="fn1"><p>That is, the data generating process assumes the choice of one vs two-stage in the late acute silo is completely random (not at risk of confounding by risk). At some stage we will need to explore the consequences of non-random choice.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section></div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
