@@ -871,10 +871,21 @@ $$
 
 Is this sufficiently meaningful?
 
+
+::: {.callout-note collapse=false}
+
+I think what you are saying is to adopt @eq-dn-4 and then report our effect estimate for revision at the sample mean of observed selection, which is this case fully characterises the distribution anyway.
+
+The terminology used for effects seems to vary a bit throughout, but my label would probably be more explicit *conditional log-OR evaluated at the mean selection* or something like that, whereas I think it has been previously referred to as conditional (weighted) log-OR earlier and average (weighted) log-OR earlier, probably because that is how they have been computed.
+
+:::
+
 ## Duration
 
-Duration, $D$, is randomised, however, the duration options depends upon assignment to revision $R$, and the chosen revision type, $S$. So it is random conditional on $R$ and $S$. 
-Nothing else alters the distribution of $D$. We expect that duration has an effect on the outcome. 
+Duration, $D$, is randomised, however, the duration options depends upon assignment to revision $R$, and the chosen revision type, $S$. 
+So it is random conditional on $R$ and $S$. 
+Nothing else alters the distribution of $D$. 
+We expect that duration has an effect on the outcome. 
 
 Below we just use $D=0$ for long and $D=1$ for short, but note that the meaning of these is conditional on $R/S$ (i.e. short for one-stage different to short for two-stage and only applies to revision)
 
