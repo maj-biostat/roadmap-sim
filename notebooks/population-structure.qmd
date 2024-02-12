@@ -151,7 +151,7 @@ chronic | two-stage | 12 wk post 2  |  0.5 |
 : Allocation within duration domain ($\pi$ denotes probability allocation to surgery type conditional on allocated/intended surgery)  {.striped .hover}
 :::
 
-## Randomisation into adjunctive domain (C)
+## Randomisation into antibiotic choice domain (C)
 
 The data generating process assume that 60% of the cohort enter into this domain at random, unrelated to risk factors.
 The remainder are held out so that we do not over-estimate the operating characteristics, such as power.
@@ -167,7 +167,7 @@ chronic |  Y |  0.6 |
 : Randomisation within domain C ($\pi$ denotes probability patient is indicated as eligible for domain)  {.striped .hover}
 :::  
 
-## Adjunctive domain (C)
+## Antibiotic choice domain (C)
 
 The treatment options and allocation probabilities for domain C are detailed below.
 
@@ -178,7 +178,7 @@ Allocation ($c$) | $\pi$ |
 no rif | 0.5 |
 rif | 0.5 |
 
-: Allocation within adjunctive domain ($\pi$ denotes probability that an eligible patient is allocated to no rif vs rif) {.striped .hover}
+: Allocation within antibiotic choice domain ($\pi$ denotes probability that an eligible patient is allocated to no rif vs rif) {.striped .hover}
 :::
 
 ## Encoded specification
