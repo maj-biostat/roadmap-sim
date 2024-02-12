@@ -32,7 +32,8 @@ website:
           
 format:
   html:
-    theme: sketchy
+    theme:
+      - sketchy
     toc: true
     code-fold: true
     code-line-numbers: true

@@ -5,6 +5,16 @@ date: 2024-02-02
 date-modified: last-modified
 ---
 
+
+```{r}
+#| label: setup
+#| code-summary: Setup
+
+source("./R/init.R")
+log_info("Called design-notes notebook")
+```
+
+
 Say we were doing a trial in just the late acute patients. We are interested in surgery (DAIR/revision) and antibiotic duration (long/short), but we are limited in that, for whatever reason, we can not ethically randomise the *type* of revision surgery, only revision surgery itself. However, choice of antibiotic duration is conditional on the type of revision surgery used, so surgery type needs to be considered in any joint analysis (alternatively, analyse separately).
 
 I just want to work through from a basic scenario to more involved ones to check understanding of potential issues. This will ignore much of the complexity, but just want to get some basics down as a reference.
@@ -18,11 +28,22 @@ As a starting point, consider the following:
 -   A: allocated surgery - 0: DAIR, 1: one-stage, 2: two-stage
 -   Y: treatment success - 0: no, 1: yes
 
-Patients are randomised to a surgery type, $R$: DAIR or revision. For every patient, if they *were* to have been allocated to revision, there is some preference/plan for one/two stage, $S$. The value of $S$ is determined by the surgeon/patient and I'm considering it here as just an attribute of the patient. The actual allocated treatment is a deterministic function of $R$ and $S$, i.e. $A = R \times (S + 1)$. Note that I'm assuming that $S$ is known for *every* patient before $R$ is revealed to the surgeon, irrespective of whether they are eventually assigned to DAIR or revision (if that it *isn't the case* then perhaps some issues might arise, but I don't think that it matters too much for what's being considered here given randomisation).
+Patients are randomised to a surgery type, $R$: DAIR or revision. 
+For every patient, if they *were* to have been allocated to revision, there is some preference/plan for one/two stage, $S$. 
+The value of $S$ is determined by the surgeon/patient and I'm considering it here as just an attribute of the patient. 
+
+::: {.callout-note collapse=false}
+The above determination is likely also dependent on the surgeon's position as well as patient characteristics.
+In fact, one may dominate the other.
+For example, would a surgeon choose two-stage for all their patients simply because they have more experience or sucess with that approach, whereas another might choose one-stage for all theirs?
+In practice, what I think matters primarily is that we know what selection is rather than how it is determined.
+:::
+
+The actual allocated treatment is a deterministic function of $R$ and $S$, i.e. $A = R \times (S + 1)$. Note that I'm assuming that $S$ is known for *every* patient before $R$ is revealed to the surgeon, irrespective of whether they are eventually assigned to DAIR or revision (if that it *isn't the case* then perhaps some issues might arise, but I don't think that it matters too much for what's being considered here given randomisation).
 
 ```{mermaid}
 %%| label: fig-scenario-1
-%%| fig-cap: Scenario 1, the $U$ denote independent exogenous variables, 
+%%| fig-cap: Scenario 1, the $U$ denote independent exogenous variables
 %%{
   init:{
     "flowchart":{"htmlLabels": "true"},
@@ -31,50 +52,105 @@ Patients are randomised to a surgery type, $R$: DAIR or revision. For every pati
 }}%%
 flowchart LR
   R --> A --> Y
-  S --> A & Y
+  S --> A 
+  S --> Y
   US((U<sub>S)) -.-> S
   UR((U<sub>R)) -.-> R
   UY((U<sub>Y)) -.-> Y
 ```
 
-Our *intervention* is on $R$, everything down stream from that (revision type, antibiotic use, physiotherapy, complications) is a consequence of the intervention. It's the overall effect of allocation to $R=0$ or $R=1$ that we are trying to (the only thing we can, not necessarily want to) compare.
+::: {.callout-note collapse=false}
 
-If $Y(a)$ is the potential outcome of a patient if they were assigned to receive surgery $a$, then
++ There are no back-door paths for the above, hence no open back-door paths
++ Some function of $S$ and $R$ cause $Y$, $Y = f(R,S)$
++ Is assuming $S$ causes $Y$ a weaker/safer assumption than excluding that link? Ans: Think so.
++ Maybe there should be some shared $U$ that influences both $S$ and $Y$ rather than assuming $S$ causes $Y$?
++ The graph implies:
+  + $S$ and $R$ are independent; $S \mathrel{\unicode{x2AEB}} R$
+  + $Y$ is conditionally independent of $R$ given $A$ and $S$; $Y \mathrel{\unicode{x2AEB}} R | A, S$
++ We can estimate the total effect of $R$ on $Y$ where $R = 1$ is loosely defined as revision with expert selection of one-stage or two-stage procedure (or something along those lines)
++ Planned/intended procedure should be recorded prior to any elements of randomisation being revealed.
++ No adjustment is required to estimate the total effect of $R$ on $Y$
+
+:::
+
+Our *intervention* is on $R$, everything down stream from that (revision type, antibiotic use, physiotherapy, complications) is a consequence of the intervention. 
+It's the overall effect of allocation to $R=0$ or $R=1$ that we are trying to (the only thing we can, not necessarily want to) compare.
+
+::: {.callout-note collapse=false}
+
++ Isn't revision-type independent of intervention? I don't think I understand why it is downstream.
++ Not really sure what is meant by the statement *the only thing we can, not necessarily want to compare*
+
+:::
+
+If $Y(a)$ is the potential outcome of a patient if they were assigned to receive surgery of type $a$ (dair, one-stage, two-stage), then:
 
 $$
 \begin{aligned}
-\mathbb{E}[Y(a)] &= \mathbb{E}[Y(a) | A = 0] \\ 
-&= \mathbb{E}[Y(a)|R=0] \\
-&= \mathbb{E}[Y(a)|R=1] \\
+\mathbb{E}[Y(a)] &= \mathbb{E}[Y(a)|R=0] \\
+&= \mathbb{E}[Y(a) | R=1] \\
+&= \mathbb{E}[Y(a) | A = 0] \\ 
 &= \mathbb{E}[Y(a) | A \in \{1,2\}] \\
 &\ne \mathbb{E}[Y(a) | A = j], \quad j\in\{1,2\} \\
 \end{aligned}
 $$
 
-The only randomised comparison we can make is $R=1$ vs $R=0$, but, given we want to eventually condition on which revision type is selected, we want to include terms for preferred revision type in the model. Say we think logistic regression is the true model. We could specify
+::: {.callout-note collapse=false}
+
++ Above we establish exchangeability assumptions, which are a precursor for identifying causal effects.
++ All come about due to randomisation of $R$.
++ Where independence holds (as above for the majority of the cases) knowing the conditioning variable tells you nothing about $Y(a)$ (the term on the LHS of the conditioning).
++ For example $\mathbb{E}[Y(a)] = \mathbb{E}[Y(a)|R=0]$ tells us that the potential outcomes of $Y(a)$ in those receive dair have the same distribution as those that do not.
++ For $\mathbb{E}[Y(a)] \ne \mathbb{E}[Y(a) | A = 1]$ and $\mathbb{E}[Y(a)] \ne \mathbb{E}[Y(a) | A = 2]$ we are saying that the distribution of potential outcomes in those for whom one-stage is planned do not share the same distribtion as for those for whom one-stage is not planned. And this is by virtue of the fact that revision type is selected rather than randomised.
+
+:::
+
+The only randomised comparison we can make is $R=1$ vs $R=0$, but, given we want to eventually condition on which revision type is selected, we want to include terms for preferred revision type in the model. 
+Assume logistic regression is the true model and specify
 
 $$
 \begin{align}
-\mathbb{E}[Y | R] &= \text{expit}(\alpha_0 + \alpha_1R) \\
-\mathbb{E}[Y | A] &= \text{expit}(\beta_0 + \beta_1\mathbb{I}(A=1) + \beta_2\mathbb{I}(A=2)) \\
+\mathbb{E}[Y | R] &= Pr(Y = 1 | R) = \text{expit}(\alpha_0 + \alpha_1R) \\
 \end{align}
-$$
+$$  {#eq-dn-1}
 
-I've written the above in terms of $A$, but could equivalently state in terms of $R$ and $S$.
+$$
+\begin{align}
+\mathbb{E}[Y | A] &= Pr(Y = 1 | A) = \text{expit}(\beta_0 + \beta_1\mathbb{I}(A=1) + \beta_2\mathbb{I}(A=2)) \\
+\end{align}
+$$  {#eq-dn-2}
+
+Equivalently, state in terms of $R$ and $S$.
 
 $$
 \mathbb{E}[Y | R, S] = \text{expit}(\beta_0 + \beta_1R + \beta_2RS) \\
-$$
+$$  {#eq-dn-3}
 
-The first targets the thing we actually want to compare, the log-odds ratio of revision versus DAIR. The second splits this out into one and two stage which we would need to combine to get the overall revision effect.
+The first targets the thing we actually want to compare, the log-odds ratio of revision versus DAIR. 
+The second splits this out into one and two stage which we would need to combine to get the overall revision effect.
+
+::: {.callout-note collapse=false}
+
++ Do you mean that the first targets the thing we are considering in this simplified example or are you asserting that this is the effect of interest in the trial?
+
+:::
 
 These models could also adjust for $S$, i.e. in addition to any actual *effect* of one/two stage revision, the patients for whom a two-stage would be preferred may differ from those for who a one-stage is the preference. Interpretation of model parameters then changes of course.
 
 $$
 \mathbb{E}[Y | R, S] = \text{expit}(\beta_0 + \beta_1R + \beta_2RS + \beta_3S) \\
-$$
+$$ {#eq-dn-4}
 
-We don't really care about the difference due to $S$, as the revision type effects may still be confounded by other factors anyway. Due to the randomisation, I think that both the version with and without $S$ are targeting the same estimand for revision vs. DAIR (the distribution of $S$ is the same (in expectation) amongst DAIR and revision patients, so is not be a confounder, but obviously, $S$ is known exactly to be $A-1$ when $R=1$).
+
+We don't really care about the difference due to $S$, as the revision type effects may still be confounded by other factors anyway. 
+Due to the randomisation, I think that both the version with and without $S$ are targeting the same estimand for revision vs. DAIR (the distribution of $S$ is the same (in expectation) amongst DAIR and revision patients, so is not a confounder, but obviously, $S$ is known exactly to be $A-1$ when $R=1$).
+
+::: {.callout-note collapse=false}
+
++ I know that $S$ is defined for all units, but the 'effect of selection' would only be applicable if the unit was randomised to revision ($R = 1$). As such, does it have any meaning and is it necessary in the model?
+
+:::
 
 For the second model above, in terms of $R$ and $S$, without adjustment for $S$
 
@@ -91,19 +167,38 @@ $$
 so the log-odds ratio for the marginal success probability for revision vs. DAIR is
 
 $$
-\ln\frac{\text{odds}(Y|R=1)}{\text{odds}(Y|R=0)} = \text{logit}\left[\text{expit}(\beta_0 + \beta_1)\mathbb{P}(S=0|R=1) + 
-\text{expit}(\beta_0 + \beta_1 + \beta_2)\mathbb{P}(S=1|R=1)\right] - 
-\beta_0.
-$$
+\begin{aligned}
+\ln\frac{\text{odds}(Y|R=1)}{\text{odds}(Y|R=0)} &= \text{logit}[\text{expit}(\beta_0 + \beta_1)\mathbb{P}(S=0|R=1) + \\  
+ & \quad \quad \ \text{expit}(\beta_0 + \beta_1 + \beta_2)\mathbb{P}(S=1|R=1)] -  \beta_0
+\end{aligned}
+$$  {#eq-dn-5}
 
-We don't know $\mathbb{P}(S=s|R)$ so estimate it from the sample. Due to randomisation $\mathbb{P}(S=s|R) = \mathbb{P}(S=s)$.
+We don't know $\mathbb{P}(S=s|R)$ so estimate it from the sample.
+Due to randomisation $\mathbb{P}(S=s|R) = \mathbb{P}(S=s)$.
+
+::: {.callout-note collapse=false}
+
+Which is just creating a standardised probability of treatment success under revision based on a weighted version of the probability of treatment success for each of the selection groups (one-stage and two-stage) where the weights are formed from the (unknown) distribution of $S$ (to be estimated from the sample). 
+The standardised probability of treatment success under revision is then converted to the log odds of treatment success and the reference group (DAIR) log-odds of treatment success is subtracted to come up with the log-OR.
+
+The final line in the above derivation is just saying that we can assume that the probability distribution of $S$ is independent to treatment group membership and so can be estimated from the full sample rather than condition on $R$.
+Note that $\mathbb{P}(S=s)$ is not necessarily indicative of the probability distribution of $S$ in the population because of our convenience sample, but this is true for all inference here and in the majority of trials.
+
+:::
 
 An alternative to the above is to consider the "average" conditional log-odds ratio rather than the odds ratio of the marginal probabilities.
 
 $$
 \mathbb{E}\left[\ln\frac{\text{odds}(Y|R=1,S)}{\text{odds}(Y|R=0,S)}\right] = \mathbb{E}[\beta_1 + \beta_2S] = \beta_1 + \beta_2\mathbb{E}[S]
-$$
+$$  {#eq-dn-6}
 
+
+::: {.callout-note collapse=false}
+
+The expectation of $S$ above is across the sample, but below the weighting is taken from the revision group.
+Would it not be preferable to use the mean derived from the full sample or am I thinking about it incorrectly?
+
+:::
 
 If the model also adjusts for $S$, then
 
@@ -125,19 +220,26 @@ $$
 
 This quantity contains the same terms as without adjustment for $S$, but the parameter values will differ.
 
+
+::: {.callout-note collapse=false}
+
+Did you intend to restate the above?
+
+:::
+
 ### Example
 
 Herein I am just assuming $n\approx \infty$, i.e. checking consistency.
 
-```{r}
-#| label: setup
-#| code-summary: Setup
-library(data.table)
-library(marginaleffects)
+::: {.callout-note collapse=false}
 
-odds <- function(p) p / (1 - p)
-expit <- function(x) plogis(x)
-```
+Consistency is simply about whether the estimator produces an estimate that gets closer towards the true value as the sample size gets bigger; a consistent estimator does not negate the possibility of bias.
+For example, $\frac{1}{N-1}\sum_i (x_i)$ is a consistent but biased estimator of the mean for a random vector, $x$.
+
+The default parameterisation for the data generating mechanism is to adopt the functional form from @eq-dn-4, which includes terms for $R$, $S$ and an interaction between $R$ and $S$.
+
+:::
+
 
 ```{r}
 #| label: generate-data-1
@@ -147,7 +249,7 @@ expit <- function(x) plogis(x)
 # Precision will of course vary by approach at small sample sizes
 generate_data_1 <- function(
     n = 1000000,
-    f = \(r, s, x) -1 + s + 0.25 * r + 0.25 * r * s) {
+    f = function(r, s, x){-1 + s + 0.25 * r + 0.25 * r * s}) {
   s <- rbinom(n, 1, 0.7)
   r <- rbinom(n, 1, 0.5)
   x <- rbinom(n, 1, 0.25)
@@ -173,81 +275,33 @@ generate_data_1 <- function(
 #| label: simulate-1-null
 #| code-summary: Simulate null effect
 set.seed(123)
-D <- generate_data_1(f = \(r, s, x) -1 + s)
+D <- generate_data_1(f = function(r, s, x){-1 + s})
+
+# Eqn 1
 fit1 <- glm(y ~ r, data = D, family = binomial())
+
+# Eqn 3
 fit2 <- glm(y ~ r + r:s, data = D, family = binomial())
+
+# Eqn 6?
 fit1s <- glm(y ~ r + s, data = D, family = binomial())
+
+# Eqn 4
 fit2s <- glm(y ~ r + r:s + s, data = D, family = binomial())
 ```
+
+::: {.callout-note collapse=false}
+
+In the use of "true" below, what is meant is the empirical log-odds ratios in the population (approximated by a very large sample) that we observe.
+We estimate the effects directly from the data by calculating the difference in the log-odds of treatment success in the strata of interest for those in the treated vs control groups.
+
+The table just tries to line up the quantities, like with like as there were some minor differences in the naming.
+
+:::
 
 ```{r}
 #| label: simulate-1-null-quantities
 #| code-summary: Null effect quantities
-
-w <- mean(D$a == 2) / mean(D$a %in% c(1, 2))
-w_s1 <- mean(D[r == 0]$s == 1)
-w_s2 <- mean(D[r == 1]$s == 1)
-
-b1 <- unname(coef(fit1))
-b2 <- unname(coef(fit2))
-b1s <- unname(coef(fit1s))
-b2s <- unname(coef(fit2s))
-
-EY_R0_2 <- expit(b2[1])
-EY_R1_2 <- (1 - w) * expit(b2[1] + b2[2]) + w * expit(b2[1] + b2[2] + b2[3])
-
-EY_R0_1_S0 <- expit(b1s[1])
-EY_R0_1_S1 <- expit(b1s[1] + b1s[3])
-EY_R1_1_S0 <- expit(b1s[1] + b1s[2])
-EY_R1_1_S1 <- expit(b1s[1] + b1s[2] + b1s[3])
-EY_R0_1 <- (1 - w_s1) * EY_R0_1_S0 + w_s1 * EY_R0_1_S1
-EY_R1_1 <- (1 - w_s2) * EY_R1_1_S0 + w_s2 * EY_R1_1_S1
-
-EY_R0_2s_S0 <- expit(b2s[1])
-EY_R0_2s_S1 <- expit(b2s[1] + b2s[3])
-EY_R1_2s_S0 <- expit(b2s[1] + b2s[2]) # Pr(A = 2 | S = 0) = 0
-EY_R1_2s_S1 <- expit(b2s[1] + b2s[2] + b2s[3] + b2s[4]) # Pr(A = 2 | S = 1) = 1
-EY_R0_2s <- (1 - w_s1) * EY_R0_2s_S0 + w_s1 * EY_R0_2s_S1
-EY_R1_2s <- (1 - w_s2) * EY_R1_2s_S0 + w_s2 * EY_R1_2s_S1
-
-rbind(
-  "True conditional (S = 0) log-odds ratio" =
-    qlogis(mean(D[r == 1 & s == 0]$y)) - qlogis(mean(D[r == 0 & s == 0]$y)),
-  "True conditional (S = 1) log-odds ratio" =
-    qlogis(mean(D[r == 1 & s == 1]$y)) - qlogis(mean(D[r == 0 & s == 1]$y)),
-  "True marginal log-odds ratio" = qlogis(mean(D[r == 1]$y)) - qlogis(mean(D[r == 0]$y)),
-  "True weighted log-odds ratio" =
-    (1 - w) * qlogis(mean(D[a == 1]$y)) + w * qlogis(mean(D[a == 2]$y)) -
-      qlogis(mean(D[r == 0]$y)),
-  "True avergage weighted log-odds ratio" =
-    (1 - w) * (qlogis(mean(D[r == 1 & s == 0]$y)) - qlogis(mean(D[r == 0 & s == 0]$y))) +
-      w * (qlogis(mean(D[r == 1 & s == 1]$y)) - qlogis(mean(D[r == 0 & s == 1]$y))),
-  "fit1 marginal log-odds ratio" = b1[2],
-  "fit2 marginal log-odds ratio" = qlogis(EY_R1_2) - qlogis(EY_R0_2),
-  "fit2 conditional (weighted) log-odds ratio" = b2[2] + w * b2[3],
-  "fit1s conditional log-odds ratio" = b1s[2], # Don't know what this targets
-  "fit1s marginal log-odds ratio" = qlogis(EY_R1_1) - qlogis(EY_R0_1),
-  "fit2s conditional (S = 0) log-odds ratio" = qlogis(EY_R1_2s_S0) - qlogis(EY_R0_2s_S0),
-  "fit2s conditional (S = 1) log-odds ratio" = qlogis(EY_R1_2s_S1) - qlogis(EY_R0_2s_S1),
-  "fit2s marginal log-odds ratio" = qlogis(EY_R1_2s) - qlogis(EY_R0_2s),
-  "fit2s avergage (weighted) log-odds ratio" = b2s[2] + w * b2s[4]
-)
-```
-
-```{r}
-#| label: simulate-1
-#| code-summary: Simulate effect
-set.seed(123)
-D <- generate_data_1()
-fit1 <- glm(y ~ r, data = D, family = binomial())
-fit2 <- glm(y ~ r + r:s, data = D, family = binomial())
-fit1s <- glm(y ~ r + s, data = D, family = binomial())
-fit2s <- glm(y ~ r + r:s + s, data = D, family = binomial())
-```
-
-```{r}
-#| label: simulate-1-quantities
-#| code-summary: Effect quantities
 
 w <- mean(D$a == 2) / mean(D$a %in% c(1, 2))
 w_s1 <- mean(D[r == 0]$s == 1)
@@ -297,6 +351,278 @@ rbind(
   "fit2s marginal log-odds ratio" = qlogis(EY_R1_2s) - qlogis(EY_R0_2s),
   "fit2s average (weighted) log-odds ratio" = b2s[2] + w * b2s[4]
 )
+
+d_out <- data.table(
+  desc = c(
+    "conditional (S = 0) log-OR",
+    "conditional (S = 1) log-OR",
+    "conditional log-OR (?)",
+    "conditional (weighted) log-OR",
+    "marginal log-OR",
+    "weighted log-OR",
+    "average (weighted) log-OR"
+  ),
+  true = c(
+    qlogis(mean(D[r == 1 & s == 0]$y)) - qlogis(mean(D[r == 0 & s == 0]$y)),
+    qlogis(mean(D[r == 1 & s == 1]$y)) - qlogis(mean(D[r == 0 & s == 1]$y)),
+    NA,  
+    NA,
+    qlogis(mean(D[r == 1]$y)) - qlogis(mean(D[r == 0]$y)),
+    (1 - w) * qlogis(mean(D[a == 1]$y)) + w * qlogis(mean(D[a == 2]$y)) -
+      qlogis(mean(D[r == 0]$y)),
+    (1 - w) * (qlogis(mean(D[r == 1 & s == 0]$y)) - qlogis(mean(D[r == 0 & s == 0]$y))) +
+      w * (qlogis(mean(D[r == 1 & s == 1]$y)) - qlogis(mean(D[r == 0 & s == 1]$y)))
+  ),
+  fit_1 = c(
+    NA, 
+    NA,  
+    NA,
+    NA, 
+    b1[2], 
+    NA, 
+    NA
+  ),
+  fit_2 = c(
+    NA, 
+    NA,
+    NA, 
+    b2[2] + w * b2[3], 
+    qlogis(EY_R1_2) - qlogis(EY_R0_2), 
+    NA,
+    NA
+  ),
+  fit_1s = c(
+    NA, 
+    NA, 
+    b1s[2],
+    NA,
+    qlogis(EY_R1_1) - qlogis(EY_R0_1), 
+    NA,
+    NA
+  ),
+  fit_2s = c(
+    qlogis(EY_R1_2s_S0) - qlogis(EY_R0_2s_S0), 
+    qlogis(EY_R1_2s_S1) - qlogis(EY_R0_2s_S1), 
+    NA, 
+    NA,
+    qlogis(EY_R1_2s) - qlogis(EY_R0_2s),
+    NA,
+    b2s[2] + w * b2s[4]
+  )
+)
+```
+
+```{r}
+#| label: tbl-dn-null
+#| tbl-cap: 'Null effects'
+#| code-summary: Tabulate effect quantities
+
+gt_tbl <- d_out |> 
+  gt(rowname_col = c("desc")) |> 
+  cols_align(align = "right", columns = 2:6) |>  
+  fmt_number(columns = everything(), decimals = 3) |>
+  sub_missing(columns = everything(), missing_text = "") |>
+  tab_options(table.font.size = "80%") |>
+  tab_footnote(
+    footnote = "y ~ r",
+    locations = cells_column_labels(columns = fit_1)
+    ) |>
+  tab_footnote(
+    footnote = "y ~ r + r:s",
+    locations = cells_column_labels(columns = fit_2)
+    ) |>
+  tab_footnote(
+    footnote = "y ~ r + s",
+    locations = cells_column_labels(columns = fit_1s)
+    ) |>
+  tab_footnote(
+    footnote = "y ~ r + r:s + s",
+    locations = cells_column_labels(columns = fit_2s)
+    ) |>
+  tab_footnote(
+    footnote = md("Should be labelled *conditional (weighted) log-OR*?"),
+    locations = cells_stub(rows = c(
+      "weighted log-OR"
+    ))
+  ) |>
+  tab_footnote(
+    footnote = md("log-OR for R term in model, but interpretation unclear"),
+    locations = cells_stub(rows = c(
+      "conditional log-OR (?)"))
+  )
+gt_tbl
+```
+
+```{r}
+#| label: simulate-1
+#| code-summary: Simulate effect
+set.seed(123)
+D <- generate_data_1()
+fit1 <- glm(y ~ r, data = D, family = binomial())
+fit2 <- glm(y ~ r + r:s, data = D, family = binomial())
+fit1s <- glm(y ~ r + s, data = D, family = binomial())
+fit2s <- glm(y ~ r + r:s + s, data = D, family = binomial())
+```
+
+
+::: {.callout-note collapse=false}
+
+Simulate from @eq-dn-4 with a baseline probability of treatment success equal to 0.27 together with $\beta_1 = 0.25$, $\beta_2 = 0.25$ and $\beta_3 = 1$ for the log-ORs associated with treatment, the interaction between treatment and selection and selection, respectively. 
+
+:::
+
+```{r}
+#| label: simulate-1-quantities
+#| code-summary: Effect quantities
+
+w <- mean(D$a == 2) / mean(D$a %in% c(1, 2))
+w_s1 <- mean(D[r == 0]$s == 1)
+w_s2 <- mean(D[r == 1]$s == 1)
+
+b1 <- unname(coef(fit1))
+b2 <- unname(coef(fit2))
+b1s <- unname(coef(fit1s))
+b2s <- unname(coef(fit2s))
+
+EY_R0_2 <- expit(b2[1])
+EY_R1_2 <- (1 - w) * expit(b2[1] + b2[2]) + w * expit(b2[1] + b2[2] + b2[3])
+
+EY_R0_1_S0 <- expit(b1s[1])
+EY_R0_1_S1 <- expit(b1s[1] + b1s[3])
+EY_R1_1_S0 <- expit(b1s[1] + b1s[2])
+EY_R1_1_S1 <- expit(b1s[1] + b1s[2] + b1s[3])
+EY_R0_1 <- (1 - w_s1) * EY_R0_1_S0 + w_s1 * EY_R0_1_S1
+EY_R1_1 <- (1 - w_s2) * EY_R1_1_S0 + w_s2 * EY_R1_1_S1
+
+EY_R0_2s_S0 <- expit(b2s[1])
+EY_R0_2s_S1 <- expit(b2s[1] + b2s[3])
+EY_R1_2s_S0 <- expit(b2s[1] + b2s[2]) # Pr(A = 2 | S = 0) = 0
+EY_R1_2s_S1 <- expit(b2s[1] + b2s[2] + b2s[3] + b2s[4]) # Pr(A = 2 | S = 1) = 1
+EY_R0_2s <- (1 - w_s1) * EY_R0_2s_S0 + w_s1 * EY_R0_2s_S1
+EY_R1_2s <- (1 - w_s2) * EY_R1_2s_S0 + w_s2 * EY_R1_2s_S1
+
+rbind(
+  "True conditional (S = 0) log-odds ratio" =
+    qlogis(mean(D[r == 1 & s == 0]$y)) - qlogis(mean(D[r == 0 & s == 0]$y)),
+  "True conditional (S = 1) log-odds ratio" =
+    qlogis(mean(D[r == 1 & s == 1]$y)) - qlogis(mean(D[r == 0 & s == 1]$y)),
+  "True marginal log-odds ratio" = qlogis(mean(D[r == 1]$y)) - qlogis(mean(D[r == 0]$y)),
+  "True weighted log-odds ratio" =
+    (1 - w) * qlogis(mean(D[a == 1]$y)) + w * qlogis(mean(D[a == 2]$y)) -
+      qlogis(mean(D[r == 0]$y)),
+  "True average (weighted) log-odds ratio" =
+    (1 - w) * (qlogis(mean(D[r == 1 & s == 0]$y)) - qlogis(mean(D[r == 0 & s == 0]$y))) +
+      w * (qlogis(mean(D[r == 1 & s == 1]$y)) - qlogis(mean(D[r == 0 & s == 1]$y))),
+  "fit1 marginal log-odds ratio" = b1[2],
+  "fit2 marginal log-odds ratio" = qlogis(EY_R1_2) - qlogis(EY_R0_2),
+  "fit2 conditional (weighted) log-odds ratio" = b2[2] + w * b2[3],
+  "fit1s conditional log-odds ratio" = b1s[2], # Don't know what this targets
+  "fit1s marginal log-odds ratio" = qlogis(EY_R1_1) - qlogis(EY_R0_1),
+  "fit2s conditional (S = 0) log-odds ratio" = qlogis(EY_R1_2s_S0) - qlogis(EY_R0_2s_S0),
+  "fit2s conditional (S = 1) log-odds ratio" = qlogis(EY_R1_2s_S1) - qlogis(EY_R0_2s_S1),
+  "fit2s marginal log-odds ratio" = qlogis(EY_R1_2s) - qlogis(EY_R0_2s),
+  "fit2s average (weighted) log-odds ratio" = b2s[2] + w * b2s[4]
+)
+
+d_out <- data.table(
+  desc = c(
+    "conditional (S = 0) log-OR",
+    "conditional (S = 1) log-OR",
+    "conditional log-OR (?)",
+    "conditional (weighted) log-OR",
+    "marginal log-OR",
+    "weighted log-OR",
+    "average (weighted) log-OR"
+  ),
+  true = c(
+    qlogis(mean(D[r == 1 & s == 0]$y)) - qlogis(mean(D[r == 0 & s == 0]$y)),
+    qlogis(mean(D[r == 1 & s == 1]$y)) - qlogis(mean(D[r == 0 & s == 1]$y)),
+    NA,  
+    NA,
+    qlogis(mean(D[r == 1]$y)) - qlogis(mean(D[r == 0]$y)),
+    (1 - w) * qlogis(mean(D[a == 1]$y)) + w * qlogis(mean(D[a == 2]$y)) -
+      qlogis(mean(D[r == 0]$y)),
+    (1 - w) * (qlogis(mean(D[r == 1 & s == 0]$y)) - qlogis(mean(D[r == 0 & s == 0]$y))) +
+      w * (qlogis(mean(D[r == 1 & s == 1]$y)) - qlogis(mean(D[r == 0 & s == 1]$y)))
+  ),
+  fit_1 = c(
+    NA, 
+    NA,   
+    NA,
+    NA, 
+    b1[2], 
+    NA, 
+    NA
+  ),
+  fit_2 = c(
+    NA, 
+    NA, 
+    NA, 
+    b2[2] + w * b2[3], 
+    qlogis(EY_R1_2) - qlogis(EY_R0_2), 
+    NA,
+    NA
+  ),
+  fit_1s = c(
+    NA, 
+    NA, 
+    b1s[2],
+    NA,
+    qlogis(EY_R1_1) - qlogis(EY_R0_1), 
+    NA,
+    NA
+  ),
+  fit_2s = c(
+    qlogis(EY_R1_2s_S0) - qlogis(EY_R0_2s_S0), 
+    qlogis(EY_R1_2s_S1) - qlogis(EY_R0_2s_S1),  
+    NA, 
+    NA,
+    qlogis(EY_R1_2s) - qlogis(EY_R0_2s),
+    NA,
+    b2s[2] + w * b2s[4]
+  )
+)
+```
+
+
+```{r}
+#| label: tbl-dn-eff
+#| tbl-cap: 'Effects'
+#| code-summary: Tabulate effect quantities
+
+gt_tbl <- d_out |> 
+  gt(rowname_col = c("desc")) |> 
+  cols_align(align = "right", columns = 2:6) |>  
+  fmt_number(columns = everything(), decimals = 3) |>
+  sub_missing(columns = everything(), missing_text = "") |>
+  tab_options(table.font.size = "80%") |>
+  tab_footnote(
+    footnote = "y ~ r",
+    locations = cells_column_labels(columns = fit_1)
+    ) |>
+  tab_footnote(
+    footnote = "y ~ r + r:s",
+    locations = cells_column_labels(columns = fit_2)
+    ) |>
+  tab_footnote(
+    footnote = "y ~ r + s",
+    locations = cells_column_labels(columns = fit_1s)
+    ) |>
+  tab_footnote(
+    footnote = "y ~ r + r:s + s",
+    locations = cells_column_labels(columns = fit_2s)
+    ) |>
+  tab_footnote(
+    footnote = md("Should be labelled *conditional (weighted) log-OR*?"),
+    locations = cells_stub(rows = c(
+      "weighted log-OR"))) |>
+  tab_footnote(
+    footnote = md("log-OR for R term in model, but interpretation unclear"),
+    locations = cells_stub(rows = c(
+      "conditional log-OR (?)"))
+  )
+
+gt_tbl
 ```
 
 So in the basic case, as $n\to\infty$, these models are all in a sense equivalent, in that they are consistent for the treatment effects of interest.
@@ -321,6 +647,23 @@ m <- rbind(
 colnames(m) <- c("S = 0", "S = 1")
 m
 ```
+
+
+::: {.callout-note collapse=false}
+
+I think that the above are basically making predictions for the comparison of interest at each of the rows in the data set and then averaging to give a marginalised view.
+
+The definitional differences between `lnoravg` and `lnor` amount to:
+
+`lnor	\(hi, lo) log((hi/(1 - hi))/(lo/(1 - lo)))`   
+
+vs.
+
+`lnoravg	\(hi, lo) log((mean(hi)/(1 - mean(hi)))/(mean(lo)/(1 - mean(lo)))`
+
+so (I think but need to confirm) one is doing the calculation on every row and then averaging whereas the other averages first.
+
+:::
 
 ## Covariate
 
@@ -391,12 +734,18 @@ $$
 
 ### Example
 
+::: {.callout-note collapse=false}
+
+By definition, $x$ has a 25% chance of occurrence in the sample data.
+
+:::
+
 ```{r}
 #| label: generate-data-2
 #| code-summary: Generate data with covariate
 set.seed(6124)
 D <- generate_data_1(
-  f = \(r, s, x) -1 + s + x + 0.25 * r + 0.25 * r * s
+  f = function(r, s, x){ -1 + s + x + 0.25 * r + 0.25 * r * s}
 )
 fit1 <- glm(y ~ r + x, data = D, family = binomial())
 fit2 <- glm(y ~ r + r:s + x, data = D, family = binomial())
@@ -435,10 +784,50 @@ m3 <- rbind(
   avg_comparisons(fit2s, variables = "r", comparison = "lnoravg", by = "x")$estimate
 )
 m <- cbind(m1, m2, m3)
-colnames(m) <- c("Marginal log-odds ratio", "Average log-odds ratio", "Conditional (X = 0)", "Conditional (X = 1)")
+cols <- c("Marginal log-odds ratio", "Average log-odds ratio", "Conditional (X = 0)", "Conditional (X = 1)")
+colnames(m) <- cols
 rownames(m) <- c("fit1", "fit2", "fit1s", "fit2s")
 round(rbind(tt, m), 3)
 ```
+
+```{r}
+#| label: tbl-dn-eff-cov
+#| tbl-cap: 'G-computation estimates in presence of prognostic covariate'
+#| code-summary: Tabulate effect quantities
+
+
+d_out <- data.table(t(round(rbind(tt, m), 3)))
+d_out[, desc := cols]
+setcolorder(d_out, "desc")
+
+
+
+gt_tbl <- d_out |> 
+  gt(rowname_col = c("desc")) |> 
+  cols_align(align = "right", columns = 2:6) |>  
+  fmt_number(columns = everything(), decimals = 3) |>
+  sub_missing(columns = everything(), missing_text = "") |>
+  tab_options(table.font.size = "80%") |>
+  tab_footnote(
+    footnote = "y ~ r + x",
+    locations = cells_column_labels(columns = fit1)
+    ) |>
+  tab_footnote(
+    footnote = "y ~ r + r:s + x",
+    locations = cells_column_labels(columns = fit2)
+    ) |>
+  tab_footnote(
+    footnote = "y ~ r + s + x",
+    locations = cells_column_labels(columns = fit1s)
+    ) |>
+  tab_footnote(
+    footnote = "y ~ r + r:s + s + x",
+    locations = cells_column_labels(columns = fit2s)
+    ) 
+
+gt_tbl
+```
+
 
 ## Unmeasured Confounder
 
@@ -484,7 +873,10 @@ Is this sufficiently meaningful?
 
 ## Duration
 
-Duration, $D$, is randomised, however, the duration options depends upon assignment to revision $R$, and the chosen revision type, $S$. So it is random conditional on $R$ and $S$. Nothing else alters the distribution of $D$. We expect that duration has an effect on the outcome. Below we just use $D=0$ for long and $D=1$ for short, but note that the meaning of these is conditional on $R/S$ (i.e. short for one-stage different to short for two-stage and only applies to revision)
+Duration, $D$, is randomised, however, the duration options depends upon assignment to revision $R$, and the chosen revision type, $S$. So it is random conditional on $R$ and $S$. 
+Nothing else alters the distribution of $D$. We expect that duration has an effect on the outcome. 
+
+Below we just use $D=0$ for long and $D=1$ for short, but note that the meaning of these is conditional on $R/S$ (i.e. short for one-stage different to short for two-stage and only applies to revision)
 
 ```{mermaid}
 %%| label: fig-scenario-3
@@ -508,17 +900,20 @@ flowchart LR
 
 Now there are two interventions: $R$ which has downstream unknown effects partly due to the unknown revision type, $S$, which is selected, and $D$ which is randomised.
 
-The simplest approach is to analyse these separately. I.e. restrict the analysis to only those patients who were assigned to one-stage, then have an RCT for duration in embedded in that subset. Similarly, restrict analysis to only those assigned to two-stage, then have an RCT for duration in that subset. However, we would like to have a joint model so that other effects can be shared (other domains/site/surgeon/age/whatever else). In the joint model, duration effect needs to be conditional on revision type.
+The simplest approach is to analyse these separately. I.e. restrict the analysis to only those patients who were assigned to one-stage, then have an RCT for duration in embedded in that subset. 
+Similarly, restrict analysis to only those assigned to two-stage, then have an RCT for duration in that subset. 
+However, we would like to have a joint model so that other effects can be shared (other domains/site/surgeon/age/whatever else). 
+In the joint model, duration effect needs to be conditional on revision type.
 
 Say the true model were something like
 
 $$
 \mathbb{E}[Y|R,S,D] = \text{expit}(\beta_0 + \beta_1S + \beta_2R + \beta_3RS + \beta_4RD + \beta_5RDS)
-$$
+$$ {#eq-dn-7}
 
-so
+so 
 
--   $\beta_2$ is the shift associated with revision and long duration
+-   $\beta_2$ is the shift associated with revision and long duration (assuming long-duration is the refrence group)
 -   $\beta_3$ the additional shift associated with two-stage long duration,
 -   $\beta_4$ the relative shift for short duration given revision,
 -   $\beta_5$ the relative shift for short duration given two-stage.
@@ -531,14 +926,14 @@ $$
 
 but for simplicity, not doing this here.
 
-In this case we could compare (randomised comparison) any of: 
+From the above, we could compare (randomised comparison) any of: 
 
 - revision long vs. DAIR
 - revision short vs. DAIR, but no other combinations of revision.
 - one-stage short + two-stage long vs. DAIR
 - two-stage short + one-stage long vs. DAIR
 
-Always needs to marginalise over $S$.
+However, we always needs to marginalise over $S$ (selection/plan):
 
 $$
 \begin{aligned}
@@ -547,6 +942,13 @@ $$
 \mathbb{E}[Y|R=1,D=1] &= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1s + \beta_2 + \beta_3s + \beta_4 + \beta_5s)\mathbb{P}(S=s|R=1,D=1)
 \end{aligned}
 $$
+
+::: {.callout-note collapse=false}
+
+Not sure what you are suggesting in the following lines. 
+Is this proposing extending @eq-dn-7?
+
+:::
 
 Again, can alternatively consider the average conditional log-odds ratio
 
@@ -558,13 +960,26 @@ $$
 
 where I've made it explicit that $D_0$ (one-stage short) and $D_1$ (two-stage short) may differ.
 
+
+
+
+::: {.callout-note collapse=false}
+
+Below the default data generating mechanism has the functional form:
+
+$$
+\mathbb{E}[Y|R,S,D] = \text{expit}(\beta_0 + \beta_1X + \beta_1S + \beta_2R + \beta_3RS + \beta_4RD + \beta_5RSD)
+$$
+
+:::
+
 ```{r}
 #| label: generate-data-duration
 #| code-summary: Generate duration data
 
 generate_data_2 <- function(
     n = 1000000,
-    f = \(x, r, s, d) -1 + x + s + r + 0.5 * r * s - 0.5 * r * d - 0.25 * r * s * d) {
+    f = function(x, r, s, d){ -1 + x + s + r + 0.5 * r * s - 0.5 * r * d - 0.25 * r * s * d}) {
   x <- rbinom(n, 1, 0.25)
   s <- rbinom(n, 1, 0.7)
   r <- rbinom(n, 1, 0.5)
@@ -589,68 +1004,136 @@ generate_data_2 <- function(
   ]
 }
 set.seed(1246)
-D <- generate_data_2(f = \(x, r, s, d) -1 + s + x)
+D <- generate_data_2(f = function(x, r, s, d){ -1 + s + x})
 fit2 <- glm(y ~ x + r + r:s + r:d + r:s:d, data = D, family = binomial())
 fit2s <- glm(y ~ x + s + r + r:s + r:d + r:s:d, data = D, family = binomial())
 ```
 
+
+::: {.callout-note collapse=false}
+
+The following considers estimation under null effects, where the true data generation mechanism was $\mathbb{E}[Y|S,X] = \text{expit}(-1 + S + X)$.
+That is, where there are no treatment effects in either the surgical or duration domains.
+
+:::
+
+
+
 ```{r}
+#| label: g-comp-dur-null-1
+#| code-summary: Revision vs. DAIR
+
 # Revision vs. DAIR
 rbind(
   avg_comparisons(fit2, variables = "r", comparison = "lnoravg"),
   avg_comparisons(fit2s, variables = "r", comparison = "lnoravg")
 )
+```
+
+```{r}
+#| label: g-comp-dur-null-2
+#| code-summary: Revision (long) vs. DAIR and Revision (short) vs. DAIR
+
 # Revision (long) vs. DAIR and Revision (short) vs. DAIR
 rbind(
   avg_comparisons(fit2, variables = "r", by = "d", comparison = "lnoravg"),
   avg_comparisons(fit2s, variables = "r", by = "d", comparison = "lnoravg")
 )
+```
+
+```{r}
+#| label: g-comp-dur-null-3
+#| code-summary: Conditional on X
 
 # Conditional on X
 rbind(
   avg_comparisons(fit2, variables = "r", by = c("d", "x"), comparison = "lnoravg"),
   avg_comparisons(fit2s, variables = "r", by = c("d", "x"), comparison = "lnoravg")
 )
+```
+
+```{r}
+#| label: g-comp-dur-null-4
+#| code-summary: Short vs Long (one-stage) and short vs. long (two-stage)
 
 # Short vs Long (one-stage) and short vs. long (two-stage)
 rbind(
   avg_comparisons(fit2, variables = "d", by = "s", comparison = "lnoravg"),
   avg_comparisons(fit2s, variables = "d", by = "s", comparison = "lnoravg")
 )
+```
+
+```{r}
+#| label: g-comp-dur-null-5
+#| code-summary: Short vs long conditional on x
 
 # Short vs long conditional on x
 avg_comparisons(fit2, variables = "d", by = c("s", "x"), comparison = "lnoravg")
 ```
 
+
+::: {.callout-note collapse=false}
+
+And now consider estimation under effects for all surgery and duration.
+
+:::
+
 ```{r}
+#| label: g-comp-dur-eff-dat
+#| code-summary: Data generation assuming effects in both domains
+
 D <- generate_data_2()
 fit2 <- glm(y ~ x + r + r:s + r:d + r:s:d, data = D, family = binomial())
 fit2s <- glm(y ~ x + s + r + r:s + r:d + r:s:d, data = D, family = binomial())
 ```
 
 ```{r}
+#| label: g-comp-dur-eff-1
+#| code-summary: Revision vs. DAIR
+
 # Revision vs. DAIR
 rbind(
   avg_comparisons(fit2, variables = "r", comparison = "lnoravg"),
   avg_comparisons(fit2s, variables = "r", comparison = "lnoravg")
 )
+```
+
+```{r}
+#| label: g-comp-dur-eff-2
+#| code-summary: Revision (long) vs. DAIR and Revision (short) vs. DAIR
+
 # Revision (long) vs. DAIR and Revision (short) vs. DAIR
 rbind(
   avg_comparisons(fit2, variables = "r", by = "d", comparison = "lnoravg"),
   avg_comparisons(fit2s, variables = "r", by = "d", comparison = "lnoravg")
 )
+```
+
+```{r}
+#| label: g-comp-dur-eff-3
+#| code-summary: Conditional on X
 
 # Conditional on X
 rbind(
   avg_comparisons(fit2, variables = "r", by = c("d", "x"), comparison = "lnoravg"),
   avg_comparisons(fit2s, variables = "r", by = c("d", "x"), comparison = "lnoravg")
 )
+```
+
+```{r}
+#| label: g-comp-dur-eff-4
+#| code-summary: Short vs Long (one-stage) and short vs. long (two-stage)
 
 # Short vs Long (one-stage) and short vs. long (two-stage)
 rbind(
   avg_comparisons(fit2, variables = "d", by = "s", comparison = "lnoravg"),
   avg_comparisons(fit2s, variables = "d", by = "s", comparison = "lnoravg")
 )
+```
+
+```{r}
+#| label: g-comp-dur-eff-5
+#| code-summary: Short vs long conditional on x
 
 # Short vs long conditional on x
 avg_comparisons(fit2, variables = "d", by = c("s", "x"), comparison = "lnoravg")
@@ -658,7 +1141,10 @@ avg_comparisons(fit2, variables = "d", by = c("s", "x"), comparison = "lnoravg")
 
 ## Other Domains
 
-The desire for a single model is incorporation of multiple silos and domains. Suppose we introduce the antibiotic type (rifampicin) domain, which is denoted by $F$. Assume everyone were eligible. Our base model would be
+The desire for a single model is incorporation of multiple silos and domains. 
+Suppose we introduce the antibiotic type (rifampicin) domain, which is denoted by $F$. 
+Assume everyone were eligible. 
+Our base model would be
 
 $$
 \mathbb{E}[Y|R,S,D,F] = \text{expit}(\beta_0 + \beta_1S + \beta_2R + \beta_3RS + \beta_4RD + \beta_5RDS + \beta_6F)
@@ -671,7 +1157,7 @@ $$
 
 generate_data_3 <- function(
     n = 1000000,
-    g = \(x, r, s, d, f) -1 + x + s + r + 0.5 * r * s - 0.25 * r * d - 0.15 * r * s * d + 0.2 * f) {
+    g = function(x, r, s, d, f){ -1 + x + s + r + 0.5 * r * s - 0.25 * r * d - 0.15 * r * s * d + 0.2 * f}) {
   x <- rbinom(n, 1, 0.25)
   s <- rbinom(n, 1, 0.7)
   r <- rbinom(n, 1, 0.5)
@@ -688,6 +1174,8 @@ fit2s <- glm(y ~ x + s + r + f + r:s + r:d + r:s:d, data = D, family = binomial(
 ```
 
 ```{r}
+#| code-summary: Revision vs. DAIR
+
 # Revision vs. DAIR
 rbind(
   avg_comparisons(fit2, variables = "r", comparison = "lnoravg"),
@@ -697,21 +1185,52 @@ rbind(
   avg_comparisons(fit2, variables = "r", comparison = "lnor"),
   avg_comparisons(fit2s, variables = "r", comparison = "lnor")
 )
+
+```
+
+
+
+```{r}
+#| code-summary: Revision vs. DAIR conditional
+
+
 # Revision vs. DAIR conditional
 rbind(
   avg_comparisons(fit2, variables = "r", by = c("f", "x", "d"), comparison = "lnoravg"),
   avg_comparisons(fit2s, variables = "r", by = c("f", "x", "d"), comparison = "lnoravg")
 )
+
+```
+
+
+```{r}
+#| code-summary: Revision (long) vs. DAIR and Revision (short) vs. DAIR
+
+
 # Revision (long) vs. DAIR and Revision (short) vs. DAIR
 rbind(
   avg_comparisons(fit2, variables = "r", by = "d", comparison = "lnoravg"),
   avg_comparisons(fit2s, variables = "r", by = "d", comparison = "lnoravg")
 )
+
+```
+
+
+```{r}
+#| code-summary: Rifampicin vs not
+
 # Rifampicin vs not
 rbind(
   avg_comparisons(fit2, variables = "f", comparison = "lnoravg"),
   avg_comparisons(fit2s, variables = "f", comparison = "lnoravg")
 )
+```
+
+
+```{r}
+#| code-summary: Short vs Long (one-stage) and short vs. long (two-stage)
+
+
 
 # Short vs Long (one-stage) and short vs. long (two-stage)
 rbind(
@@ -719,13 +1238,24 @@ rbind(
   avg_comparisons(fit2s, variables = "d", by = "s", comparison = "lnoravg")
 )
 
+
+```
+
+
+```{r}
+#| code-summary: Short vs long conditional on x
+
 # Short vs long conditional on x
 avg_comparisons(fit2, variables = "d", by = c("s", "x"), comparison = "lnoravg")
 ```
 
 ## Silos
 
-The above has considered the late-acute silo in isolation. Suppose we also had a chronic silo with the same limitations: randomise to DAIR vs. revision, then revision type is determined by the surgeon/patient, duration is randomised. Then nothing really changes, we can just stratify by silo. For lack of letters, let $G$ denote group (silo). Then
+The above has considered the late-acute silo in isolation. 
+Suppose we also had a chronic silo with the same limitations: randomise to DAIR vs. revision, then revision type is determined by the surgeon/patient, duration is randomised. 
+In the new setting, nothing really changes, we can just introduce silo-specific parameters.
+For lack of letters, let $G$ denote group (silo). 
+Then
 
 $$
 \mathbb{E}[Y|G=g,R,S,D] = \text{expit}(\beta_{0,g} + \beta_{1,g}R + \beta_{2,g}S + \beta_{3,g}RS + \beta_{4,g}RD + \beta_{5,g}RSD + \gamma_g^\mathsf{T}X)

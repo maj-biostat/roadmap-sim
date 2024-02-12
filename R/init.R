@@ -42,3 +42,10 @@ g_effs <- c(
   "b_b2_c_2", # wk12p2 (ref is day7p2)
   "b_c_2" # rif (ref is no-rif)
 )
+
+
+# alt_font <- flextable::fp_text_default(bold = TRUE, font.size = 12, font.family = "Reenie Beanie")
+
+
+odds <- function(p) p / (1 - p)
+expit <- function(x) plogis(x)

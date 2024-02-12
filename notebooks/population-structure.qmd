@@ -42,8 +42,8 @@ Silo | Joint |  $\pi$ |
 -----|-----|----|----|
 early | knee |  0.4 | 
 early |hip |  0.6 | 
-late |knee |  0.3 | 
-late |hip |  0.7 | 
+late |knee |  0.7 | 
+late |hip |  0.3 | 
 chronic |knee | 0.5 | 
 chronic |hip |  0.5 | 
 
@@ -60,7 +60,7 @@ Silo | Randomised ($e_a$) |
 -----|-----|
 early |N |   
 late | Y |   
-chronic | Y | 
+chronic | N | 
 
 : Randomisation within domain A {.striped .hover}
 :::
@@ -69,7 +69,8 @@ chronic | Y |
 ## Surgery domain (A)
 
 Allocation probabilities (conditional on entry into domain A) are shown below.
-Early silo does not receive randomisation and all early stage patients are assumed to receive DAIR.
+Early stage patients do not receive randomisation and are assumed to receive DAIR.
+Chronic stage patients do not receive randomisation and are assumed to receive DAIR, one-stage and two-stage based on clinician assessment.
 
 ::: {.column width="70%"}
 
@@ -78,8 +79,9 @@ Silo | Surgery type ($a$) |  $\pi$ |
 early | dair |     - | 
 late | dair |     0.5 | 
 late |revision |  0.5 | 
-chronic | one-stage | 0.5 | 
-chronic |two-stage |  0.5 | 
+chronic |dair |  - | 
+chronic | one-stage | - | 
+chronic |two-stage |  - | 
 
 : Allocation within domain A ($\pi$ denotes probability allocation to surgery type conditional on silo membership) {.striped .hover}
 :::
@@ -87,7 +89,9 @@ chronic |two-stage |  0.5 |
 ## Intended surgery
 
 Late stage infections will be randomised to DAIR vs revision where revision would be planned as one or two-stage, determined by the treating clinician, i.e. not randomised.
-As we do not know the assignment mechanism for one vs two-stage for the late-stage infection patients allocated to revision, we simply assume an equal chance of receiving one vs two stage^[That is, the data generating process assumes the choice of one vs two-stage in the late acute silo is completely random (not at risk of confounding by risk). At some stage we will need to explore the consequences of non-random choice.].
+
+We do not know the assignment mechanism for one vs two-stage for the late-stage infection patients.
+We do the same for chronic stage patients.
 
 In all other cases, the intended surgery is set to allocated surgery.
 
@@ -97,10 +101,11 @@ Silo | Allocation ($a$) | Intended surgery ($q$) | $\pi$ |
 -----|-----|----|----|----|
 early | dair | dair | - | 
 late | dair |  dair |   - | 
-late |revision |  one-stage | 0.5 | 
-late |revision |  two-stage | 0.5 | 
-chronic | one-stage | one-stage | - | 
-chronic |two-stage |  two-stage | - | 
+late | revision |  one-stage | 0.3 | 
+late | revision |  two-stage | 0.7 | 
+chronic | dair | dair | 0.2 | 
+chronic | one-stage |  one-stage | 0.2 | 
+chronic | two-stage |  two-stage | 0.6 | 
 
 : Indended surgical approach ($\pi$ denotes probability allocation to surgery type conditional on silo membership) {.striped .hover}
 :::
