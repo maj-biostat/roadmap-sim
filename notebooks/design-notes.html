@@ -3021,6 +3021,23 @@ Figure&nbsp;2: Scenario 2, the <span class="math inline">\(U\)</span> denote ind
 \mathbb{E}\left[\ln\frac{\text{odds}(Y|R=1,S,X,...)}{\text{odds}(Y|R=0,S,X,...)}\right] = \beta_1 + \beta_2\mathbb{E}[S].
 \]</span></p>
 <p>Is this sufficiently meaningful?</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-15" class="callout-15-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>I think what you are saying is to adopt <a href="#eq-dn-4" class="quarto-xref">Equation&nbsp;4</a> and then report our effect estimate for revision at the sample mean of observed selection, which is this case fully characterises the distribution anyway.</p>
+<p>The terminology used for effects seems to vary a bit throughout, but my label would probably be more explicit <em>conditional log-OR evaluated at the mean selection</em> or something like that, whereas I think it has been previously referred to as conditional (weighted) log-OR earlier and average (weighted) log-OR earlier, probably because that is how they have been computed.</p>
+</div>
+</div>
+</div>
 </section>
 <section id="duration" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="duration">Duration</h2>
@@ -3091,7 +3108,7 @@ Figure&nbsp;3: Scenario 3, the <span class="math inline">\(U\)</span> denote ind
 \end{aligned}
 \]</span></p>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -3100,7 +3117,7 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-15" class="callout-15-contents callout-collapse collapse show">
+<div id="callout-16" class="callout-16-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <p>Not sure what you are suggesting in the following lines. Is this proposing extending <a href="#eq-dn-7" class="quarto-xref">Equation&nbsp;7</a>?</p>
 </div>
@@ -3114,7 +3131,7 @@ Note
 \]</span></p>
 <p>where I’ve made it explicit that <span class="math inline">\(D_0\)</span> (one-stage short) and <span class="math inline">\(D_1\)</span> (two-stage short) may differ.</p>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -3123,7 +3140,7 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-16" class="callout-16-contents callout-collapse collapse show">
+<div id="callout-17" class="callout-17-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <p>Below the default data generating mechanism has the functional form:</p>
 <p><span class="math display">\[
@@ -3168,7 +3185,7 @@ Note
 </details>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-18-contents" aria-controls="callout-18" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -3177,7 +3194,7 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-17" class="callout-17-contents callout-collapse collapse show">
+<div id="callout-18" class="callout-18-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <p>The following considers estimation under null effects, where the true data generation mechanism was <span class="math inline">\(\mathbb{E}[Y|S,X] = \text{expit}(-1 + S + X)\)</span>. That is, where there are no treatment effects in either the surgical or duration domains.</p>
 </div>
@@ -3315,7 +3332,7 @@ Type:  response </code></pre>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-18-contents" aria-controls="callout-18" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-19-contents" aria-controls="callout-19" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -3324,7 +3341,7 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-18" class="callout-18-contents callout-collapse collapse show">
+<div id="callout-19" class="callout-19-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <p>And now consider estimation under effects for all surgery and duration.</p>
 </div>
