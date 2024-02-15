@@ -111,7 +111,7 @@ $$
 
 ::: {.callout-note collapse=false}
 
-+ Above we establish exchangeability assumptions, which are a precursor for identifying causal effects.
++ Above we establish exchangeability assumptions, which are a partial requirement for identifying causal effects, i.e. it gets you to $\mathbb{E}[Y(1)] = \mathbb{E}[Y|A=1]$ and $\mathbb{E}[Y(0)] = \mathbb{E}[Y|A=0]$ whereby you are learning about the potential outcomes from the observed data.
 + All come about due to randomisation of $R$.
 + Where independence holds (as above for the majority of the cases) knowing the conditioning variable tells you nothing about $Y(a)$ (the term on the LHS of the conditioning).
 + For example $\mathbb{E}[Y(a)] = \mathbb{E}[Y(a)|R=0]$ tells us that the potential outcomes of $Y(a)$ in those receive dair have the same distribution as those that do not.
@@ -1405,8 +1405,8 @@ Randomisation would only be revealed if eligibility is confirmed, which is indep
 
 :::
 
-A revised view of the DAG is shown below, which clearly still has a number of simplications relative to the intended approach.
-Patients may contribute to some or all domains, which influences the treatment protocol (combination of treatments across the domains) they receive and which lead us to the various causal effects that may be identified.
+The edited DAG is shown below, which still has a number of simplications relative to the intended approach.
+Patients may contribute to some or all domains, which influences the treatment regimen (combination of treatments across the domains) they receive and which suggests the various causal effects that might be identified.
 
 ```{mermaid}
 %%| label: fig-scenario-4
@@ -1450,8 +1450,8 @@ flowchart LR
   UY((U<sub>Y)) -.-> Y
 ```
 
-Forget all bar the late silo for the moment.
-The setting is such that participants may be randomised in the surgical, duration and choice domains.
+Forget about silos for the moment.
+The setting is such that a participant might be randomised in any/all of the surgical, duration and choice domains.
 
 Again consider intervening on surgical procedure whereby we are interested in the effect of dair vs revision on treatment success.
 There are no open backdoor paths apparent and therefore no adjustment is required to identify the total effect of $R$ on $Y$.
@@ -1462,7 +1462,7 @@ Consider randomised duration $D$; backdoor paths exists:
 2. $D \leftarrow  R_P \rightarrow E_D \rightarrow D_A \rightarrow Y$
 
 The first is open, the second is closed due to the collider $D_A$. 
-Minimally conditioning on the set $\{ R_P, R_A \}$ closes the backdoor path and allows identification of the total effect of duration on treatment success.
+Minimally conditioning on the set $\{ {R_P}, {R_A} \}$ closes the backdoor path and allows identification of the total effect of duration on treatment success.
 
 Consider choice $F$.
 No backdoor paths exist and therefore no adjustment is required for the identification of the total causal effect of $F$ on $Y$.
@@ -1499,10 +1499,11 @@ Recalling the earlier rationale for splitting revision type, we now need to also
 I am not clear on whether the above addresses the full impacts of deviations between allocated and performed surgery.
 It simply aims to lump all deviations of any form from the planned surgery into a single parameter.
 
-When revealed for the surgical domain, exchangeability holds in the potential outcomes via $\mathbb{E}[Y(a)|A \in \{1,2\},E_R = 1] = \mathbb{E}[Y(a)|A = 0,E_R = 1] = \mathbb{E}[Y(a)|E_R = 1]$.
-
-
 :::
+
+As previously, for the surgical domain, we are interested the effect of intervening on $R$.
+For the duration domain, we are interested in the effect of intervening on $D|R_P$.
+For the choice domain, we are interested in the effect of intervening on $F$.
 
 ```{r}
 #| label: generate-data-complete
@@ -1510,10 +1511,10 @@ When revealed for the surgical domain, exchangeability holds in the potential ou
 
 generate_data_4 <- function(
     n = 1e6,
-    g = function(er, ed, ef, r, rp1, rp2, sra, d, f){ 
+    g = function(er, ed, ef, ra, rp, d, f){ 
       -1 + 
-        -0.1*(1-er) + (0.1*sra + 0.2*r + 0.1*r*sra)*er +
-        -0.05*(1-ed) + (-0.07*ic + 0.2*d*rp1 + 0.06*d*rp2)*ed +
+        -0.1*(1-er) + (0.2*(ra == 1) + 0.1*(ra == 2))*er +
+        -0.05*(1-ed) + (-0.07*ic + 0.2*d*(rp == 1) + 0.06*d*(rp == 2))*ed +
         -0.25*(1-ef) + 0.2*f*ef }
     ) {
 
@@ -1527,6 +1528,8 @@ generate_data_4 <- function(
   # exchangeable across groups so can just create random values for whole sample
   sra <- rbinom(n, 1, 0.7)
   ra <- (1 - er) * sr + er * r * (sra + 1) 
+  ra1 <- as.numeric(ra == 1)
+  ra2 <- as.numeric(ra == 2)
   
   # 30% of the allocated treatments get mixed up
   ic <- rbinom(n, 1, 0.3)
@@ -1546,12 +1549,12 @@ generate_data_4 <- function(
   ef <- rbinom(n, 1, 0.6)
   f <- as.numeric((ef == 1) * rbinom(n, 1, 0.5))
   
-  y <- rbinom(n, 1, plogis(g(er, ed, ef, r, rp1, rp2, sra, d, f)))
+  y <- rbinom(n, 1, plogis(g(er, ed, ef, ra, rp, d, f)))
   
   D <- data.table(
     erx = 1-er, edx = 1-ed, efx = 1-ef, 
     er, ed, ef,
-    r, sr, sra, ra,
+    r, sr, sra, ra, ra1, ra2, 
     ic, rp, rp1, rp2, ed, d,
     ef, f, y
   )
@@ -1561,10 +1564,22 @@ D <- generate_data_4()
 # D[, .N, keyby = .(d, ed, rp1, rp2, y)]
 
 # erx isn't applicable because all are rand into surg
-fit2 <- glm(y ~ er:sra + er:r + er:sra:r +
+fit2 <- glm(y ~ er:ra1 + er:ra2 +
               edx + ed:ic + ed:d:rp1 + ed:d:rp2 +
               efx + ef:f, data = D, family = binomial())
 summary(fit2)
+```
+
+Adopt separate models.
+
+```{r}
+fit3 <- glm(y ~ r, data = D, family = binomial())
+fit4 <- glm(y ~ d + rp2, data = D, subset = rp>0, family = binomial())
+fit5 <- glm(y ~ f, data = D, family = binomial())
+
+summary(fit3)
+summary(fit4)
+summary(fit5)
 ```
 
 
@@ -1572,8 +1587,20 @@ summary(fit2)
 
 
 
+```{r, eval = F}
+# Revision vs. DAIR
+rbind(
+  avg_comparisons(fit2, variables = "r", comparison = "lnoravg")
+)
 
-```{r}
+# Short vs Long (one-stage) and short vs. long (two-stage)
+rbind(
+  avg_comparisons(fit2, variables = "d", by = "s", comparison = "lnoravg")
+)
 
+# Rifampicin vs not
+rbind(
+  avg_comparisons(fit2, variables = "f", comparison = "lnoravg")
+)
 ```
 
