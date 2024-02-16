@@ -1337,7 +1337,7 @@ In all the above I've been assuming that the revision type, $S$, is an attribute
 
 Already expect that we should at least condition on the site/surgeon, but do we need anything extra to account for $S$? Distribution of $S$ conditional on surgeon?
 
-## Domain reveal
+## Randomisation reveal
 
 A number of simplifying assumptions have been made that result in an incomplete representation of the design.
 For example, at the start of the discussion on the duration domain, we assumed that duration is randomised, but depends on both $R$ and $S$.
@@ -1357,7 +1357,6 @@ To incorporate some of these ideas, start with the following definitions:
 -   $E_F$ randomisation reveal for choice domain - 0: no, 1: yes
 -   $R$ randomised surgery - 0: DAIR, 1: revision
 -   $S_R$ preferred surgery - 0: DAIR, 1: one-stage, 2: two-stage
--   $S_{R_A}$ preferred surgery assuming randomised to revision - 0: one-stage, 1: two-stage
 -   $R_A$ allocated surgery - 0: DAIR, 1: one-stage, 2: two-stage
 -   $R_P$ performed surgery (a noisy version of $R_A$?) - 0: DAIR, 1: one-stage, 2: two-stage
 -   $D$ randomised duration - 0: long, 1: short
@@ -1375,7 +1374,7 @@ The original surgeon becomes unavailable to do the procedure and another surgeon
 $R_A$ (allocation) is now determined by additional variables:
 
 $$
-R_A = (1 - E_R) S_R + E_R R (S_{R_A} + 1)
+R_A = (1 - E_R) S_R + E_R R S_R
 $$
 
 so that when we have no revealed randomisation ($E_R = 0$) for the surgical domain, $R_A$ aligns with the preferred procedure out of all those possible (dair, one-stage, two-stage).
@@ -1406,7 +1405,7 @@ Randomisation would only be revealed if eligibility is confirmed, which is indep
 :::
 
 The edited DAG is shown below, which still has a number of simplications relative to the intended approach.
-Patients may contribute to some or all domains, which influences the treatment regimen (combination of treatments across the domains) they receive and which suggests the various causal effects that might be identified.
+Patients may contribute to some or all domains, which influences the treatment regimen (combination of treatments across the domains) they receive and which suggests the various causal effects that are identifiable.
 
 ```{mermaid}
 %%| label: fig-scenario-4
@@ -1422,7 +1421,6 @@ flowchart LR
   ER --> SR(S<sub>R)
   ED(E<sub>D) --> DA(D<sub>A) 
   SR --> RA 
-  SRA(S<sub>R<sub>A) --> RA
   SD(S<sub>D) --> DA 
   R --> RA
   RA --> RP(R<sub>P) 
@@ -1443,7 +1441,6 @@ flowchart LR
   URP((U<sub>R<sub>P)) -.-> IRP
   UD((U<sub>D)) -.-> D
   USR((U<sub>S<sub>R)) -.-> SR
-  USR((U<sub>S<sub>R)) -.-> SRA
   UR((U<sub>R)) -.-> R
   USD((U<sub>S<sub>D)) -.-> SD
   USF((U<sub>S<sub>F)) -.-> SF
@@ -1471,20 +1468,20 @@ Postulate the following model:
 
 $$
 \begin{aligned}
-\mathbb{E}[Y|E_R, E_D, E_F, S_{R_A}, R, I_{R_P}, R_P, D, F] &= \text{expit}( \beta_0 + \\
-  &\quad \beta_1 [1 - E_R] + [\beta_2 \mathbb{I}(R_A = 1) + \beta_3 \mathbb{I}(R_A = 2)]E_R + \\
-  &\quad \beta_4 [1 - E_D] + [\beta_5 I_{R_P} + \beta_6 \mathbb{I}(R_P = 1) D + \beta_{7} \mathbb{I}(R_P = 2) D]E_D + \\
+\mathbb{E}[Y|L; \beta] &=  \text{expit}( \beta_0 + \\
+  &\quad \beta_1 [1 - E_R] + [\beta_2 R + \beta_3 R \mathbb{I}(S_R = 2) ]E_R + \\
+  &\quad \beta_4 [1 - E_D] + [\beta_5 I_{R_P} + \beta_6 D + \beta_{7} \mathbb{I}(R_P = 2) D]E_D + \\
   &\quad \beta_{8} [1 - E_F] + \beta_{9} F E_F  )
 \end{aligned}
 $$
 
-where the following denote movements in the log-odds of treatment success associated with the various covariate levels:
+where the $L$ denotes the model variables and $\beta$ the vector of parameters and the following describe the movements in the log-odds of treatment success associated with the non-reference levels:
 
-+ $\beta_1$ is the shift under non-reveal (surgery) with no differentiation for surgical preference
++ $\beta_1$ is the shift under non-reveal (surgery^[The parameter ignores potential differentiation for surgical type.])
 + $\beta_2$ is the shift under revision with one-stage procedure
 + $\beta_3$ is the shift under revision with two-stage procedure
 + $\beta_4$ is the shift under non-reveal (duration) with no differentiation for surgical nor duration preference
-+ $\beta_5$ is the shift for deviations from allocated revision
++ $\beta_5$ is the shift for deviations from allocated revision to some an alternate surgical approach
 + $\beta_6$ is the shift for short duration when one-stage was actually performed
 + $\beta_7$ is the shift for short duration when two-stage was actually performed
 + $\beta_{8}$ is the shift under non-reveal (choice) with no differentiation for choice preference
@@ -1511,23 +1508,28 @@ For the choice domain, we are interested in the effect of intervening on $F$.
 
 generate_data_4 <- function(
     n = 1e6,
-    g = function(er, ed, ef, ra, rp, d, f){ 
+    g = function(er, ed, ef, r, sr, ic, rp, d, f){ 
       -1 + 
-        -0.1*(1-er) + (0.2*(ra == 1) + 0.1*(ra == 2))*er +
-        -0.05*(1-ed) + (-0.07*ic + 0.2*d*(rp == 1) + 0.06*d*(rp == 2))*ed +
-        -0.25*(1-ef) + 0.2*f*ef }
+        -0.1*(1-er) + (0.2*r + 0.4*r*sra)*er +
+        -0.05*(1-ed) + (-0.07*ic + 0.9*d + 0.06*d*rp2)*ed +
+        -0.25*(1-ef) + 0.15*f*ef 
+      }
     ) {
 
   # all enter surgical for now
   er <- rep(1, n)
   # randomise dair vs rev
   r <- rbinom(n, 1, 0.5)
-  # unconstrained perspective on what surgical procedure should be done
-  sr <- sample(0:2, n, replace = T, prob = c(0.2, 0.2, 0.6))
-  # 70% chance of clin choosing two-stage once revision is required
+  
+  # 70% chance of clin choosing two-stage should pt be rand to revision 
   # exchangeable across groups so can just create random values for whole sample
-  sra <- rbinom(n, 1, 0.7)
-  ra <- (1 - er) * sr + er * r * (sra + 1) 
+  sr <- numeric(n)
+  sr[r == 0] <- sample(0:2, sum(r == 0), replace = T, prob = c(0.2, 0.2, 0.6))
+  sr[r == 1] <- sample(1:2, sum(r == 1), replace = T, prob = c(0.3, 0.7))
+  
+  sra <- as.numeric(sr == 2)
+
+  ra <- (1 - er) * sr + er * r * (sr) 
   ra1 <- as.numeric(ra == 1)
   ra2 <- as.numeric(ra == 2)
   
@@ -1549,7 +1551,8 @@ generate_data_4 <- function(
   ef <- rbinom(n, 1, 0.6)
   f <- as.numeric((ef == 1) * rbinom(n, 1, 0.5))
   
-  y <- rbinom(n, 1, plogis(g(er, ed, ef, ra, rp, d, f)))
+  y <- rbinom(n, 1, plogis(g(er, ed, ef, r, sra, ic, rp2, d, f)))
+  # table(y, useNA = "always")
   
   D <- data.table(
     erx = 1-er, edx = 1-ed, efx = 1-ef, 
@@ -1559,44 +1562,121 @@ generate_data_4 <- function(
     ef, f, y
   )
 }
-set.seed(1066)
+set.seed(1024)
 D <- generate_data_4()
 # D[, .N, keyby = .(d, ed, rp1, rp2, y)]
 
 # erx isn't applicable because all are rand into surg
-fit2 <- glm(y ~ er:ra1 + er:ra2 +
-              edx + ed:ic + ed:d:rp1 + ed:d:rp2 +
+fit2 <- glm(y ~ er:r + er:r:sra +
+              edx + ed:ic + ed:d + ed:d:rp2 +
               efx + ef:f, data = D, family = binomial())
 summary(fit2)
+
+
+
 ```
 
-Adopt separate models.
+For the marginal effect associated with surgery, we have 
 
-```{r}
-fit3 <- glm(y ~ r, data = D, family = binomial())
-fit4 <- glm(y ~ d + rp2, data = D, subset = rp>0, family = binomial())
-fit5 <- glm(y ~ f, data = D, family = binomial())
+$$
+\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial R} = \beta_2 E_R + \beta_3 E_R \mathbb{I}(S_R = 2) 
+$$
 
-summary(fit3)
-summary(fit4)
-summary(fit5)
+for the randomised comparisons, $E_R = 1$, then
+
+$$
+\mathbb{E}\left[\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial R}\right] = \beta_2 + \beta_3 \mathbb{E}[ \mathbb{I}(S_R = 2)]
+$$
+
+similarly, for duration, we have
+
+$$
+\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial D} = \beta_6 E_D + \beta_7 E_D \mathbb{I}(R_P = 2) 
+$$
+
+under one-stage, 
+
+$$
+\mathbb{E}\left[\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial D}\right] = \beta_6 \mathbb{E}[E_D]
+$$
+
+under two-stage, $R_P = 2$
+
+$$
+\mathbb{E}\left[\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial D}\right] = \beta_6 \mathbb{E}[E_D] + \beta_7 (Cov[E_D,\mathbb{I}(R_P = 2) ] + \mathbb{E}[E_D] \mathbb{E}[\mathbb{I}(R_P = 2) ] 
+$$
+
+and for choice
+
+$$
+\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial F} = \beta_9 E_F 
+$$
+
+since $E_F$ is fixed for the randomised comparison
+
+$$
+\mathbb{E}\left[\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial F}\right] = \beta_9 
+$$
+
+```{r, eval = FALSE}
+
+library(marginaleffects)
+
+dat <- "https://vincentarelbundock.github.io/Rdatasets/csv/Stat2Data/Titanic.csv"
+dat <- read.csv(dat)
+nrow(dat)
+dat$PClass[dat$PClass == "*"] <- NA
+dat <- data.table(dat)
+dat <- dat[, .(Survived, PClass, SexCode, Age)][complete.cases(dat[, .(Survived, PClass, SexCode, Age)])]
+mod <- glm(Survived ~ PClass * SexCode * Age, data = dat, family = binomial)
+summary(mod)
+
+nrow(model.matrix(mod))
+
+nrow(dat)
+d_out <- comparisons(mod,
+  variables = list(PClass = c("1st", "3rd"))) # Step 1: Quantity
+
+d_out <- data.table(d_out)
+d_out
 ```
 
 
 
+Empirically, these equate to
 
-
-
-```{r, eval = F}
-# Revision vs. DAIR
-rbind(
-  avg_comparisons(fit2, variables = "r", comparison = "lnoravg")
+```{r, eval = T}
+b <- coef(fit2) 
+b_r_marg <- b["er:r"] * D[, mean(er)] + b["er:r:I(sr == 2)TRUE"] * D[, mean(er & sr == 2)]
+b_d_1_marg <- b["ed:d"] * D[, mean(ed)]
+b_d_2_marg <- b["ed:d"] * D[, mean(ed)] + b["ed:d:I(rp == 2)TRUE"] * cov(D[,ed],D[,as.numeric(rp == 2)]) + D[, mean(ed)]*D[, mean(rp == 2)]
+b_f_marg <- b["ef:f"] * D[, mean(ef)] 
+m <- data.table(
+  estimate = c(
+    "avg_condit_log_odds_ratio (surg)", 
+    "avg_condit_log_odds_ratio (duration, one-stage)", 
+    "avg_condit_log_odds_ratio (duration, two-stage)", 
+    "avg_condit_log_odds_ratio (choice)"
+  ),
+  lor = c(
+    b_r_marg, 
+    b_d_1_marg,
+    b_d_2_marg,
+    b_f_marg
+  )
 )
+m
+```
+
+
+```{r, eval = T}
+# Revision vs. DAIR
+avg_comparisons(fit2, variables = "r", comparison = "lnoravg")
+
 
 # Short vs Long (one-stage) and short vs. long (two-stage)
-rbind(
-  avg_comparisons(fit2, variables = "d", by = "s", comparison = "lnoravg")
-)
+avg_comparisons(fit2, variables = "d", by = "rp2", comparison = "lnoravg")
+# comparisons(fit2, variables = list(d = c(0,1)), newdata = datagrid(rp2 = 0:1), comparison = "lnoravg")
 
 # Rifampicin vs not
 rbind(
