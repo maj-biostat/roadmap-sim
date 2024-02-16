@@ -1208,6 +1208,14 @@ $$
 $$
 
 
+
+::: {.callout-note collapse=false}
+
+$\beta_2$ is now the shift for revision, long duration and no-rif.
+
+:::
+
+
 ```{r}
 #| label: generate-data-rifampicin
 #| code-summary: Generate rifampicin data
@@ -1358,7 +1366,8 @@ To incorporate some of these ideas, start with the following definitions:
 -   $R$ randomised surgery - 0: DAIR, 1: revision
 -   $S_R$ preferred surgery - 0: DAIR, 1: one-stage, 2: two-stage
 -   $R_A$ allocated surgery - 0: DAIR, 1: one-stage, 2: two-stage
--   $R_P$ performed surgery (a noisy version of $R_A$?) - 0: DAIR, 1: one-stage, 2: two-stage
+-   $R_P$ performed surgery - 0: DAIR, 1: revision
+-   $S_{R_P}$ preferred surgery - 0: one-stage, 1: two-stage
 -   $D$ randomised duration - 0: long, 1: short
 -   $D_A$ allocated duration - 0: long, 1: short, 2: other
 -   $S_D$ selected duration - 0: long, 1: short, 2: other
@@ -1424,7 +1433,8 @@ flowchart LR
   SD(S<sub>D) --> DA 
   R --> RA
   RA --> RP(R<sub>P) 
-  IRP(I<sub>R<sub>P) --> RP
+  SRP(S<sub>R<sub>P) --> RP
+  SRP --> D
   RA --> Y
   RP --> D
   RP --> ED
@@ -1438,7 +1448,7 @@ flowchart LR
   UED((U<sub>E<sub>D)) -.-> ED
   UEF((U<sub>E<sub>F)) -.-> EF
   UF((U<sub>F)) -.-> F
-  URP((U<sub>R<sub>P)) -.-> IRP
+  URP((U<sub>R<sub>P)) -.-> SRP
   UD((U<sub>D)) -.-> D
   USR((U<sub>S<sub>R)) -.-> SR
   UR((U<sub>R)) -.-> R
@@ -1447,11 +1457,29 @@ flowchart LR
   UY((U<sub>Y)) -.-> Y
 ```
 
-Forget about silos for the moment.
-The setting is such that a participant might be randomised in any/all of the surgical, duration and choice domains.
+::: {.callout-note collapse=false}
+
+$\S_R$ is actually representing multiple ideas:
+
+1. when the surgical domain is not applicable (randomisation never revealed) e.g. for the chronic patients, then $S_R$ is the selection from dair, one-stage, two-stage
+2. when surgical domain is applicable (randomisation is revealed) then $S_R$ is the selection between one-stage and two-stage
+
+In essence, it is a ranking of which surgical procedure is required.
+For example, say the selection is: dair, two-stage, one-stage in order of preference.
+If randomisation is not reveal, dair is would be the selection.
+If randomisation is revealed, two-stage would be as it is the most prefered surgical procedure applicable to revision.
+
+:::
 
 Again consider intervening on surgical procedure whereby we are interested in the effect of dair vs revision on treatment success.
 There are no open backdoor paths apparent and therefore no adjustment is required to identify the total effect of $R$ on $Y$.
+
+::: {.callout-note collapse=false}
+
+Stuff on $D$ out of date. 
+There is still an open path but now you need to adjust for ($R_P$ or $E_D$).
+
+:::
 
 Consider randomised duration $D$; backdoor paths exists:
 
@@ -1470,7 +1498,7 @@ $$
 \begin{aligned}
 \mathbb{E}[Y|L; \beta] &=  \text{expit}( \beta_0 + \\
   &\quad \beta_1 [1 - E_R] + [\beta_2 R + \beta_3 R \mathbb{I}(S_R = 2) ]E_R + \\
-  &\quad \beta_4 [1 - E_D] + [\beta_5 I_{R_P} + \beta_6 D + \beta_{7} \mathbb{I}(R_P = 2) D]E_D + \\
+  &\quad \beta_4 [1 - E_D] + [\beta_5 \mathbb{I}(S_{R_P} \ne R_A) + \beta_6 R_P D + \beta_{7} R_P D \mathbb{I}(S_{R_P} = 2)]E_D + \\
   &\quad \beta_{8} [1 - E_F] + \beta_{9} F E_F  )
 \end{aligned}
 $$
@@ -1502,16 +1530,16 @@ As previously, for the surgical domain, we are interested the effect of interven
 For the duration domain, we are interested in the effect of intervening on $D|R_P$.
 For the choice domain, we are interested in the effect of intervening on $F$.
 
-```{r}
+```{r, eval = T}
 #| label: generate-data-complete
 #| code-summary: Generate complete data
 
 generate_data_4 <- function(
     n = 1e6,
-    g = function(er, ed, ef, r, sr, ic, rp, d, f){ 
+    g = function(er, ed, ef, r, sra, ic, rp, d, srp2, f){ 
       -1 + 
         -0.1*(1-er) + (0.2*r + 0.4*r*sra)*er +
-        -0.05*(1-ed) + (-0.07*ic + 0.9*d + 0.06*d*rp2)*ed +
+        -0.05*(1-ed) + (-0.07*ic + 0.9*rp*d + 0.06*rp*d*srp2)*ed +
         -0.25*(1-ef) + 0.15*f*ef 
       }
     ) {
@@ -1535,15 +1563,19 @@ generate_data_4 <- function(
   
   # 30% of the allocated treatments get mixed up
   ic <- rbinom(n, 1, 0.3)
-  rp <- ra
-  rp[as.logical(ic)] <- sample(0:2, sum(ic), replace = T, prob = c(0.2, 0.2, 0.6))
-  ed <- as.numeric(rp %in% 1:2)
+  srp <- ra
+  # the ones that swap-over revises the view on selection?
+  srp[as.logical(ic)] <- sample(0:2, sum(ic), replace = T, prob = c(0.2, 0.2, 0.6))
   
-  rp1 <- as.numeric(rp == 1)
-  rp2 <- as.numeric(rp == 2)
+  # still based on the rand allocation for dair/rev?
+  rp <- as.numeric(srp %in% 1:2)
   
-  stopifnot(identical(rp>0, as.logical(ed)))
+  # reveal entirely determined by rp therefore unnecessary???
+  ed <- rp
   
+  srp1 <- as.numeric(srp == 1)
+  srp2 <- as.numeric(srp == 2)
+
   # rand to long (0), short (1)
   d <- as.numeric((rp > 0) * rbinom(n, 1, 0.5))
   
@@ -1551,15 +1583,15 @@ generate_data_4 <- function(
   ef <- rbinom(n, 1, 0.6)
   f <- as.numeric((ef == 1) * rbinom(n, 1, 0.5))
   
-  y <- rbinom(n, 1, plogis(g(er, ed, ef, r, sra, ic, rp2, d, f)))
+  y <- rbinom(n, 1, plogis(g(er, ed, ef, r, sra, ic, rp, d, srp2, f)))
   # table(y, useNA = "always")
   
   D <- data.table(
     erx = 1-er, edx = 1-ed, efx = 1-ef, 
     er, ed, ef,
     r, sr, sra, ra, ra1, ra2, 
-    ic, rp, rp1, rp2, ed, d,
-    ef, f, y
+    ic, rp, srp, srp1, srp2, d,
+    f, y
   )
 }
 set.seed(1024)
@@ -1568,119 +1600,65 @@ D <- generate_data_4()
 
 # erx isn't applicable because all are rand into surg
 fit2 <- glm(y ~ er:r + er:r:sra +
-              edx + ed:ic + ed:d + ed:d:rp2 +
+              edx + ed:ic + ed:rp:d + ed:d:rp:srp2 +
               efx + ef:f, data = D, family = binomial())
 summary(fit2)
 
-
-
 ```
 
-For the marginal effect associated with surgery, we have 
+::: {.callout-note collapse=false}
 
-$$
-\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial R} = \beta_2 E_R + \beta_3 E_R \mathbb{I}(S_R = 2) 
-$$
+Using g-computation to determine the marginal effects.
+`lnor` and `lnoravg` are used as the comparisons.
 
-for the randomised comparisons, $E_R = 1$, then
+The first (`lnor`) approach (average log odds?)
 
-$$
-\mathbb{E}\left[\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial R}\right] = \beta_2 + \beta_3 \mathbb{E}[ \mathbb{I}(S_R = 2)]
-$$
+1. predicts the log-odds of treatment success for all units with the surgical approach set to revision.
+2. predicts the log-odds of treatment success for all units with the surgical approach set to dair.
+3. computes the difference between the response on the log odds scale and takes the mean
 
-similarly, for duration, we have
+The second (`lnoravg`) approach (marginal mean?)
 
-$$
-\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial D} = \beta_6 E_D + \beta_7 E_D \mathbb{I}(R_P = 2) 
-$$
+1. predicts the probability of treatment success for all units with the surgical approach set to revision and computes the mean
+2. predicts the probability of treatment success for all units with the surgical approach set to dair and computes the mean
+3. converts the mean probability of treatment success to the log-odds scale and takes the difference
 
-under one-stage, 
+:::
 
-$$
-\mathbb{E}\left[\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial D}\right] = \beta_6 \mathbb{E}[E_D]
-$$
-
-under two-stage, $R_P = 2$
-
-$$
-\mathbb{E}\left[\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial D}\right] = \beta_6 \mathbb{E}[E_D] + \beta_7 (Cov[E_D,\mathbb{I}(R_P = 2) ] + \mathbb{E}[E_D] \mathbb{E}[\mathbb{I}(R_P = 2) ] 
-$$
-
-and for choice
-
-$$
-\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial F} = \beta_9 E_F 
-$$
-
-since $E_F$ is fixed for the randomised comparison
-
-$$
-\mathbb{E}\left[\frac{\partial \mathbb{E}[Y|L;\beta]}{\partial F}\right] = \beta_9 
-$$
-
-```{r, eval = FALSE}
-
-library(marginaleffects)
-
-dat <- "https://vincentarelbundock.github.io/Rdatasets/csv/Stat2Data/Titanic.csv"
-dat <- read.csv(dat)
-nrow(dat)
-dat$PClass[dat$PClass == "*"] <- NA
-dat <- data.table(dat)
-dat <- dat[, .(Survived, PClass, SexCode, Age)][complete.cases(dat[, .(Survived, PClass, SexCode, Age)])]
-mod <- glm(Survived ~ PClass * SexCode * Age, data = dat, family = binomial)
-summary(mod)
-
-nrow(model.matrix(mod))
-
-nrow(dat)
-d_out <- comparisons(mod,
-  variables = list(PClass = c("1st", "3rd"))) # Step 1: Quantity
-
-d_out <- data.table(d_out)
-d_out
-```
-
-
-
-Empirically, these equate to
-
-```{r, eval = T}
-b <- coef(fit2) 
-b_r_marg <- b["er:r"] * D[, mean(er)] + b["er:r:I(sr == 2)TRUE"] * D[, mean(er & sr == 2)]
-b_d_1_marg <- b["ed:d"] * D[, mean(ed)]
-b_d_2_marg <- b["ed:d"] * D[, mean(ed)] + b["ed:d:I(rp == 2)TRUE"] * cov(D[,ed],D[,as.numeric(rp == 2)]) + D[, mean(ed)]*D[, mean(rp == 2)]
-b_f_marg <- b["ef:f"] * D[, mean(ef)] 
-m <- data.table(
-  estimate = c(
-    "avg_condit_log_odds_ratio (surg)", 
-    "avg_condit_log_odds_ratio (duration, one-stage)", 
-    "avg_condit_log_odds_ratio (duration, two-stage)", 
-    "avg_condit_log_odds_ratio (choice)"
-  ),
-  lor = c(
-    b_r_marg, 
-    b_d_1_marg,
-    b_d_2_marg,
-    b_f_marg
-  )
-)
-m
-```
 
 
 ```{r, eval = T}
 # Revision vs. DAIR
+avg_comparisons(fit2, variables = "r", comparison = "lnor")
+
+d_new <- copy(D)
+
+# using lnor
+d_new[, r := 1]
+lo1 <- predict(fit2, newdata = d_new)
+d_new[, r := 0]
+lo0 <- predict(fit2, newdata = d_new)
+mean(lo1 - lo0)
+```
+
+```{r}
+# using lnoravg
 avg_comparisons(fit2, variables = "r", comparison = "lnoravg")
 
+d_new[, r := 1]
+p1 <- predict(fit2, newdata = d_new, type = "response")
+d_new[, r := 0]
+p0 <- predict(fit2, newdata = d_new, type = "response")
+qlogis(mean(p1)) - qlogis(mean(p0))
+```
 
+And for duration and choice.
+
+```{r}
 # Short vs Long (one-stage) and short vs. long (two-stage)
-avg_comparisons(fit2, variables = "d", by = "rp2", comparison = "lnoravg")
-# comparisons(fit2, variables = list(d = c(0,1)), newdata = datagrid(rp2 = 0:1), comparison = "lnoravg")
+avg_comparisons(fit2, variables = "d", by = "srp2", comparison = "lnoravg")
 
 # Rifampicin vs not
-rbind(
-  avg_comparisons(fit2, variables = "f", comparison = "lnoravg")
-)
+avg_comparisons(fit2, variables = "f", comparison = "lnoravg")
 ```
 
