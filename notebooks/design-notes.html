@@ -328,7 +328,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">February 16, 2024</p>
+      <p class="date-modified">February 18, 2024</p>
     </div>
   </div>
     
@@ -358,13 +358,13 @@ Note
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>Why bother with any of this? One reason is to identify the variables that are relevant to the design and how they relate. This helps us formulate a picture of the joint probability distribution which allows us to simulate the data generation process. Without the joint view, it is unclear how one would be able to simulate an internally consistent data set. It also allows us to determine which causal effects we can identify. Even if we model all the domains separately, we still need a joint view of the distribution in order to simulate the data properly.</p>
+<p>Why bother with any of this? One reason is to identify the variables that are relevant to the design and how they relate. This helps us formulate a picture of the joint probability distribution which allows us to simulate data from the assumed data generation process. It also allows us to determine which causal effects we can identify. Even if we model all the domains separately, we still need some kind of joint view of the distribution in order to simulate the data properly and share parameters.</p>
 </div>
 </div>
 </div>
-<p>Say we were doing a trial in just the late acute patients. We are interested in surgery (DAIR/revision) and antibiotic duration (long/short), but we are limited in that, for whatever reason, we can not ethically randomise the <em>type</em> of revision surgery, only revision surgery itself.</p>
-<p>However, choice of antibiotic duration is conditional on the type of revision surgery used, so surgery type needs to be considered in any joint analysis (alternatively, analyse separately).</p>
-<p>I just want to work through from a basic scenario to more involved ones to check understanding of potential issues. This will ignore much of the complexity, but just want to get some basics down as a reference.</p>
+<p>Start by saying we were doing a trial in just the late acute patients. We are interested in surgery (DAIR/revision) and antibiotic duration (long/short), but we are limited in that, for whatever reason, we can not ethically randomise the <em>type</em> of revision surgery, only revision surgery itself.</p>
+<p>Choice of antibiotic duration is conditional on the type of revision surgery used, so surgery type needs to be considered in any joint analysis (alternatively, analyse separately).</p>
+<p>I just want to work through from a basic scenario to more involved ones to check understanding of potential issues. The following will ignore much of the complexity, but just want to get some basics down as a reference.</p>
 <section id="surgery" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="surgery">Surgery</h2>
 <p>As a starting point, consider the following:</p>
@@ -387,7 +387,8 @@ Note
 </div>
 <div id="callout-2" class="callout-2-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>The above determination is likely also dependent on the surgeon’s position as well as patient characteristics. In fact, one may dominate the other. For example, would a surgeon choose two-stage for all their patients simply because they have more experience or sucess with that approach, whereas another might choose one-stage for all theirs? In practice, what I think matters primarily is that we know what selection is rather than how it is determined.</p>
+<p>The above determination is actually dependent on the surgeon’s position as well as patient characteristics. In fact, one may dominate the other. For example, would a surgeon choose two-stage for all their patients simply because they have more experience or sucess with that approach, whereas another might choose one-stage for all theirs?</p>
+<p>Note to self - in practice, I actually think that what matters is that we know what selection is rather than what process occurs to decide. Additionally, later we see that this consideration becomes redundant.</p>
 </div>
 </div>
 </div>
@@ -435,8 +436,8 @@ Note
 <div class="callout-body-container callout-body">
 <ul>
 <li>There are no back-door paths for the above, hence no open back-door paths</li>
-<li>Some function of <span class="math inline">\(S\)</span> and <span class="math inline">\(R\)</span> cause <span class="math inline">\(Y\)</span>, <span class="math inline">\(Y = f(R,S)\)</span></li>
-<li>Is assuming <span class="math inline">\(S\)</span> causes <span class="math inline">\(Y\)</span> a weaker/safer assumption than excluding that link? Ans: Think so.</li>
+<li><span class="math inline">\(Y\)</span> is caused by/depends on some function of <span class="math inline">\(R\)</span> and <span class="math inline">\(S\)</span>: <span class="math inline">\(Y = f(R,S)\)</span></li>
+<li>Assuming <span class="math inline">\(S\)</span> causes <span class="math inline">\(Y\)</span> a weaker/safer assumption than excluding that link.</li>
 <li>Maybe there should be some shared <span class="math inline">\(U\)</span> that influences both <span class="math inline">\(S\)</span> and <span class="math inline">\(Y\)</span> rather than assuming <span class="math inline">\(S\)</span> causes <span class="math inline">\(Y\)</span>?</li>
 <li>The graph implies:
 <ul>
@@ -444,7 +445,7 @@ Note
 <li><span class="math inline">\(Y\)</span> is conditionally independent of <span class="math inline">\(R\)</span> given <span class="math inline">\(A\)</span> and <span class="math inline">\(S\)</span>; <span class="math inline">\(Y \mathrel{\unicode{x2AEB}} R | A, S\)</span></li>
 </ul></li>
 <li>We can estimate the total effect of <span class="math inline">\(R\)</span> on <span class="math inline">\(Y\)</span> where <span class="math inline">\(R = 1\)</span> is loosely defined as revision with expert selection of one-stage or two-stage procedure (or something along those lines)</li>
-<li>Planned/intended procedure should be recorded prior to any elements of randomisation being revealed.</li>
+<li>Think planned/intended procedure should be recorded prior to any elements of randomisation being revealed.</li>
 <li>No adjustment is required to estimate the total effect of <span class="math inline">\(R\)</span> on <span class="math inline">\(Y\)</span></li>
 </ul>
 </div>
@@ -470,7 +471,7 @@ Note
 </div>
 </div>
 </div>
-<p>If <span class="math inline">\(Y(a)\)</span> is the potential outcome of a patient if they were assigned to receive surgery of type <span class="math inline">\(a\)</span> (dair, one-stage, two-stage), then:</p>
+<p>If <span class="math inline">\(Y(a)\)</span> is the potential outcome of a patient under surgery of type <span class="math inline">\(a\)</span> (dair, one-stage, two-stage), then:</p>
 <p><span class="math display">\[
 \begin{aligned}
 \mathbb{E}[Y(a)] &amp;= \mathbb{E}[Y(a)|R=0] \\
@@ -534,7 +535,7 @@ Note
 <p><span class="math display">\[
 \mathbb{E}[Y | R, S] = \text{expit}(\beta_0 + \beta_1 \mathbb{I}(R = \text{one-stage} \land D = short) + \beta_2 \mathbb{I}(R = \text{two-stage} \land D = short)) \\
 \]</span></p>
-<p>However, this means that the reference group for the one-stage and two-stage duration effects have the same log-odds of treatment success, which is unlikely to be the case. By splitting <span class="math inline">\(R\)</span> into one-stage and two-stage effects (see above) we allow the reference groups for the one-stage and two-stage duration effects to vary.</p>
+<p>However, this means that the duration domain reference group for the one-stage and two-stage duration effects have the same log-odds of treatment success and this is very unlikely to be the case. Thus, by splitting <span class="math inline">\(R\)</span> into one-stage and two-stage effects we allow the reference groups for the one-stage and two-stage duration effects to vary.</p>
 </div>
 </div>
 </div>
@@ -563,7 +564,7 @@ Note
 <p>Probably incorrectly, I think the selection effect is meaningless in the sense that receiving dair contradicts the possibility of a selection. It is analogous to a model for number of children whereby you make an adjustment for (randomised) marriage and (self-selected) age of marriage. The main effect of age of marriage is excluded, on the basis that it has no counterpart in reality and therefore no way to inform the effect.</p>
 <p>What is the counter-argument? Perhaps something along the lines of:</p>
 <p>To justify the inclusion of <span class="math inline">\(\beta_3\)</span> we argue that the married and the non-married groups are balanced across age (and all other characteristics). Therefore, the married and unmarried groups are similar and the effect for age of married in the group is portable to the group that were <em>not</em> randomised to marriage, in the counterfactual world where they had been.</p>
-<p>Ok, think I have convinced myself that it makes sense, if perhaps no-one else.</p>
+<p>Ok, think I have convinced myself (if perhaps no-one else) that it makes sense.</p>
 </div>
 </div>
 </div>
@@ -597,7 +598,7 @@ Note
 </div>
 <div id="callout-8" class="callout-8-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>Which is just creating a standardised probability of treatment success under revision based on a weighted version of the probability of treatment success for each of the selection groups (one-stage and two-stage) where the weights are formed from the (unknown) distribution of <span class="math inline">\(S\)</span> (to be estimated from the sample). The standardised probability of treatment success under revision is then converted to the log odds of treatment success and the reference group (DAIR) log-odds of treatment success is subtracted to come up with the log-OR.</p>
+<p>Which is just creating a standardised probability of treatment success under revision based on a weighted version of the probability of treatment success for each of the selection groups (one-stage and two-stage) where the weights are formed from the (unknown) distribution of <span class="math inline">\(S\)</span> (estimated from the sample). The standardised probability of treatment success under revision is then converted to the log odds of treatment success and the reference group (DAIR) log-odds of treatment success is subtracted to come up with the log-OR.</p>
 <p>The final line in the above derivation is just saying that we can assume that the probability distribution of <span class="math inline">\(S\)</span> is independent to treatment group membership and so can be estimated from the full sample rather than condition on <span class="math inline">\(R\)</span>. Note that <span class="math inline">\(\mathbb{P}(S=s)\)</span> is not necessarily indicative of the probability distribution of <span class="math inline">\(S\)</span> in the population because of our convenience sample, but this is true for all inference here and in the majority of trials.</p>
 </div>
 </div>
@@ -3084,7 +3085,86 @@ Figure&nbsp;3: Scenario 3, the <span class="math inline">\(U\)</span> denote ind
 </div>
 </div>
 </div>
-<p>Now there are two interventions: <span class="math inline">\(R\)</span> which has downstream unknown effects partly due to the unknown revision type, <span class="math inline">\(S\)</span>, which is selected, and <span class="math inline">\(D\)</span> which is randomised.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-16" class="callout-16-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>There might be alternative representations of the above and also the potential for direct and indirect effects of <span class="math inline">\(S\)</span>, see below:</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div id="fig-scenario-3a" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure" aria-labelledby="fig-scenario-3a-caption">
+<div aria-describedby="fig-scenario-3a-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-scenario-3a">%%{
+  init:{
+    "flowchart":{"htmlLabels": "true"},
+    "securityLevel": "loose",
+    "theme": "base"
+}}%%
+flowchart LR
+  R --&gt; A --&gt; Y
+  S --&gt; A
+  S --&gt; Y
+  A --&gt; D
+  D --&gt; Y
+  UD((U&lt;sub&gt;D)) -.-&gt; D
+  US((U&lt;sub&gt;S)) -.-&gt; S
+  UR((U&lt;sub&gt;R)) -.-&gt; R
+  UY((U&lt;sub&gt;Y)) -.-&gt; Y
+</pre>
+</div>
+</div>
+
+</figure>
+</div>
+</div>
+</div>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div id="fig-scenario-3b" class="quarto-figure quarto-figure-center quarto-float anchored">
+<figure class="quarto-float quarto-float-fig figure" aria-labelledby="fig-scenario-3b-caption">
+<div aria-describedby="fig-scenario-3b-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-scenario-3b">%%{
+  init:{
+    "flowchart":{"htmlLabels": "true"},
+    "securityLevel": "loose",
+    "theme": "base"
+}}%%
+flowchart LR
+  R --&gt; D
+  S --&gt; D
+  S --&gt; Y
+  D --&gt; Y
+  UD((U&lt;sub&gt;D)) -.-&gt; D
+  US((U&lt;sub&gt;S)) -.-&gt; S
+  UR((U&lt;sub&gt;R)) -.-&gt; R
+  UY((U&lt;sub&gt;Y)) -.-&gt; Y
+</pre>
+</div>
+</div>
+
+</figure>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="fig-scenario-3a-caption" class="margin-figure-caption column-margin callout-16-contents callout-collapse collapse show callout-margin-content">
+Figure&nbsp;4
+</div><div id="fig-scenario-3b-caption" class="margin-figure-caption column-margin callout-16-contents callout-collapse collapse show callout-margin-content">
+Figure&nbsp;5
+</div><p>Now there are two interventions: <span class="math inline">\(R\)</span> which has downstream unknown effects partly due to the unknown revision type, <span class="math inline">\(S\)</span>, which is selected, and <span class="math inline">\(D\)</span> which is randomised.</p>
 <p>The simplest approach is to analyse these separately. First, restrict the analysis to those patients who were assigned to one-stage and have an RCT for duration in embedded in that subset. Then, restrict analysis to only those assigned to two-stage and have an RCT for duration in that subset. However, we would like to have a joint model so that other effects can be shared (other domains/site/surgeon/age/whatever else). In the joint model, duration effect needs to be conditional on revision type.</p>
 <p>Say the true model were something like</p>
 <p><span id="eq-dn-7"><span class="math display">\[
@@ -3102,38 +3182,6 @@ Figure&nbsp;3: Scenario 3, the <span class="math inline">\(U\)</span> denote ind
 \mathbb{E}[Y|R,S] = \text{expit}(\beta_0 + \beta_1(S - 0.5) + \beta_2R + \beta_3R(S-0.5) + \beta_4R(D-0.5) + \beta_5R(D-0.5)(S-0.5)
 \]</span></p>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="true" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-16" class="callout-16-contents callout-collapse collapse show">
-<div class="callout-body-container callout-body">
-<p>Is the above missing a <span class="math inline">\(D\)</span> from the conditioning?</p>
-</div>
-</div>
-</div>
-<p>but for simplicity, not doing this here.</p>
-<p>From the above, we could compare (randomised comparison) any of:</p>
-<ul>
-<li>revision long vs.&nbsp;DAIR</li>
-<li>revision short vs.&nbsp;DAIR, but no other combinations of revision.</li>
-<li>one-stage short + two-stage long vs.&nbsp;DAIR</li>
-<li>two-stage short + one-stage long vs.&nbsp;DAIR</li>
-</ul>
-<p>However, we always needs to marginalise over <span class="math inline">\(S\)</span> (selection/plan):</p>
-<p><span class="math display">\[
-\begin{aligned}
-\mathbb{E}[Y|R=0] &amp;= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1s)\mathbb{P}(S=s|R=0) \\
-\mathbb{E}[Y|R=1,D=0] &amp;= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1s + \beta_2 + \beta_3s)\mathbb{P}(S=s|R=1,D=0) \\
-\mathbb{E}[Y|R=1,D=1] &amp;= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1s + \beta_2 + \beta_3s + \beta_4 + \beta_5s)\mathbb{P}(S=s|R=1,D=1)
-\end{aligned}
-\]</span></p>
-<div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
@@ -3145,36 +3193,39 @@ Note
 </div>
 <div id="callout-17" class="callout-17-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>Still not quite sure what is being proposed below. Is this proposing extending <a href="#eq-dn-7" class="quarto-xref">Equation&nbsp;7</a>?</p>
+<p>Is the above missing a <span class="math inline">\(D\)</span> from the conditioning?</p>
 </div>
 </div>
 </div>
+<p>but for simplicity, not doing this here.</p>
+<p>From the above, and with a focus on the surgical domain, we could compare (randomised comparison) any of:</p>
+<ol type="1">
+<li>revision long vs.&nbsp;DAIR</li>
+<li>revision short vs.&nbsp;DAIR, but no other combinations of revision.</li>
+<li>one-stage short + two-stage long vs.&nbsp;DAIR</li>
+<li>two-stage short + one-stage long vs.&nbsp;DAIR</li>
+</ol>
+<p>Where (1) and (2) are the likely the most relevant comparisons of interest, but nothing precludes the comparisons stated in (3) and (4). The key point is the explicit statement of the duration type at which the comparison is made, which again is averaged over the empircal distribution of surgical procedure type (one-stage/two-stage).</p>
+<p>However, we always needs to marginalise over <span class="math inline">\(S\)</span> (selection/plan):</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbb{E}[Y|R=0] &amp;= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1s)\mathbb{P}(S=s|R=0) \\
+\mathbb{E}[Y|R=1,D=0] &amp;= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1s + \beta_2 + \beta_3s)\mathbb{P}(S=s|R=1,D=0) \\
+\mathbb{E}[Y|R=1,D=1] &amp;= \sum_{s=0}^1 \text{expit}(\beta_0 + \beta_1s + \beta_2 + \beta_3s + \beta_4 + \beta_5s)\mathbb{P}(S=s|R=1,D=1)
+\end{aligned}
+\]</span></p>
 <p>Again, can alternatively consider the average conditional log-odds ratio</p>
 <p><span class="math display">\[
 \begin{aligned}
 \mathbb{E}\left[\ln\frac{\text{odds}(Y|R=1,S,D)}{\text{odds}(Y|R=0,S,D)}|D_0,D_1\right] &amp;= \beta_2+\beta_3\mathbb{E}[S] + \beta_4D_0 + \beta_5D_1\mathbb{E}[S]
 \end{aligned}
 \]</span></p>
-<p>where I’ve made it explicit that <span class="math inline">\(D_0\)</span> (one-stage short) and <span class="math inline">\(D_1\)</span> (two-stage short) may differ.</p>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-18-contents" aria-controls="callout-18" aria-expanded="true" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-18" class="callout-18-contents callout-collapse collapse show">
-<div class="callout-body-container callout-body">
-<p>Below the default data generating mechanism has the functional form:</p>
+<p>where I’ve made it explicit that <span class="math inline">\(D_0\)</span> (one-stage short) and <span class="math inline">\(D_1\)</span> (two-stage short) may differ. However, in practice, these would likely be set to the same level.</p>
+<p>The default data generating mechanism has the functional form:</p>
 <p><span class="math display">\[
 \mathbb{E}[Y|R,S,D] = \text{expit}(\beta_0 + \beta_1X + \beta_1S + \beta_2R + \beta_3RS + \beta_4RD + \beta_5RSD)
 \]</span></p>
-</div>
-</div>
-</div>
+<p>specified with non-zero effects on all terms.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Generate duration data</summary>
@@ -3211,7 +3262,7 @@ Note
 </details>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-19-contents" aria-controls="callout-19" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-18-contents" aria-controls="callout-18" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -3220,9 +3271,10 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-19" class="callout-19-contents callout-collapse collapse show">
+<div id="callout-18" class="callout-18-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>The following considers estimation under null effects, where the true data generation mechanism was <span class="math inline">\(\mathbb{E}[Y|S,X] = \text{expit}(-1 + S + X)\)</span>. That is, where there are no treatment effects in either the surgical or duration domains.</p>
+<p>In the following examples estimation under null effects is considered wherein the true data generation mechanism was <span class="math inline">\(\mathbb{E}[Y|S,X] = \text{expit}(-1 + S + X)\)</span>. That is, where there are no treatment effects in either the surgical or duration domains.</p>
+<p>The estimates use G-computation. Specifically, all of the following average over all terms bar the comparison of interest.</p>
 </div>
 </div>
 </div>
@@ -3358,7 +3410,7 @@ Type:  response </code></pre>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-20-contents" aria-controls="callout-20" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-19-contents" aria-controls="callout-19" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -3367,7 +3419,7 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-20" class="callout-20-contents callout-collapse collapse show">
+<div id="callout-19" class="callout-19-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <p>And now consider estimation under effects for all surgery and duration.</p>
 </div>
@@ -3512,7 +3564,7 @@ Type:  response </code></pre>
 \mathbb{E}[Y|R,S,D,F] = \text{expit}(\beta_0 + \beta_1S + \beta_2R + \beta_3RS + \beta_4RD + \beta_5RDS + \beta_6F)
 \]</span></p>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-21-contents" aria-controls="callout-21" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-20-contents" aria-controls="callout-20" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -3521,9 +3573,9 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-21" class="callout-21-contents callout-collapse collapse show">
+<div id="callout-20" class="callout-20-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p><span class="math inline">\(\beta_2\)</span> is now the shift for revision, long duration and no-rif.</p>
+<p><span class="math inline">\(\beta_2\)</span> is now the shift for revision (under long duration irrespective of surgical type)</p>
 </div>
 </div>
 </div>
@@ -3732,7 +3784,7 @@ Type:  response </code></pre>
 <p>We might choose to assume that some of the conditional effects are equal across groups. E.g. <span class="math inline">\(\gamma_g=\gamma\)</span> for all <span class="math inline">\(g\)</span>. Or <span class="math inline">\(\beta_{4,g} = \beta_4\)</span> and <span class="math inline">\(\beta_{5,g}=\beta_5\)</span>. Depends how realistic we think these assumptions may be and whether we have sufficient data to meaningfully estimate silo-specific effects.</p>
 <p>Perhaps the only new issue is that now <span class="math inline">\(\mathbb{P}(S=s|G=1)\ne\mathbb{P}(S=s|G=2)\)</span>, so need to weight things within silo.</p>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-22-contents" aria-controls="callout-22" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-21-contents" aria-controls="callout-21" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -3741,7 +3793,7 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-22" class="callout-22-contents callout-collapse collapse show">
+<div id="callout-21" class="callout-21-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
 <p>The other thing to consider here is that in the early silo, there is no information contributed to parameters characterising the surgical intervention effects. I am not sure that the above model addresses this in that <span class="math inline">\(\beta_{1,g}\)</span> for <span class="math inline">\(g = early\)</span> would not be defined.</p>
 </div>
@@ -3758,48 +3810,50 @@ Note
 <p>A number of simplifying assumptions have been made that result in an incomplete representation of the design. For example, at the start of the discussion on the duration domain, we assumed that duration is randomised, but depends on both <span class="math inline">\(R\)</span> and <span class="math inline">\(S\)</span>. However, note:</p>
 <ol type="1">
 <li><span class="math inline">\(R\)</span> presupposes eligibility and reveal for the surgical domain, which is not the general case, e.g.&nbsp;early stage infection silo.</li>
-<li>Patients may enter into the study without having being entered for a randomised comparison in the surgical domain (e.g.&nbsp;patients with early stage infection) in which case <span class="math inline">\(R_A\)</span> would have been determined entirely by clinician selection.</li>
-<li>Patients enter into the duration domain based on the surgical procedure that occurred. This is expected to usually align with the allocated procedure <span class="math inline">\(R_A\)</span>, but may deviate from that.</li>
+<li>Patients may enter into the study without having being entered for a randomised comparison in the surgical domain (e.g.&nbsp;patients with early stage infection) in which case the allocated surgery (<span class="math inline">\(R_A\)</span>) would have been determined entirely by clinician selection.</li>
+<li>Patients enter into the duration domain based on the surgical procedure <strong>that occurred</strong>. This is expected to usually align with the allocated procedure <span class="math inline">\(R_A\)</span>, but may deviate from that.</li>
 <li><span class="math inline">\(D\)</span> is random, conditional solely on <span class="math inline">\(R_P\)</span> rather than both <span class="math inline">\(R\)</span> and <span class="math inline">\(S_{R_A}\)</span> (as stated in the duration section).</li>
 <li><span class="math inline">\(D\)</span> exists only for <span class="math inline">\(R_P \in \{\text{one-stage}, \text{two-stage}\}\)</span> otherwise reveal never occurs and duration allocated <span class="math inline">\(D_A\)</span> is determined by clinician selection</li>
 <li>While the duration domain for one-stage and two-stage both contain <em>long</em> (reference) vs <em>short</em> levels for duration of antibiotic, the levels are distinct for each procedure.</li>
 </ol>
 <p>To incorporate some of these ideas, start with the following definitions:</p>
 <ul>
-<li><span class="math inline">\(E_R\)</span> randomisation reveal for surgical domain - 0: no, 1: yes</li>
-<li><span class="math inline">\(E_D\)</span> randomisation reveal for duration domain - 0: no, 1: yes</li>
-<li><span class="math inline">\(E_F\)</span> randomisation reveal for choice domain - 0: no, 1: yes</li>
+<li><span class="math inline">\(E_R\)</span> reveal for surgical domain - 0: no, 1: yes</li>
+<li><span class="math inline">\(E_D\)</span> reveal for duration domain - 0: no, 1: yes</li>
+<li><span class="math inline">\(E_F\)</span> reveal for choice domain - 0: no, 1: yes</li>
 <li><span class="math inline">\(R\)</span> randomised surgery - 0: DAIR, 1: revision</li>
-<li><span class="math inline">\(S_R\)</span> preferred surgery - 0: DAIR, 1: one-stage, 2: two-stage</li>
+<li><span class="math inline">\(S_R\)</span> revision type preference (pre-randomisation) - 0: DAIR, 1: one-stage, 2: two-stage</li>
 <li><span class="math inline">\(R_A\)</span> allocated surgery - 0: DAIR, 1: one-stage, 2: two-stage</li>
 <li><span class="math inline">\(R_P\)</span> performed surgery - 0: DAIR, 1: revision</li>
-<li><span class="math inline">\(S_{R_P}\)</span> preferred surgery - 0: one-stage, 1: two-stage</li>
+<li><span class="math inline">\(S_{R_P}\)</span> revision type performed (post-randomisation) - 0: one-stage, 1: two-stage</li>
 <li><span class="math inline">\(D\)</span> randomised duration - 0: long, 1: short</li>
 <li><span class="math inline">\(D_A\)</span> allocated duration - 0: long, 1: short, 2: other</li>
 <li><span class="math inline">\(S_D\)</span> selected duration - 0: long, 1: short, 2: other</li>
 <li><span class="math inline">\(F\)</span> randomised choice - 0: norif, 1: rif</li>
-<li><span class="math inline">\(D_F\)</span> allocated choice - 0: norif, 1: rif, 2: other</li>
+<li><span class="math inline">\(F_A\)</span> allocated choice - 0: norif, 1: rif, 2: other</li>
 <li><span class="math inline">\(S_F\)</span> selected choice - 0: norif, 1: rif, 2: other</li>
 <li><span class="math inline">\(Y\)</span> treatment success - 0: no, 1: yes</li>
 </ul>
-<p>In practice, we expect the allocated <span class="math inline">\(R_A\)</span> and actual <span class="math inline">\(R_P\)</span> surgical procedure performed will align, but in some cases they may not. For (a contrived) example, revision was randomised and the original surgeon only performs two-stage revision. The original surgeon becomes unavailable to do the procedure and another surgeon (who only performs one-stage revision) takes over the case.</p>
+<p>In practice, we expect the allocated <span class="math inline">\(R_A\)</span> and actual <span class="math inline">\(R_P\)</span> surgical procedure performed will align, but in some cases they may not.</p>
+<p><strong>Contrived) example one</strong>: revision was randomised and the original surgeon only performs two-stage revision. The original surgeon becomes unavailable to do the procedure and another surgeon (who only performs one-stage revision) takes over the case. The patient enters into the duration domain for comparisons within the setting of one-stage revision.</p>
+<p><strong>Contrived) example two</strong>: revision was randomised and the surgeon intends to perform a two-stage revision. On the operating table, the surgeon switches to dair, for unknown reasons and the patient will no longer enter into randomised comparisons for the duration domain.</p>
 <p><span class="math inline">\(R_A\)</span> (allocation) is now determined by additional variables:</p>
 <p><span class="math display">\[
-R_A = (1 - E_R) S_R + E_R R S_R
+R_A = (1-E_R) S_R + E_R R S_R
 \]</span></p>
-<p>so that when we have no revealed randomisation (<span class="math inline">\(E_R = 0\)</span>) for the surgical domain, <span class="math inline">\(R_A\)</span> aligns with the preferred procedure out of all those possible (dair, one-stage, two-stage). However, when randomisation revealed for the surgical domain, the first term disappears and for <span class="math inline">\(R = 0\)</span>, the allocation is dair, irrespective of preferred surgery, whereas when <span class="math inline">\(R = 1\)</span> we get the selected one-stage or two-stage procedure, which is the same approach as previously used.</p>
+<p>so that when we have no revealed randomisation for the surgical domain, <span class="math inline">\(R_A\)</span> aligns with the preferred procedure out of all those possible (dair, one-stage, two-stage). When randomisation revealed for the surgical domain, the first term disappears and for <span class="math inline">\(R = 0\)</span>, the allocation is dair, irrespective of preferred surgery, whereas when <span class="math inline">\(R = 1\)</span> we get whatever one of one-stage (<span class="math inline">\(S_R = 1\)</span>) or two-stage (<span class="math inline">\(S_R = 2\)</span>) is preferred.</p>
 <p>For duration allocated <span class="math inline">\(D_A\)</span>:</p>
 <p><span class="math display">\[
-D_A = (1 - E_D) S_D + E_D D
+D_A = (1-E_D) S_D + E_D D
 \]</span></p>
-<p>when no reveal, <span class="math inline">\(E_D = 0\)</span> and <span class="math inline">\(D_A = S_D\)</span> (long/short/other duration) and when revealed, <span class="math inline">\(D_A = D\)</span> (long/short duration).</p>
+<p>when no reveal, <span class="math inline">\(E_D = 1\)</span> and <span class="math inline">\(D_A = S_D\)</span> (long/short/other duration) and when revealed, <span class="math inline">\(D_A = D\)</span> (long/short duration).</p>
 <p>For choice allocated <span class="math inline">\(F_A\)</span>:</p>
 <p><span class="math display">\[
 F_A = (1 - E_F) S_F + E_F F
 \]</span></p>
-<p>when no reveal, <span class="math inline">\(E_F = 0\)</span> and <span class="math inline">\(F_A = S_F\)</span> (norif/rif/other) and when revealed, <span class="math inline">\(F_A = F\)</span> (norif/rif).</p>
+<p>when no reveal, <span class="math inline">\(F_A = S_F\)</span> (norif/rif/other) and when revealed, <span class="math inline">\(F_A = F\)</span> (norif/rif).</p>
 <div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-23-contents" aria-controls="callout-23" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-22-contents" aria-controls="callout-22" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -3808,13 +3862,13 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-23" class="callout-23-contents callout-collapse collapse show">
+<div id="callout-22" class="callout-22-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>Above, I am assuming that you can randomise someone within a domain without first assessing their eligibility status, which I believe is the intention. Randomisation would only be revealed if eligibility is confirmed, which is independent to the randomisation process.</p>
+<p>Above, I am assuming that you can randomise someone within a domain without first assessing their eligibility status or knowing anything about them other than they want to enter the platform, which I believe is the intention. Randomisation is only revealed if eligibility is confirmed and this process is independent to the randomisation process.</p>
 </div>
 </div>
 </div>
-<p>The edited DAG is shown below, which still has a number of simplications relative to the intended approach. Patients may contribute to some or all domains, which influences the treatment regimen (combination of treatments across the domains) they receive and which suggests the various causal effects that are identifiable.</p>
+<p>The edited DAG is shown below, which still has a number of simplications relative to the intended approach but is intended to represent a generalised silo and site of infection, implicitly acknowledging that the outcome will be dependent on both these factors. Patients may contribute to some or all domains, which influences the treatment regimen (combination of treatments across the domains) they receive and which suggests the various causal effects that are identifiable.</p>
 <div class="cell page-columns page-full" data-layout-align="default">
 <div class="cell-output-display page-columns page-full">
 <div id="fig-scenario-4" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
@@ -3836,9 +3890,7 @@ flowchart LR
   R --&gt; RA
   RA --&gt; RP(R&lt;sub&gt;P) 
   SRP(S&lt;sub&gt;R&lt;sub&gt;P) --&gt; RP
-  SRP --&gt; D
   RA --&gt; Y
-  RP --&gt; D
   RP --&gt; ED
   D --&gt; DA(D&lt;sub&gt;A)
   DA --&gt; Y
@@ -3861,12 +3913,66 @@ flowchart LR
 </div>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-scenario-4-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Figure&nbsp;4: Scenario 4, the <span class="math inline">\(U\)</span> denote independent exogenous variables,
+Figure&nbsp;6: Scenario 4, the <span class="math inline">\(U\)</span> denote independent exogenous variables,
 </figcaption>
 </figure>
 </div>
 </div>
 </div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-23-contents" aria-controls="callout-23" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-23" class="callout-23-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>There is potentially a direct as well as the indirect effect of both <span class="math inline">\(S_R\)</span> on <span class="math inline">\(Y\)</span> and <span class="math inline">\(S_{R_P}\)</span> on <span class="math inline">\(Y\)</span> but these have been left out of the DAG for now. <span class="math inline">\(S_R\)</span> is actually representing multiple ideas:</p>
+<ol type="1">
+<li>when the surgical domain is not applicable (randomisation never revealed) e.g.&nbsp;for the chronic patients, then <span class="math inline">\(S_R\)</span> is the selection from dair, one-stage, two-stage</li>
+<li>when surgical domain is applicable (randomisation is revealed) then <span class="math inline">\(S_R\)</span> is the option between one-stage and two-stage that is most prefered.</li>
+</ol>
+<p>In essence, <span class="math inline">\(S_R\)</span> involves a conditional ranking of which surgical procedure is prefered.</p>
+<p>For example, say the selection is: dair, two-stage, one-stage in order of preference. If randomisation is not reveal, dair is would be the selection. If randomisation is revealed, two-stage would be as it is the most prefered surgical procedure applicable to revision.</p>
+<p>Originally, <span class="math inline">\(D\)</span> was said to depend on some of the selection elements. However, subsequently it was decided that <span class="math inline">\(D\)</span> (long/short) should be viewed like all other randomisation processes, i.e.&nbsp;independent of all other nodes, but is only manifest through <span class="math inline">\(D_A\)</span> for certain surgery types.</p>
+</div>
+</div>
+</div>
+<p>Again consider intervening on surgical procedure whereby we are interested in the effect of dair vs revision on treatment success. There are no open backdoor paths apparent and therefore no adjustment is required to identify the total effect of <span class="math inline">\(R\)</span> on <span class="math inline">\(Y\)</span>. Similarly, neither <span class="math inline">\(D\)</span> nor <span class="math inline">\(F\)</span> have backdoor paths.</p>
+<p>Postulate the following model:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbb{E}[Y|L; \beta] &amp;=  \text{expit}( \beta_0 + \\
+  &amp;\quad \beta_1 \mathbb{I}[G = 1] + \beta_2 \mathbb{I}[G = 2] + \beta_3 J + \\
+  &amp;\quad \beta_4 J \mathbb{I}[G = 1] + \beta_5 J \mathbb{I}[G = 2] + \\
+  &amp;\quad \beta_6 \mathbb{I}(1-E_R) + ([\beta_7 R + \beta_8 R \mathbb{I}(S_{R_P} = 2) ])\mathbb{I}(E_R) + \\
+  &amp;\quad \beta_9 \mathbb{I}(1-E_D) + ([\beta_{10} R_P D + \beta_{11} R_P D \mathbb{I}(S_{R_P} = 2)])\mathbb{I}(E_D) + \\
+  &amp;\quad \beta_{12} \mathbb{I}(1-E_F) + \beta_{13} F E_F )
+\end{aligned}
+\]</span></p>
+<p>where the <span class="math inline">\(L\)</span> stands for the set of model variables and <span class="math inline">\(\beta\)</span> the vector of parameters. The following describe the reference/movements in the log-odds of treatment success:</p>
+<ul>
+<li><span class="math inline">\(\beta_{0}\)</span> baseline log-odds of treatment success in the early silo / knee site</li>
+<li><span class="math inline">\(\beta_{1}\)</span> shift for late-silo membership relative to early</li>
+<li><span class="math inline">\(\beta_{2}\)</span> shift for chronic-silo membership relative to early</li>
+<li><span class="math inline">\(\beta_{3}\)</span> shift for hip</li>
+<li><span class="math inline">\(\beta_{4}\)</span> relative shift for late-silo membership with hip</li>
+<li><span class="math inline">\(\beta_{5}\)</span> relative shift for chronic-silo membership with hip</li>
+<li><span class="math inline">\(\beta_{6}\)</span> shift under non-reveal (surgery<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>)</li>
+<li><span class="math inline">\(\beta_{7}\)</span> shift under revision that was performed with one-stage procedure for long duration and no-rif</li>
+<li><span class="math inline">\(\beta_{8}\)</span> relative shift under revision that was performed with two-stage procedure for long duration and no-rif</li>
+<li><span class="math inline">\(\beta_{9}\)</span> shift under non-reveal (duration) with no differentiation for surgical nor duration preference</li>
+<li><span class="math inline">\(\beta_{10}\)</span> shift for short duration when one-stage was actually performed</li>
+<li><span class="math inline">\(\beta_{11}\)</span> shift for short duration when two-stage was actually performed</li>
+<li><span class="math inline">\(\beta_{12}\)</span> shift under non-reveal (choice) with no differentiation for choice preference</li>
+<li><span class="math inline">\(\beta_{13}\)</span> shift for rif</li>
+</ul>
+<p>With the complicating factor being that the surgical allocation may inform the type of surgery that the patient gets (but may deviate) and the randomisation that the patient is revealed to in the duration domain is determined by what surgical intervention the patient actually got.</p>
+<p>We replace pre-randomised preference for surgical type with post-randomised surgical type performed and marginalise out this term.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-24-contents" aria-controls="callout-24" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -3879,16 +3985,11 @@ Note
 </div>
 <div id="callout-24" class="callout-24-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p><span class="math inline">\(\S_R\)</span> is actually representing multiple ideas:</p>
-<ol type="1">
-<li>when the surgical domain is not applicable (randomisation never revealed) e.g.&nbsp;for the chronic patients, then <span class="math inline">\(S_R\)</span> is the selection from dair, one-stage, two-stage</li>
-<li>when surgical domain is applicable (randomisation is revealed) then <span class="math inline">\(S_R\)</span> is the selection between one-stage and two-stage</li>
-</ol>
-<p>In essence, it is a ranking of which surgical procedure is required. For example, say the selection is: dair, two-stage, one-stage in order of preference. If randomisation is not reveal, dair is would be the selection. If randomisation is revealed, two-stage would be as it is the most prefered surgical procedure applicable to revision.</p>
+<p>Full disclosure, I am not entirely sure as to whether the above addresses the full impacts of deviations between allocated and performed surgery or whether the DAG is sufficiently complete representation of the dependencies.</p>
 </div>
 </div>
 </div>
-<p>Again consider intervening on surgical procedure whereby we are interested in the effect of dair vs revision on treatment success. There are no open backdoor paths apparent and therefore no adjustment is required to identify the total effect of <span class="math inline">\(R\)</span> on <span class="math inline">\(Y\)</span>.</p>
+<p>As previously, for the surgical domain, we are interested the effect of intervening on <span class="math inline">\(R\)</span>. For the duration domain, we are interested in the effect of intervening on <span class="math inline">\(D|R_P\)</span>. For the choice domain, we are interested in the effect of intervening on <span class="math inline">\(F\)</span>.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-25-contents" aria-controls="callout-25" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -3901,40 +4002,136 @@ Note
 </div>
 <div id="callout-25" class="callout-25-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>Stuff on <span class="math inline">\(D\)</span> out of date. There is still an open path but now you need to adjust for (<span class="math inline">\(R_P\)</span> or <span class="math inline">\(E_D\)</span>).</p>
+<p>Note that for the following specification, the design matrix can become singular (linear dependence between some of the variables) e.g.&nbsp;if surgical reveal is equivalent to silo membership. I am assuming some small amount of noise in reveal such that this isn’t a problem.</p>
 </div>
 </div>
 </div>
-<p>Consider randomised duration <span class="math inline">\(D\)</span>; backdoor paths exists:</p>
-<ol type="1">
-<li><span class="math inline">\(D \leftarrow  R_P \leftarrow R_A \rightarrow Y\)</span></li>
-<li><span class="math inline">\(D \leftarrow  R_P \rightarrow E_D \rightarrow D_A \rightarrow Y\)</span></li>
-</ol>
-<p>The first is open, the second is closed due to the collider <span class="math inline">\(D_A\)</span>. Minimally conditioning on the set <span class="math inline">\(\{ {R_P}, {R_A} \}\)</span> closes the backdoor path and allows identification of the total effect of duration on treatment success.</p>
-<p>Consider choice <span class="math inline">\(F\)</span>. No backdoor paths exist and therefore no adjustment is required for the identification of the total causal effect of <span class="math inline">\(F\)</span> on <span class="math inline">\(Y\)</span>.</p>
-<p>Postulate the following model:</p>
-<p><span class="math display">\[
-\begin{aligned}
-\mathbb{E}[Y|L; \beta] &amp;=  \text{expit}( \beta_0 + \\
-  &amp;\quad \beta_1 [1 - E_R] + [\beta_2 R + \beta_3 R \mathbb{I}(S_R = 2) ]E_R + \\
-  &amp;\quad \beta_4 [1 - E_D] + [\beta_5 \mathbb{I}(S_{R_P} \ne R_A) + \beta_6 R_P D + \beta_{7} R_P D \mathbb{I}(S_{R_P} = 2)]E_D + \\
-  &amp;\quad \beta_{8} [1 - E_F] + \beta_{9} F E_F  )
-\end{aligned}
-\]</span></p>
-<p>where the <span class="math inline">\(L\)</span> denotes the model variables and <span class="math inline">\(\beta\)</span> the vector of parameters and the following describe the movements in the log-odds of treatment success associated with the non-reference levels:</p>
-<ul>
-<li><span class="math inline">\(\beta_1\)</span> is the shift under non-reveal (surgery<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>)</li>
-<li><span class="math inline">\(\beta_2\)</span> is the shift under revision with one-stage procedure</li>
-<li><span class="math inline">\(\beta_3\)</span> is the shift under revision with two-stage procedure</li>
-<li><span class="math inline">\(\beta_4\)</span> is the shift under non-reveal (duration) with no differentiation for surgical nor duration preference</li>
-<li><span class="math inline">\(\beta_5\)</span> is the shift for deviations from allocated revision to some an alternate surgical approach</li>
-<li><span class="math inline">\(\beta_6\)</span> is the shift for short duration when one-stage was actually performed</li>
-<li><span class="math inline">\(\beta_7\)</span> is the shift for short duration when two-stage was actually performed</li>
-<li><span class="math inline">\(\beta_{8}\)</span> is the shift under non-reveal (choice) with no differentiation for choice preference</li>
-<li><span class="math inline">\(\beta_{9}\)</span> is the shift for rif</li>
-</ul>
-<p>Now, we have another complicating factor in that the surgical allocation may inform the type of surgery that the patient gets (but may deviate) and the randomisation that the patient is revealed to in the duration domain is determined by what surgical intervention the patient actually got.</p>
-<p>Recalling the earlier rationale for splitting revision type, we now need to also adjust for when the planned and actual revision type deviate from one another.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Generate complete data</summary>
+<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1"></a>generate_data_4 <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb56-2"><a href="#cb56-2"></a>    <span class="at">n =</span> <span class="fl">1e6</span>,</span>
+<span id="cb56-3"><a href="#cb56-3"></a>    <span class="at">g =</span> <span class="cf">function</span>(p_a, l1, l2, j, er, ed, ef, r, rp, d, srp, f){ </span>
+<span id="cb56-4"><a href="#cb56-4"></a>      <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span> <span class="sc">-</span><span class="fl">0.04</span> <span class="sc">*</span> l1 <span class="sc">-</span> <span class="fl">0.07</span> <span class="sc">*</span> l2 <span class="sc">-</span> <span class="fl">0.02</span> <span class="sc">*</span> j <span class="sc">-</span> <span class="fl">0.01</span> <span class="sc">*</span> l1 <span class="sc">*</span> j <span class="sc">-</span> <span class="fl">0.06</span> <span class="sc">*</span> l2 <span class="sc">*</span> j <span class="sc">+</span></span>
+<span id="cb56-5"><a href="#cb56-5"></a>        <span class="sc">-</span><span class="fl">0.1</span><span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>er) <span class="sc">+</span> (<span class="fl">0.2</span><span class="sc">*</span>r <span class="sc">+</span> <span class="fl">0.4</span><span class="sc">*</span>r<span class="sc">*</span>(srp<span class="sc">==</span><span class="dv">2</span>))<span class="sc">*</span>(er) <span class="sc">+</span></span>
+<span id="cb56-6"><a href="#cb56-6"></a>        <span class="sc">-</span><span class="fl">0.05</span><span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>ed) <span class="sc">+</span> (<span class="fl">0.4</span><span class="sc">*</span>rp<span class="sc">*</span>d <span class="sc">+</span> <span class="fl">0.1</span><span class="sc">*</span>rp<span class="sc">*</span>d<span class="sc">*</span>(srp<span class="sc">==</span><span class="dv">2</span>))<span class="sc">*</span>(ed) <span class="sc">+</span></span>
+<span id="cb56-7"><a href="#cb56-7"></a>        <span class="sc">-</span><span class="fl">0.25</span><span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>ef) <span class="sc">+</span> <span class="fl">0.15</span><span class="sc">*</span>f<span class="sc">*</span>(ef) </span>
+<span id="cb56-8"><a href="#cb56-8"></a>      }</span>
+<span id="cb56-9"><a href="#cb56-9"></a>    ) {</span>
+<span id="cb56-10"><a href="#cb56-10"></a>  </span>
+<span id="cb56-11"><a href="#cb56-11"></a>  p_a <span class="ot">=</span> <span class="fu">array</span>(</span>
+<span id="cb56-12"><a href="#cb56-12"></a>    <span class="fu">c</span>(<span class="fl">0.65</span>, <span class="fl">0.55</span>, <span class="fl">0.6</span>, <span class="fl">0.75</span>, <span class="fl">0.6</span>, <span class="fl">0.65</span>),</span>
+<span id="cb56-13"><a href="#cb56-13"></a>    <span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">2</span>), <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"early"</span>, <span class="st">"late"</span>, <span class="st">"chronic"</span>),<span class="fu">c</span>(<span class="st">"knee"</span>, <span class="st">"hip"</span>)))</span>
+<span id="cb56-14"><a href="#cb56-14"></a>  </span>
+<span id="cb56-15"><a href="#cb56-15"></a>  <span class="co"># silo (l) and joint (j)</span></span>
+<span id="cb56-16"><a href="#cb56-16"></a>  l <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">2</span>, n, <span class="at">replace =</span> T, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.5</span>, <span class="fl">0.2</span>)) </span>
+<span id="cb56-17"><a href="#cb56-17"></a>  l1 <span class="ot">=</span> <span class="fu">as.numeric</span>(l <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb56-18"><a href="#cb56-18"></a>  l2 <span class="ot">=</span> <span class="fu">as.numeric</span>(l <span class="sc">==</span> <span class="dv">2</span>)</span>
+<span id="cb56-19"><a href="#cb56-19"></a>  </span>
+<span id="cb56-20"><a href="#cb56-20"></a>  p_j <span class="ot">&lt;-</span> <span class="fu">array</span>(<span class="fu">c</span>(<span class="fl">0.4</span>,<span class="fl">0.7</span>,<span class="fl">0.5</span>,<span class="fl">0.6</span>,<span class="fl">0.3</span>,<span class="fl">0.5</span>), <span class="at">dim =</span> <span class="fu">c</span>(<span class="dv">3</span>, <span class="dv">2</span>), </span>
+<span id="cb56-21"><a href="#cb56-21"></a>               <span class="at">dimnames =</span> <span class="fu">list</span>(<span class="fu">c</span>(<span class="st">"early"</span>, <span class="st">"late"</span>, <span class="st">"chronic"</span>), <span class="fu">c</span>(<span class="st">"knee"</span>, <span class="st">"hip"</span>)))</span>
+<span id="cb56-22"><a href="#cb56-22"></a>  j <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, p_j[l<span class="sc">+</span><span class="dv">1</span>, <span class="dv">2</span>])</span>
+<span id="cb56-23"><a href="#cb56-23"></a>  <span class="co"># reveal for late only, with a small number who never get revealed even if they</span></span>
+<span id="cb56-24"><a href="#cb56-24"></a>  <span class="co"># were in late. you can leave this out but the model spec will need to be updated</span></span>
+<span id="cb56-25"><a href="#cb56-25"></a>  <span class="co"># because there will be linearly depenedent cols in the design matrix</span></span>
+<span id="cb56-26"><a href="#cb56-26"></a>  er <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(l <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb56-27"><a href="#cb56-27"></a>  er[l<span class="sc">==</span><span class="dv">1</span>][<span class="fu">as.logical</span>(<span class="fu">rbinom</span>(er[l<span class="sc">==</span><span class="dv">1</span>], <span class="dv">1</span>, <span class="fl">0.05</span>))] <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb56-28"><a href="#cb56-28"></a>  <span class="co"># randomise dair vs rev</span></span>
+<span id="cb56-29"><a href="#cb56-29"></a>  r <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fl">0.5</span>)</span>
+<span id="cb56-30"><a href="#cb56-30"></a>  <span class="co"># (approx) 70% chance of clinician choosing two-stage if pt is rand to revision </span></span>
+<span id="cb56-31"><a href="#cb56-31"></a>  sr <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n)</span>
+<span id="cb56-32"><a href="#cb56-32"></a>  sr[r <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">2</span>, <span class="fu">sum</span>(r <span class="sc">==</span> <span class="dv">0</span>), <span class="at">replace =</span> T, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.6</span>))</span>
+<span id="cb56-33"><a href="#cb56-33"></a>  sr[r <span class="sc">==</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="fu">sum</span>(r <span class="sc">==</span> <span class="dv">1</span>), <span class="at">replace =</span> T, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.7</span>))</span>
+<span id="cb56-34"><a href="#cb56-34"></a>  <span class="co"># pref towards two-stage, assuming revision</span></span>
+<span id="cb56-35"><a href="#cb56-35"></a>  sra <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(sr <span class="sc">==</span> <span class="dv">2</span>)</span>
+<span id="cb56-36"><a href="#cb56-36"></a>  <span class="co"># determine allocation of surgery type</span></span>
+<span id="cb56-37"><a href="#cb56-37"></a>  ra <span class="ot">&lt;-</span> er <span class="sc">*</span> sr <span class="sc">+</span> (<span class="dv">1</span><span class="sc">-</span>er) <span class="sc">*</span> r <span class="sc">*</span> (sr) </span>
+<span id="cb56-38"><a href="#cb56-38"></a>  </span>
+<span id="cb56-39"><a href="#cb56-39"></a>  <span class="co"># 10% of the allocated treatments may have switch to a different surg type</span></span>
+<span id="cb56-40"><a href="#cb56-40"></a>  srp <span class="ot">&lt;-</span> ra</span>
+<span id="cb56-41"><a href="#cb56-41"></a>  ic <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fl">0.1</span>)</span>
+<span id="cb56-42"><a href="#cb56-42"></a>  srp[<span class="fu">as.logical</span>(ic)] <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">2</span>, <span class="fu">sum</span>(ic), <span class="at">replace =</span> T, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.6</span>))</span>
+<span id="cb56-43"><a href="#cb56-43"></a>  <span class="co"># was the procedure type dair or revision?</span></span>
+<span id="cb56-44"><a href="#cb56-44"></a>  rp <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(srp <span class="sc">%in%</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)</span>
+<span id="cb56-45"><a href="#cb56-45"></a>  </span>
+<span id="cb56-46"><a href="#cb56-46"></a>  <span class="co"># non-reveal of duration if rp is dair (0)</span></span>
+<span id="cb56-47"><a href="#cb56-47"></a>  ed <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(rp <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb56-48"><a href="#cb56-48"></a>  <span class="co"># rand to long (0), short (1) based on surgery received</span></span>
+<span id="cb56-49"><a href="#cb56-49"></a>  d <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>((rp <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">*</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fl">0.5</span>))</span>
+<span id="cb56-50"><a href="#cb56-50"></a>  <span class="co"># 60% reveal ab choice</span></span>
+<span id="cb56-51"><a href="#cb56-51"></a>  ef <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fl">0.6</span>)</span>
+<span id="cb56-52"><a href="#cb56-52"></a>  f <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>((ef <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fl">0.5</span>))</span>
+<span id="cb56-53"><a href="#cb56-53"></a>  </span>
+<span id="cb56-54"><a href="#cb56-54"></a>  y <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fu">plogis</span>(<span class="fu">g</span>(p_a, l1, l2, j, er, ed, ef, r, rp, d, srp, f)))</span>
+<span id="cb56-55"><a href="#cb56-55"></a>  <span class="co"># table(y, useNA = "always")</span></span>
+<span id="cb56-56"><a href="#cb56-56"></a>  </span>
+<span id="cb56-57"><a href="#cb56-57"></a>  D <span class="ot">&lt;-</span> <span class="fu">data.table</span>(</span>
+<span id="cb56-58"><a href="#cb56-58"></a>    l1, l2, j, </span>
+<span id="cb56-59"><a href="#cb56-59"></a>    er, ed, ef,</span>
+<span id="cb56-60"><a href="#cb56-60"></a>    <span class="at">erx =</span> <span class="dv">1</span><span class="sc">-</span>er, <span class="at">edx =</span> <span class="dv">1</span><span class="sc">-</span>ed, <span class="at">efx=</span><span class="dv">1</span><span class="sc">-</span>ef,</span>
+<span id="cb56-61"><a href="#cb56-61"></a>    r, sr, sra, ra, </span>
+<span id="cb56-62"><a href="#cb56-62"></a>    ic, rp, srp, <span class="at">srp2 =</span> <span class="fu">as.numeric</span>(srp <span class="sc">==</span> <span class="dv">2</span>), d,</span>
+<span id="cb56-63"><a href="#cb56-63"></a>    f, y</span>
+<span id="cb56-64"><a href="#cb56-64"></a>  )</span>
+<span id="cb56-65"><a href="#cb56-65"></a>}</span>
+<span id="cb56-66"><a href="#cb56-66"></a><span class="fu">set.seed</span>(<span class="dv">102</span>)</span>
+<span id="cb56-67"><a href="#cb56-67"></a>D <span class="ot">&lt;-</span> <span class="fu">generate_data_4</span>()</span>
+<span id="cb56-68"><a href="#cb56-68"></a></span>
+<span id="cb56-69"><a href="#cb56-69"></a><span class="co"># early silo, should be non-reveal with no r options (default to 0)</span></span>
+<span id="cb56-70"><a href="#cb56-70"></a><span class="co"># D[, .N, keyby = .(l, j, er, r)]</span></span>
+<span id="cb56-71"><a href="#cb56-71"></a><span class="co"># those who received rev are revealed for d (ed = 0) and are 0:1 conditional on revision type (srp)</span></span>
+<span id="cb56-72"><a href="#cb56-72"></a><span class="co"># D[, .N, keyby = .(rp, ed, srp, d)]</span></span>
+<span id="cb56-73"><a href="#cb56-73"></a><span class="co"># those entering ab choice should come from all strata, infec site</span></span>
+<span id="cb56-74"><a href="#cb56-74"></a><span class="co"># D[ef == 0, .N, keyby = .(l, j, f)]</span></span>
+<span id="cb56-75"><a href="#cb56-75"></a><span class="co"># those that dont should also be dist across sample</span></span>
+<span id="cb56-76"><a href="#cb56-76"></a><span class="co"># D[ef == 1, .N, keyby = .(l, j, f)]</span></span>
+<span id="cb56-77"><a href="#cb56-77"></a></span>
+<span id="cb56-78"><a href="#cb56-78"></a>fit2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> l1 <span class="sc">+</span> l2 <span class="sc">+</span> j <span class="sc">+</span> l1<span class="sc">:</span>j <span class="sc">+</span> l2<span class="sc">:</span>j <span class="sc">+</span></span>
+<span id="cb56-79"><a href="#cb56-79"></a>              erx <span class="sc">+</span> er<span class="sc">:</span>r <span class="sc">+</span> er<span class="sc">:</span>r<span class="sc">:</span>srp2 <span class="sc">+</span></span>
+<span id="cb56-80"><a href="#cb56-80"></a>              edx <span class="sc">+</span> ed<span class="sc">:</span>rp<span class="sc">:</span>d <span class="sc">+</span> ed<span class="sc">:</span>d<span class="sc">:</span>rp<span class="sc">:</span>srp2 <span class="sc">+</span></span>
+<span id="cb56-81"><a href="#cb56-81"></a>              efx <span class="sc">+</span> ef<span class="sc">:</span>f, </span>
+<span id="cb56-82"><a href="#cb56-82"></a>            <span class="at">data =</span> D, <span class="at">family =</span> <span class="fu">binomial</span>())</span>
+<span id="cb56-83"><a href="#cb56-83"></a><span class="fu">summary</span>(fit2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+Call:
+glm(formula = y ~ l1 + l2 + j + l1:j + l2:j + erx + er:r + er:r:srp2 + 
+    edx + ed:rp:d + ed:d:rp:srp2 + efx + ef:f, family = binomial(), 
+    data = D)
+
+Coefficients:
+              Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)  -0.992730   0.017361 -57.182  &lt; 2e-16 ***
+l1           -0.036997   0.016251  -2.277  0.02281 *  
+l2           -0.081398   0.009886  -8.234  &lt; 2e-16 ***
+j            -0.028103   0.008548  -3.288  0.00101 ** 
+erx          -0.101703   0.015480  -6.570 5.04e-11 ***
+edx          -0.045398   0.006282  -7.227 4.94e-13 ***
+efx          -0.251435   0.005446 -46.167  &lt; 2e-16 ***
+l1:j         -0.022724   0.010840  -2.096  0.03605 *  
+l2:j         -0.052919   0.013561  -3.902 9.53e-05 ***
+er:r          0.187560   0.009727  19.283  &lt; 2e-16 ***
+ef:f          0.147332   0.005624  26.198  &lt; 2e-16 ***
+er:r:srp2     0.407762   0.010375  39.302  &lt; 2e-16 ***
+ed:rp:d       0.414709   0.008222  50.439  &lt; 2e-16 ***
+srp2:ed:rp:d  0.085740   0.008749   9.800  &lt; 2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for binomial family taken to be 1)
+
+    Null deviance: 1216852  on 999999  degrees of freedom
+Residual deviance: 1179406  on 999986  degrees of freedom
+AIC: 1179434
+
+Number of Fisher Scoring iterations: 4</code></pre>
+</div>
+<details class="code-fold">
+<summary>Generate complete data</summary>
+<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1"></a><span class="co"># linearly_dep_cols(fit2)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-26-contents" aria-controls="callout-26" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -3947,125 +4144,6 @@ Note
 </div>
 <div id="callout-26" class="callout-26-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>I am not clear on whether the above addresses the full impacts of deviations between allocated and performed surgery. It simply aims to lump all deviations of any form from the planned surgery into a single parameter.</p>
-</div>
-</div>
-</div>
-<p>As previously, for the surgical domain, we are interested the effect of intervening on <span class="math inline">\(R\)</span>. For the duration domain, we are interested in the effect of intervening on <span class="math inline">\(D|R_P\)</span>. For the choice domain, we are interested in the effect of intervening on <span class="math inline">\(F\)</span>.</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Generate complete data</summary>
-<div class="sourceCode cell-code" id="cb56"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb56-1"><a href="#cb56-1"></a>generate_data_4 <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
-<span id="cb56-2"><a href="#cb56-2"></a>    <span class="at">n =</span> <span class="fl">1e6</span>,</span>
-<span id="cb56-3"><a href="#cb56-3"></a>    <span class="at">g =</span> <span class="cf">function</span>(er, ed, ef, r, sra, ic, rp, d, srp2, f){ </span>
-<span id="cb56-4"><a href="#cb56-4"></a>      <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span> </span>
-<span id="cb56-5"><a href="#cb56-5"></a>        <span class="sc">-</span><span class="fl">0.1</span><span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>er) <span class="sc">+</span> (<span class="fl">0.2</span><span class="sc">*</span>r <span class="sc">+</span> <span class="fl">0.4</span><span class="sc">*</span>r<span class="sc">*</span>sra)<span class="sc">*</span>er <span class="sc">+</span></span>
-<span id="cb56-6"><a href="#cb56-6"></a>        <span class="sc">-</span><span class="fl">0.05</span><span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>ed) <span class="sc">+</span> (<span class="sc">-</span><span class="fl">0.07</span><span class="sc">*</span>ic <span class="sc">+</span> <span class="fl">0.9</span><span class="sc">*</span>rp<span class="sc">*</span>d <span class="sc">+</span> <span class="fl">0.06</span><span class="sc">*</span>rp<span class="sc">*</span>d<span class="sc">*</span>srp2)<span class="sc">*</span>ed <span class="sc">+</span></span>
-<span id="cb56-7"><a href="#cb56-7"></a>        <span class="sc">-</span><span class="fl">0.25</span><span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>ef) <span class="sc">+</span> <span class="fl">0.15</span><span class="sc">*</span>f<span class="sc">*</span>ef </span>
-<span id="cb56-8"><a href="#cb56-8"></a>      }</span>
-<span id="cb56-9"><a href="#cb56-9"></a>    ) {</span>
-<span id="cb56-10"><a href="#cb56-10"></a></span>
-<span id="cb56-11"><a href="#cb56-11"></a>  <span class="co"># all enter surgical for now</span></span>
-<span id="cb56-12"><a href="#cb56-12"></a>  er <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">1</span>, n)</span>
-<span id="cb56-13"><a href="#cb56-13"></a>  <span class="co"># randomise dair vs rev</span></span>
-<span id="cb56-14"><a href="#cb56-14"></a>  r <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fl">0.5</span>)</span>
-<span id="cb56-15"><a href="#cb56-15"></a>  </span>
-<span id="cb56-16"><a href="#cb56-16"></a>  <span class="co"># 70% chance of clin choosing two-stage should pt be rand to revision </span></span>
-<span id="cb56-17"><a href="#cb56-17"></a>  <span class="co"># exchangeable across groups so can just create random values for whole sample</span></span>
-<span id="cb56-18"><a href="#cb56-18"></a>  sr <span class="ot">&lt;-</span> <span class="fu">numeric</span>(n)</span>
-<span id="cb56-19"><a href="#cb56-19"></a>  sr[r <span class="sc">==</span> <span class="dv">0</span>] <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">2</span>, <span class="fu">sum</span>(r <span class="sc">==</span> <span class="dv">0</span>), <span class="at">replace =</span> T, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.6</span>))</span>
-<span id="cb56-20"><a href="#cb56-20"></a>  sr[r <span class="sc">==</span> <span class="dv">1</span>] <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>, <span class="fu">sum</span>(r <span class="sc">==</span> <span class="dv">1</span>), <span class="at">replace =</span> T, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.3</span>, <span class="fl">0.7</span>))</span>
-<span id="cb56-21"><a href="#cb56-21"></a>  </span>
-<span id="cb56-22"><a href="#cb56-22"></a>  sra <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(sr <span class="sc">==</span> <span class="dv">2</span>)</span>
-<span id="cb56-23"><a href="#cb56-23"></a></span>
-<span id="cb56-24"><a href="#cb56-24"></a>  ra <span class="ot">&lt;-</span> (<span class="dv">1</span> <span class="sc">-</span> er) <span class="sc">*</span> sr <span class="sc">+</span> er <span class="sc">*</span> r <span class="sc">*</span> (sr) </span>
-<span id="cb56-25"><a href="#cb56-25"></a>  ra1 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(ra <span class="sc">==</span> <span class="dv">1</span>)</span>
-<span id="cb56-26"><a href="#cb56-26"></a>  ra2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(ra <span class="sc">==</span> <span class="dv">2</span>)</span>
-<span id="cb56-27"><a href="#cb56-27"></a>  </span>
-<span id="cb56-28"><a href="#cb56-28"></a>  <span class="co"># 30% of the allocated treatments get mixed up</span></span>
-<span id="cb56-29"><a href="#cb56-29"></a>  ic <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fl">0.3</span>)</span>
-<span id="cb56-30"><a href="#cb56-30"></a>  srp <span class="ot">&lt;-</span> ra</span>
-<span id="cb56-31"><a href="#cb56-31"></a>  <span class="co"># the ones that swap-over revises the view on selection?</span></span>
-<span id="cb56-32"><a href="#cb56-32"></a>  srp[<span class="fu">as.logical</span>(ic)] <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">0</span><span class="sc">:</span><span class="dv">2</span>, <span class="fu">sum</span>(ic), <span class="at">replace =</span> T, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.2</span>, <span class="fl">0.6</span>))</span>
-<span id="cb56-33"><a href="#cb56-33"></a>  </span>
-<span id="cb56-34"><a href="#cb56-34"></a>  <span class="co"># still based on the rand allocation for dair/rev?</span></span>
-<span id="cb56-35"><a href="#cb56-35"></a>  rp <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(srp <span class="sc">%in%</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>)</span>
-<span id="cb56-36"><a href="#cb56-36"></a>  </span>
-<span id="cb56-37"><a href="#cb56-37"></a>  <span class="co"># reveal entirely determined by rp therefore unnecessary???</span></span>
-<span id="cb56-38"><a href="#cb56-38"></a>  ed <span class="ot">&lt;-</span> rp</span>
-<span id="cb56-39"><a href="#cb56-39"></a>  </span>
-<span id="cb56-40"><a href="#cb56-40"></a>  srp1 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(srp <span class="sc">==</span> <span class="dv">1</span>)</span>
-<span id="cb56-41"><a href="#cb56-41"></a>  srp2 <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(srp <span class="sc">==</span> <span class="dv">2</span>)</span>
-<span id="cb56-42"><a href="#cb56-42"></a></span>
-<span id="cb56-43"><a href="#cb56-43"></a>  <span class="co"># rand to long (0), short (1)</span></span>
-<span id="cb56-44"><a href="#cb56-44"></a>  d <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>((rp <span class="sc">&gt;</span> <span class="dv">0</span>) <span class="sc">*</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fl">0.5</span>))</span>
-<span id="cb56-45"><a href="#cb56-45"></a>  </span>
-<span id="cb56-46"><a href="#cb56-46"></a>  <span class="co"># 60% enter rif</span></span>
-<span id="cb56-47"><a href="#cb56-47"></a>  ef <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fl">0.6</span>)</span>
-<span id="cb56-48"><a href="#cb56-48"></a>  f <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>((ef <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">*</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fl">0.5</span>))</span>
-<span id="cb56-49"><a href="#cb56-49"></a>  </span>
-<span id="cb56-50"><a href="#cb56-50"></a>  y <span class="ot">&lt;-</span> <span class="fu">rbinom</span>(n, <span class="dv">1</span>, <span class="fu">plogis</span>(<span class="fu">g</span>(er, ed, ef, r, sra, ic, rp, d, srp2, f)))</span>
-<span id="cb56-51"><a href="#cb56-51"></a>  <span class="co"># table(y, useNA = "always")</span></span>
-<span id="cb56-52"><a href="#cb56-52"></a>  </span>
-<span id="cb56-53"><a href="#cb56-53"></a>  D <span class="ot">&lt;-</span> <span class="fu">data.table</span>(</span>
-<span id="cb56-54"><a href="#cb56-54"></a>    <span class="at">erx =</span> <span class="dv">1</span><span class="sc">-</span>er, <span class="at">edx =</span> <span class="dv">1</span><span class="sc">-</span>ed, <span class="at">efx =</span> <span class="dv">1</span><span class="sc">-</span>ef, </span>
-<span id="cb56-55"><a href="#cb56-55"></a>    er, ed, ef,</span>
-<span id="cb56-56"><a href="#cb56-56"></a>    r, sr, sra, ra, ra1, ra2, </span>
-<span id="cb56-57"><a href="#cb56-57"></a>    ic, rp, srp, srp1, srp2, d,</span>
-<span id="cb56-58"><a href="#cb56-58"></a>    f, y</span>
-<span id="cb56-59"><a href="#cb56-59"></a>  )</span>
-<span id="cb56-60"><a href="#cb56-60"></a>}</span>
-<span id="cb56-61"><a href="#cb56-61"></a><span class="fu">set.seed</span>(<span class="dv">1024</span>)</span>
-<span id="cb56-62"><a href="#cb56-62"></a>D <span class="ot">&lt;-</span> <span class="fu">generate_data_4</span>()</span>
-<span id="cb56-63"><a href="#cb56-63"></a><span class="co"># D[, .N, keyby = .(d, ed, rp1, rp2, y)]</span></span>
-<span id="cb56-64"><a href="#cb56-64"></a></span>
-<span id="cb56-65"><a href="#cb56-65"></a><span class="co"># erx isn't applicable because all are rand into surg</span></span>
-<span id="cb56-66"><a href="#cb56-66"></a>fit2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> er<span class="sc">:</span>r <span class="sc">+</span> er<span class="sc">:</span>r<span class="sc">:</span>sra <span class="sc">+</span></span>
-<span id="cb56-67"><a href="#cb56-67"></a>              edx <span class="sc">+</span> ed<span class="sc">:</span>ic <span class="sc">+</span> ed<span class="sc">:</span>rp<span class="sc">:</span>d <span class="sc">+</span> ed<span class="sc">:</span>d<span class="sc">:</span>rp<span class="sc">:</span>srp2 <span class="sc">+</span></span>
-<span id="cb56-68"><a href="#cb56-68"></a>              efx <span class="sc">+</span> ef<span class="sc">:</span>f, <span class="at">data =</span> D, <span class="at">family =</span> <span class="fu">binomial</span>())</span>
-<span id="cb56-69"><a href="#cb56-69"></a><span class="fu">summary</span>(fit2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-Call:
-glm(formula = y ~ er:r + er:r:sra + edx + ed:ic + ed:rp:d + ed:d:rp:srp2 + 
-    efx + ef:f, family = binomial(), data = D)
-
-Coefficients:
-              Estimate Std. Error  z value Pr(&gt;|z|)    
-(Intercept)  -0.981861   0.009102 -107.875  &lt; 2e-16 ***
-edx          -0.063147   0.008750   -7.217 5.33e-13 ***
-efx          -0.257367   0.005268  -48.855  &lt; 2e-16 ***
-er:r          0.184764   0.008872   20.825  &lt; 2e-16 ***
-ed:ic        -0.071070   0.006541  -10.865  &lt; 2e-16 ***
-ef:f          0.147620   0.005510   26.790  &lt; 2e-16 ***
-er:r:sra      0.403457   0.007360   54.818  &lt; 2e-16 ***
-ed:rp:d       0.894811   0.008753  102.225  &lt; 2e-16 ***
-ed:rp:d:srp2  0.062318   0.009469    6.581 4.66e-11 ***
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-(Dispersion parameter for binomial family taken to be 1)
-
-    Null deviance: 1317902  on 999999  degrees of freedom
-Residual deviance: 1231700  on 999991  degrees of freedom
-AIC: 1231718
-
-Number of Fisher Scoring iterations: 4</code></pre>
-</div>
-</div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-27-contents" aria-controls="callout-27" aria-expanded="true" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-27" class="callout-27-contents callout-collapse collapse show">
-<div class="callout-body-container callout-body">
 <p>Using g-computation to determine the marginal effects. <code>lnor</code> and <code>lnoravg</code> are used as the comparisons.</p>
 <p>The first (<code>lnor</code>) approach (average log odds?)</p>
 <ol type="1">
@@ -4073,6 +4151,7 @@ Note
 <li>predicts the log-odds of treatment success for all units with the surgical approach set to dair.</li>
 <li>computes the difference between the response on the log odds scale and takes the mean</li>
 </ol>
+<p>Also can be derived from a weigted combination of the parameters from the regression model. What is an accurate interpretation of this parameter? How would you explain it to a non-statistician?</p>
 <p>The second (<code>lnoravg</code>) approach (marginal mean?)</p>
 <ol type="1">
 <li>predicts the probability of treatment success for all units with the surgical approach set to revision and computes the mean</li>
@@ -4085,88 +4164,104 @@ Note
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb58"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb58-1"><a href="#cb58-1"></a><span class="co"># Revision vs. DAIR</span></span>
-<span id="cb58-2"><a href="#cb58-2"></a><span class="fu">avg_comparisons</span>(fit2, <span class="at">variables =</span> <span class="st">"r"</span>, <span class="at">comparison =</span> <span class="st">"lnor"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb59"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1"></a><span class="co"># Revision vs. DAIR</span></span>
+<span id="cb59-2"><a href="#cb59-2"></a>cmp <span class="ot">&lt;-</span> <span class="fu">avg_comparisons</span>(fit2, <span class="at">variables =</span> <span class="st">"r"</span>, <span class="at">comparison =</span> <span class="st">"lnor"</span>)</span>
+<span id="cb59-3"><a href="#cb59-3"></a></span>
+<span id="cb59-4"><a href="#cb59-4"></a>d_new <span class="ot">&lt;-</span> <span class="fu">copy</span>(D)</span>
+<span id="cb59-5"><a href="#cb59-5"></a></span>
+<span id="cb59-6"><a href="#cb59-6"></a><span class="co"># equivalent to using lnor</span></span>
+<span id="cb59-7"><a href="#cb59-7"></a>d_new[, r <span class="sc">:</span><span class="er">=</span> <span class="dv">1</span>]</span>
+<span id="cb59-8"><a href="#cb59-8"></a>lo1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit2, <span class="at">newdata =</span> d_new)</span>
+<span id="cb59-9"><a href="#cb59-9"></a>d_new[, r <span class="sc">:</span><span class="er">=</span> <span class="dv">0</span>]</span>
+<span id="cb59-10"><a href="#cb59-10"></a>lo0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit2, <span class="at">newdata =</span> d_new)</span>
+<span id="cb59-11"><a href="#cb59-11"></a></span>
+<span id="cb59-12"><a href="#cb59-12"></a><span class="co"># equivalent to weighted combination of parameters</span></span>
+<span id="cb59-13"><a href="#cb59-13"></a>b <span class="ot">&lt;-</span> <span class="fu">coef</span>(fit2)</span>
+<span id="cb59-14"><a href="#cb59-14"></a></span>
+<span id="cb59-15"><a href="#cb59-15"></a>w_srp <span class="ot">&lt;-</span> D[er <span class="sc">==</span> <span class="dv">1</span>, <span class="fu">mean</span>(srp2)]</span>
+<span id="cb59-16"><a href="#cb59-16"></a>w_er <span class="ot">&lt;-</span> D[, <span class="fu">mean</span>(er)]</span>
+<span id="cb59-17"><a href="#cb59-17"></a></span>
+<span id="cb59-18"><a href="#cb59-18"></a><span class="fu">rbind</span>(</span>
+<span id="cb59-19"><a href="#cb59-19"></a>  <span class="st">"predict at r = 0/1"</span> <span class="ot">=</span> <span class="fu">mean</span>(lo1 <span class="sc">-</span> lo0),</span>
+<span id="cb59-20"><a href="#cb59-20"></a>  <span class="st">"weighting coef by er and srp (condit on reveal)"</span> <span class="ot">=</span> w_er <span class="sc">*</span> b[<span class="st">"er:r"</span>] <span class="sc">+</span> w_er <span class="sc">*</span> w_srp <span class="sc">*</span> b[<span class="st">"er:r:srp2"</span>] , </span>
+<span id="cb59-21"><a href="#cb59-21"></a>  <span class="st">"avg_comparisons (lnor)"</span> <span class="ot">=</span> cmp<span class="sc">$</span>estimate</span>
+<span id="cb59-22"><a href="#cb59-22"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                                     er:r
+predict at r = 0/1                              0.2136018
+weighting coef by er and srp (condit on reveal) 0.2136018
+avg_comparisons (lnor)                          0.2136018</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb61"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb61-1"><a href="#cb61-1"></a>cmp</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
  Term              Contrast Estimate Std. Error    z Pr(&gt;|z|)   S 2.5 % 97.5 %
-    r ln(odds(1) / odds(0))    0.447    0.00717 62.3   &lt;0.001 Inf 0.433  0.461
+    r ln(odds(1) / odds(0))    0.214    0.00301 70.9   &lt;0.001 Inf 0.208   0.22
 
 Columns: term, contrast, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high 
 Type:  response </code></pre>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb60"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb60-1"><a href="#cb60-1"></a>d_new <span class="ot">&lt;-</span> <span class="fu">copy</span>(D)</span>
-<span id="cb60-2"><a href="#cb60-2"></a></span>
-<span id="cb60-3"><a href="#cb60-3"></a><span class="co"># using lnor</span></span>
-<span id="cb60-4"><a href="#cb60-4"></a>d_new[, r <span class="sc">:</span><span class="er">=</span> <span class="dv">1</span>]</span>
-<span id="cb60-5"><a href="#cb60-5"></a>lo1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit2, <span class="at">newdata =</span> d_new)</span>
-<span id="cb60-6"><a href="#cb60-6"></a>d_new[, r <span class="sc">:</span><span class="er">=</span> <span class="dv">0</span>]</span>
-<span id="cb60-7"><a href="#cb60-7"></a>lo0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit2, <span class="at">newdata =</span> d_new)</span>
-<span id="cb60-8"><a href="#cb60-8"></a><span class="fu">mean</span>(lo1 <span class="sc">-</span> lo0)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.4470635</code></pre>
 </div>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb62"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb62-1"><a href="#cb62-1"></a><span class="co"># using lnoravg</span></span>
-<span id="cb62-2"><a href="#cb62-2"></a><span class="fu">avg_comparisons</span>(fit2, <span class="at">variables =</span> <span class="st">"r"</span>, <span class="at">comparison =</span> <span class="st">"lnoravg"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb63"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb63-1"><a href="#cb63-1"></a><span class="co"># using lnoravg</span></span>
+<span id="cb63-2"><a href="#cb63-2"></a><span class="fu">avg_comparisons</span>(fit2, <span class="at">variables =</span> <span class="st">"r"</span>, <span class="at">comparison =</span> <span class="st">"lnoravg"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
- Term              Contrast Estimate Std. Error  z Pr(&gt;|z|)   S 2.5 % 97.5 %
-    r ln(odds(1) / odds(0))    0.427    0.00689 62   &lt;0.001 Inf 0.414  0.441
+ Term              Contrast Estimate Std. Error    z Pr(&gt;|z|)   S 2.5 % 97.5 %
+    r ln(odds(1) / odds(0))    0.229    0.00314 73.1   &lt;0.001 Inf 0.223  0.235
 
 Columns: term, contrast, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high, predicted_lo, predicted_hi, predicted 
 Type:  response </code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb64"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb64-1"><a href="#cb64-1"></a>d_new[, r <span class="sc">:</span><span class="er">=</span> <span class="dv">1</span>]</span>
-<span id="cb64-2"><a href="#cb64-2"></a>p1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit2, <span class="at">newdata =</span> d_new, <span class="at">type =</span> <span class="st">"response"</span>)</span>
-<span id="cb64-3"><a href="#cb64-3"></a>d_new[, r <span class="sc">:</span><span class="er">=</span> <span class="dv">0</span>]</span>
-<span id="cb64-4"><a href="#cb64-4"></a>p0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit2, <span class="at">newdata =</span> d_new, <span class="at">type =</span> <span class="st">"response"</span>)</span>
-<span id="cb64-5"><a href="#cb64-5"></a><span class="fu">qlogis</span>(<span class="fu">mean</span>(p1)) <span class="sc">-</span> <span class="fu">qlogis</span>(<span class="fu">mean</span>(p0))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb65"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb65-1"><a href="#cb65-1"></a>d_new[, r <span class="sc">:</span><span class="er">=</span> <span class="dv">1</span>]</span>
+<span id="cb65-2"><a href="#cb65-2"></a>p1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit2, <span class="at">newdata =</span> d_new, <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<span id="cb65-3"><a href="#cb65-3"></a>d_new[, r <span class="sc">:</span><span class="er">=</span> <span class="dv">0</span>]</span>
+<span id="cb65-4"><a href="#cb65-4"></a>p0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit2, <span class="at">newdata =</span> d_new, <span class="at">type =</span> <span class="st">"response"</span>)</span>
+<span id="cb65-5"><a href="#cb65-5"></a><span class="fu">qlogis</span>(<span class="fu">mean</span>(p1)) <span class="sc">-</span> <span class="fu">qlogis</span>(<span class="fu">mean</span>(p0))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.427103</code></pre>
+<pre><code>[1] 0.2292898</code></pre>
 </div>
 </div>
 <p>And for duration and choice.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb66"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb66-1"><a href="#cb66-1"></a><span class="co"># Short vs Long (one-stage) and short vs. long (two-stage)</span></span>
-<span id="cb66-2"><a href="#cb66-2"></a><span class="fu">avg_comparisons</span>(fit2, <span class="at">variables =</span> <span class="st">"d"</span>, <span class="at">by =</span> <span class="st">"srp2"</span>, <span class="at">comparison =</span> <span class="st">"lnoravg"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb67"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb67-1"><a href="#cb67-1"></a><span class="co"># Short vs Long (one-stage) and short vs. long (two-stage)</span></span>
+<span id="cb67-2"><a href="#cb67-2"></a><span class="fu">avg_comparisons</span>(fit2, <span class="at">variables =</span> <span class="st">"d"</span>, <span class="at">by =</span> <span class="st">"srp2"</span>, <span class="at">comparison =</span> <span class="st">"lnoravg"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
- Term              Contrast srp2 Estimate Std. Error   z Pr(&gt;|z|)   S 2.5 %
-    d ln(odds(1) / odds(0))    0    0.287    0.00276 104   &lt;0.001 Inf 0.282
-    d ln(odds(1) / odds(0))    1    0.934    0.00592 158   &lt;0.001 Inf 0.923
+ Term              Contrast srp2 Estimate Std. Error    z Pr(&gt;|z|)   S 2.5 %
+    d ln(odds(1) / odds(0))    0    0.179    0.00361 49.8   &lt;0.001 Inf 0.172
+    d ln(odds(1) / odds(0))    1    0.486    0.00558 87.1   &lt;0.001 Inf 0.475
  97.5 %
-  0.292
-  0.946
+  0.187
+  0.497
 
 Columns: term, contrast, srp2, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high 
 Type:  response </code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb68"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb68-1"><a href="#cb68-1"></a><span class="co"># Rifampicin vs not</span></span>
-<span id="cb68-2"><a href="#cb68-2"></a><span class="fu">avg_comparisons</span>(fit2, <span class="at">variables =</span> <span class="st">"f"</span>, <span class="at">comparison =</span> <span class="st">"lnoravg"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1"></a><span class="co"># Rifampicin vs not</span></span>
+<span id="cb69-2"><a href="#cb69-2"></a><span class="fu">avg_comparisons</span>(fit2, <span class="at">variables =</span> <span class="st">"f"</span>, <span class="at">comparison =</span> <span class="st">"lnoravg"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>
  Term              Contrast Estimate Std. Error    z Pr(&gt;|z|)     S  2.5 %
-    f ln(odds(1) / odds(0))   0.0835    0.00312 26.8   &lt;0.001 523.3 0.0774
+    f ln(odds(1) / odds(0))   0.0894    0.00341 26.2   &lt;0.001 500.7 0.0827
  97.5 %
- 0.0896
+  0.096
 
 Columns: term, contrast, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high, predicted_lo, predicted_hi, predicted 
 Type:  response </code></pre>
