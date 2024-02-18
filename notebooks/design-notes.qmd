@@ -19,18 +19,19 @@ log_info("Called design-notes notebook")
 
 Why bother with any of this?
 One reason is to identify the variables that are relevant to the design and how they relate. 
-This helps us formulate a picture of the joint probability distribution which allows us to simulate the data generation process.
-Without the joint view, it is unclear how one would be able to simulate an internally consistent data set. 
+This helps us formulate a picture of the joint probability distribution which allows us to simulate data from the assumed data generation process.
 It also allows us to determine which causal effects we can identify.
-Even if we model all the domains separately, we still need a joint view of the distribution in order to simulate the data properly.
+Even if we model all the domains separately, we still need some kind of joint view of the distribution in order to simulate the data properly and share parameters.
 
 :::
 
-Say we were doing a trial in just the late acute patients. We are interested in surgery (DAIR/revision) and antibiotic duration (long/short), but we are limited in that, for whatever reason, we can not ethically randomise the *type* of revision surgery, only revision surgery itself. 
+Start by saying we were doing a trial in just the late acute patients. 
+We are interested in surgery (DAIR/revision) and antibiotic duration (long/short), but we are limited in that, for whatever reason, we can not ethically randomise the *type* of revision surgery, only revision surgery itself. 
 
-However, choice of antibiotic duration is conditional on the type of revision surgery used, so surgery type needs to be considered in any joint analysis (alternatively, analyse separately).
+Choice of antibiotic duration is conditional on the type of revision surgery used, so surgery type needs to be considered in any joint analysis (alternatively, analyse separately).
 
-I just want to work through from a basic scenario to more involved ones to check understanding of potential issues. This will ignore much of the complexity, but just want to get some basics down as a reference.
+I just want to work through from a basic scenario to more involved ones to check understanding of potential issues. 
+The following will ignore much of the complexity, but just want to get some basics down as a reference.
 
 ## Surgery
 
@@ -46,10 +47,13 @@ For every patient, if they *were* to have been allocated to revision, there is s
 The value of $S$ is determined by the surgeon/patient and I'm considering it here as just an attribute of the patient. 
 
 ::: {.callout-note collapse=false}
-The above determination is likely also dependent on the surgeon's position as well as patient characteristics.
+The above determination is actually dependent on the surgeon's position as well as patient characteristics.
 In fact, one may dominate the other.
 For example, would a surgeon choose two-stage for all their patients simply because they have more experience or sucess with that approach, whereas another might choose one-stage for all theirs?
-In practice, what I think matters primarily is that we know what selection is rather than how it is determined.
+
+Note to self - in practice, I actually think that what matters is that we know what selection is rather than what process occurs to decide.
+Additionally, later we see that this consideration becomes redundant.
+
 :::
 
 The actual allocated treatment is a deterministic function of $R$ and $S$, i.e. $A = R \times (S + 1)$. Note that I'm assuming that $S$ is known for *every* patient before $R$ is revealed to the surgeon, irrespective of whether they are eventually assigned to DAIR or revision (if that it *isn't the case* then perhaps some issues might arise, but I don't think that it matters too much for what's being considered here given randomisation).
@@ -75,14 +79,14 @@ flowchart LR
 ::: {.callout-note collapse=false}
 
 + There are no back-door paths for the above, hence no open back-door paths
-+ Some function of $S$ and $R$ cause $Y$, $Y = f(R,S)$
-+ Is assuming $S$ causes $Y$ a weaker/safer assumption than excluding that link? Ans: Think so.
++ $Y$ is caused by/depends on some function of $R$ and $S$: $Y = f(R,S)$
++ Assuming $S$ causes $Y$ a weaker/safer assumption than excluding that link.
 + Maybe there should be some shared $U$ that influences both $S$ and $Y$ rather than assuming $S$ causes $Y$?
 + The graph implies:
   + $S$ and $R$ are independent; $S \mathrel{\unicode{x2AEB}} R$
   + $Y$ is conditionally independent of $R$ given $A$ and $S$; $Y \mathrel{\unicode{x2AEB}} R | A, S$
 + We can estimate the total effect of $R$ on $Y$ where $R = 1$ is loosely defined as revision with expert selection of one-stage or two-stage procedure (or something along those lines)
-+ Planned/intended procedure should be recorded prior to any elements of randomisation being revealed.
++ Think planned/intended procedure should be recorded prior to any elements of randomisation being revealed.
 + No adjustment is required to estimate the total effect of $R$ on $Y$
 
 :::
@@ -97,7 +101,7 @@ It's the overall effect of allocation to $R=0$ or $R=1$ that we are trying to (t
 
 :::
 
-If $Y(a)$ is the potential outcome of a patient if they were assigned to receive surgery of type $a$ (dair, one-stage, two-stage), then:
+If $Y(a)$ is the potential outcome of a patient under surgery of type $a$ (dair, one-stage, two-stage), then:
 
 $$
 \begin{aligned}
@@ -157,8 +161,8 @@ $$
 \mathbb{E}[Y | R, S] = \text{expit}(\beta_0 + \beta_1 \mathbb{I}(R = \text{one-stage} \land D = short) + \beta_2 \mathbb{I}(R = \text{two-stage} \land D = short)) \\
 $$
 
-However, this means that the reference group for the one-stage and two-stage duration effects have the same log-odds of treatment success, which is unlikely to be the case.
-By splitting $R$ into one-stage and two-stage effects (see above) we allow the reference groups for the one-stage and two-stage duration effects to vary.
+However, this means that the duration domain reference group for the one-stage and two-stage duration effects have the same log-odds of treatment success and this is very unlikely to be the case.
+Thus, by splitting $R$ into one-stage and two-stage effects we allow the reference groups for the one-stage and two-stage duration effects to vary.
 
 :::
 
@@ -189,7 +193,7 @@ Perhaps something along the lines of:
 To justify the inclusion of $\beta_3$ we argue that the married and the non-married groups are balanced across age (and all other characteristics).
 Therefore, the married and unmarried groups are similar and the effect for age of married in the group is portable to the group that were *not* randomised to marriage, in the counterfactual world where they had been.
 
-Ok, think I have convinced myself that it makes sense, if perhaps no-one else.
+Ok, think I have convinced myself (if perhaps no-one else) that it makes sense.
 
 :::
 
@@ -219,7 +223,7 @@ Due to randomisation $\mathbb{P}(S=s|R) = \mathbb{P}(S=s)$.
 
 ::: {.callout-note collapse=false}
 
-Which is just creating a standardised probability of treatment success under revision based on a weighted version of the probability of treatment success for each of the selection groups (one-stage and two-stage) where the weights are formed from the (unknown) distribution of $S$ (to be estimated from the sample). 
+Which is just creating a standardised probability of treatment success under revision based on a weighted version of the probability of treatment success for each of the selection groups (one-stage and two-stage) where the weights are formed from the (unknown) distribution of $S$ (estimated from the sample). 
 The standardised probability of treatment success under revision is then converted to the log odds of treatment success and the reference group (DAIR) log-odds of treatment success is subtracted to come up with the log-OR.
 
 The final line in the above derivation is just saying that we can assume that the probability distribution of $S$ is independent to treatment group membership and so can be estimated from the full sample rather than condition on $R$.
@@ -947,6 +951,54 @@ flowchart LR
   UY((U<sub>Y)) -.-> Y
 ```
 
+::: {.callout-note collapse=false}
+
+There might be alternative representations of the above and also the potential for direct and indirect effects of $S$, see below:
+
+
+```{mermaid}
+%%| label: fig-scenario-3a
+%%{
+  init:{
+    "flowchart":{"htmlLabels": "true"},
+    "securityLevel": "loose",
+    "theme": "base"
+}}%%
+flowchart LR
+  R --> A --> Y
+  S --> A
+  S --> Y
+  A --> D
+  D --> Y
+  UD((U<sub>D)) -.-> D
+  US((U<sub>S)) -.-> S
+  UR((U<sub>R)) -.-> R
+  UY((U<sub>Y)) -.-> Y
+```
+
+
+```{mermaid}
+%%| label: fig-scenario-3b
+%%{
+  init:{
+    "flowchart":{"htmlLabels": "true"},
+    "securityLevel": "loose",
+    "theme": "base"
+}}%%
+flowchart LR
+  R --> D
+  S --> D
+  S --> Y
+  D --> Y
+  UD((U<sub>D)) -.-> D
+  US((U<sub>S)) -.-> S
+  UR((U<sub>R)) -.-> R
+  UY((U<sub>Y)) -.-> Y
+```
+
+:::
+
+
 Now there are two interventions: $R$ which has downstream unknown effects partly due to the unknown revision type, $S$, which is selected, and $D$ which is randomised.
 
 The simplest approach is to analyse these separately.
@@ -982,12 +1034,15 @@ Is the above missing a $D$ from the conditioning?
 
 but for simplicity, not doing this here.
 
-From the above, we could compare (randomised comparison) any of: 
+From the above, and with a focus on the surgical domain, we could compare (randomised comparison) any of: 
 
-- revision long vs. DAIR
-- revision short vs. DAIR, but no other combinations of revision.
-- one-stage short + two-stage long vs. DAIR
-- two-stage short + one-stage long vs. DAIR
+1. revision long vs. DAIR
+2. revision short vs. DAIR, but no other combinations of revision.
+3. one-stage short + two-stage long vs. DAIR
+4. two-stage short + one-stage long vs. DAIR
+
+Where (1) and (2) are the likely the most relevant comparisons of interest, but nothing precludes the comparisons stated in (3) and (4).
+The key point is the explicit statement of the duration type at which the comparison is made, which again is averaged over the empircal distribution of surgical procedure type (one-stage/two-stage).
 
 However, we always needs to marginalise over $S$ (selection/plan):
 
@@ -999,12 +1054,6 @@ $$
 \end{aligned}
 $$
 
-::: {.callout-note collapse=false}
-
-Still not quite sure what is being proposed below.
-Is this proposing extending @eq-dn-7?
-
-:::
 
 Again, can alternatively consider the average conditional log-odds ratio
 
@@ -1015,19 +1064,15 @@ $$
 $$
 
 where I've made it explicit that $D_0$ (one-stage short) and $D_1$ (two-stage short) may differ.
+However, in practice, these would likely be set to the same level.
 
-
-
-
-::: {.callout-note collapse=false}
-
-Below the default data generating mechanism has the functional form:
+The default data generating mechanism has the functional form:
 
 $$
 \mathbb{E}[Y|R,S,D] = \text{expit}(\beta_0 + \beta_1X + \beta_1S + \beta_2R + \beta_3RS + \beta_4RD + \beta_5RSD)
 $$
 
-:::
+specified with non-zero effects on all terms.
 
 ```{r}
 #| label: generate-data-duration
@@ -1068,11 +1113,13 @@ fit2s <- glm(y ~ x + s + r + r:s + r:d + r:s:d, data = D, family = binomial())
 
 ::: {.callout-note collapse=false}
 
-The following considers estimation under null effects, where the true data generation mechanism was $\mathbb{E}[Y|S,X] = \text{expit}(-1 + S + X)$.
+In the following examples estimation under null effects is considered wherein the true data generation mechanism was $\mathbb{E}[Y|S,X] = \text{expit}(-1 + S + X)$.
 That is, where there are no treatment effects in either the surgical or duration domains.
 
-:::
+The estimates use G-computation. 
+Specifically, all of the following average over all terms bar the comparison of interest.
 
+:::
 
 
 ```{r}
@@ -1208,10 +1255,9 @@ $$
 $$
 
 
-
 ::: {.callout-note collapse=false}
 
-$\beta_2$ is now the shift for revision, long duration and no-rif.
+$\beta_2$ is now the shift for revision (under long duration irrespective of surgical type)
 
 :::
 
@@ -1352,50 +1398,55 @@ For example, at the start of the discussion on the duration domain, we assumed t
 However, note:
 
 1. $R$ presupposes eligibility and reveal for the surgical domain, which is not the general case, e.g. early stage infection silo.
-2. Patients may enter into the study without having being entered for a randomised comparison in the surgical domain (e.g. patients with early stage infection) in which case $R_A$ would have been determined entirely by clinician selection.
-3. Patients enter into the duration domain based on the surgical procedure that occurred. This is expected to usually align with the allocated procedure $R_A$, but may deviate from that. 
+2. Patients may enter into the study without having being entered for a randomised comparison in the surgical domain (e.g. patients with early stage infection) in which case the allocated surgery ($R_A$) would have been determined entirely by clinician selection.
+3. Patients enter into the duration domain based on the surgical procedure **that occurred**. This is expected to usually align with the allocated procedure $R_A$, but may deviate from that. 
 4. $D$ is random, conditional solely on $R_P$ rather than both $R$ and $S_{R_A}$ (as stated in the duration section).
 5. $D$ exists only for $R_P \in \{\text{one-stage}, \text{two-stage}\}$ otherwise reveal never occurs and duration allocated $D_A$ is determined by clinician selection
 6. While the duration domain for one-stage and two-stage both contain *long* (reference) vs *short* levels for duration of antibiotic, the levels are distinct for each procedure.
 
 To incorporate some of these ideas, start with the following definitions:
 
--   $E_R$ randomisation reveal for surgical domain - 0: no, 1: yes
--   $E_D$ randomisation reveal for duration domain - 0: no, 1: yes
--   $E_F$ randomisation reveal for choice domain - 0: no, 1: yes
+-   $E_R$ reveal for surgical domain - 0: no, 1: yes
+-   $E_D$ reveal for duration domain - 0: no, 1: yes
+-   $E_F$ reveal for choice domain - 0: no, 1: yes
 -   $R$ randomised surgery - 0: DAIR, 1: revision
--   $S_R$ preferred surgery - 0: DAIR, 1: one-stage, 2: two-stage
+-   $S_R$ revision type preference (pre-randomisation) - 0: DAIR, 1: one-stage, 2: two-stage
 -   $R_A$ allocated surgery - 0: DAIR, 1: one-stage, 2: two-stage
 -   $R_P$ performed surgery - 0: DAIR, 1: revision
--   $S_{R_P}$ preferred surgery - 0: one-stage, 1: two-stage
+-   $S_{R_P}$ revision type performed (post-randomisation) - 0: one-stage, 1: two-stage
 -   $D$ randomised duration - 0: long, 1: short
 -   $D_A$ allocated duration - 0: long, 1: short, 2: other
 -   $S_D$ selected duration - 0: long, 1: short, 2: other
 -   $F$ randomised choice - 0: norif, 1: rif
--   $D_F$ allocated choice - 0: norif, 1: rif, 2: other
+-   $F_A$ allocated choice - 0: norif, 1: rif, 2: other
 -   $S_F$ selected choice - 0: norif, 1: rif, 2: other
 -   $Y$ treatment success - 0: no, 1: yes
 
 In practice, we expect the allocated $R_A$ and actual $R_P$ surgical procedure performed will align, but in some cases they may not.
-For (a contrived) example, revision was randomised and the original surgeon only performs two-stage revision.
+
+**Contrived) example one**: revision was randomised and the original surgeon only performs two-stage revision.
 The original surgeon becomes unavailable to do the procedure and another surgeon (who only performs one-stage revision) takes over the case.
+The patient enters into the duration domain for comparisons within the setting of one-stage revision.
+
+**Contrived) example two**: revision was randomised and the surgeon intends to perform a two-stage revision.
+On the operating table, the surgeon switches to dair, for unknown reasons and the patient will no longer enter into randomised comparisons for the duration domain.
 
 $R_A$ (allocation) is now determined by additional variables:
 
 $$
-R_A = (1 - E_R) S_R + E_R R S_R
+R_A = (1-E_R) S_R + E_R R S_R
 $$
 
-so that when we have no revealed randomisation ($E_R = 0$) for the surgical domain, $R_A$ aligns with the preferred procedure out of all those possible (dair, one-stage, two-stage).
-However, when randomisation revealed for the surgical domain, the first term disappears and for $R = 0$, the allocation is dair, irrespective of preferred surgery, whereas when $R = 1$ we get the selected one-stage or two-stage procedure, which is the same approach as previously used.
+so that when we have no revealed randomisation for the surgical domain, $R_A$ aligns with the preferred procedure out of all those possible (dair, one-stage, two-stage).
+When randomisation revealed for the surgical domain, the first term disappears and for $R = 0$, the allocation is dair, irrespective of preferred surgery, whereas when $R = 1$ we get whatever one of one-stage ($S_R = 1$) or two-stage ($S_R = 2$) is preferred.
 
 For duration allocated $D_A$:
 
 $$
-D_A = (1 - E_D) S_D + E_D D
+D_A = (1-E_D) S_D + E_D D
 $$
 
-when no reveal, $E_D = 0$ and $D_A = S_D$ (long/short/other duration) and when revealed, $D_A = D$ (long/short duration).
+when no reveal, $E_D = 1$ and $D_A = S_D$ (long/short/other duration) and when revealed, $D_A = D$ (long/short duration).
 
 For choice allocated $F_A$:
 
@@ -1403,17 +1454,17 @@ $$
 F_A = (1 - E_F) S_F + E_F F
 $$
 
-when no reveal, $E_F = 0$ and $F_A = S_F$ (norif/rif/other) and when revealed, $F_A = F$ (norif/rif).
+when no reveal, $F_A = S_F$ (norif/rif/other) and when revealed, $F_A = F$ (norif/rif).
 
 
 ::: {.callout-note collapse=false}
 
-Above, I am assuming that you can randomise someone within a domain without first assessing their eligibility status, which I believe is the intention.
-Randomisation would only be revealed if eligibility is confirmed, which is independent to the randomisation process.
+Above, I am assuming that you can randomise someone within a domain without first assessing their eligibility status or knowing anything about them other than they want to enter the platform, which I believe is the intention.
+Randomisation is only revealed if eligibility is confirmed and this process is independent to the randomisation process.
 
 :::
 
-The edited DAG is shown below, which still has a number of simplications relative to the intended approach.
+The edited DAG is shown below, which still has a number of simplications relative to the intended approach but is intended to represent a generalised silo and site of infection, implicitly acknowledging that the outcome will be dependent on both these factors.
 Patients may contribute to some or all domains, which influences the treatment regimen (combination of treatments across the domains) they receive and which suggests the various causal effects that are identifiable.
 
 ```{mermaid}
@@ -1434,9 +1485,7 @@ flowchart LR
   R --> RA
   RA --> RP(R<sub>P) 
   SRP(S<sub>R<sub>P) --> RP
-  SRP --> D
   RA --> Y
-  RP --> D
   RP --> ED
   D --> DA(D<sub>A)
   DA --> Y
@@ -1459,70 +1508,65 @@ flowchart LR
 
 ::: {.callout-note collapse=false}
 
-$\S_R$ is actually representing multiple ideas:
+There is potentially a direct as well as the indirect effect of both $S_R$ on $Y$ and $S_{R_P}$ on $Y$ but these have been left out of the DAG for now.
+$S_R$ is actually representing multiple ideas:
 
 1. when the surgical domain is not applicable (randomisation never revealed) e.g. for the chronic patients, then $S_R$ is the selection from dair, one-stage, two-stage
-2. when surgical domain is applicable (randomisation is revealed) then $S_R$ is the selection between one-stage and two-stage
+2. when surgical domain is applicable (randomisation is revealed) then $S_R$ is the option between one-stage and two-stage that is most prefered.
 
-In essence, it is a ranking of which surgical procedure is required.
+In essence, $S_R$ involves a conditional ranking of which surgical procedure is prefered.
+
 For example, say the selection is: dair, two-stage, one-stage in order of preference.
 If randomisation is not reveal, dair is would be the selection.
 If randomisation is revealed, two-stage would be as it is the most prefered surgical procedure applicable to revision.
+
+Originally, $D$ was said to depend on some of the selection elements.
+However, subsequently it was decided that $D$ (long/short) should be viewed like all other randomisation processes, i.e. independent of all other nodes, but is only manifest through $D_A$ for certain surgery types.
 
 :::
 
 Again consider intervening on surgical procedure whereby we are interested in the effect of dair vs revision on treatment success.
 There are no open backdoor paths apparent and therefore no adjustment is required to identify the total effect of $R$ on $Y$.
-
-::: {.callout-note collapse=false}
-
-Stuff on $D$ out of date. 
-There is still an open path but now you need to adjust for ($R_P$ or $E_D$).
-
-:::
-
-Consider randomised duration $D$; backdoor paths exists:
-
-1. $D \leftarrow  R_P \leftarrow R_A \rightarrow Y$
-2. $D \leftarrow  R_P \rightarrow E_D \rightarrow D_A \rightarrow Y$
-
-The first is open, the second is closed due to the collider $D_A$. 
-Minimally conditioning on the set $\{ {R_P}, {R_A} \}$ closes the backdoor path and allows identification of the total effect of duration on treatment success.
-
-Consider choice $F$.
-No backdoor paths exist and therefore no adjustment is required for the identification of the total causal effect of $F$ on $Y$.
+Similarly, neither $D$ nor $F$ have backdoor paths.
 
 Postulate the following model:
 
 $$
 \begin{aligned}
 \mathbb{E}[Y|L; \beta] &=  \text{expit}( \beta_0 + \\
-  &\quad \beta_1 [1 - E_R] + [\beta_2 R + \beta_3 R \mathbb{I}(S_R = 2) ]E_R + \\
-  &\quad \beta_4 [1 - E_D] + [\beta_5 \mathbb{I}(S_{R_P} \ne R_A) + \beta_6 R_P D + \beta_{7} R_P D \mathbb{I}(S_{R_P} = 2)]E_D + \\
-  &\quad \beta_{8} [1 - E_F] + \beta_{9} F E_F  )
+  &\quad \beta_1 \mathbb{I}[G = 1] + \beta_2 \mathbb{I}[G = 2] + \beta_3 J + \\
+  &\quad \beta_4 J \mathbb{I}[G = 1] + \beta_5 J \mathbb{I}[G = 2] + \\
+  &\quad \beta_6 \mathbb{I}(1-E_R) + ([\beta_7 R + \beta_8 R \mathbb{I}(S_{R_P} = 2) ])\mathbb{I}(E_R) + \\
+  &\quad \beta_9 \mathbb{I}(1-E_D) + ([\beta_{10} R_P D + \beta_{11} R_P D \mathbb{I}(S_{R_P} = 2)])\mathbb{I}(E_D) + \\
+  &\quad \beta_{12} \mathbb{I}(1-E_F) + \beta_{13} F E_F )
 \end{aligned}
 $$
 
-where the $L$ denotes the model variables and $\beta$ the vector of parameters and the following describe the movements in the log-odds of treatment success associated with the non-reference levels:
+where the $L$ stands for the set of model variables and $\beta$ the vector of parameters.
+The following describe the reference/movements in the log-odds of treatment success:
 
-+ $\beta_1$ is the shift under non-reveal (surgery^[The parameter ignores potential differentiation for surgical type.])
-+ $\beta_2$ is the shift under revision with one-stage procedure
-+ $\beta_3$ is the shift under revision with two-stage procedure
-+ $\beta_4$ is the shift under non-reveal (duration) with no differentiation for surgical nor duration preference
-+ $\beta_5$ is the shift for deviations from allocated revision to some an alternate surgical approach
-+ $\beta_6$ is the shift for short duration when one-stage was actually performed
-+ $\beta_7$ is the shift for short duration when two-stage was actually performed
-+ $\beta_{8}$ is the shift under non-reveal (choice) with no differentiation for choice preference
-+ $\beta_{9}$ is the shift for rif
++ $\beta_{0}$ baseline log-odds of treatment success in the early silo / knee site
++ $\beta_{1}$ shift for late-silo membership relative to early
++ $\beta_{2}$ shift for chronic-silo membership relative to early
++ $\beta_{3}$ shift for hip
++ $\beta_{4}$ relative shift for late-silo membership with hip
++ $\beta_{5}$ relative shift for chronic-silo membership with hip
++ $\beta_{6}$ shift under non-reveal (surgery^[The parameter ignores potential differentiation for surgical type.])
++ $\beta_{7}$ shift under revision that was performed with one-stage procedure for long duration and no-rif
++ $\beta_{8}$ relative shift under revision that was performed with two-stage procedure for long duration and no-rif
++ $\beta_{9}$ shift under non-reveal (duration) with no differentiation for surgical nor duration preference
++ $\beta_{10}$ shift for short duration when one-stage was actually performed
++ $\beta_{11}$ shift for short duration when two-stage was actually performed
++ $\beta_{12}$ shift under non-reveal (choice) with no differentiation for choice preference
++ $\beta_{13}$ shift for rif
 
-Now, we have another complicating factor in that the surgical allocation may inform the type of surgery that the patient gets (but may deviate) and the randomisation that the patient is revealed to in the duration domain is determined by what surgical intervention the patient actually got.
+With the complicating factor being that the surgical allocation may inform the type of surgery that the patient gets (but may deviate) and the randomisation that the patient is revealed to in the duration domain is determined by what surgical intervention the patient actually got.
 
-Recalling the earlier rationale for splitting revision type, we now need to also adjust for when the planned and actual revision type deviate from one another.
+We replace pre-randomised preference for surgical type with post-randomised surgical type performed and marginalise out this term.
 
 ::: {.callout-note collapse=false}
 
-I am not clear on whether the above addresses the full impacts of deviations between allocated and performed surgery.
-It simply aims to lump all deviations of any form from the planned surgery into a single parameter.
+Full disclosure, I am not entirely sure as to whether the above addresses the full impacts of deviations between allocated and performed surgery or whether the DAG is sufficiently complete representation of the dependencies.
 
 :::
 
@@ -1530,80 +1574,105 @@ As previously, for the surgical domain, we are interested the effect of interven
 For the duration domain, we are interested in the effect of intervening on $D|R_P$.
 For the choice domain, we are interested in the effect of intervening on $F$.
 
+
+::: {.callout-note collapse=false}
+
+Note that for the following specification, the design matrix can become singular (linear dependence between some of the variables) e.g. if surgical reveal is equivalent to silo membership.
+I am assuming some small amount of noise in reveal such that this isn't a problem.
+
+:::
+
 ```{r, eval = T}
 #| label: generate-data-complete
 #| code-summary: Generate complete data
 
+
+
 generate_data_4 <- function(
     n = 1e6,
-    g = function(er, ed, ef, r, sra, ic, rp, d, srp2, f){ 
-      -1 + 
-        -0.1*(1-er) + (0.2*r + 0.4*r*sra)*er +
-        -0.05*(1-ed) + (-0.07*ic + 0.9*rp*d + 0.06*rp*d*srp2)*ed +
-        -0.25*(1-ef) + 0.15*f*ef 
+    g = function(p_a, l1, l2, j, er, ed, ef, r, rp, d, srp, f){ 
+      -1 + -0.04 * l1 - 0.07 * l2 - 0.02 * j - 0.01 * l1 * j - 0.06 * l2 * j +
+        -0.1*(1-er) + (0.2*r + 0.4*r*(srp==2))*(er) +
+        -0.05*(1-ed) + (0.4*rp*d + 0.1*rp*d*(srp==2))*(ed) +
+        -0.25*(1-ef) + 0.15*f*(ef) 
       }
     ) {
-
-  # all enter surgical for now
-  er <- rep(1, n)
+  
+  p_a = array(
+    c(0.65, 0.55, 0.6, 0.75, 0.6, 0.65),
+    dim = c(3, 2), dimnames = list(c("early", "late", "chronic"),c("knee", "hip")))
+  
+  # silo (l) and joint (j)
+  l <- sample(0:2, n, replace = T, prob = c(0.3, 0.5, 0.2)) 
+  l1 = as.numeric(l == 1)
+  l2 = as.numeric(l == 2)
+  
+  p_j <- array(c(0.4,0.7,0.5,0.6,0.3,0.5), dim = c(3, 2), 
+               dimnames = list(c("early", "late", "chronic"), c("knee", "hip")))
+  j <- rbinom(n, 1, p_j[l+1, 2])
+  # reveal for late only, with a small number who never get revealed even if they
+  # were in late. you can leave this out but the model spec will need to be updated
+  # because there will be linearly depenedent cols in the design matrix
+  er <- as.numeric(l == 1)
+  er[l==1][as.logical(rbinom(er[l==1], 1, 0.05))] <- 0
   # randomise dair vs rev
   r <- rbinom(n, 1, 0.5)
-  
-  # 70% chance of clin choosing two-stage should pt be rand to revision 
-  # exchangeable across groups so can just create random values for whole sample
+  # (approx) 70% chance of clinician choosing two-stage if pt is rand to revision 
   sr <- numeric(n)
   sr[r == 0] <- sample(0:2, sum(r == 0), replace = T, prob = c(0.2, 0.2, 0.6))
   sr[r == 1] <- sample(1:2, sum(r == 1), replace = T, prob = c(0.3, 0.7))
-  
+  # pref towards two-stage, assuming revision
   sra <- as.numeric(sr == 2)
-
-  ra <- (1 - er) * sr + er * r * (sr) 
-  ra1 <- as.numeric(ra == 1)
-  ra2 <- as.numeric(ra == 2)
+  # determine allocation of surgery type
+  ra <- er * sr + (1-er) * r * (sr) 
   
-  # 30% of the allocated treatments get mixed up
-  ic <- rbinom(n, 1, 0.3)
+  # 10% of the allocated treatments may have switch to a different surg type
   srp <- ra
-  # the ones that swap-over revises the view on selection?
+  ic <- rbinom(n, 1, 0.1)
   srp[as.logical(ic)] <- sample(0:2, sum(ic), replace = T, prob = c(0.2, 0.2, 0.6))
-  
-  # still based on the rand allocation for dair/rev?
+  # was the procedure type dair or revision?
   rp <- as.numeric(srp %in% 1:2)
   
-  # reveal entirely determined by rp therefore unnecessary???
-  ed <- rp
-  
-  srp1 <- as.numeric(srp == 1)
-  srp2 <- as.numeric(srp == 2)
-
-  # rand to long (0), short (1)
+  # non-reveal of duration if rp is dair (0)
+  ed <- as.numeric(rp == 1)
+  # rand to long (0), short (1) based on surgery received
   d <- as.numeric((rp > 0) * rbinom(n, 1, 0.5))
-  
-  # 60% enter rif
+  # 60% reveal ab choice
   ef <- rbinom(n, 1, 0.6)
   f <- as.numeric((ef == 1) * rbinom(n, 1, 0.5))
   
-  y <- rbinom(n, 1, plogis(g(er, ed, ef, r, sra, ic, rp, d, srp2, f)))
+  y <- rbinom(n, 1, plogis(g(p_a, l1, l2, j, er, ed, ef, r, rp, d, srp, f)))
   # table(y, useNA = "always")
   
   D <- data.table(
-    erx = 1-er, edx = 1-ed, efx = 1-ef, 
+    l1, l2, j, 
     er, ed, ef,
-    r, sr, sra, ra, ra1, ra2, 
-    ic, rp, srp, srp1, srp2, d,
+    erx = 1-er, edx = 1-ed, efx=1-ef,
+    r, sr, sra, ra, 
+    ic, rp, srp, srp2 = as.numeric(srp == 2), d,
     f, y
   )
 }
-set.seed(1024)
+set.seed(102)
 D <- generate_data_4()
-# D[, .N, keyby = .(d, ed, rp1, rp2, y)]
 
-# erx isn't applicable because all are rand into surg
-fit2 <- glm(y ~ er:r + er:r:sra +
-              edx + ed:ic + ed:rp:d + ed:d:rp:srp2 +
-              efx + ef:f, data = D, family = binomial())
+# early silo, should be non-reveal with no r options (default to 0)
+# D[, .N, keyby = .(l, j, er, r)]
+# those who received rev are revealed for d (ed = 0) and are 0:1 conditional on revision type (srp)
+# D[, .N, keyby = .(rp, ed, srp, d)]
+# those entering ab choice should come from all strata, infec site
+# D[ef == 0, .N, keyby = .(l, j, f)]
+# those that dont should also be dist across sample
+# D[ef == 1, .N, keyby = .(l, j, f)]
+
+fit2 <- glm(y ~ l1 + l2 + j + l1:j + l2:j +
+              erx + er:r + er:r:srp2 +
+              edx + ed:rp:d + ed:d:rp:srp2 +
+              efx + ef:f, 
+            data = D, family = binomial())
 summary(fit2)
 
+# linearly_dep_cols(fit2)
 ```
 
 ::: {.callout-note collapse=false}
@@ -1617,6 +1686,10 @@ The first (`lnor`) approach (average log odds?)
 2. predicts the log-odds of treatment success for all units with the surgical approach set to dair.
 3. computes the difference between the response on the log odds scale and takes the mean
 
+Also can be derived from a weigted combination of the parameters from the regression model.
+What is an accurate interpretation of this parameter?
+How would you explain it to a non-statistician?
+
 The second (`lnoravg`) approach (marginal mean?)
 
 1. predicts the probability of treatment success for all units with the surgical approach set to revision and computes the mean
@@ -1626,19 +1699,32 @@ The second (`lnoravg`) approach (marginal mean?)
 :::
 
 
-
 ```{r, eval = T}
 # Revision vs. DAIR
-avg_comparisons(fit2, variables = "r", comparison = "lnor")
+cmp <- avg_comparisons(fit2, variables = "r", comparison = "lnor")
 
 d_new <- copy(D)
 
-# using lnor
+# equivalent to using lnor
 d_new[, r := 1]
 lo1 <- predict(fit2, newdata = d_new)
 d_new[, r := 0]
 lo0 <- predict(fit2, newdata = d_new)
-mean(lo1 - lo0)
+
+# equivalent to weighted combination of parameters
+b <- coef(fit2)
+
+w_srp <- D[er == 1, mean(srp2)]
+w_er <- D[, mean(er)]
+
+rbind(
+  "predict at r = 0/1" = mean(lo1 - lo0),
+  "weighting coef by er and srp (condit on reveal)" = w_er * b["er:r"] + w_er * w_srp * b["er:r:srp2"] , 
+  "avg_comparisons (lnor)" = cmp$estimate
+)
+
+cmp
+
 ```
 
 ```{r}

@@ -27,6 +27,28 @@ yn_rand <- function(N, pr_y = 0.5){
   sample(c("Y", "N"), N, replace = T, prob = c(pr_y, pr_n))
 }
 
+linearly_dep_cols <- function(fit){
+  
+  
+  m <- model.matrix(fit)
+  # head(m)
+  rankifremoved <- sapply(1:ncol(m), function (x) {
+    qr(m[,-x])$rank
+  })
+  idx <- which(rankifremoved == max(rankifremoved))
+  
+  if(length(idx) == ncol(m)){
+    message("Linearly dep terms: none")
+  } else {
+    message("Linearly dep terms: ", paste0(colnames(m)[idx], collapse = ", "))
+  }
+  
+  d_m <- data.table(m)
+  
+  d_m[, idx, with = F]
+  
+}
+
 tbl_ex_trial <- function(d){
   
   d_b <- d[, .(y = sum(y), n = .N, p = plogis(unique(eta))), keyby = .(silo, joint, ea, a, qa, eb, b, ec, c)]
