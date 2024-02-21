@@ -1,6 +1,7 @@
 ---
 title: "Simulation setup"
-
+date: today
+date-modified: last-modified
 ---
 
 ```{r, echo = FALSE}
@@ -97,37 +98,6 @@ We consider a range of simulation settings:
 + Single effective - single cell effective (OR = 1.5) for single domain and silo
 + Single harmful - single cell harmful (OR = 1/1.5) for single domain and silo
 
-
-## Statistical quantities
-
-We consider treatment superiority, inferiority and futility.
-
-As a set, whatever quantities are used, need to be mutually exclusive.
-For example, with the current set of quantities, if a parameter is superior, then it cannot be either inferior and futile.
-
-### Superiority
-
-\begin{aligned}
-\phi_{sup} = Pr(OR > 1)
-\end{aligned}
-
-and conclude superiority if $\phi_{sup} > \delta_{sup}$.
-
-### Inferiority
-
-\begin{aligned}
-\phi_{inf} = 1 - \phi_{sup}
-\end{aligned}
-
-and conclude inferiority if $\phi_{inf} > \delta_{inf}$.
-
-### Futility
-
-Is simply defined in relation to superiority with futility concluded if $\phi_{sup} < \delta_{fut}$.
-
-## Decision thresholds
-
-Decision thresholds are documented with the simulation results.
 
 
 

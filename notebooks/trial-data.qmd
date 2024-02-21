@@ -1,6 +1,7 @@
 ---
 title: "Simulated trial data"
-
+date: today
+date-modified: last-modified
 ---
 
 ```{r, echo = FALSE}
@@ -14,43 +15,43 @@ The sub-totals sum to the size of the subset (e.g. patients under late stage inf
 The missingness is a consequence of the partial factorial structure.
 
 ```{r}
-set.seed(25)
-ll <- get_trial_data(N = 2500)
+set.seed(1)
+ll <- get_trial_data_new(N = 2500)
 
 d <- copy(ll$d)
-
 ```
 
-@tbl-smry-late-Da shows the allocation to (late stage infection) dair vs rev and the balance across the remaining group levels in the data.
+Only patients in the late stage infection silo enter into the surgical domain for randomised comparison of surgery type.
+@tbl-smry-late-Da shows the allocation to dair vs rev for this cohort and the balance across the remaining group levels in the data.
 
-```{r}
+```{r, eval = T}
 #| label: tbl-smry-late-Da
 #| tbl-cap: 'Simulated trial data for (late silo) surgical domain - covariate balance across other groups'
-#| column: page
-
 
 # domain B
-d_tmp1 <- d[silo == "late", .(ea, a, eb, b)]
-d_tmp2 <- d_tmp1[, .N, keyby = .(a, eb, b)]
-d_B <- dcast(d_tmp2, eb + b ~ a, value.var = "N")
-d_B[, domain := "B"]
-colnames(d_B) <- c("rand", "group", "dair", "rev", "domain")
+d_tmp1 <- d[l1 == 1 & er == 1, .(er, r, ed, srp, d)]
+d_tmp2 <- d_tmp1[, .N, keyby = .(r, ed, srp, d)]
+d_B <- dcast(d_tmp2, ed + d + srp ~ r, value.var = "N")
+d_B[, domain := "Duration"]
+colnames(d_B) <- c("rand", "group", "surgery", "dair", "rev", "domain")
 setcolorder(d_B, "domain")
 # domain C
-d_tmp1 <- d[silo == "late", .(ea, a, ec, c)]
-d_tmp2 <- d_tmp1[, .N, keyby = .(a, ec, c)]
-d_C <- dcast(d_tmp2, ec + c ~ a, value.var = "N")
-d_C[, domain := "C"]
-colnames(d_C) <- c("rand", "group", "dair", "rev", "domain")
+d_tmp1 <- d[l1 == 1 & er == 1, .(er, r, ef, srp, f)]
+d_tmp2 <- d_tmp1[, .N, keyby = .(r, ef, srp, f)]
+d_C <- dcast(d_tmp2, ef + f + srp ~ r, value.var = "N")
+d_C[, domain := "Choice"]
+colnames(d_C) <- c("rand", "group", "surgery", "dair", "rev", "domain")
 setcolorder(d_C, "domain")
 
-d_tbl <- rbind(d_B, d_C)
-d_tbl[, group := factor(group, levels = c("w12","w06p1", "w12p1", "d07p2", "w12p2", "other", "norif", "rif"))]
-d_tbl[domain == "B", domain := "AB Duration"]
-d_tbl[domain == "C", domain := "AB Type"]
-d_tbl <- d_tbl[order(domain, rand, group)]
+d_tbl <- rbind(d_B, d_C, fill = TRUE)
+# d_tbl[, group := factor(group, levels = c("w12","w12p1", "w06p1", "w12p2", "d07p2", "other", "norif", "rif"))]
+d_tbl <- d_tbl[order(domain, rand, surgery, group)]
 
-cols <- c("Domain", "Randomised", "Treatment", "DAIR", "Revision")
+d_tbl[, total := rowSums(d_tbl[, .(dair, rev)], na.rm = T)]
+d_tbl[domain == "Choice" & rand == 0, group := NA]
+d_tbl[domain == "Duration" & rand == 0, group := NA]
+
+cols <- c("Domain", "Randomised", "Treatment", "Surgery recvd", "DAIR", "Revision", "Total")
 names(cols) <- names(d_tbl)
 
 gt_tbl <- d_tbl |> 
@@ -58,7 +59,8 @@ gt_tbl <- d_tbl |>
   )  |>
   tab_spanner(
     label = html("Domain A (late silo)"),
-    columns = c(dair, rev)
+    columns = c(dair, rev),
+    id = "da"
   ) |>
   sub_missing(
     columns = everything(),
@@ -66,231 +68,177 @@ gt_tbl <- d_tbl |>
   ) |>
   cols_label(.list = cols) |> 
   summary_rows(
-    columns = c("dair", "rev"),
+    columns = c("dair", "rev", "total"),
     fns = list(
       subtotal = ~ sum(., na.rm = TRUE)
     )
-  ) 
+  )  |>
+  tab_footnote(
+    footnote = "Randomised indicates whether units were randomised into choice/duration domain (0: No, 1: Yes)",
+    locations = cells_column_labels(columns = rand)
+  ) |>
+  tab_footnote(
+    footnote = "Surgery recvd indicates surgery type actually perfromed (0: dair, 1: one-stage, 2: two-stage). Surgery recvd may deviate from original randomisation/plan.",
+    locations = cells_column_labels(columns = surgery)
+  ) |>
+  tab_footnote(
+    footnote = "Treatment indicates which treatment assigned within domain. For choice (0: no-rif, 1: rif). For duration is specific to surgery type received (0: long, 1: short). Units that were not randomised within the choice/duration domain have undefined randomised treatment status.",
+    locations = cells_column_labels(columns = group)
+  ) |>
+  tab_footnote(
+    footnote = "Only units randomised to surgery domain reported.",
+    locations = cells_column_spanners(spanners = "da")
+  )
 
 gt_tbl
 ```
 
-@tbl-smry-chronic-Da shows the allocation to (chronic stage infection) one vs two-stage and the balance across the remaining group levels in the data.
+@tbl-smry-Db shows the allocation to the duration domain conditional on surgery type actually received and the balance across the remaining group levels in the data.
+Only units randomised within the duration domain are reported.
 
-```{r}
-#| label: tbl-smry-chronic-Da
-#| tbl-cap: 'Simulated trial data for (chronic silo) surgical domain - covariate balance across other groups'
-#| column: page
-
-
-# domain B
-d_tmp1 <- d[silo == "chronic", .(ea, a, eb, b)]
-d_tmp2 <- d_tmp1[, .N, keyby = .(a, eb, b)]
-d_B <- dcast(d_tmp2, eb + b ~ a, value.var = "N")
-d_B[, domain := "B"]
-colnames(d_B) <- c("rand", "group", "one", "two", "domain")
-setcolorder(d_B, "domain")
-# domain C
-d_tmp1 <- d[silo == "chronic", .(ea, a, ec, c)]
-d_tmp2 <- d_tmp1[, .N, keyby = .(a, ec, c)]
-d_C <- dcast(d_tmp2, ec + c ~ a, value.var = "N")
-d_C[, domain := "C"]
-colnames(d_C) <- c("rand", "group", "one", "two", "domain")
-setcolorder(d_C, "domain")
-
-d_tbl <- rbind(d_B, d_C)
-d_tbl[, group := factor(group, levels = c("w06p1", "w12p1", "d07p2", "w12p2", "other", "norif", "rif"))]
-d_tbl <- d_tbl[order(domain, rand, group)]
-
-d_tbl[domain == "B", domain := "AB Duration"]
-d_tbl[domain == "C", domain := "AB Type"]
-
-cols <- c("Domain", "Randomised", "Treatment", "One-stage", "Two-stage")
-names(cols) <- names(d_tbl)
-
-gt_tbl <- d_tbl |> 
-  gt(groupname_col = "domain"
-  )  |> 
-  summary_rows(
-    columns = c("one", "two"),
-    fns = list(
-      subtotal = ~ sum(., na.rm = TRUE)
-    )
-  )   |>
-  tab_spanner(
-    label = html("Domain A (chronic silo)"),
-    columns = c(one, two)
-  ) |>
-  sub_missing(
-    columns = everything(),
-    missing_text = "-"
-  ) |>
-  cols_label(.list = cols)
-
-gt_tbl
-```
-
-@tbl-smry-late-Db shows the allocation to (late stage infection) dair vs rev and the balance across the remaining group levels in the data.
-The subsequent tables show analogous summaries.
-
-```{r}
-#| label: tbl-smry-late-Db
-#| tbl-cap: 'Simulated trial data for (late silo) duration domain - covariate balance across other groups'
-#| column: page
+```{r, eval = T}
+#| label: tbl-smry-Db
+#| tbl-cap: 'Simulated trial data for AB duration domain - covariate balance across other groups'
 
 # domain B
-d_tmp1 <- d[silo == "late", .(eb, b, ea, a, qa)]
-d_tmp2 <- d_tmp1[, .N, keyby = .(b, ea, a, qa)]
-d_tmp2[, b := factor(b, levels = c("w12", "w06p1", "w12p1", "d07p2", "w12p2"))]
-d_B <- dcast(d_tmp2, ea + a + qa ~ b, value.var = "N")
-d_B[, domain := "A"]
-colnames(d_B) <- c("rand", "group", "plan", c("w12", "w06p1", "w12p1", "d07p2", "w12p2"), "domain")
+d_tmp1 <- d[ed == 1, .(ed, d, er, r, ic,srp)]
+d_tmp2 <- d_tmp1[, .N, keyby = .(d, er, r,srp)]
+# d_tmp2[, b := factor(b, levels = c("w12", "w06p1", "w12p1", "d07p2", "w12p2"))]
+d_B <- dcast(d_tmp2, er + r ~ srp + d, value.var = "N")
+d_B[, domain := "Surgery"]
+colnames(d_B) <- c("rand", "group", c("long_1", "short_1", "long_2", "short_2"), "domain")
 setcolorder(d_B, "domain")
 # domain C
-d_tmp1 <- d[silo == "late", .(eb, b, ec, c)]
-d_tmp2 <- d_tmp1[, .N, keyby = .(b, ec, c)]
-d_tmp2[, b := factor(b, levels = c("w12", "w06p1", "w12p1", "d07p2", "w12p2"))]
-d_C <- dcast(d_tmp2, ec + c ~ b, value.var = "N")
-d_C[, domain := "C"]
-colnames(d_C) <- c("rand", "group", c("w12", "w06p1", "w12p1", "d07p2", "w12p2"), "domain")
+d_tmp1 <- d[ed == 1, .(ed, d, ef, f, srp)]
+d_tmp2 <- d_tmp1[, .N, keyby = .(d, ef, f, srp)]
+# d_tmp2[, b := factor(b, levels = c("w12", "w06p1", "w12p1", "d07p2", "w12p2"))]
+d_C <- dcast(d_tmp2, ef + f ~ srp + d, value.var = "N")
+d_C[, domain := "Choice"]
+colnames(d_C) <- c("rand", "group", c("long_1", "short_1", "long_2", "short_2"), "domain")
 setcolorder(d_C, "domain")
 
 d_tbl <- rbind(d_B, d_C, fill = T)
-d_tbl[domain == "A", domain := "AB Duration"]
-d_tbl[domain == "C", domain := "AB Type"]
 
-cols <- c("Domain", "Randomised", "Treatment", "Plan",c("w12", "w06p1", "w12p1", "d07p2", "w12p2"))
+d_tbl[, total := rowSums(d_tbl[, .(long_1, short_1, long_2, short_2)], na.rm = T)]
+d_tbl[domain == "Surgery" & rand == 0, group := NA]
+d_tbl[domain == "Choice" & rand == 0, group := NA]
+
+cols <- c("Domain", "Randomised", "Treatment", c("long", "short", "long", "short"), "Total")
 names(cols) <- names(d_tbl)
 
 gt_tbl <- d_tbl |> 
   gt(groupname_col = "domain"
   ) |> 
   summary_rows(
-    columns = c("w12", "w06p1", "w12p1", "d07p2", "w12p2"),
+    columns = c("long_1", "short_1", "long_2", "short_2", "total"),
     fns = list(
       subtotal = ~ sum(., na.rm = TRUE)
     )
   )   |>
   tab_spanner(
-    label = html("Domain B (late silo)"),
-    columns = c("w12", "w06p1", "w12p1", "d07p2", "w12p2")
+    label = html("AB Duration <br>(one-stage)"),
+    columns = c("long_1", "short_1"),
+    id = "d1"
   ) |>
-  sub_missing(
-    columns = everything(),
-    missing_text = "-"
-  ) |>
-  cols_label(.list = cols)
-
-gt_tbl
-```
-
-
-
-
-```{r}
-#| label: tbl-smry-chronic-Db
-#| tbl-cap: 'Simulated trial data for (chronic silo) duration domain - covariate balance across other groups'
-#| column: page
-
-# domain B
-d_tmp1 <- d[silo == "chronic", .(eb, b, ea, a)]
-d_tmp2 <- d_tmp1[, .N, keyby = .(b, ea, a)]
-d_tmp2[, b := factor(b, levels = c("w06p1", "w12p1", "d07p2", "w12p2"))]
-d_B <- dcast(d_tmp2, ea + a ~ b, value.var = "N")
-d_B[, domain := "A"]
-colnames(d_B) <- c("rand", "group", c("w06p1", "w12p1", "d07p2", "w12p2"), "domain")
-setcolorder(d_B, "domain")
-# domain C
-d_tmp1 <- d[silo == "chronic", .(eb, b, ec, c)]
-d_tmp2 <- d_tmp1[, .N, keyby = .(b, ec, c)]
-d_tmp2[, b := factor(b, levels = c("w06p1", "w12p1", "d07p2", "w12p2"))]
-d_C <- dcast(d_tmp2, ec + c ~ b, value.var = "N")
-d_C[, domain := "C"]
-colnames(d_C) <- c("rand", "group", c("w06p1", "w12p1", "d07p2", "w12p2"), "domain")
-setcolorder(d_C, "domain")
-
-d_tbl <- rbind(d_B, d_C, fill = T)
-d_tbl[domain == "A", domain := "AB Duration"]
-d_tbl[domain == "C", domain := "AB Type"]
-
-cols <- c("Domain", "Randomised", "Treatment", c("w06p1", "w12p1", "d07p2", "w12p2"))
-names(cols) <- names(d_tbl)
-
-gt_tbl <- d_tbl |> 
-  gt(groupname_col = "domain"
-  ) |>
-  summary_rows(
-    columns = c("w06p1", "w12p1", "d07p2", "w12p2"),
-    fns = list(
-      subtotal = ~ sum(., na.rm = TRUE)
-    )
-  )   |>
   tab_spanner(
-    label = html("Domain B (chronic silo)"),
-    columns = c("w06p1", "w12p1", "d07p2", "w12p2")
+    label = html("AB Duration <br>(two-stage)"),
+    columns = c("long_2", "short_2"),
+    id = "d2"
   ) |>
   sub_missing(
     columns = everything(),
     missing_text = "-"
   ) |>
-  cols_label(.list = cols)
+  cols_label(.list = cols)  |>
+  tab_footnote(
+    footnote = "Randomised indicates whether units were randomised into surgery/duration domain (0: No, 1: Yes)",
+    locations = cells_column_labels(columns = rand)
+  ) |>
+  tab_footnote(
+    footnote = "Treatment indicates which treatment assigned within domain. For choice (0: no-rif, 1: rif). For duration is specific to surgery type received (0: long, 1: short). Units that were not randomised within the surgery/choice domain have undefined randomised treatment status.",
+    locations = cells_column_labels(columns = group)
+  ) |>
+  tab_footnote(
+    footnote = "Only units randomised to interventions in the surgery domain reported. One-stage/two-stage is by clinician selection",
+    locations = cells_column_spanners(spanners = c("d1", "d2"))
+  )
+
+
 
 gt_tbl
 ```
 
+@tbl-smry-Dc shows the allocation to the duration domain conditional on surgery type actually received and the balance across the remaining group levels in the data.
+Only units randomised within the antibiotic choice domain are reported.
 
 
-
-```{r}
+```{r, eval = T}
 #| label: tbl-smry-Dc
-#| tbl-cap: 'Simulated trial data for surgical domain - covariate balance across other groups'
-#| column: page
+#| tbl-cap: 'Simulated trial data for AB choice domain - covariate balance across other groups'
 
-# domain B
-d_tmp1 <- d[, .(c, ea, a, qa)]
-d_tmp2 <- d_tmp1[, .N, keyby = .(c, ea, a, qa)]
-d_tmp2[, a := factor(a, levels = c("dair", "rev", "one", "two"))]
-d_tmp2[, qa := factor(qa, levels = c("dair", "one", "two"))]
-d_tmp2[, c := factor(c, levels = c("other", "norif", "rif"))]
-d_A <- dcast(d_tmp2, ea + a + qa ~ c, value.var = "N")
-d_A[, domain := "A"]
-colnames(d_A) <- c("rand", "group", "plan", c("other", "norif", "rif"), "domain")
+# domain 
+d_tmp1 <- d[ef == 1, .(f, er, r, srp)]
+d_tmp2 <- d_tmp1[, .N, keyby = .(f, er, r, srp)]
+# d_tmp2[, a := factor(a, levels = c("dair", "rev", "one", "two"))]
+# d_tmp2[, qa := factor(qa, levels = c("dair", "one", "two"))]
+# d_tmp2[, c := factor(c, levels = c("other", "norif", "rif"))]
+d_A <- dcast(d_tmp2, er + srp + r ~ f, value.var = "N")
+d_A[, domain := "Surgery"]
+colnames(d_A) <- c("rand", "surgery","group",  c("norif", "rif"), "domain")
 setcolorder(d_A, "domain")
-# domain B
-d_tmp1 <- d[, .(c, eb, b)]
-d_tmp2 <- d_tmp1[, .N, keyby = .(c, eb, b)]
-d_tmp2[, b := factor(b, levels = c("w12", "w06p1", "w12p1", "d07p2", "w12p2"))]
-d_tmp2[, c := factor(c, levels = c("other", "norif", "rif"))]
-d_B <- dcast(d_tmp2, eb + b ~ c, value.var = "N")
-d_B[, domain := "B"]
-colnames(d_B) <- c("rand", "group", c("other", "norif", "rif"), "domain")
+# domain
+d_tmp1 <- d[ef == 1, .(f, ed, d, srp)]
+d_tmp2 <- d_tmp1[, .N, keyby = .(f, ed, d, srp)]
+# d_tmp2[, b := factor(b, levels = c("w12", "w06p1", "w12p1", "d07p2", "w12p2"))]
+# d_tmp2[, c := factor(c, levels = c("other", "norif", "rif"))]
+d_B <- dcast(d_tmp2, ed + srp + d ~ f, value.var = "N")
+d_B[, domain := "Duration"]
+colnames(d_B) <- c("rand", "surgery", "group", c("norif", "rif"), "domain")
 setcolorder(d_B, "domain")
 
 d_tbl <- rbind(d_A, d_B, fill = T)
-d_tbl[domain == "A", domain := "Surgical"]
-d_tbl[domain == "B", domain := "AB Duration"]
 
-cols <- c("Domain", "Randomised", "Treatment", "Plan", c("other", "norif", "rif"))
+d_tbl[, total := rowSums(d_tbl[, .(norif, rif)], na.rm = T)]
+
+d_tbl[domain == "Surgery" & rand == 0, group := NA]
+d_tbl[domain == "Duration" & rand == 0, group := NA]
+
+
+
+cols <- c("Domain", "Randomised", "Surgery recvd", "Treatment", c("norif", "rif"), "Total")
 names(cols) <- names(d_tbl)
 
 gt_tbl <- d_tbl |> 
   gt(groupname_col = "domain"
   ) |> 
   summary_rows(
-    columns = c("other", "norif", "rif"),
+    columns = c("norif", "rif", "total"),
     fns = list(
       subtotal = ~ sum(., na.rm = TRUE)
     )
   ) |>
   tab_spanner(
-    label = html("Domain C"),
-    columns = c("other", "norif", "rif")
+    label = html("AB Choice"),
+    columns = c("norif", "rif"),
+    id = "c1"
   ) |>
   sub_missing(
     columns = everything(),
     missing_text = "-"
   ) |>
-  cols_label(.list = cols)
+  cols_label(.list = cols)|>
+  tab_footnote(
+    footnote = "Randomised indicates whether units were randomised into surgery/choice domain (0: No, 1: Yes)",
+    locations = cells_column_labels(columns = rand)
+  ) |>
+  tab_footnote(
+    footnote = "Treatment indicates which treatment assigned within domain. For surgery (0: dair, 1: rev). For duration is specific to surgery type received (0: long, 1: short). Units that were not randomised within the surgery/duration domain have undefined randomised treatment status.",
+    locations = cells_column_labels(columns = group)
+  ) |>
+  tab_footnote(
+    footnote = "Only units randomised to interventions in the antibiotic choice domain reported.",
+    locations = cells_column_spanners(spanners = c("c1"))
+  )
 
 gt_tbl
 ```

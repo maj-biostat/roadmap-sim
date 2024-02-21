@@ -1,6 +1,7 @@
 ---
 title: "Population structure"
-
+date: today
+date-modified: last-modified
 ---
 
 ```{r, echo = FALSE}
@@ -52,19 +53,8 @@ chronic |hip |  0.5 |
 
 ## Randomisation into surgery domain (A)
 
-Randomisation into domain A is conditional on silo membership as detailed below.
-
-::: {.column width="50%"}
-
-Silo | Randomised ($e_a$) |  
------|-----|
-early |N |   
-late | Y |   
-chronic | N | 
-
-: Randomisation within domain A {.striped .hover}
-:::
-
+Only the late-stage infection cohort presently have randomisation options for surgery type.
+Other silos are assigned by clinician/patient preference.
 
 ## Surgery domain (A)
 
@@ -88,111 +78,54 @@ chronic |two-stage |  - |
 
 ## Intended surgery
 
-Late stage infections will be randomised to DAIR vs revision where revision would be planned as one or two-stage, determined by the treating clinician, i.e. not randomised.
+Intended or planned surgery relates to the surgical preference, which may be conditional on which intervention is randomised.
 
-We do not know the assignment mechanism for one vs two-stage for the late-stage infection patients.
-We do the same for chronic stage patients.
+For early stage infection, we take preference towards dair, one and two-stage surgery to be distributed as 90%, 10% and 0%.
 
-In all other cases, the intended surgery is set to allocated surgery.
+For late stage infection, we take preference towards one and two-stage as 30% and 70%, if randomised to revision.
+When randomised to dair, we assume the preference to dair, one and two-stage is 20%, 24% and 56%.
 
-::: {.column width="70%"}
-
-Silo | Allocation ($a$) | Intended surgery ($q$) | $\pi$ |
------|-----|----|----|----|
-early | dair | dair | - | 
-late | dair |  dair |   - | 
-late | revision |  one-stage | 0.3 | 
-late | revision |  two-stage | 0.7 | 
-chronic | dair | dair | 0.2 | 
-chronic | one-stage |  one-stage | 0.2 | 
-chronic | two-stage |  two-stage | 0.6 | 
-
-: Indended surgical approach ($\pi$ denotes probability allocation to surgery type conditional on silo membership) {.striped .hover}
-:::
+For chronic stage infection, we take preference towards dair, one and two-stage surgery to be distributed as 20%, 20% and 60%.
 
 ## Randomisation into duration domain (B)
 
-Entry into domain B is dependent on the domain A entry and allocation and is detailed below.
+Entry into domain B is dependent on the surgery that was actually received.
 
-::: {.column width="70%"}
+Surgery received is dependent on whether surgery was randomised (as in late infection patients) and what the surgical preference is (as in chronic infection patients).
 
-Intended surgery ($q$) | Randomised ($e_b$) |  
------|----|----|
-dair |  N | 
-revision |  Y | 
-one-stage |  Y | 
-two-stage |  Y | 
+While allocated surgery (dair, one and two-stage) is a linear function of randomised surgery and preference, the surgery received may deviate from the original plan.
 
-: Randomisation within domain B {.striped .hover}
-:::
 
 ## Duration domain (B)
 
-The treatment options and allocation probabilities for domain B are detailed below.
-Duration of antibiotic is conditional on allocated (intended) surgery type, see above.
+Within the duration domain, allocation is to long vs short duration, the meaning of which differs under one and two-stage surgery.
 Patients receiving DAIR are assumed to have 12 wk duration (not randomised).
+Default randomisation is 1:1 for long vs short within surgery type.
 
-
-
-::: {.column width="70%"}
-
-Silo | Allocation/Intended surgery ($q$) | Allocation ($b$) | $\pi$ |
------|-----|----|---|
-early | dair | 12 wk |  - | 
-late | one-stage | 6 wk |  0.5 | 
-late | one-stage | 12 wk |  0.5 | 
-late | two-stage | 7 day post 2  |  0.5 | 
-late | two-stage | 12 wk post 2  |  0.5 | 
-chronic | one-stage | 6 wk |  0.5 | 
-chronic | one-stage | 12 wk |  0.5 | 
-chronic | two-stage | 7 day post 2  |  0.5 | 
-chronic | two-stage | 12 wk post 2  |  0.5 | 
-
-: Allocation within duration domain ($\pi$ denotes probability allocation to surgery type conditional on allocated/intended surgery)  {.striped .hover}
-:::
 
 ## Randomisation into antibiotic choice domain (C)
 
 The data generating process assume that 60% of the cohort enter into this domain at random, unrelated to risk factors.
 The remainder are held out so that we do not over-estimate the operating characteristics, such as power.
-
-::: {.column width="70%"}
-
-Silo | Randomised ($e_c$) |  $\pi$ | 
------|-----|----|
-early | Y | 0.6 |
-late |   Y |  0.6 |
-chronic |  Y |  0.6 |
-
-: Randomisation within domain C ($\pi$ denotes probability patient is indicated as eligible for domain)  {.striped .hover}
-:::  
+ 
 
 ## Antibiotic choice domain (C)
 
-The treatment options and allocation probabilities for domain C are detailed below.
+The treatment options and allocation probabilities for domain C are 1:1.
 
-::: {.column width="70%"}
-
-Allocation ($c$) | $\pi$ |
------|----|
-no rif | 0.5 |
-rif | 0.5 |
-
-: Allocation within antibiotic choice domain ($\pi$ denotes probability that an eligible patient is allocated to no rif vs rif) {.striped .hover}
-:::
 
 ## Encoded specification
 
 The above specification is bundled into an R package (`roadmap.data`) for consistent data generation for ROADMAP.
 
 ```{r}
-roadmap.data::get_pop_spec()
+roadmap.data::get_pop_spec_new()
 ```
 
 The following function simulates the design matrix.
 
 ```{r}
-roadmap.data::get_design
+roadmap.data::get_design_new
 ```
 
 The data generation assumptions imply unique patients groups on which we would observe the outcome.
@@ -200,7 +133,7 @@ The outcome is known to be heterogenous across these groups and yet the stated g
 However, the effect of interest is assumed to be obtained from the model parameter that characterises the effect of antibiotic type conditional on the other covariates in the model.
 
 ```{r}
-d <- roadmap.data::get_design()
-unique(d[order(silo, joint, ea, a, qa, eb, b, ec, c), .SD, .SDcols = !c("id")])
+d <- roadmap.data::get_design_new()
+head(d)
 ```
 

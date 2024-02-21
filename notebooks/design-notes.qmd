@@ -1,6 +1,5 @@
 ---
 title: Design Notes
-subtitle: Late Acute Silo
 date: 2024-02-02
 date-modified: last-modified
 ---
@@ -1703,15 +1702,17 @@ The second (`lnoravg`) approach (marginal mean?)
 # Revision vs. DAIR
 cmp <- avg_comparisons(fit2, variables = "r", comparison = "lnor")
 
+# avg_comparisons(fit2, variables = "r", comparison = "lnor", by = "er")
+
 d_new <- copy(D)
 
 # equivalent to using lnor
-d_new[, r := 1]
+d_new[, `:=`(r = 1)]
 lo1 <- predict(fit2, newdata = d_new)
-d_new[, r := 0]
+d_new[, `:=`(r = 0)]
 lo0 <- predict(fit2, newdata = d_new)
 
-# equivalent to weighted combination of parameters
+# in this setting is equivalent to weighted combination of parameters
 b <- coef(fit2)
 
 w_srp <- D[er == 1, mean(srp2)]
@@ -1747,4 +1748,5 @@ avg_comparisons(fit2, variables = "d", by = "srp2", comparison = "lnoravg")
 # Rifampicin vs not
 avg_comparisons(fit2, variables = "f", comparison = "lnoravg")
 ```
+
 

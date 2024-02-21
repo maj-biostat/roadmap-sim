@@ -28,6 +28,7 @@ website:
         - notebooks/simulation-results.qmd
         - notebooks/sim-design2-results.qmd
         - notebooks/design-notes.qmd
+        - notebooks/misc-notes.qmd
       - notebooks/about.qmd
           
 format:
