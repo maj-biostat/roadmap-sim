@@ -1,6 +1,7 @@
 ---
 title: "Model implementation"
-
+date: today
+date-modified: last-modified
 ---
 
 ```{r, echo = FALSE}
@@ -8,54 +9,257 @@ source("./R/init.R")
 log_info("Called model-implementation notebook")
 ```
 
+The model used for the simulations translates the binary outcome into a binomial outcome by aggregating over the unique groups.
+For example with the linear predictor:
 
+```{r}
+#| code-fold: false
 
-The simplest implementation I could think of split the data into silo-specific chunks, mimicking the formulation in the model specification earlier.
+# data generation process
+formals(get_trial_data_new)$g
+```
+
+I get:
+
+```{r}
+#| code-fold: false
+
+# simulate data
+set.seed(1)
+sim_spec <- get_sim_spec_new()
+ll <- get_trial_data_new(N = 2500, sim_spec = sim_spec)
+d <- copy(ll$d)
+head(d[, .(y = sum(y), n = .N), keyby = .(l, er, ed, ef, r, rp, srp2, d, f)])
+```
+
+The model spec can be translated almost verbatim into stan:
 
 ```{r}
 #| class-output: stan
 #| echo: false
-cat(readLines("stan/model-sim-02.stan"), sep = "\n")
+cat(readLines("stan/model-sim-04.stan"), sep = "\n")
 ```
 
-Below I create a data set with a million patients (orders of magnitude more than we will have available) to see if we can get anywhere close to recovering the parameters - if we cannot recover the parameters with this many records, we are certainly not going to be able to do so with 2500 patients.
-
-Then I fit the stan model and extract and summarise the posterior.
+To establish consistency, I create data with a million patients (orders of magnitude more than we will have available) and fit the model in an attempt to recover the simulation parameters.
+If this cannot be done with a million records, it cannot be done with 2500.
+I fit the stan model and extract and summarise the posterior.
 
 ```{r}
-m2 <- cmdstanr::cmdstan_model("stan/model-sim-02.stan")
+m4 <- cmdstanr::cmdstan_model("stan/model-sim-04.stan")
 
 set.seed(1)
-ll <- get_trial_data(N = 1e6)
-lsd <- get_stan_data(ll$d_i)
-ld <- lsd$ld
-# cbind(ld$l_su, ld$l_y, ld$l_n, ld$l_ea, ld$l_eap, ld$l_a)
-d_b <- copy(lsd$d_b)
 
-f2 <- m2$sample(
+ll <- get_trial_data_new(N = 1e6, sim_spec = sim_spec)
+d <- copy(ll$d)
+d_s <- d[, .(y = sum(y), n = .N), 
+         keyby = .(l1, l2, er, ed, ef, r, rp, srp2, d, f)]
+
+ld <- list(
+  N = nrow(d_s), y = d_s$y, n = d_s$n, 
+  l1 = d_s$l1, l2 = d_s$l2, 
+  er = d_s$er, ed = d_s$ed, ef = d_s$ef, 
+  r = d_s$r, d = d_s$d, f = d_s$f,
+  rp = d_s$rp, srp2 = d_s$srp2
+)
+
+f1 <- m4$sample(
+  ld, iter_warmup = 1000, iter_sampling = 2000,
+  parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
+  max_treedepth = 13)
+
+# frequentist version
+f2 <- glm(y ~ l1 + l2 +
+              erx + er:r + er:r:srp2 +
+              edx + ed:rp:d + ed:d:rp:srp2 +
+              efx + ef:f, 
+            data = d, family = binomial())
+
+
+
+```
+
+Raw parameter estimates align reasonably well to the simulation parameters used in the linear predictor:
+
+```{r}
+post1 <- data.table(f1$draws(variables = c(c("a0", "m", "b")), format = "matrix"))
+cf <- coef(f2)
+
+round(rbind(
+  "Simulation parameters" = c(sim_spec$a0, sim_spec$m, sim_spec$b),
+  "Posterior means" = colMeans(post1),
+  "Max likelihood" = c(
+    cf[1:3], 
+    cf["erx"], cf["er:r"], cf["er:r:srp2"] , 
+    cf["edx"], cf["ed:rp:d"], cf["srp2:ed:rp:d"],
+    cf["efx"], cf["ef:f"]
+  )
+), 4)
+```
+
+
+```{r}
+eta_r_0 <- f1$draws(variables = c("eta_r_0"), format = "matrix")
+eta_r_1 <- f1$draws(variables = c("eta_r_1"), format = "matrix")
+eta_d_0 <- f1$draws(variables = c("eta_d_0"), format = "matrix")
+eta_d_1 <- f1$draws(variables = c("eta_d_1"), format = "matrix")
+eta_f_0 <- f1$draws(variables = c("eta_f_0"), format = "matrix")
+eta_f_1 <- f1$draws(variables = c("eta_f_1"), format = "matrix")
+
+b_r <- unlist(mclapply(1:(min(nrow(eta_r_0), 1000)), function(ii){
+  lo_0 <- eta_r_0[ii, rep(1:nrow(d_s), times = ld$n)]
+  lo_1 <- eta_r_1[ii, rep(1:nrow(d_s), times = ld$n)]
+  mean(lo_1 - lo_0)
+}, mc.cores = 10))
+
+idx_1 <- d_s[l1 == 1, which = T]
+idx_2 <- d_s[l2 == 1, which = T]
+ii <- 1
+
+b_d <- do.call(rbind, mclapply(1:(min(nrow(eta_d1_0), 1000)), function(ii){
+  
+  lo_0 <- eta_d_0[ii, rep(1:nrow(d_s), times = ld$n)]
+  lo_1 <- eta_d_1[ii, rep(1:nrow(d_s), times = ld$n)]
+
+  lo_0_1 <- eta_d_0[ii, rep(idx_1, times = ld$n[idx_1])]
+  lo_1_1 <- eta_d_1[ii, rep(idx_1, times = ld$n[idx_1])]
+  
+  lo_0_2 <- eta_d_0[ii, rep(idx_2, times = ld$n[idx_2])]
+  lo_1_2 <- eta_d_1[ii, rep(idx_2, times = ld$n[idx_2])]
+  
+  c(mean(lo_1 - lo_0), 
+    # you need to base the mean on the n that were used in the strata
+    sum(lo_1_1 - lo_0_1)/sum(ld$n[idx_1]),  
+    sum(lo_1_2 - lo_0_2)/sum(ld$n[idx_2])
+    )
+  
+}, mc.cores = 10))
+
+b_f <- unlist(mclapply(1:(min(nrow(eta_f_0), 1000)), function(ii){
+  lo_0 <- eta_f_0[ii, rep(1:nrow(d_s), times = ld$n)]
+  lo_1 <- eta_f_1[ii, rep(1:nrow(d_s), times = ld$n)]
+  mean(lo_1 - lo_0)
+}, mc.cores = 10))
+
+d_new <- copy(d_s)
+d_new[, `:=`(d = 1, erx = 1-er, edx = 1-ed, efx = 1-ef)]
+predict(f2, newdata = d_new[1:10])
+eta_d_1
+d_new[, `:=`(d = 0, erx = 1-er, edx = 1-ed, efx = 1-ef)]
+predict(f2, newdata = d_new[1:10])
+eta_d_0
+
+# w_eta_r0 <- sweep(eta_r0, 1, ld$n, "*")
+
+d_new <- copy(d)
+lo <- copy(d_new[, r := 0])
+d_new <- copy(d)
+hi <- copy(d_new[, r := 1])
+y_lo <- predict(f2, newdata = lo)
+y_hi <- predict(f2, newdata = hi)
+y_lo[1:3]
+y_hi[1:3]
+
+
+mean(y_hi - y_lo)
+mean(y_hi[d$l2 == 1] - y_lo[d$l2 == 1])
+
+
+avg_comparisons(f2, variables = "r", comparison = "lnor")
+avg_comparisons(f2, variables = "f", comparison = "lnor")
+apply(cbind(b_r, b_f), 2, mean)
+
+avg_comparisons(f2, variables = "d", comparison = "lnor")
+avg_comparisons(f2, variables = "d", comparison = "lnor", by = c("l1", "l2"))
+colMeans(b_d)
+# comparisons(f2, variables = "d", comparison = "lnor")
+#
+
+# post <- data.table(f1$draws(variables = c(c("b_r")), format = "matrix"))
+# 
+# d_new <- copy(d)
+# d_new[, `:=`(r = 1)]
+# lo1 <- predict(f2, newdata = d_new)
+# dtmp <- cbind(d_new, lo1)
+# dtmp[l == 1 & j == 0 & er == 1]
+# d_new[, `:=`(r = 0)]
+# lo0 <- predict(f2, newdata = d_new)
+# mean(lo1 - lo0)
+# 
+# colMeans(post)
+
+```
+
+
+```{r}
+post <- data.table(f2$draws(variables = c(c("b_r")), format = "matrix"))
+
+round(rbind(
+  c(sim_spec$a0, sim_spec$m, sim_spec$b),
+  colMeans(post)
+), 3)
+```
+
+
+
+```{r}
+
+```
+
+
+
+```{r}
+# create index field
+# post <- melt(post, measure.vars = names(post))
+# post[, idx := gsub(".*\\[", "", variable)]
+# post[, idx := gsub("\\]", "", idx)]
+# post[, idx := as.integer(idx)]
+
+# d_fig <- cbind(d_b, post[, .(eta_med = median(value), 
+#          eta_q025 = quantile(value, prob = 0.025),
+#          eta_q975 = quantile(value, prob = 0.975)), keyby = idx])
+```
+
+```{r}
+set.seed(1)
+
+# effect on f but nothing else
+sim_spec$b["f"] <- log(2)
+ll <- get_trial_data_new(N = 1e6, sim_spec = sim_spec)
+d <- copy(ll$d)
+
+dtmp <- copy(d[ef == 1, .(er, ed, ef, r, d, f, rp, srp2, y, p_y)])
+dtmp[, mean(p_y), keyby = f]
+
+
+d_s <- d[, .(y = sum(y), n = .N), keyby = .(l, j, er, ed, ef, r, rp, srp2, d, f)]
+
+d[ef == 1, .(y = sum(y), n = .N), keyby = f]
+
+ld <- list(
+  N = nrow(d_s), y = d_s$y, n = d_s$n, l = d_s$l + 1, j = d_s$j + 1,
+  er = d_s$er, ed = d_s$ed, ef = d_s$ef, 
+  r = d_s$r, d = d_s$d, f = d_s$f,
+  rp = d_s$rp, srp2 = d_s$srp2
+)
+
+f2 <- m4$sample(
   ld, iter_warmup = 1000, iter_sampling = 2000,
   parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
   max_treedepth = 13)
 
 post <- data.table(f2$draws(variables = c(
-  "eta"
+  c("b_r", "b_d1", "b_d2", "b_f")
 ), format = "matrix"))
 
-# create index field
-post <- melt(post, measure.vars = names(post))
-post[, idx := gsub(".*\\[", "", variable)]
-post[, idx := gsub("\\]", "", idx)]
-post[, idx := as.integer(idx)]
+colMeans(post)
 
-d_fig <- cbind(d_b, post[, .(eta_med = median(value), 
-         eta_q025 = quantile(value, prob = 0.025),
-         eta_q975 = quantile(value, prob = 0.975)), keyby = idx])
+
 ```
 
 @fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model.
 It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset.
 
-```{r}
+```{r, eval = F}
 #| label: fig-post-vs-tru
 #| fig-cap: 'Scatter plot comparing true vs estimated 95% credible interval for log-odds treatment success.'
 #| fig-cap-location: margin
@@ -73,7 +277,7 @@ ggplot(d_fig, aes(x = eta, y = eta_med)) +
 ```
 
 
-```{r}
+```{r, eval = F}
 post <- data.table(f2$draws(variables = c(
     "alpha", "gamma_c", 
     "b_a_l", 
@@ -132,7 +336,7 @@ d_fig <- merge(d_fig, d_effects, by.x = "parname", by.y = "variable")
 @fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model.
 It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset.
 
-```{r}
+```{r, eval = F}
 #| label: fig-post-lor
 #| fig-cap: 'Posterior estimates for log-odds-ratios (true values shown as triangles).'
 #| fig-cap-location: margin
@@ -147,7 +351,7 @@ ggplot(d_fig, aes(x = parname, y = lor_med)) +
   scale_y_continuous("Posterior log-odds-ratio (95% credible interval)") 
 ```
 
-```{r}
+```{r, eval = F}
 post <- data.table(f2$draws(variables = c(
     "alpha", "gamma_c", 
     "b_a_l", 
@@ -198,7 +402,7 @@ d_cor[, `:=`(
 
 @fig-post-cor shows the correlation between parameters estimated from the model.
 
-```{r}
+```{r, eval = F}
 #| label: fig-post-cor
 #| fig-cap: 'Parameter correlation (white indicates zero correlation)'
 #| fig-cap-location: margin

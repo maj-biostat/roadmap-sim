@@ -1364,6 +1364,7 @@ avg_comparisons(fit2, variables = "d", by = c("s", "x"), comparison = "lnoravg")
 The above has considered the late-acute silo in isolation. 
 Suppose we also had a chronic silo with the same limitations: randomise to DAIR vs. revision, then revision type is determined by the surgeon/patient, duration is randomised. 
 In the new setting, nothing really changes, we can just introduce silo-specific parameters.
+
 For lack of letters, let $G$ denote group (silo). 
 Then
 
