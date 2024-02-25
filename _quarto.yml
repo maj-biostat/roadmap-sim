@@ -25,7 +25,7 @@ website:
         - notebooks/trial-data.qmd
         - notebooks/model-implementation.qmd
         - notebooks/example-trials.qmd
-        - notebooks/simulation-results.qmd
+        - notebooks/sim-design1-results.qmd
         - notebooks/sim-design2-results.qmd
         - notebooks/design-notes.qmd
         - notebooks/misc-notes.qmd
