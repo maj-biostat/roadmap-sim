@@ -51,23 +51,23 @@ linearly_dep_cols <- function(fit){
 
 tbl_ex_trial <- function(d){
   
-  d_b <- d[, .(y = sum(y), n = .N, p = plogis(unique(eta))), keyby = .(silo, joint, ea, a, qa, eb, b, ec, c)]
+  d_b <- d[, .(y = sum(y), n = .N, p = plogis(unique(eta_y))), keyby = .(l, er, r, srp, ed, d, ef, f)]
   d_b[, p_mle := y/n]
-  d_b[, silo := factor(silo, levels = c("early", "late", "chronic"))]
-  d_b[, joint := factor(joint, levels = c("knee", "hip"))]
-  setcolorder(d_b, c("silo", "joint", "ea", "a", "qa", "eb", "b", "ec", "c", "p_mle", "p"))
+  d_b[, silo := factor(l, labels = c("early", "late", "chronic"), levels = c(0, 1, 2))]
+  d_b[, l := NULL]
+  setcolorder(d_b, c("silo", "er", "r", "srp", "ed", "d", "ef", "f", "y", "n", "p_mle", "p"))
 
-  gt_tbl <- d_b[order(silo, joint)] |> 
+  gt_tbl <- d_b[order(silo)] |> 
     gt(
-      groupname_col = c("silo", "joint")
+      groupname_col = c("silo")
     ) |> 
     cols_align(
       align = "left",
-      columns = starts_with(c("silo", "joint"))
+      columns = starts_with(c("silo"))
     ) |> 
     cols_align(
       align = "center",
-      columns = starts_with(c("ea", "a", "qa", "eb", "b", "ec", "c"))
+      columns = starts_with(c("er", "r", "srp", "ed", "d", "ef", "f"))
     ) |> 
     fmt_number(
       columns = starts_with(c("p")),
@@ -75,15 +75,15 @@ tbl_ex_trial <- function(d){
     ) |>
     tab_spanner(
       label = html("Surgical D<sub>a</sub>"),
-      columns = c(ea, a, qa)
+      columns = c(er, r, srp)
     ) |>
     tab_spanner(
       label = html("Duration D<sub>b</sub>"),
-      columns = c(eb, b)
+      columns = c(ed, d)
     ) |>
     tab_spanner(
       label = html("Type D<sub>c</sub>"),
-      columns = c(ec, c)
+      columns = c(ef, f)
     ) |>
     tab_spanner(
       label = html("Response"),
@@ -91,14 +91,13 @@ tbl_ex_trial <- function(d){
     ) |>
     cols_label(
       silo = html("Silo"),
-      joint = html("Infection <br>site"),
-      ea = html("member"),
-      a = html("assigned"),
-      qa = html("plan"),
-      eb = html("member"),
-      b = html("assigned"),
-      ec = html("member"),
-      c = html("assigned"),
+      er = html("reveal"),
+      r = html("assigned"),
+      srp = html("received"),
+      ed = html("reveal"),
+      d = html("assigned"),
+      ef = html("reveal"),
+      f = html("assigned"),
       y = html("y"),
       n = html("n"),
       p_mle = html("MLE (p<sub>y</sub>)"),
@@ -132,11 +131,7 @@ tbl_ex_trial <- function(d){
     tab_footnote(
       footnote = "Transformed from the log-odds of response as used in the linear predictor to simulate data.",
       locations = cells_column_labels(columns = p)
-    ) |>
-    tab_footnote(
-      footnote = "w06p1 = 6 weeks following one-stage procedure, w12p1 = 12 weeks following one-stage procedure etc",
-      locations = cells_column_labels(columns = b)
-    )
+    ) 
   gt_tbl
 }
 

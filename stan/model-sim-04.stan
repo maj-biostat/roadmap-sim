@@ -20,6 +20,9 @@ data {
   // choice
   vector[N] f;
   
+  vector[2] pri_m_sd;
+  vector[8] pri_b_sd;
+  int prior_only;
 }
 transformed data{
   vector[N] er_r;
@@ -53,25 +56,22 @@ transformed parameters{
 }
 model{
   target += normal_lpdf(a0 | 0, 1.5);
-  target += normal_lpdf(m | 0, 1);
-  target += normal_lpdf(b | 0, 1);
+  target += normal_lpdf(m | 0, pri_m_sd);
+  target += normal_lpdf(b | 0, pri_b_sd);
   
   // likelihood chunks pertaining to each silo
-  target += binomial_logit_lpmf(y | n, eta) ;    
+  if(!prior_only){
+    target += binomial_logit_lpmf(y | n, eta) ;      
+  }
+  
   
 }
 generated quantities{
-  
-  // real b_r;
-  // real b_d1;
-  // real b_d2;
-  // real b_f;
+
   vector[N] eta_r_0;
   vector[N] eta_r_1;
   vector[N] eta_d_0;
   vector[N] eta_d_1;
-  // vector[N] eta_d2_0;
-  // vector[N] eta_d2_1;
   vector[N] eta_f_0;
   vector[N] eta_f_1;
 
@@ -90,20 +90,6 @@ generated quantities{
       b[1] * (1 - er  ) + (b[2]*er + b[3]*er .* srp2) +
       b[4] * (1 - ed  ) + (b[5]*ed_rp_d   + b[6]*ed_rp_d_srp2)   +
       b[7] * (1 - ef  ) + (b[8]*ef_f);
-      
-    // d1
-    // eta_d1_0   =  a0 +
-    //   m[1]*l1 + m[2]*l2 +
-    //   b[1] * (1 - er) + (b[2]*er_r) +
-    //   b[4] * (1 - ed) +
-    //   b[7] * (1 - ef) + (b[8]*ef_f);
-    // 
-    // eta_d1_1   =  a0 +
-    //   m[1]*l1 + m[2]*l2 +
-    //   b[1] * (1 - er) + (b[2]*er_r) +
-    //   // note the use of ed and rp here and not ed_rp_d
-    //   b[4] * (1 - ed) + (b[5]*ed .* rp)  +
-    //   b[7] * (1 - ef) + (b[8]*ef_f);
 
     // d
     eta_d_0   =  a0 + 
@@ -133,8 +119,6 @@ generated quantities{
       // note the use of ef here and not ef_f
       b[7] * (1 - ef) + (b[8]*ef);
       
-    
-    
     // b_r = sum( (eta_r1 - eta_r0) .* to_vector(n)  ) / sum(n);
     
   }

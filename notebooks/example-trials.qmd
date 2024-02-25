@@ -23,17 +23,17 @@ Given that this is a summary of a single data set, some variation from the under
 #| tbl-cap: 'Summary of simulated trial data when no treatment effects present'
 #| column: page
 
-sim_spec <- get_sim_spec()
-sim_spec$b_a_late["rev"] <- 0
-sim_spec$b_a_chronic["two"] <- 0
-sim_spec$b_b1_late_one["w12p1"] <- 0
-sim_spec$b_b2_late_two["w12p2"] <- 0
-sim_spec$b_b1_chronic_one["w12p1"] <- 0
-sim_spec$b_b2_chronic_two["w12p2"] <- 0
-sim_spec$b_c["rif"] <- 0
+set.seed(1)
 
-set.seed(15)
-ll <- get_trial_data(N = 2500, pop_spec = NULL, sim_spec = sim_spec)
+sim_spec <- get_sim_spec_new()
+
+sim_spec$b['r1'] <- 0
+sim_spec$b['r2'] <- 0
+sim_spec$b['r1d'] <- 0
+sim_spec$b['r2d'] <- 0
+sim_spec$b['f'] <- 0
+
+ll <- get_trial_data_new(N = 2500, sim_spec = sim_spec)
 
 gt_tbl <- tbl_ex_trial(ll$d)
 gt_tbl
@@ -42,156 +42,72 @@ gt_tbl
 Model the simulated data first using standard normal priors on the domain level treatment effects, then increasing the prior standard deviation to ten in order to see if there is any movement in the posterior summary.
 
 ```{r}
-lsd <- get_stan_data(ll$d_i)
+lsd <- get_stan_data_new(ll$d)
 ld <- lsd$ld
-d_b <- copy(lsd$d_b)
+d_s <- copy(lsd$d_s)
 
-m2 <- cmdstanr::cmdstan_model("stan/model-sim-02.stan")
+m2 <- cmdstanr::cmdstan_model("stan/model-sim-04.stan")
 
 f_null_1 <- m2$sample(
   ld, iter_warmup = 1000, iter_sampling = 2000,
   parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
   max_treedepth = 13)
 
-post_1 <- data.table(f_null_1$draws(variables = c(
-  "alpha", "gamma_c", 
-  "b_a_l", 
-  "b_b1_l", 
-  "b_b2_l",
-  "b_a_c",
-  "b_b1_c", 
-  "b_b2_c",
-  "b_c"
-), format = "matrix"))
+post_1 <- data.table(f_null_1$draws(variables = c(c("a0", "m", "b")), format = "matrix"))
+post_1 <- melt(post_1, measure.vars = names(post_1))
+d_tbl_1 <- post_1[, .(
+  prior = "normal(0, 1)",
+  mu = mean(value),
+  q_025 = quantile(value, prob = 0.025), 
+  q_975 = quantile(value, prob = 0.975)
+), keyby = variable]
+d_tbl_1[, name_tru := names(unlist(sim_spec))]
+d_tbl_1[, tru := unlist(sim_spec)]
 
 # compare when prior sd is set to 10 for trt effects
 
-pri_sd <- 10
-ld$pri_sig_b_c <- pri_sd
-ld$pri_sig_a_l <- pri_sd
-ld$pri_sig_b1_l <- pri_sd
-ld$pri_sig_b2_l <- pri_sd
-ld$pri_sig_a_c <- pri_sd
-ld$pri_sig_b1_c <- pri_sd
-ld$pri_sig_b2_c <- pri_sd
+ld$pri_m_sd <- rep(10, length(ld$pri_m_sd))
+ld$pri_b_sd <- rep(10, length(ld$pri_b_sd))
 
 f_null_2 <- m2$sample(
   ld, iter_warmup = 1000, iter_sampling = 2000,
   parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
   max_treedepth = 13)
 
-post_2 <- data.table(f_null_2$draws(variables = c(
-  "alpha", "gamma_c", 
-  "b_a_l", 
-  "b_b1_l", 
-  "b_b2_l",
-  "b_a_c",
-  "b_b1_c", 
-  "b_b2_c",
-  "b_c"
-), format = "matrix"))
+post_2 <- data.table(f_null_2$draws(variables = c(c("a0", "m", "b")), format = "matrix"))
+post_2 <- melt(post_2, measure.vars = names(post_2))
+d_tbl_2 <- post_2[, .(
+  prior = "normal(0, 10)",
+  mu = mean(value), 
+  q_025 = quantile(value, prob = 0.025), 
+  q_975 = quantile(value, prob = 0.975)
+), keyby = variable]
+d_tbl_2[, name_tru := names(unlist(sim_spec))]
+d_tbl_2[, tru := unlist(sim_spec)]
 ```
 
-```{r}
-#| label: fig-null-alpha
-#| fig-cap: 'Posterior median and 95% CI for baseline log-odds of treatment success (triangles show true values).'
-#| fig-cap-location: margin
-#| fig-height: 4
 
-d_fig1 <- post_alpha(post_1)
-d_fig2 <- post_alpha(post_2)
-
-d_fig <- rbind(
-  cbind(prior_sd = 1, d_fig1),
-  cbind(prior_sd = pri_sd, d_fig2)
-)
-d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
-
-ggplot(d_fig, aes(x = grp, y = a, group = prior_sd, col = prior_sd)) +
-  scale_x_discrete("") +
-  scale_y_continuous("log-odds treatment success") + 
-  scale_color_discrete("Prior sd on log-OR domain trt effects") +
-  geom_point(data = d_fig, aes(x = grp, y = a_med), position = position_dodge(width = 0.4)) +
-  geom_linerange(aes(ymin = a_q025, ymax = a_q975), position = position_dodge2(width = 0.4)) +
-  geom_point(data = d_fig, aes(x = grp, y = a), col = 1, pch = 2)
-```
 
 ```{r}
-#| label: fig-null-dom-a
+#| label: fig-null-1
 #| fig-cap: 'Posterior median and 95% CI for baseline log-odds of treatment success domain A (independent estimates for late and chronic silo).'
 #| fig-cap-location: margin
 #| fig-height: 4
 
-d_fig1 <- post_dom_a(post_1)
-d_fig2 <- post_dom_a(post_2)
-
 d_fig <- rbind(
-  cbind(prior_sd = 1, d_fig1),
-  cbind(prior_sd = pri_sd, d_fig2)
+  d_tbl_1, d_tbl_2
 )
-d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
+d_fig$name_tru <- factor(d_fig$name_tru, levels = unique(d_fig$name_tru))
 
 # https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/
 
-ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
+ggplot(d_fig, aes(x = name_tru, y = mu, col = prior)) +
   scale_x_discrete("") +
   scale_y_continuous("log-OR") + 
   scale_color_discrete("Prior sd on log-OR domain trt effects") +
-  geom_point(data = d_fig, aes(x = trt, y = b_med), position = position_dodge(width = 0.4)) +
-  geom_linerange(aes(ymin = b_q025, ymax = b_q975), position = position_dodge2(width = 0.4)) +
-  geom_point(data = d_fig, aes(x = trt, y = b), col = 1, pch = 2) +
-  facet_grid(~silo,scale="free_x",space="free_x")
-```
-
-```{r}
-#| label: fig-null-dom-b
-#| fig-cap: 'Posterior median and 95% CI for baseline log-odds of treatment success domain B (independent estimates for late and chronic silo).'
-#| fig-cap-location: margin
-#| fig-height: 6
-
-d_fig1 <- post_dom_b(post_1)
-d_fig2 <- post_dom_b(post_2)
-
-d_fig <- rbind(
-  cbind(prior_sd = 1, d_fig1),
-  cbind(prior_sd = pri_sd, d_fig2)
-)
-d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
-
-# https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/
-
-ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
-  scale_x_discrete("") +
-  scale_y_continuous("log-OR") + 
-  scale_color_discrete("Prior sd on log-OR domain trt effects") +
-  geom_point(data = d_fig, aes(x = trt, y = b_med), position = position_dodge(width = 0.4)) +
-  geom_linerange(aes(ymin = b_q025, ymax = b_q975), position = position_dodge2(width = 0.4)) +
-  geom_point(data = d_fig, aes(x = trt, y = b), col = 1, pch = 2) +
-  facet_grid(paste0("Planned/assigned surgery: ", qa, "-stage")~silo,scale="free_x",space="free_x")
-```
-
-```{r}
-#| label: fig-null-dom-c
-#| fig-cap: 'Posterior median and 95% CI for baseline log-odds of treatment success in domain C (effect is pooled across all silos).'
-#| fig-cap-location: margin
-#| fig-height: 4
-
-d_fig1 <- post_dom_c(post_1)
-d_fig2 <- post_dom_c(post_2)
-
-d_fig <- rbind(
-  cbind(prior_sd = 1, d_fig1),
-  cbind(prior_sd = pri_sd, d_fig2)
-)
-d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
-
-ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
-  scale_x_discrete("") +
-  scale_y_continuous("log-OR") + 
-  scale_color_discrete("Prior sd on log-OR domain trt effects") +
-  geom_point(data = d_fig, aes(x = trt, y = b_med), position = position_dodge(width = 0.4)) +
-  geom_linerange(aes(ymin = b_q025, ymax = b_q975), position = position_dodge2(width = 0.4)) +
-  geom_point(data = d_fig, aes(x = trt, y = b), col = 1, pch = 2)
+  geom_point(data = d_fig, aes(x = name_tru, y = mu), position = position_dodge(width = 0.4)) +
+  geom_linerange(aes(ymin = q_025, ymax = q_975), position = position_dodge2(width = 0.4)) +
+  geom_point(data = d_fig, aes(x = name_tru, y = tru), col = 1, pch = 2) 
 ```
 
 ## All domains effective scenario
@@ -199,179 +115,89 @@ ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
 shows a summary of the treatment sucesses based on the $n$ patients associated with each combination of design variables when all treatment effects set to `log(2)` (with non-membership effects retained as before) in the simulated data of 2500 patients.
 
 ```{r}
-#| label: tbl-ex-alleff
-#| tbl-cap: 'Summary of simulated trial data when no treatment effects present'
+#| label: tbl-ex-alleff-1
+#| tbl-cap: 'Summary of simulated trial data when all domains associated with positive effects'
 #| column: page
 
-sim_spec <- get_sim_spec()
-sim_spec$b_a_late["rev"] <- log(2)
-sim_spec$b_a_chronic["two"] <- log(2)
-sim_spec$b_b1_late_one["w12p1"] <- log(2)
-sim_spec$b_b2_late_two["w12p2"] <- log(2)
-sim_spec$b_b1_chronic_one["w12p1"] <- log(2)
-sim_spec$b_b2_chronic_two["w12p2"] <- log(2)
-sim_spec$b_c["rif"] <- log(2)
+set.seed(2)
+sim_spec$b['r1'] <- log(2)
+sim_spec$b['r2'] <- log(2)
+sim_spec$b['r1d'] <- log(2)
+sim_spec$b['r2d'] <- log(2)
+sim_spec$b['f'] <- log(2)
 
-set.seed(222)
-ll <- get_trial_data(N = 2500, pop_spec = NULL, sim_spec = sim_spec)
+ll <- get_trial_data_new(N = 2500, sim_spec = sim_spec)
 
-# just wrapped table generation up into a function to save space and min repitition, see util.R
 gt_tbl <- tbl_ex_trial(ll$d)
 gt_tbl
 ```
 
 ```{r}
-lsd <- get_stan_data(ll$d_i)
+lsd <- get_stan_data_new(ll$d)
 ld <- lsd$ld
-d_b <- copy(lsd$d_b)
+d_s <- copy(lsd$d_s)
 
-m2 <- cmdstanr::cmdstan_model("stan/model-sim-02.stan")
+m2 <- cmdstanr::cmdstan_model("stan/model-sim-04.stan")
 
 f_alleff_1 <- m2$sample(
   ld, iter_warmup = 1000, iter_sampling = 2000,
   parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
   max_treedepth = 13)
 
-post_1 <- data.table(f_alleff_1$draws(variables = c(
-  "alpha", "gamma_c", 
-  "b_a_l", 
-  "b_b1_l", 
-  "b_b2_l",
-  "b_a_c",
-  "b_b1_c", 
-  "b_b2_c",
-  "b_c"
-), format = "matrix"))
+post_1 <- data.table(f_alleff_1$draws(variables = c(c("a0", "m", "b")), format = "matrix"))
+post_1 <- melt(post_1, measure.vars = names(post_1))
+d_tbl_1 <- post_1[, .(
+  prior = "normal(0, 1)",
+  mu = mean(value),
+  q_025 = quantile(value, prob = 0.025), 
+  q_975 = quantile(value, prob = 0.975)
+), keyby = variable]
+d_tbl_1[, name_tru := names(unlist(sim_spec))]
+d_tbl_1[, tru := unlist(sim_spec)]
 
 # compare when prior sd is set to 10 for trt effects
 
-pri_sd <- 10
-ld$pri_sig_b_c <- pri_sd
-ld$pri_sig_a_l <- pri_sd
-ld$pri_sig_b1_l <- pri_sd
-ld$pri_sig_b2_l <- pri_sd
-ld$pri_sig_a_c <- pri_sd
-ld$pri_sig_b1_c <- pri_sd
-ld$pri_sig_b2_c <- pri_sd
+ld$pri_m_sd <- rep(10, length(ld$pri_m_sd))
+ld$pri_b_sd <- rep(10, length(ld$pri_b_sd))
 
 f_alleff_2 <- m2$sample(
   ld, iter_warmup = 1000, iter_sampling = 2000,
   parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
   max_treedepth = 13)
 
-post_2 <- data.table(f_alleff_2$draws(variables = c(
-  "alpha", "gamma_c", 
-  "b_a_l", 
-  "b_b1_l", 
-  "b_b2_l",
-  "b_a_c",
-  "b_b1_c", 
-  "b_b2_c",
-  "b_c"
-), format = "matrix"))
+post_2 <- data.table(f_alleff_2$draws(variables = c(c("a0", "m", "b")), format = "matrix"))
+post_2 <- melt(post_2, measure.vars = names(post_2))
+d_tbl_2 <- post_2[, .(
+  prior = "normal(0, 10)",
+  mu = mean(value), 
+  q_025 = quantile(value, prob = 0.025), 
+  q_975 = quantile(value, prob = 0.975)
+), keyby = variable]
+d_tbl_2[, name_tru := names(unlist(sim_spec))]
+d_tbl_2[, tru := unlist(sim_spec)]
 ```
 
 ```{r}
-#| label: fig-alleff-alpha
+#| label: fig-alleff-1
 #| fig-cap: 'Posterior median and 95% CI for baseline log-odds of treatment success (triangles show true values).'
 #| fig-cap-location: margin
 #| fig-height: 4
 
-d_fig1 <- post_alpha(post_1)
-d_fig2 <- post_alpha(post_2)
-
 d_fig <- rbind(
-  cbind(prior_sd = 1, d_fig1),
-  cbind(prior_sd = pri_sd, d_fig2)
+  d_tbl_1, d_tbl_2
 )
-d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
-
-ggplot(d_fig, aes(x = grp, y = a, group = prior_sd, col = prior_sd)) +
-  scale_x_discrete("") +
-  scale_y_continuous("log-odds treatment success") + 
-  scale_color_discrete("Prior sd on log-OR domain trt effects") +
-  geom_point(data = d_fig, aes(x = grp, y = a_med), position = position_dodge(width = 0.4)) +
-  geom_linerange(aes(ymin = a_q025, ymax = a_q975), position = position_dodge2(width = 0.4)) +
-  geom_point(data = d_fig, aes(x = grp, y = a), col = 1, pch = 2)
-```
-
-```{r}
-#| label: fig-alleff-dom-a
-#| fig-cap: 'Posterior median and 95% CI for baseline log-odds of treatment success domain A (independent estimates for late and chronic silo).'
-#| fig-cap-location: margin
-#| fig-height: 4
-
-d_fig1 <- post_dom_a(post_1)
-d_fig2 <- post_dom_a(post_2)
-
-d_fig <- rbind(
-  cbind(prior_sd = 1, d_fig1),
-  cbind(prior_sd = pri_sd, d_fig2)
-)
-d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
+d_fig$name_tru <- factor(d_fig$name_tru, levels = unique(d_fig$name_tru))
 
 # https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/
 
-ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
+ggplot(d_fig, aes(x = name_tru, y = mu, col = prior)) +
   scale_x_discrete("") +
   scale_y_continuous("log-OR") + 
   scale_color_discrete("Prior sd on log-OR domain trt effects") +
-  geom_point(data = d_fig, aes(x = trt, y = b_med), position = position_dodge(width = 0.4)) +
-  geom_linerange(aes(ymin = b_q025, ymax = b_q975), position = position_dodge2(width = 0.4)) +
-  geom_point(data = d_fig, aes(x = trt, y = b), col = 1, pch = 2) +
-  facet_grid(~silo,scale="free_x",space="free_x")
+  geom_point(data = d_fig, aes(x = name_tru, y = mu), position = position_dodge(width = 0.4)) +
+  geom_linerange(aes(ymin = q_025, ymax = q_975), position = position_dodge2(width = 0.4)) +
+  geom_point(data = d_fig, aes(x = name_tru, y = tru), col = 1, pch = 2) 
 ```
 
 
-```{r}
-#| label: fig-alleff-dom-b
-#| fig-cap: 'Posterior median and 95% CI for baseline log-odds of treatment success domain B (independent estimates for late and chronic silo).'
-#| fig-cap-location: margin
-#| fig-height: 6
-
-d_fig1 <- post_dom_b(post_1)
-d_fig2 <- post_dom_b(post_2)
-
-d_fig <- rbind(
-  cbind(prior_sd = 1, d_fig1),
-  cbind(prior_sd = pri_sd, d_fig2)
-)
-d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
-
-# https://www.andrewheiss.com/blog/2022/12/08/log10-natural-log-scales-ggplot/
-
-ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
-  scale_x_discrete("") +
-  scale_y_continuous("log-OR") + 
-  scale_color_discrete("Prior sd on log-OR domain trt effects") +
-  geom_point(data = d_fig, aes(x = trt, y = b_med), position = position_dodge(width = 0.4)) +
-  geom_linerange(aes(ymin = b_q025, ymax = b_q975), position = position_dodge2(width = 0.4)) +
-  geom_point(data = d_fig, aes(x = trt, y = b), col = 1, pch = 2) +
-  facet_grid(paste0("Planned/assigned surgery: ", qa, "-stage")~silo,scale="free_x",space="free_x")
-```
-
-
-```{r}
-#| label: fig-alleff-dom-c
-#| fig-cap: 'Posterior median and 95% CI for baseline log-odds of treatment success in domain C (effect is pooled across all silos).'
-#| fig-cap-location: margin
-#| fig-height: 4
-
-d_fig1 <- post_dom_c(post_1)
-d_fig2 <- post_dom_c(post_2)
-
-d_fig <- rbind(
-  cbind(prior_sd = 1, d_fig1),
-  cbind(prior_sd = pri_sd, d_fig2)
-)
-d_fig[, prior_sd := factor(prior_sd, levels = c(1, pri_sd))]
-
-ggplot(d_fig, aes(x = trt, y = b, col = prior_sd)) +
-  scale_x_discrete("") +
-  scale_y_continuous("log-OR") + 
-  scale_color_discrete("Prior sd on log-OR domain trt effects") +
-  geom_point(data = d_fig, aes(x = trt, y = b_med), position = position_dodge(width = 0.4)) +
-  geom_linerange(aes(ymin = b_q025, ymax = b_q975), position = position_dodge2(width = 0.4)) +
-  geom_point(data = d_fig, aes(x = trt, y = b), col = 1, pch = 2)
-```
 
