@@ -52,17 +52,12 @@ m4 <- cmdstanr::cmdstan_model("stan/model-sim-04.stan")
 set.seed(1)
 
 ll <- get_trial_data_new(N = 1e6, sim_spec = sim_spec)
-d <- copy(ll$d)
-d_s <- d[, .(y = sum(y), n = .N), 
-         keyby = .(l1, l2, er, ed, ef, r, rp, srp2, d, f)]
 
-ld <- list(
-  N = nrow(d_s), y = d_s$y, n = d_s$n, 
-  l1 = d_s$l1, l2 = d_s$l2, 
-  er = d_s$er, ed = d_s$ed, ef = d_s$ef, 
-  r = d_s$r, d = d_s$d, f = d_s$f,
-  rp = d_s$rp, srp2 = d_s$srp2
-)
+lsd <- get_stan_data_new(ll$d)
+
+d <- copy(ll$d)
+d_s <- copy(lsd$d_s)
+ld <- lsd$ld
 
 f1 <- m4$sample(
   ld, iter_warmup = 1000, iter_sampling = 2000,
