@@ -32,7 +32,9 @@ d <- copy(ll$d)
 head(d[, .(y = sum(y), n = .N), keyby = .(l, er, ed, ef, r, rp, srp2, d, f)])
 ```
 
-The model spec can be translated almost verbatim into stan:
+## Stan implementation 
+
+The model spec can be translated into stan, albeit using a different likelihood spec:
 
 ```{r}
 #| class-output: stan
@@ -96,8 +98,20 @@ round(rbind(
 ), 4)
 ```
 
+## Estimation - G-computation
+
+::: {.callout-note collapse=false}
+
+Calculations based on Bayesian model are complicated by virtue of use of binomial instead of bernoulli likelihood.
+The way to deal with this is to weight the log-odds contributions by the number of trials associated with each unique combination.
+
+:::
+
+Predictions on log-odds scale:
 
 ```{r}
+#| code-fold: false
+
 eta_r_0 <- f1$draws(variables = c("eta_r_0"), format = "matrix")
 eta_r_1 <- f1$draws(variables = c("eta_r_1"), format = "matrix")
 eta_d_0 <- f1$draws(variables = c("eta_d_0"), format = "matrix")
@@ -105,48 +119,153 @@ eta_d_1 <- f1$draws(variables = c("eta_d_1"), format = "matrix")
 eta_f_0 <- f1$draws(variables = c("eta_f_0"), format = "matrix")
 eta_f_1 <- f1$draws(variables = c("eta_f_1"), format = "matrix")
 
-b_r <- unlist(mclapply(1:(min(nrow(eta_r_0), 1000)), function(ii){
+# compare direct prediction
+d_new <- copy(d_s)
+hi <- d_new[, `:=`(d = 1, erx = 1-er, edx = 1-ed, efx = 1-ef)]
+d_new <- copy(d_s)
+lo <- d_new[, `:=`(d = 0, erx = 1-er, edx = 1-ed, efx = 1-ef)]
+
+rbind(
+  "MLE prediction (d = 0)" = predict(f2, newdata = lo[1:10]),
+  "Bayesian predictions (d = 0)" = colMeans(eta_d_0)[1:10],
+  "MLE prediction (d = 1)" = predict(f2, newdata = hi[1:10]),
+  "Bayesian predictions (d = 1)" = colMeans(eta_d_1)[1:10]
+)
+```
+
+G-formula:
+
+```{r}
+#| code-fold: false
+
+# g-comp - calculations are complicated by virtue of use of binomial
+# instead of bernoulli model. Approach is to weight the log-odds contributions
+# by the number of trials associated with each unique combination.
+
+
+b_r <- do.call(rbind, mclapply(1:(min(nrow(eta_r_0), 1000)), function(ii){
   lo_0 <- eta_r_0[ii, rep(1:nrow(d_s), times = ld$n)]
   lo_1 <- eta_r_1[ii, rep(1:nrow(d_s), times = ld$n)]
-  mean(lo_1 - lo_0)
+  mu_b_r = mean(lo_1 - lo_0)
+  
+  # Should be no effect of rev in those that were not rand to surg
+  idx <- d_s[er == 0 , which = T]
+  lo_0_erx <- eta_r_0[ii, rep(idx, times = ld$n[idx])]
+  lo_1_erx <- eta_r_1[ii, rep(idx, times = ld$n[idx])]
+  mu_f_erx <- sum(lo_1_erx - lo_0_erx) / sum(ld$n[idx])
+  
+  idx <- d_s[er == 1 , which = T]
+  lo_0_erx <- eta_r_0[ii, rep(idx, times = ld$n[idx])]
+  lo_1_erx <- eta_r_1[ii, rep(idx, times = ld$n[idx])]
+  mu_f_er <- sum(lo_1_erx - lo_0_erx) / sum(ld$n[idx])
+  
+  c("mu_b_r" = mu_b_r, "mu_f_erx" = mu_f_erx, "mu_f_er" = mu_f_er)
 }, mc.cores = 10))
 
-idx_1 <- d_s[l1 == 1, which = T]
-idx_2 <- d_s[l2 == 1, which = T]
-ii <- 1
 
-b_d <- do.call(rbind, mclapply(1:(min(nrow(eta_d1_0), 1000)), function(ii){
+b_d <- do.call(rbind, mclapply(1:(min(nrow(eta_d_0), 1000)), function(ii){
   
   lo_0 <- eta_d_0[ii, rep(1:nrow(d_s), times = ld$n)]
   lo_1 <- eta_d_1[ii, rep(1:nrow(d_s), times = ld$n)]
 
-  lo_0_1 <- eta_d_0[ii, rep(idx_1, times = ld$n[idx_1])]
-  lo_1_1 <- eta_d_1[ii, rep(idx_1, times = ld$n[idx_1])]
+  # stratification, silo/revision type that actually took place
+  idx <- d_s[l1 == 1 & srp2 == 0, which = T]
+  lo_0_l1_srp1 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
+  lo_1_l1_srp1 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
+  mu_l1_srp1 <- sum(lo_1_l1_srp1 - lo_0_l1_srp1) / sum(ld$n[idx])
+
+  idx <- d_s[l1 == 1 & srp2 == 1, which = T]
+  lo_0_l1_srp2 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
+  lo_1_l1_srp2 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
+  mu_l1_srp2 <- sum(lo_1_l1_srp2 - lo_0_l1_srp2) / sum(ld$n[idx])
+
+  idx <- d_s[l2 == 1 & srp2 == 0, which = T]
+  lo_0_l2_srp1 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
+  lo_1_l2_srp1 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
+  mu_l2_srp1 <- sum(lo_1_l2_srp1 - lo_0_l2_srp1) / sum(ld$n[idx])
+
+  idx <- d_s[l2 == 1 & srp2 == 1, which = T]
+  lo_0_l2_srp2 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
+  lo_1_l2_srp2 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
+  mu_l2_srp2 <- sum(lo_1_l2_srp2 - lo_0_l2_srp2) / sum(ld$n[idx])
   
-  lo_0_2 <- eta_d_0[ii, rep(idx_2, times = ld$n[idx_2])]
-  lo_1_2 <- eta_d_1[ii, rep(idx_2, times = ld$n[idx_2])]
-  
-  c(mean(lo_1 - lo_0), 
+  c("mu" = mean(lo_1 - lo_0), 
     # you need to base the mean on the n that were used in the strata
-    sum(lo_1_1 - lo_0_1)/sum(ld$n[idx_1]),  
-    sum(lo_1_2 - lo_0_2)/sum(ld$n[idx_2])
+    "mu_l1_srp1" = mu_l1_srp1,  "mu_l1_srp2" = mu_l1_srp2,
+    "mu_l2_srp1" = mu_l2_srp1, "mu_l2_srp2" = mu_l2_srp2
     )
   
 }, mc.cores = 10))
 
-b_f <- unlist(mclapply(1:(min(nrow(eta_f_0), 1000)), function(ii){
+b_f <- do.call(rbind, mclapply(1:(min(nrow(eta_f_0), 1000)), function(ii){
+  
+  # Avg effect of rif - what is the effect of rif in the sample population
+  # Might be wrong, but don't believe this is a meaningful/useful quantity.
   lo_0 <- eta_f_0[ii, rep(1:nrow(d_s), times = ld$n)]
   lo_1 <- eta_f_1[ii, rep(1:nrow(d_s), times = ld$n)]
-  mean(lo_1 - lo_0)
+  mu_f <- mean(lo_1 - lo_0)
+  
+  # Should be no effect of rif in those that were not rand to choice
+  idx <- d_s[ef == 0 , which = T]
+  lo_0_efx <- eta_f_0[ii, rep(idx, times = ld$n[idx])]
+  lo_1_efx <- eta_f_1[ii, rep(idx, times = ld$n[idx])]
+  mu_f_efx <- sum(lo_1_efx - lo_0_efx) / sum(ld$n[idx])
+
+  # Effect of rif in those rand to choice domain
+  idx <- d_s[ef == 1 , which = T]
+  lo_0_ef <- eta_f_0[ii, rep(idx, times = ld$n[idx])]
+  lo_1_ef <- eta_f_1[ii, rep(idx, times = ld$n[idx])]
+  mu_f_ef <- sum(lo_1_ef - lo_0_ef) / sum(ld$n[idx])
+  
+  c("mu_f" = mu_f, "mu_f_efx" = mu_f_efx, "mu_f_ef" = mu_f_ef)
 }, mc.cores = 10))
 
-d_new <- copy(d_s)
-d_new[, `:=`(d = 1, erx = 1-er, edx = 1-ed, efx = 1-ef)]
-predict(f2, newdata = d_new[1:10])
-eta_d_1
-d_new[, `:=`(d = 0, erx = 1-er, edx = 1-ed, efx = 1-ef)]
-predict(f2, newdata = d_new[1:10])
-eta_d_0
+```
+
+Results and comparison to frequentist model:
+
+```{r}
+#| label: surg-quant-1
+#| code-summary: Surgery domain effect estimates
+
+avg_comparisons(f2, variables = "r", comparison = "lnor")
+# narrows the focus to the randomised pts
+avg_comparisons(f2, variables = "r", comparison = "lnor", by = "er")
+colMeans(b_r)
+# The randomised comparison should approx map to a weighted combination of the pars 
+mean(post1$`b[2]` + mean(d$srp2) * post1$`b[3]`) 
+```
+
+```{r}
+#| label: choice-quant-1
+#| code-summary: Choice domain effect estimates
+
+avg_comparisons(f2, variables = "f", comparison = "lnor")
+avg_comparisons(f2, variables = "f", comparison = "lnor", by = "ef")
+colMeans(b_f)
+# And this should just be the same as the coefficient from the model
+mean(post1$`b[8]`)
+```
+
+```{r}
+#| label: duration-quant-1
+#| code-summary: Duration domain effect estimates
+
+avg_comparisons(f2, variables = "d", comparison = "lnor")
+avg_comparisons(f2, variables = "d", comparison = "lnor", by = c("l2", "l1", "srp2"))
+avg_comparisons(f2, variables = "d", comparison = "lnor", by = c("l2", "l1", "srp2"))
+colMeans(b_d)
+
+# The randomised comparison should approx map to a weighted combination of the pars 
+# mean(post1$`b[2]` + mean(d$srp2) * post1$`b[3]`) 
+```
+
+
+
+Alternative approach e.g. for `r`:
+
+```{r}
+#| code-fold: false
 
 # w_eta_r0 <- sweep(eta_r0, 1, ld$n, "*")
 
@@ -156,108 +275,13 @@ d_new <- copy(d)
 hi <- copy(d_new[, r := 1])
 y_lo <- predict(f2, newdata = lo)
 y_hi <- predict(f2, newdata = hi)
-y_lo[1:3]
-y_hi[1:3]
-
 
 mean(y_hi - y_lo)
-mean(y_hi[d$l2 == 1] - y_lo[d$l2 == 1])
-
-
-avg_comparisons(f2, variables = "r", comparison = "lnor")
-avg_comparisons(f2, variables = "f", comparison = "lnor")
-apply(cbind(b_r, b_f), 2, mean)
-
-avg_comparisons(f2, variables = "d", comparison = "lnor")
-avg_comparisons(f2, variables = "d", comparison = "lnor", by = c("l1", "l2"))
-colMeans(b_d)
-# comparisons(f2, variables = "d", comparison = "lnor")
-#
-
-# post <- data.table(f1$draws(variables = c(c("b_r")), format = "matrix"))
-# 
-# d_new <- copy(d)
-# d_new[, `:=`(r = 1)]
-# lo1 <- predict(f2, newdata = d_new)
-# dtmp <- cbind(d_new, lo1)
-# dtmp[l == 1 & j == 0 & er == 1]
-# d_new[, `:=`(r = 0)]
-# lo0 <- predict(f2, newdata = d_new)
-# mean(lo1 - lo0)
-# 
-# colMeans(post)
-
 ```
 
 
-```{r}
-post <- data.table(f2$draws(variables = c(c("b_r")), format = "matrix"))
-
-round(rbind(
-  c(sim_spec$a0, sim_spec$m, sim_spec$b),
-  colMeans(post)
-), 3)
-```
-
-
-
-```{r}
-
-```
-
-
-
-```{r}
-# create index field
-# post <- melt(post, measure.vars = names(post))
-# post[, idx := gsub(".*\\[", "", variable)]
-# post[, idx := gsub("\\]", "", idx)]
-# post[, idx := as.integer(idx)]
-
-# d_fig <- cbind(d_b, post[, .(eta_med = median(value), 
-#          eta_q025 = quantile(value, prob = 0.025),
-#          eta_q975 = quantile(value, prob = 0.975)), keyby = idx])
-```
-
-```{r}
-set.seed(1)
-
-# effect on f but nothing else
-sim_spec$b["f"] <- log(2)
-ll <- get_trial_data_new(N = 1e6, sim_spec = sim_spec)
-d <- copy(ll$d)
-
-dtmp <- copy(d[ef == 1, .(er, ed, ef, r, d, f, rp, srp2, y, p_y)])
-dtmp[, mean(p_y), keyby = f]
-
-
-d_s <- d[, .(y = sum(y), n = .N), keyby = .(l, j, er, ed, ef, r, rp, srp2, d, f)]
-
-d[ef == 1, .(y = sum(y), n = .N), keyby = f]
-
-ld <- list(
-  N = nrow(d_s), y = d_s$y, n = d_s$n, l = d_s$l + 1, j = d_s$j + 1,
-  er = d_s$er, ed = d_s$ed, ef = d_s$ef, 
-  r = d_s$r, d = d_s$d, f = d_s$f,
-  rp = d_s$rp, srp2 = d_s$srp2
-)
-
-f2 <- m4$sample(
-  ld, iter_warmup = 1000, iter_sampling = 2000,
-  parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
-  max_treedepth = 13)
-
-post <- data.table(f2$draws(variables = c(
-  c("b_r", "b_d1", "b_d2", "b_f")
-), format = "matrix"))
-
-colMeans(post)
-
-
-```
-
-@fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model.
-It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset.
+<!-- @fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model. -->
+<!-- It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset. -->
 
 ```{r, eval = F}
 #| label: fig-post-vs-tru
@@ -333,8 +357,8 @@ d_fig <- merge(d_fig, d_effects, by.x = "parname", by.y = "variable")
 
 ```
 
-@fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model.
-It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset.
+<!-- @fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model. -->
+<!-- It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset. -->
 
 ```{r, eval = F}
 #| label: fig-post-lor
@@ -400,7 +424,7 @@ d_cor[, `:=`(
 
 ```
 
-@fig-post-cor shows the correlation between parameters estimated from the model.
+<!-- @fig-post-cor shows the correlation between parameters estimated from the model. -->
 
 ```{r, eval = F}
 #| label: fig-post-cor

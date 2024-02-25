@@ -119,12 +119,15 @@ The treatment options and allocation probabilities for domain C are 1:1.
 The above specification is bundled into an R package (`roadmap.data`) for consistent data generation for ROADMAP.
 
 ```{r}
+#| code-fold: false
 roadmap.data::get_pop_spec_new()
 ```
 
 The following function simulates the design matrix.
 
 ```{r}
+#| code-fold: false
+
 roadmap.data::get_design_new
 ```
 
@@ -133,6 +136,8 @@ The outcome is known to be heterogenous across these groups and yet the stated g
 However, the effect of interest is assumed to be obtained from the model parameter that characterises the effect of antibiotic type conditional on the other covariates in the model.
 
 ```{r}
+#| code-fold: false
+
 d <- roadmap.data::get_design_new()
 head(d)
 ```
