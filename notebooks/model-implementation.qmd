@@ -169,30 +169,30 @@ b_d <- do.call(rbind, mclapply(1:(min(nrow(eta_d_0), 1000)), function(ii){
   lo_1 <- eta_d_1[ii, rep(1:nrow(d_s), times = ld$n)]
 
   # stratification, silo/revision type that actually took place
-  idx <- d_s[l1 == 1 & srp2 == 0, which = T]
-  lo_0_l1_srp1 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
-  lo_1_l1_srp1 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
-  mu_l1_srp1 <- sum(lo_1_l1_srp1 - lo_0_l1_srp1) / sum(ld$n[idx])
-
-  idx <- d_s[l1 == 1 & srp2 == 1, which = T]
-  lo_0_l1_srp2 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
-  lo_1_l1_srp2 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
-  mu_l1_srp2 <- sum(lo_1_l1_srp2 - lo_0_l1_srp2) / sum(ld$n[idx])
-
-  idx <- d_s[l2 == 1 & srp2 == 0, which = T]
-  lo_0_l2_srp1 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
-  lo_1_l2_srp1 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
-  mu_l2_srp1 <- sum(lo_1_l2_srp1 - lo_0_l2_srp1) / sum(ld$n[idx])
-
-  idx <- d_s[l2 == 1 & srp2 == 1, which = T]
-  lo_0_l2_srp2 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
-  lo_1_l2_srp2 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
-  mu_l2_srp2 <- sum(lo_1_l2_srp2 - lo_0_l2_srp2) / sum(ld$n[idx])
+  idx <- d_s[ed == 0 & srp2 == 0, which = T]
+  lo_0_edx_srp1 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
+  lo_1_edx_srp1 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
+  mu_edx_srp1 <- sum(lo_1_edx_srp1 - lo_0_edx_srp1) / sum(ld$n[idx])
   
+  idx <- d_s[ed == 0 & srp2 == 1, which = T]
+  lo_0_edx_srp2 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
+  lo_1_edx_srp2 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
+  mu_edx_srp2 <- sum(lo_1_edx_srp2 - lo_0_edx_srp2) / sum(ld$n[idx])
+
+  idx <- d_s[ed == 1 & srp2 == 0, which = T]
+  lo_0_ed_srp1 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
+  lo_1_ed_srp1 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
+  mu_ed_srp1 <- sum(lo_1_ed_srp1 - lo_0_ed_srp1) / sum(ld$n[idx])
+
+  idx <- d_s[ed == 1 & srp2 == 1, which = T]
+  lo_0_ed_srp2 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
+  lo_1_ed_srp2 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
+  mu_ed_srp2 <- sum(lo_1_ed_srp2 - lo_0_ed_srp2) / sum(ld$n[idx])
+
   c("mu" = mean(lo_1 - lo_0), 
     # you need to base the mean on the n that were used in the strata
-    "mu_l1_srp1" = mu_l1_srp1,  "mu_l1_srp2" = mu_l1_srp2,
-    "mu_l2_srp1" = mu_l2_srp1, "mu_l2_srp2" = mu_l2_srp2
+    "mu_edx_srp1" = mu_edx_srp1,  "mu_edx_srp2" = mu_edx_srp2,
+    "mu_ed_srp1" = mu_ed_srp1, "mu_ed_srp2" = mu_ed_srp2
     )
   
 }, mc.cores = 10))
@@ -219,16 +219,37 @@ b_f <- do.call(rbind, mclapply(1:(min(nrow(eta_f_0), 1000)), function(ii){
   
   c("mu_f" = mu_f, "mu_f_efx" = mu_f_efx, "mu_f_ef" = mu_f_ef)
 }, mc.cores = 10))
-
 ```
 
-Results and comparison to frequentist model:
+The following shows the results and also comparisons to combinations of parameters used in data simulation.
+
+For the surgery domain, the comparison of interest is dair (ref) vs revision, which can be obtained by averaging over the distribution of surgery type that took place.
+The revision effects are silo-specific in that only the late silo is randomised which we obtain by producing a conditional treatment effect by stratifying on the reveal status (`er`).
+
+::: {.callout-warning collapse=false}
+
+I don't believe that we currently need to worry about differential selection ($\mathbb{P}(S=s|G=1)\ne\mathbb{P}(S=s|G=2)$) because only one silo is contributing to the randomised comparison and I think we are restricting to that silo by virtue of conditiong on `er`.
+
+:::
 
 ```{r}
 #| label: surg-quant-1
 #| code-summary: Surgery domain effect estimates
+#| code-fold: false
 
+# dair (ref)  vs revision (of any form)
 avg_comparisons(f2, variables = "r", comparison = "lnor")
+
+# Equivalent approach e.g. for `r`:
+# w_eta_r0 <- sweep(eta_r0, 1, ld$n, "*")
+d_new <- copy(d)
+lo <- copy(d_new[, r := 0])
+d_new <- copy(d)
+hi <- copy(d_new[, r := 1])
+y_lo <- predict(f2, newdata = lo)
+y_hi <- predict(f2, newdata = hi)
+# mean(y_hi - y_lo)
+
 # narrows the focus to the randomised pts
 avg_comparisons(f2, variables = "r", comparison = "lnor", by = "er")
 colMeans(b_r)
@@ -236,10 +257,15 @@ colMeans(b_r)
 mean(post1$`b[2]` + mean(d$srp2) * post1$`b[3]`) 
 ```
 
+For the choice domain, the comparison of interest is no-rf (ref) vs rif, which can be obtained directly from the parameter estimate that characterised the effects of the randomised comparisons.
+Choice domain effects reflect an average over the silos since all silos can enter this domain.
+
 ```{r}
 #| label: choice-quant-1
 #| code-summary: Choice domain effect estimates
+#| code-fold: false
 
+# no-rif (ref)  vs rif (of any form)
 avg_comparisons(f2, variables = "f", comparison = "lnor")
 avg_comparisons(f2, variables = "f", comparison = "lnor", by = "ef")
 colMeans(b_f)
@@ -247,43 +273,36 @@ colMeans(b_f)
 mean(post1$`b[8]`)
 ```
 
+::: {.callout-warning collapse=false}
+
+Question - for the duration domain, should we be producing silo-specific effects or an average view of the duration effects irrespective of silo membership?
+
+:::
+
+For the duration domain, the comparison of interest is long (ref) vs short, which can be obtained directly from the parameter estimate that characterised the effects of the randomised comparisons.
+Duration domain effects are also currently reflecting an average over the silos.
+
 ```{r}
 #| label: duration-quant-1
 #| code-summary: Duration domain effect estimates
-
-avg_comparisons(f2, variables = "d", comparison = "lnor")
-avg_comparisons(f2, variables = "d", comparison = "lnor", by = c("l2", "l1", "srp2"))
-avg_comparisons(f2, variables = "d", comparison = "lnor", by = c("l2", "l1", "srp2"))
-colMeans(b_d)
-
-# The randomised comparison should approx map to a weighted combination of the pars 
-# mean(post1$`b[2]` + mean(d$srp2) * post1$`b[3]`) 
-```
-
-
-
-Alternative approach e.g. for `r`:
-
-```{r}
 #| code-fold: false
 
-# w_eta_r0 <- sweep(eta_r0, 1, ld$n, "*")
+# long (ref) vs short (specific to the type of surg recvd - one or two stage)
+avg_comparisons(f2, variables = "d", comparison = "lnor")
+avg_comparisons(f2, variables = "d", comparison = "lnor", by = c("ed", "srp2"))
+colMeans(b_d)
 
-d_new <- copy(d)
-lo <- copy(d_new[, r := 0])
-d_new <- copy(d)
-hi <- copy(d_new[, r := 1])
-y_lo <- predict(f2, newdata = lo)
-y_hi <- predict(f2, newdata = hi)
-
-mean(y_hi - y_lo)
+# The randomised comparison should approx map directly to the surg type 
+# specific pars 
+mean(post1$`b[5]`) 
+mean(post1$`b[5]` + post1$`b[6]` ) 
 ```
 
 
 <!-- @fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model. -->
 <!-- It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset. -->
 
-```{r, eval = F}
+```{r, eval = F, echo = F}
 #| label: fig-post-vs-tru
 #| fig-cap: 'Scatter plot comparing true vs estimated 95% credible interval for log-odds treatment success.'
 #| fig-cap-location: margin
@@ -301,7 +320,7 @@ ggplot(d_fig, aes(x = eta, y = eta_med)) +
 ```
 
 
-```{r, eval = F}
+```{r, eval = F, echo = F}
 post <- data.table(f2$draws(variables = c(
     "alpha", "gamma_c", 
     "b_a_l", 
@@ -360,7 +379,7 @@ d_fig <- merge(d_fig, d_effects, by.x = "parname", by.y = "variable")
 <!-- @fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model. -->
 <!-- It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset. -->
 
-```{r, eval = F}
+```{r, eval = F, echo = F}
 #| label: fig-post-lor
 #| fig-cap: 'Posterior estimates for log-odds-ratios (true values shown as triangles).'
 #| fig-cap-location: margin
@@ -375,7 +394,7 @@ ggplot(d_fig, aes(x = parname, y = lor_med)) +
   scale_y_continuous("Posterior log-odds-ratio (95% credible interval)") 
 ```
 
-```{r, eval = F}
+```{r, eval = F, echo = F}
 post <- data.table(f2$draws(variables = c(
     "alpha", "gamma_c", 
     "b_a_l", 
@@ -426,7 +445,7 @@ d_cor[, `:=`(
 
 <!-- @fig-post-cor shows the correlation between parameters estimated from the model. -->
 
-```{r, eval = F}
+```{r, eval = F, echo = F}
 #| label: fig-post-cor
 #| fig-cap: 'Parameter correlation (white indicates zero correlation)'
 #| fig-cap-location: margin
