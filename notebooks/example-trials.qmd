@@ -25,7 +25,7 @@ Given that this is a summary of a single data set, some variation from the under
 
 set.seed(1)
 
-sim_spec <- get_sim_spec_new()
+sim_spec <- get_sim_spec()
 
 sim_spec$b['r1'] <- 0
 sim_spec$b['r2'] <- 0
@@ -33,7 +33,7 @@ sim_spec$b['r1d'] <- 0
 sim_spec$b['r2d'] <- 0
 sim_spec$b['f'] <- 0
 
-ll <- get_trial_data_new(N = 2500, sim_spec = sim_spec)
+ll <- get_trial_data(N = 2500, sim_spec = sim_spec)
 
 gt_tbl <- tbl_ex_trial(ll$d)
 gt_tbl
@@ -42,7 +42,7 @@ gt_tbl
 Model the simulated data first using standard normal priors on the domain level treatment effects, then increasing the prior standard deviation to ten in order to see if there is any movement in the posterior summary.
 
 ```{r}
-lsd <- get_stan_data_new(ll$d)
+lsd <- get_stan_data(ll$d)
 ld <- lsd$ld
 d_s <- copy(lsd$d_s)
 
@@ -126,14 +126,14 @@ sim_spec$b['r1d'] <- log(2)
 sim_spec$b['r2d'] <- log(2)
 sim_spec$b['f'] <- log(2)
 
-ll <- get_trial_data_new(N = 2500, sim_spec = sim_spec)
+ll <- get_trial_data(N = 2500, sim_spec = sim_spec)
 
 gt_tbl <- tbl_ex_trial(ll$d)
 gt_tbl
 ```
 
 ```{r}
-lsd <- get_stan_data_new(ll$d)
+lsd <- get_stan_data(ll$d)
 ld <- lsd$ld
 d_s <- copy(lsd$d_s)
 

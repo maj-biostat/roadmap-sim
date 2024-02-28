@@ -1,7 +1,5 @@
 # simulation configuration (all OR = log(1))
 default:
-  sc: "sc01"
-  v: "v01"
   nsim: 500
   mc_cores: 5
   N_pt: 2500
@@ -11,6 +9,7 @@ default:
   b_erx: -0.1 # effect of non-reveal for surgery
   b_r1: -0.6931472 # increment for one-stage surg
   b_r2: 0 # relative increment for surgery under two-stage
+  w_srp2: 0.351 # proportion of those rand to surg recv two-stage
   b_edx: -0.15 # effect of non-reveal for duration
   b_r1d: -0.6931472 # increment for duration under one-stage
   b_r2d: 0 # relative increment for duration under two-stage

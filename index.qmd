@@ -8,9 +8,17 @@ All the code can be found on github, just use the icon to the top right.
 The functionality herein has a dependency on the `roadmap.data` R package, which can also be found via the above link (see the readme for this repo).
 If you find any issues, let me know and I will prioritise accordingly.
 
-## Notes
+## Notes/TODO
 
-+ Does not explore impact of effect heterogeneity on $C$
++ Analyses based on cohorts having reached primary endpoint (12 months post rand)
++ Query definition and implementation of targets of inference (`b_r`, `b_r1d` etc)
++ Query what actions should occur when a decision threshold is met for a specific decision type (sup, inf etc)
++ Should actions be augmented to also consider uncertainty of estimate?
++ Should the design restrict stopping to specific pairwise questions or are all questions of interest?
++ Query approach for NI whereby we evaluate and report on both (trt ni ref) to get to (ref ni trt)
++ Currently do not implement stopping for NI
++ TODO - compute implications of NI margin in terms of risk for each parameter
++ TODO - compute family wise type-i errors?
 
 
 

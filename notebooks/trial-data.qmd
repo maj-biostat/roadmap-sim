@@ -16,9 +16,11 @@ The missingness is a consequence of the partial factorial structure.
 
 ```{r}
 set.seed(1)
-ll <- get_trial_data_new(N = 2500)
+ll <- get_trial_data(N = 2500)
 
 d <- copy(ll$d)
+
+
 ```
 
 Only patients in the late stage infection silo enter into the surgical domain for randomised comparison of surgery type.
@@ -51,7 +53,7 @@ d_tbl[, total := rowSums(d_tbl[, .(dair, rev)], na.rm = T)]
 d_tbl[domain == "Choice" & rand == 0, group := NA]
 d_tbl[domain == "Duration" & rand == 0, group := NA]
 
-cols <- c("Domain", "Randomised", "Treatment", "Surgery recvd", "DAIR", "Revision", "Total")
+cols <- c("Domain", "Revealed", "Treatment", "Surgery recvd", "DAIR", "Revision", "Total")
 names(cols) <- names(d_tbl)
 
 gt_tbl <- d_tbl |> 
@@ -74,7 +76,7 @@ gt_tbl <- d_tbl |>
     )
   )  |>
   tab_footnote(
-    footnote = "Randomised indicates whether units were randomised into choice/duration domain (0: No, 1: Yes)",
+    footnote = "Revealed indicates whether units were randomised into choice/duration domain (0: No, 1: Yes)",
     locations = cells_column_labels(columns = rand)
   ) |>
   tab_footnote(
@@ -123,7 +125,7 @@ d_tbl[, total := rowSums(d_tbl[, .(long_1, short_1, long_2, short_2)], na.rm = T
 d_tbl[domain == "Surgery" & rand == 0, group := NA]
 d_tbl[domain == "Choice" & rand == 0, group := NA]
 
-cols <- c("Domain", "Randomised", "Treatment", c("long", "short", "long", "short"), "Total")
+cols <- c("Domain", "Revealed", "Treatment", c("long", "short", "long", "short"), "Total")
 names(cols) <- names(d_tbl)
 
 gt_tbl <- d_tbl |> 
@@ -151,7 +153,7 @@ gt_tbl <- d_tbl |>
   ) |>
   cols_label(.list = cols)  |>
   tab_footnote(
-    footnote = "Randomised indicates whether units were randomised into surgery/duration domain (0: No, 1: Yes)",
+    footnote = "Revealed indicates whether units were randomised into surgery/duration domain (0: No, 1: Yes)",
     locations = cells_column_labels(columns = rand)
   ) |>
   tab_footnote(
@@ -205,7 +207,7 @@ d_tbl[domain == "Duration" & rand == 0, group := NA]
 
 
 
-cols <- c("Domain", "Randomised", "Surgery recvd", "Treatment", c("norif", "rif"), "Total")
+cols <- c("Domain", "Revealed", "Surgery recvd", "Treatment", c("norif", "rif"), "Total")
 names(cols) <- names(d_tbl)
 
 gt_tbl <- d_tbl |> 
@@ -228,7 +230,7 @@ gt_tbl <- d_tbl |>
   ) |>
   cols_label(.list = cols)|>
   tab_footnote(
-    footnote = "Randomised indicates whether units were randomised into surgery/choice domain (0: No, 1: Yes)",
+    footnote = "Revealed indicates whether units were randomised into surgery/choice domain (0: No, 1: Yes)",
     locations = cells_column_labels(columns = rand)
   ) |>
   tab_footnote(

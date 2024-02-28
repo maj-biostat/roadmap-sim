@@ -13,6 +13,8 @@ ggplot2::theme_update(legend.position = "bottom")
 ggplot2::theme_update(axis.text.x = element_text(size = 8))
 ggplot2::theme_update(axis.text.y = element_text(size = 8))
 
+# g_cbbPalette <- c("#000000", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
+
 # Config - store of local OS file system
 f_cfg <- file.path("./etc", "cfg.yml")
 g_cfg <- config::get(file = f_cfg)
@@ -28,20 +30,13 @@ log_appender(appender_file(f_log))
 log_info("*** START UP ***")
 
 # pars/effects of interest
-g_pars <- c(
-  "alpha", "gamma_c", 
-  "b_a_l", 
-  "b_b1_l", "b_b2_l","b_a_c","b_b1_c", "b_b2_c",
-  "b_c"
-)
-g_effs <- c(
-  "b_a_l_2", "b_a_c_2",  # domain a, late (revision) and chronic (two-stage)
-  "b_b1_l_2", # domain b, (late/revision one stage pts) wk12p1 (ref is wk6p1)
-  "b_b2_l_2", # wk12p2 (ref is day7p2)
-  "b_b1_c_2", # wk12p1 (ref is wk6p1)
-  "b_b2_c_2", # wk12p2 (ref is day7p2)
-  "b_c_2" # rif (ref is no-rif)
-)
+
+g_fx <- c("b_r", "b_r1d", "b_r2d", "b_f")
+g_mod4_pars <- c("a0", paste0("m_", 1:2), paste0("b_", 1:8))
+g_mod4_qnt <- c(
+  "eta_r_0", "eta_r_1", "eta_d_0", "eta_d_1", "eta_f_0", "eta_f_1"
+  )
+
 
 
 # alt_font <- flextable::fp_text_default(bold = TRUE, font.size = 12, font.family = "Reenie Beanie")

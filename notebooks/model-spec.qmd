@@ -81,7 +81,8 @@ For each silo $l$ and site of infection $j$ we model the probability of treatmen
 
 $$
 \begin{aligned}
-\mathbb{E}[Y|L; \beta] &=  \text{expit}( \alpha_{[l,j]} + \\
+\mathbb{E}[Y|L; \beta] &=  \text{expit}( \alpha_0 + \\ 
+  &\quad \lambda_1 \mathbb{I}(L = 1) + \lambda_2 \mathbb{I}(L = 2) + \\
   &\quad \beta_1 \mathbb{I}(1-E_R) + ([\beta_2 R + \beta_3 R \mathbb{I}(S_{R_P} = 2) ])\mathbb{I}(E_R) + \\
   &\quad \beta_4 \mathbb{I}(1-E_D) + ([\beta_{5} R_P D + \beta_{6} R_P D \mathbb{I}(S_{R_P} = 2)])\mathbb{I}(E_D) + \\
   &\quad \beta_{7} \mathbb{I}(1-E_F) + \beta_{8} F E_F )
@@ -90,7 +91,9 @@ $$ {#eq-mod-spec-1}
 
 where 
 
-+ $\alpha_{[l,j]}$ denotes the baseline log-odds of treatment success in silo $l$ and having infection site $j$
++ $\alpha_0$ denotes the baseline log-odds of treatment success 
++ $\lambda_1$ denotes the shift associated with membership of the late silo
++ $\lambda_2$ denotes the shift associated with membership of the chronic silo
 + $\beta_{1}$ shift under non-reveal (surgery^[The parameter ignores potential differentiation for surgical type.])
 + $\beta_{2}$ shift under revision that was performed with one-stage procedure for long duration and no-rif
 + $\beta_{3}$ relative shift under revision that was performed with two-stage procedure for long duration and no-rif
@@ -134,7 +137,7 @@ As with the linear predictor, the priors are currently targeted towards the simu
 The silo and infection site intercepts are given independent normal priors
 
 \begin{aligned}
-\alpha_{s(i),u(i)} \sim \mathcal{N}(0, 1.5^2)
+\alpha_0 \sim \mathcal{N}(0, 1.5^2)
 \end{aligned}
 
 On the probability scale, these concentrate on 0.5 with 95% of the density between 0.04 and 0.96, approximately uniform across this interval.
@@ -155,9 +158,9 @@ In contrast, for the late stage patients, the baseline log-odds of treatment suc
 : Groups corresponding to baseline log-odds of treatment success {.striped .hover}
 :::
 
-### Domain treatment effects
+### Other covariates
 
-Independent standard normal priors are assumed for all treatment effects.
+Independent standard normal priors are assumed for all other covariate terms effects.
 
 
 ## Treatment effects
@@ -168,7 +171,9 @@ We consider non-inferiority, superiority, futility for non-inferiority and futil
 
 ### Non-inferiority
 
-We define a non-inferiority margin^[To do - work out what this means on the risk scale and see if it makes any sense.] of $\phi = \log{1/1.2} \approx -0.18$ to be used across all treatment effects and consider $j$ to be non-inferior to $i$ if $Pr(\delta_{j,i} > \phi) > 0.99$.
+We define a non-inferiority margin of $\phi = \log{1/1.1} \approx -0.095$ to be used across all treatment effects and consider $j$ to be non-inferior to $i$ if $Pr(\delta_{j,i} > \phi) > 0.99$.
+
+That is, the non-inferiority decision rule will deem a slightly worse treatment to be non-inferior.
 
 ### Superiority
 

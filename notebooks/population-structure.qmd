@@ -120,7 +120,7 @@ The above specification is bundled into an R package (`roadmap.data`) for consis
 
 ```{r}
 #| code-fold: false
-roadmap.data::get_pop_spec_new()
+roadmap.data::get_pop_spec()
 ```
 
 The following function simulates the design matrix.
@@ -128,7 +128,7 @@ The following function simulates the design matrix.
 ```{r}
 #| code-fold: false
 
-roadmap.data::get_design_new
+roadmap.data::get_design
 ```
 
 The data generation assumptions imply unique patients groups on which we would observe the outcome.
@@ -138,7 +138,7 @@ However, the effect of interest is assumed to be obtained from the model paramet
 ```{r}
 #| code-fold: false
 
-d <- roadmap.data::get_design_new()
+d <- roadmap.data::get_design()
 head(d)
 ```
 

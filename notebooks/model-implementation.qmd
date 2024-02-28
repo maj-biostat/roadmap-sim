@@ -16,7 +16,7 @@ For example with the linear predictor:
 #| code-fold: false
 
 # data generation process
-formals(get_trial_data_new)$g
+formals(get_trial_data)$g
 ```
 
 I get:
@@ -26,10 +26,21 @@ I get:
 
 # simulate data
 set.seed(1)
-sim_spec <- get_sim_spec_new()
-ll <- get_trial_data_new(N = 2500, sim_spec = sim_spec)
+sim_spec <- get_sim_spec()
+
+unlist(sim_spec)
+
+ll <- get_trial_data(N = 2500, sim_spec = sim_spec)
 d <- copy(ll$d)
 head(d[, .(y = sum(y), n = .N), keyby = .(l, er, ed, ef, r, rp, srp2, d, f)])
+```
+
+
+```{r}
+ll <- get_trial_data(N = 1e7, sim_spec = sim_spec)
+head(ll$d)
+ll$d[er == 1, .N, keyby = srp][, .(p = N/nrow(ll$d[er == 1]))]
+ll$d[er == 1, .N, keyby = srp2][, .(p = N/nrow(ll$d[er == 1]))]
 ```
 
 ## Stan implementation 
@@ -51,11 +62,14 @@ m4 <- cmdstanr::cmdstan_model("stan/model-sim-04.stan")
 
 set.seed(1)
 
-ll <- get_trial_data_new(N = 1e6, sim_spec = sim_spec)
+ll <- get_trial_data(N = 1e6, sim_spec = sim_spec)
 
-lsd <- get_stan_data_new(ll$d)
+lsd <- get_stan_data(ll$d)
 
 d <- copy(ll$d)
+
+# d[, .(.N), keyby = srp][, .(pr_srp = N/nrow(d))]
+
 d_s <- copy(lsd$d_s)
 ld <- lsd$ld
 
@@ -249,7 +263,8 @@ y_hi <- predict(f2, newdata = hi)
 avg_comparisons(f2, variables = "r", comparison = "lnor", by = "er")
 colMeans(b_r)
 # The randomised comparison should approx map to a weighted combination of the pars 
-mean(post1$`b[2]` + mean(d$srp2) * post1$`b[3]`) 
+mean(post1$`b[2]` + d[, mean(srp2)] * post1$`b[3]`) 
+mean(post1$`b[2]` + d[er == 1, mean(srp2)] * post1$`b[3]`) 
 ```
 
 For the choice domain, the comparison of interest is no-rf (ref) vs rif, which can be obtained directly from the parameter estimate that characterised the effects of the randomised comparisons.
@@ -355,9 +370,9 @@ d_beta <- melt(d_beta, measure.vars = names(d_beta))
 # unique(d_beta$variable)
 
 
-parname_map <- roadmap.data::get_par_effects_mapping()
-d_beta[, parname := parname_map[variable]]
-d_beta[, parname := factor(parname, levels = roadmap.data::get_par_effects_mapping())]
+# parname_map <- roadmap.data::get_par_effects_mapping()
+# d_beta[, parname := parname_map[variable]]
+# d_beta[, parname := factor(parname, levels = roadmap.data::get_par_effects_mapping())]
 
 d_fig <- d_beta[, .(
   lor_med = median(value), 

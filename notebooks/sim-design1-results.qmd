@@ -10,73 +10,93 @@ source("./R/util.R")
 log_info("Called simulation-results notebook")
 ```
 
-## All treatments effective
+## Equal effects in all treatment arms
 
 ```{r}
+or_lab <- c("OR 1/2" , "OR 1/1.5", "OR 1", "OR 1.5", "OR 2")
+or_lev <- c("1/2", "1/1.5", "1", "1.5", "2")
+or_num <- c(1/2, 1/1.5, 1, 1.5, 2)
+names(or_lab) <- paste0("v0",c(1, 2, 3, 4, 5))
+names(or_num) <- paste0("v0",c(1, 2, 3, 4, 5))
+
 flist <- list.files("data", pattern = "sim01-sc01")
+
+toks <- list()
 l <- list()
 for(i in 1:length(flist)){
   l[[i]] <- qs::qread(file.path("data", flist[i]))
+  toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
 }
 
-d_sup <- rbindlist(lapply(l, function(z){
-  cbind(sc = z$cfg$sc, v = z$cfg$v, z$d_sup[, lapply(.SD, mean)])
+d_cfg <- rbindlist(lapply(seq_along(l), function(i){
+  tok <- toks[[i]]
+  m <- data.table(do.call(cbind, l[[i]]$cfg))
+  data.table(cbind(sc = tok[2], v = tok[3], analys = 1:nrow(m), m))
 }))
-d_sup <- melt(d_sup, id.vars = c("sc", "v"), value.name = "pr_sup")
 
-d_inf <- rbindlist(lapply(l, function(z){
-  cbind(sc = z$cfg$sc, v = z$cfg$v, z$d_inf[, lapply(.SD, mean)])
-}))
-d_inf <- melt(d_inf, id.vars = c("sc", "v"), value.name = "pr_inf")
-
-d_fut <- rbindlist(lapply(l, function(z){
-  cbind(sc = z$cfg$sc, v = z$cfg$v, z$d_fut[, lapply(.SD, mean)])
-}))
-d_fut <- melt(d_fut, id.vars = c("sc", "v"), value.name = "pr_fut")
-
-d_cfg <- rbindlist(lapply(l, function(z){
-  data.table(do.call(cbind, z$cfg)) 
-}))
 # urgh - conversion to numeric
 d_cfg[, `:=`(
   nsim = as.numeric(nsim),
-  mc_cores = as.numeric(mc_cores),
-  b_a_l_2 = as.numeric(b_a_l_2),
-  b_a_c_2 = as.numeric(b_a_c_2),
-  b_b1_l_2 = as.numeric(b_b1_l_2),
-  b_b2_l_2 = as.numeric(b_b2_l_2),
-  b_b1_c_2 = as.numeric(b_b1_c_2),
-  b_b2_c_2 = as.numeric(b_b2_c_2),
-  b_c_2 = as.numeric(b_c_2),
-  d_sup = as.numeric(d_sup),
-  d_inf = as.numeric(d_inf),
-  d_fut = as.numeric(d_fut)
+  N_pt = as.numeric(N_pt),
+  b_r1 = as.numeric(b_r1),
+  b_r2 = as.numeric(b_r2),
+  b_r1d = as.numeric(b_r1d),
+  b_r2d = as.numeric(b_r2d),
+  b_f = as.numeric(b_f),
+  d_sup = as.numeric(thresh_sup),
+  d_ni = as.numeric(thresh_non_inf),
+  d_fut = as.numeric(thresh_fut)
   )]
 
+# derive the true effect for surgery based on weight combination
+d_cfg[, b_r := b_r1 + w_srp2 * b_r2]
+d_cfg[, `:=`(b_r1 = NULL, b_r2 = NULL, w_srp2 = NULL)]
+
+d_tru <- melt(d_cfg[
+  , .SD, .SDcols = c("sc", "v", "analys", 
+                     "b_r", "b_r1d", "b_r2d", "b_f")], 
+  id.vars = c("sc", "v", "analys"), value.name = "lor_tru")
+
+d_sup <- rbindlist(lapply(seq_along(l), function(i){
+  cbind(sc = d_cfg[i, sc], v = d_cfg[i, v], l[[i]]$d_sup[, lapply(.SD, mean)])
+}))
+d_sup <- melt(d_sup, id.vars = c("sc", "v"), value.name = "p")
+d_sup[, type := "sup"]
+
+d_inf <- rbindlist(lapply(seq_along(l), function(i){
+  cbind(sc = d_cfg[i, sc], v = d_cfg[i, v], l[[i]]$d_inf[, lapply(.SD, mean)])
+}))
+d_inf <- melt(d_inf, id.vars = c("sc", "v"), value.name = "p")
+d_inf[, type := "inf"]
+
+d_trt_ni_ref <- rbindlist(lapply(seq_along(l), function(i){
+  cbind(sc = d_cfg[i, sc], v = d_cfg[i, v], l[[i]]$d_pr_trt_ni_ref[, lapply(.SD, mean)])
+}))
+d_trt_ni_ref <- melt(d_trt_ni_ref, id.vars = c("sc", "v"), value.name = "p")
+d_trt_ni_ref[, type := "trt_ni_ref"]
+
+d_ref_ni_trt <- rbindlist(lapply(seq_along(l), function(i){
+  cbind(sc = d_cfg[i, sc], v = d_cfg[i, v], l[[i]]$d_pr_ref_ni_trt[, lapply(.SD, mean)])
+}))
+d_ref_ni_trt <- melt(d_ref_ni_trt, id.vars = c("sc", "v"), value.name = "p")
+d_ref_ni_trt[, type := "ref_ni_trt"]
+
+d_fut <- rbindlist(lapply(seq_along(l), function(i){
+  cbind(sc = d_cfg[i, sc], v = d_cfg[i, v], l[[i]]$d_fut[, lapply(.SD, mean)])
+}))
+d_fut <- melt(d_fut, id.vars = c("sc", "v"), value.name = "p")
+d_fut[, type := "fut"]
+
+d_dec <- rbind(
+  d_sup, d_inf, d_trt_ni_ref, d_ref_ni_trt, d_fut
+)
 
 n_sims <- d_cfg$nsim[1]
 N_pt <- d_cfg$N_pt[1]
 
 
-d_pars <- melt(d_cfg[
-  , .SD, .SDcols = c("sc", "v", 
-                     "b_a_l_2", "b_a_c_2", 
-                     "b_b1_l_2", "b_b2_l_2", "b_b1_c_2", "b_b2_c_2", 
-                     "b_c_2")], 
-  id.vars = c("sc", "v"), value.name = "lor_tru")
 
 
-d_sup <- add_effect_field(d_sup, d_pars)
-d_inf <- add_effect_field(d_inf, d_pars)
-d_fut <- add_effect_field(d_fut, d_pars)
-
-
-d_fig <- merge(d_sup, d_inf, by = c("sc", "v", "variable", "lor_tru", "parname"))
-d_fig <- merge(d_fig, d_fut, by = c("sc", "v", "variable", "lor_tru", "parname"))
-d_fig <- melt(d_fig, measure.vars = c("pr_sup", "pr_inf", "pr_fut"), variable.name = "decision_type")
-d_fig[decision_type == "pr_sup", decision_type := "Superiority"]
-d_fig[decision_type == "pr_inf", decision_type := "Inferiority"]
-d_fig[decision_type == "pr_fut", decision_type := "Futility"]
 ```
 
 @tbl-sim-par summarises the setup for the simulated effect sizes (from $\log(1/1.4)$ to $\log(2)$). 
@@ -90,50 +110,51 @@ Results based on `r n_sims` simulations for a cohort sample size of `r N_pt`.
 #| column: page
 
 
-d_tbl <- d_cfg[, .SD, .SDcols = !c("sc","nsim", "mc_cores")]
-d_tbl <- cbind(
-  effect = c(
-    "null", rep("superior", 5), rep("inferior", 2)
-  ), d_tbl
-)
+d_tbl <- d_cfg[, .(v, N_pt, b_r, b_r1d, b_r2d, b_f, thresh_sup, thresh_non_inf, thresh_fut)]
 
+d_tbl[, b_r2d := b_r2d + b_r1d]
 
-g_tbl <- d_tbl |> gt(rowname_col = "effect") |> 
+d_tbl[, `:=`(
+  b_r = exp(b_r),
+  b_r1d = exp(b_r1d),
+  b_r2d = exp(b_r2d),
+  b_f = exp(b_f)
+)]
+
+g_tbl <- d_tbl |> gt() |> 
   cols_align(
     columns = everything(),
     align = "center"
   )  |> 
   fmt_number(
-    columns = everything(),
+    columns = c(b_r, b_r1d, b_r2d, b_f),
     decimals = 3
   ) |>
   tab_spanner(
     label = html("Surgical (D<sub>a</sub>)"),
-    columns = c(b_a_l_2, b_a_c_2)
+    columns = c(b_r)
   ) |>
   tab_spanner(
     label = html("Duration (D<sub>b</sub>)"),
-    columns = c(b_b1_l_2, b_b2_l_2, b_b1_c_2, b_b2_c_2)
+    columns = c(b_r1d, b_r2d)
   ) |>
   tab_spanner(
     label = html("Type (D<sub>c</sub>)"),
-    columns = c(b_c_2)
+    columns = c(b_f)
   ) |>
   tab_spanner(
     label = html("Decision thresholds"),
-    columns = c(d_sup, d_inf, d_fut)
+    columns = c(thresh_sup, thresh_non_inf, thresh_fut)
   ) |>
   cols_label(
-    b_a_l_2 = html("revision"),
-    b_a_c_2 = html("two-stage"),
-    b_b1_l_2 = html("wk12<br>(post stage 1)"),
-    b_b2_l_2 = html("wk12<br>(post stage 2)"),
-    b_b1_c_2 = html("wk12<br>(post stage 1)"),
-    b_b2_c_2 = html("wk12<br>(post stage 2)"),
-    b_c_2 = html("rif"),
-    d_sup = html("delta<sub>sup</sub>"),
-    d_inf = html("delta<sub>inf</sub>"),
-    d_fut = html("delta<sub>fut</sub>")
+    v = html("Configuration"),
+    b_r = html("revision"),
+    b_r1d = html("short<br>(one-stage)"),
+    b_r2d = html("short<br>(two-stage)"),
+    b_f = html("rif"),
+    thresh_sup = html("delta<sub>sup</sub>"),
+    thresh_non_inf = html("delta<sub>ni</sub>"),
+    thresh_fut = html("delta<sub>fut</sub>")
   ) |>
   tab_options(
     table.font.size = "80%"
@@ -146,26 +167,32 @@ g_tbl
 All domains are set so that the treatment effects are all equal, e.g. all set to $\log(2)$ etc.
 The parameters are log-odds-ratios relative to the relevant reference values.
 
-For example, `b_a_late_rev` is the effect revision relative to dair specific to the late silo.
-Similarly, `b_a_chronic_two` is the effect of two-stage procedure relative to the one-stage specific to the chronic silo.
-
 ```{r}
 #| label: fig-pr-1
 #| fig-cap: 'Probability of declaring decision by parameter by effect size (all pars set with same OR).'
 #| fig-cap-location: margin
 #| fig-height: 7
 
-ggplot(d_fig, aes(x = exp(lor_tru), y = value, group = decision_type, col = decision_type)) +
+d_fig <- copy(d_dec)
+
+d_fig[, or := or_num[v]]
+
+d_fig[, type := factor(type, levels = c("sup", "inf", "trt_ni_ref", "ref_ni_trt", "fut"))]
+
+ggplot(d_fig, aes(x = or, y = p, group = type, col = type)) +
   geom_point(size = 0.5) +
-  geom_line() +
-  scale_color_discrete("") +
+  geom_line(lwd = 0.4) +
+  ggthemes::scale_colour_tableau(
+    "", palette = "Tableau 10",
+  type = "regular",
+  direction = 1) +
   scale_x_continuous("Odds-ratio", breaks = seq(0, 2, by = 0.2)) +
-  scale_y_continuous("Pr(decide superior)", breaks = seq(0, 1, by = 0.1)) +
-  facet_wrap(~parname, ncol = 3)
+  scale_y_continuous("Proportion sims with decision", breaks = seq(0, 1, by = 0.1)) +
+  facet_wrap(~variable, ncol = 2, scales = "free") 
 ```
 
 
-```{r}
+```{r, echo = F, eval = F}
 flist <- list.files("data", pattern = "sim01-sc02")
 l <- list()
 for(i in 1:length(flist)){
@@ -234,7 +261,7 @@ d_fig[decision_type == "pr_fut", decision_type := "Futility"]
 
 Repeating the simulations (`r n_sims` iterations) based on a total cohort size of `r N_pt`.
 
-```{r}
+```{r, echo = F, eval = F}
 #| label: fig-pr-2
 #| fig-cap: 'Probability of declaring decision by parameter by effect size (all pars set with same OR).'
 #| fig-cap-location: margin
@@ -251,7 +278,7 @@ ggplot(d_fig, aes(x = exp(lor_tru), y = value, group = decision_type, col = deci
 
 
 
-```{r}
+```{r, echo = F, eval = F}
 flist <- list.files("data", pattern = "sim01-sc03")
 l <- list()
 for(i in 1:length(flist)){
@@ -320,7 +347,7 @@ d_fig[decision_type == "pr_fut", decision_type := "Futility"]
 
 Repeating the simulations (`r n_sims` iterations) based on a total cohort size of `r N_pt`.
 
-```{r}
+```{r, echo = F, eval = F}
 #| label: fig-pr-3
 #| fig-cap: 'Probability of declaring decision by parameter by effect size (all pars set with same OR).'
 #| fig-cap-location: margin
