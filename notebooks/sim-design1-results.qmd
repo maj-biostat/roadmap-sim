@@ -1,7 +1,8 @@
 ---
 title: "Simulation results 1"
 subtitle: "Fixed design with single look at data"
-
+date: today
+date-modified: last-modified
 ---
 
 ```{r, echo = FALSE}

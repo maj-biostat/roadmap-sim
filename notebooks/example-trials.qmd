@@ -1,6 +1,7 @@
 ---
 title: "Example trials"
-
+date: today
+date-modified: last-modified
 ---
 
 ```{r, echo = FALSE}

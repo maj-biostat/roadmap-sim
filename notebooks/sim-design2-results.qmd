@@ -1,7 +1,8 @@
 ---
 title: "Simulation results 2"
 subtitle: "Sequential design with early stopping"
-
+date: today
+date-modified: last-modified
 ---
 
 ```{r, echo = FALSE}
