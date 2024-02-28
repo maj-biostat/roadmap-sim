@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2024-02-28">
 
 <title>ROADMAP - design notes and simulations - Simulated trial data</title>
 <style>
@@ -219,7 +220,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../notebooks/simulation-results.html" class="sidebar-item-text sidebar-link">
+  <a href="../notebooks/sim-design1-results.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Simulation results 1</span></a>
   </div>
 </li>
@@ -233,6 +234,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <div class="sidebar-item-container"> 
   <a href="../notebooks/design-notes.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Design Notes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../notebooks/misc-notes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reminders</span></a>
   </div>
 </li>
       </ul>
@@ -264,7 +271,19 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="quarto-title-meta">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 28, 2024</p>
+    </div>
+  </div>
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">February 26, 2024</p>
+    </div>
+  </div>
     
   </div>
   
@@ -280,82 +299,101 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">set.seed</span>(<span class="dv">25</span>)</span>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
 <span id="cb1-2"><a href="#cb1-2"></a>ll <span class="ot">&lt;-</span> <span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="dv">2500</span>)</span>
 <span id="cb1-3"><a href="#cb1-3"></a></span>
 <span id="cb1-4"><a href="#cb1-4"></a>d <span class="ot">&lt;-</span> <span class="fu">copy</span>(ll<span class="sc">$</span>d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p><a href="#tbl-smry-late-Da" class="quarto-xref">Table&nbsp;1</a> shows the allocation to (late stage infection) dair vs rev and the balance across the remaining group levels in the data.</p>
+<p>Only patients in the late stage infection silo enter into the surgical domain for randomised comparison of surgery type. <a href="#tbl-smry-late-Da" class="quarto-xref">Table&nbsp;1</a> shows the allocation to dair vs rev for this cohort and the balance across the remaining group levels in the data.</p>
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a><span class="co"># domain B</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a>d_tmp1 <span class="ot">&lt;-</span> d[silo <span class="sc">==</span> <span class="st">"late"</span>, .(ea, a, eb, b)]</span>
-<span id="cb2-3"><a href="#cb2-3"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(a, eb, b)]</span>
-<span id="cb2-4"><a href="#cb2-4"></a>d_B <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, eb <span class="sc">+</span> b <span class="sc">~</span> a, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
-<span id="cb2-5"><a href="#cb2-5"></a>d_B[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"B"</span>]</span>
-<span id="cb2-6"><a href="#cb2-6"></a><span class="fu">colnames</span>(d_B) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="st">"dair"</span>, <span class="st">"rev"</span>, <span class="st">"domain"</span>)</span>
+<span id="cb2-2"><a href="#cb2-2"></a>d_tmp1 <span class="ot">&lt;-</span> d[l1 <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> er <span class="sc">==</span> <span class="dv">1</span>, .(er, r, ed, srp, d)]</span>
+<span id="cb2-3"><a href="#cb2-3"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(r, ed, srp, d)]</span>
+<span id="cb2-4"><a href="#cb2-4"></a>d_B <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, ed <span class="sc">+</span> d <span class="sc">+</span> srp <span class="sc">~</span> r, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
+<span id="cb2-5"><a href="#cb2-5"></a>d_B[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"Duration"</span>]</span>
+<span id="cb2-6"><a href="#cb2-6"></a><span class="fu">colnames</span>(d_B) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="st">"surgery"</span>, <span class="st">"dair"</span>, <span class="st">"rev"</span>, <span class="st">"domain"</span>)</span>
 <span id="cb2-7"><a href="#cb2-7"></a><span class="fu">setcolorder</span>(d_B, <span class="st">"domain"</span>)</span>
 <span id="cb2-8"><a href="#cb2-8"></a><span class="co"># domain C</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a>d_tmp1 <span class="ot">&lt;-</span> d[silo <span class="sc">==</span> <span class="st">"late"</span>, .(ea, a, ec, c)]</span>
-<span id="cb2-10"><a href="#cb2-10"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(a, ec, c)]</span>
-<span id="cb2-11"><a href="#cb2-11"></a>d_C <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, ec <span class="sc">+</span> c <span class="sc">~</span> a, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
-<span id="cb2-12"><a href="#cb2-12"></a>d_C[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"C"</span>]</span>
-<span id="cb2-13"><a href="#cb2-13"></a><span class="fu">colnames</span>(d_C) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="st">"dair"</span>, <span class="st">"rev"</span>, <span class="st">"domain"</span>)</span>
+<span id="cb2-9"><a href="#cb2-9"></a>d_tmp1 <span class="ot">&lt;-</span> d[l1 <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> er <span class="sc">==</span> <span class="dv">1</span>, .(er, r, ef, srp, f)]</span>
+<span id="cb2-10"><a href="#cb2-10"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(r, ef, srp, f)]</span>
+<span id="cb2-11"><a href="#cb2-11"></a>d_C <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, ef <span class="sc">+</span> f <span class="sc">+</span> srp <span class="sc">~</span> r, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
+<span id="cb2-12"><a href="#cb2-12"></a>d_C[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"Choice"</span>]</span>
+<span id="cb2-13"><a href="#cb2-13"></a><span class="fu">colnames</span>(d_C) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="st">"surgery"</span>, <span class="st">"dair"</span>, <span class="st">"rev"</span>, <span class="st">"domain"</span>)</span>
 <span id="cb2-14"><a href="#cb2-14"></a><span class="fu">setcolorder</span>(d_C, <span class="st">"domain"</span>)</span>
 <span id="cb2-15"><a href="#cb2-15"></a></span>
-<span id="cb2-16"><a href="#cb2-16"></a>d_tbl <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_B, d_C)</span>
-<span id="cb2-17"><a href="#cb2-17"></a>d_tbl[, group <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(group, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"w12"</span>,<span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>, <span class="st">"other"</span>, <span class="st">"norif"</span>, <span class="st">"rif"</span>))]</span>
-<span id="cb2-18"><a href="#cb2-18"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"B"</span>, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"AB Duration"</span>]</span>
-<span id="cb2-19"><a href="#cb2-19"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"C"</span>, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"AB Type"</span>]</span>
-<span id="cb2-20"><a href="#cb2-20"></a>d_tbl <span class="ot">&lt;-</span> d_tbl[<span class="fu">order</span>(domain, rand, group)]</span>
-<span id="cb2-21"><a href="#cb2-21"></a></span>
-<span id="cb2-22"><a href="#cb2-22"></a>cols <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Domain"</span>, <span class="st">"Randomised"</span>, <span class="st">"Treatment"</span>, <span class="st">"DAIR"</span>, <span class="st">"Revision"</span>)</span>
-<span id="cb2-23"><a href="#cb2-23"></a><span class="fu">names</span>(cols) <span class="ot">&lt;-</span> <span class="fu">names</span>(d_tbl)</span>
-<span id="cb2-24"><a href="#cb2-24"></a></span>
-<span id="cb2-25"><a href="#cb2-25"></a>gt_tbl <span class="ot">&lt;-</span> d_tbl <span class="sc">|&gt;</span> </span>
-<span id="cb2-26"><a href="#cb2-26"></a>  <span class="fu">gt</span>(<span class="at">groupname_col =</span> <span class="st">"domain"</span></span>
-<span id="cb2-27"><a href="#cb2-27"></a>  )  <span class="sc">|&gt;</span></span>
-<span id="cb2-28"><a href="#cb2-28"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb2-29"><a href="#cb2-29"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Domain A (late silo)"</span>),</span>
-<span id="cb2-30"><a href="#cb2-30"></a>    <span class="at">columns =</span> <span class="fu">c</span>(dair, rev)</span>
-<span id="cb2-31"><a href="#cb2-31"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb2-32"><a href="#cb2-32"></a>  <span class="fu">sub_missing</span>(</span>
-<span id="cb2-33"><a href="#cb2-33"></a>    <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
-<span id="cb2-34"><a href="#cb2-34"></a>    <span class="at">missing_text =</span> <span class="st">"-"</span></span>
-<span id="cb2-35"><a href="#cb2-35"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb2-36"><a href="#cb2-36"></a>  <span class="fu">cols_label</span>(<span class="at">.list =</span> cols) <span class="sc">|&gt;</span> </span>
-<span id="cb2-37"><a href="#cb2-37"></a>  <span class="fu">summary_rows</span>(</span>
-<span id="cb2-38"><a href="#cb2-38"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"dair"</span>, <span class="st">"rev"</span>),</span>
-<span id="cb2-39"><a href="#cb2-39"></a>    <span class="at">fns =</span> <span class="fu">list</span>(</span>
-<span id="cb2-40"><a href="#cb2-40"></a>      <span class="at">subtotal =</span> <span class="sc">~</span> <span class="fu">sum</span>(., <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb2-41"><a href="#cb2-41"></a>    )</span>
-<span id="cb2-42"><a href="#cb2-42"></a>  ) </span>
-<span id="cb2-43"><a href="#cb2-43"></a></span>
-<span id="cb2-44"><a href="#cb2-44"></a>gt_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-16"><a href="#cb2-16"></a>d_tbl <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_B, d_C, <span class="at">fill =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-17"><a href="#cb2-17"></a><span class="co"># d_tbl[, group := factor(group, levels = c("w12","w12p1", "w06p1", "w12p2", "d07p2", "other", "norif", "rif"))]</span></span>
+<span id="cb2-18"><a href="#cb2-18"></a>d_tbl <span class="ot">&lt;-</span> d_tbl[<span class="fu">order</span>(domain, rand, surgery, group)]</span>
+<span id="cb2-19"><a href="#cb2-19"></a></span>
+<span id="cb2-20"><a href="#cb2-20"></a>d_tbl[, total <span class="sc">:</span><span class="er">=</span> <span class="fu">rowSums</span>(d_tbl[, .(dair, rev)], <span class="at">na.rm =</span> T)]</span>
+<span id="cb2-21"><a href="#cb2-21"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"Choice"</span> <span class="sc">&amp;</span> rand <span class="sc">==</span> <span class="dv">0</span>, group <span class="sc">:</span><span class="er">=</span> <span class="cn">NA</span>]</span>
+<span id="cb2-22"><a href="#cb2-22"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"Duration"</span> <span class="sc">&amp;</span> rand <span class="sc">==</span> <span class="dv">0</span>, group <span class="sc">:</span><span class="er">=</span> <span class="cn">NA</span>]</span>
+<span id="cb2-23"><a href="#cb2-23"></a></span>
+<span id="cb2-24"><a href="#cb2-24"></a>cols <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Domain"</span>, <span class="st">"Revealed"</span>, <span class="st">"Treatment"</span>, <span class="st">"Surgery recvd"</span>, <span class="st">"DAIR"</span>, <span class="st">"Revision"</span>, <span class="st">"Total"</span>)</span>
+<span id="cb2-25"><a href="#cb2-25"></a><span class="fu">names</span>(cols) <span class="ot">&lt;-</span> <span class="fu">names</span>(d_tbl)</span>
+<span id="cb2-26"><a href="#cb2-26"></a></span>
+<span id="cb2-27"><a href="#cb2-27"></a>gt_tbl <span class="ot">&lt;-</span> d_tbl <span class="sc">|&gt;</span> </span>
+<span id="cb2-28"><a href="#cb2-28"></a>  <span class="fu">gt</span>(<span class="at">groupname_col =</span> <span class="st">"domain"</span></span>
+<span id="cb2-29"><a href="#cb2-29"></a>  )  <span class="sc">|&gt;</span></span>
+<span id="cb2-30"><a href="#cb2-30"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb2-31"><a href="#cb2-31"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Domain A (late silo)"</span>),</span>
+<span id="cb2-32"><a href="#cb2-32"></a>    <span class="at">columns =</span> <span class="fu">c</span>(dair, rev),</span>
+<span id="cb2-33"><a href="#cb2-33"></a>    <span class="at">id =</span> <span class="st">"da"</span></span>
+<span id="cb2-34"><a href="#cb2-34"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb2-35"><a href="#cb2-35"></a>  <span class="fu">sub_missing</span>(</span>
+<span id="cb2-36"><a href="#cb2-36"></a>    <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
+<span id="cb2-37"><a href="#cb2-37"></a>    <span class="at">missing_text =</span> <span class="st">"-"</span></span>
+<span id="cb2-38"><a href="#cb2-38"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb2-39"><a href="#cb2-39"></a>  <span class="fu">cols_label</span>(<span class="at">.list =</span> cols) <span class="sc">|&gt;</span> </span>
+<span id="cb2-40"><a href="#cb2-40"></a>  <span class="fu">summary_rows</span>(</span>
+<span id="cb2-41"><a href="#cb2-41"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"dair"</span>, <span class="st">"rev"</span>, <span class="st">"total"</span>),</span>
+<span id="cb2-42"><a href="#cb2-42"></a>    <span class="at">fns =</span> <span class="fu">list</span>(</span>
+<span id="cb2-43"><a href="#cb2-43"></a>      <span class="at">subtotal =</span> <span class="sc">~</span> <span class="fu">sum</span>(., <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-44"><a href="#cb2-44"></a>    )</span>
+<span id="cb2-45"><a href="#cb2-45"></a>  )  <span class="sc">|&gt;</span></span>
+<span id="cb2-46"><a href="#cb2-46"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb2-47"><a href="#cb2-47"></a>    <span class="at">footnote =</span> <span class="st">"Revealed indicates whether units were randomised into choice/duration domain (0: No, 1: Yes)"</span>,</span>
+<span id="cb2-48"><a href="#cb2-48"></a>    <span class="at">locations =</span> <span class="fu">cells_column_labels</span>(<span class="at">columns =</span> rand)</span>
+<span id="cb2-49"><a href="#cb2-49"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb2-50"><a href="#cb2-50"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb2-51"><a href="#cb2-51"></a>    <span class="at">footnote =</span> <span class="st">"Surgery recvd indicates surgery type actually perfromed (0: dair, 1: one-stage, 2: two-stage). Surgery recvd may deviate from original randomisation/plan."</span>,</span>
+<span id="cb2-52"><a href="#cb2-52"></a>    <span class="at">locations =</span> <span class="fu">cells_column_labels</span>(<span class="at">columns =</span> surgery)</span>
+<span id="cb2-53"><a href="#cb2-53"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb2-54"><a href="#cb2-54"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb2-55"><a href="#cb2-55"></a>    <span class="at">footnote =</span> <span class="st">"Treatment indicates which treatment assigned within domain. For choice (0: no-rif, 1: rif). For duration is specific to surgery type received (0: long, 1: short). Units that were not randomised within the choice/duration domain have undefined randomised treatment status."</span>,</span>
+<span id="cb2-56"><a href="#cb2-56"></a>    <span class="at">locations =</span> <span class="fu">cells_column_labels</span>(<span class="at">columns =</span> group)</span>
+<span id="cb2-57"><a href="#cb2-57"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb2-58"><a href="#cb2-58"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb2-59"><a href="#cb2-59"></a>    <span class="at">footnote =</span> <span class="st">"Only units randomised to surgery domain reported."</span>,</span>
+<span id="cb2-60"><a href="#cb2-60"></a>    <span class="at">locations =</span> <span class="fu">cells_column_spanners</span>(<span class="at">spanners =</span> <span class="st">"da"</span>)</span>
+<span id="cb2-61"><a href="#cb2-61"></a>  )</span>
+<span id="cb2-62"><a href="#cb2-62"></a></span>
+<span id="cb2-63"><a href="#cb2-63"></a>gt_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div id="tbl-smry-late-Da" class="cell quarto-float anchored page-columns page-full">
 <figure class="quarto-float quarto-float-tbl figure page-columns page-full">
-<div aria-describedby="tbl-smry-late-Da-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<div class="cell-output-display column-page">
-<div id="zhfoufeejh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#zhfoufeejh table {
+<div aria-describedby="tbl-smry-late-Da-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<div id="sskrjfqekc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#sskrjfqekc table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#zhfoufeejh thead, #zhfoufeejh tbody, #zhfoufeejh tfoot, #zhfoufeejh tr, #zhfoufeejh td, #zhfoufeejh th {
+#sskrjfqekc thead, #sskrjfqekc tbody, #sskrjfqekc tfoot, #sskrjfqekc tr, #sskrjfqekc td, #sskrjfqekc th {
   border-style: none;
 }
 
-#zhfoufeejh p {
+#sskrjfqekc p {
   margin: 0;
   padding: 0;
 }
 
-#zhfoufeejh .gt_table {
+#sskrjfqekc .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -381,12 +419,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-left-color: #D3D3D3;
 }
 
-#zhfoufeejh .gt_caption {
+#sskrjfqekc .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#zhfoufeejh .gt_title {
+#sskrjfqekc .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -398,7 +436,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-width: 0;
 }
 
-#zhfoufeejh .gt_subtitle {
+#sskrjfqekc .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -410,7 +448,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-width: 0;
 }
 
-#zhfoufeejh .gt_heading {
+#sskrjfqekc .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -422,13 +460,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#zhfoufeejh .gt_bottom_border {
+#sskrjfqekc .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#zhfoufeejh .gt_col_headings {
+#sskrjfqekc .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -443,7 +481,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#zhfoufeejh .gt_col_heading {
+#sskrjfqekc .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -463,7 +501,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#zhfoufeejh .gt_column_spanner_outer {
+#sskrjfqekc .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -475,15 +513,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 4px;
 }
 
-#zhfoufeejh .gt_column_spanner_outer:first-child {
+#sskrjfqekc .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#zhfoufeejh .gt_column_spanner_outer:last-child {
+#sskrjfqekc .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#zhfoufeejh .gt_column_spanner {
+#sskrjfqekc .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -495,11 +533,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   width: 100%;
 }
 
-#zhfoufeejh .gt_spanner_row {
+#sskrjfqekc .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#zhfoufeejh .gt_group_heading {
+#sskrjfqekc .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -525,7 +563,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   text-align: left;
 }
 
-#zhfoufeejh .gt_empty_group_heading {
+#sskrjfqekc .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -540,15 +578,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: middle;
 }
 
-#zhfoufeejh .gt_from_md > :first-child {
+#sskrjfqekc .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#zhfoufeejh .gt_from_md > :last-child {
+#sskrjfqekc .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#zhfoufeejh .gt_row {
+#sskrjfqekc .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -567,7 +605,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#zhfoufeejh .gt_stub {
+#sskrjfqekc .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -580,7 +618,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#zhfoufeejh .gt_stub_row_group {
+#sskrjfqekc .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -594,15 +632,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: top;
 }
 
-#zhfoufeejh .gt_row_group_first td {
+#sskrjfqekc .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#zhfoufeejh .gt_row_group_first th {
+#sskrjfqekc .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#zhfoufeejh .gt_summary_row {
+#sskrjfqekc .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -612,16 +650,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#zhfoufeejh .gt_first_summary_row {
+#sskrjfqekc .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#zhfoufeejh .gt_first_summary_row.thick {
+#sskrjfqekc .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#zhfoufeejh .gt_last_summary_row {
+#sskrjfqekc .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -631,7 +669,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#zhfoufeejh .gt_grand_summary_row {
+#sskrjfqekc .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -641,7 +679,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#zhfoufeejh .gt_first_grand_summary_row {
+#sskrjfqekc .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -651,7 +689,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-color: #D3D3D3;
 }
 
-#zhfoufeejh .gt_last_grand_summary_row_top {
+#sskrjfqekc .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -661,11 +699,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#zhfoufeejh .gt_striped {
+#sskrjfqekc .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#zhfoufeejh .gt_table_body {
+#sskrjfqekc .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -674,7 +712,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#zhfoufeejh .gt_footnotes {
+#sskrjfqekc .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -688,7 +726,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#zhfoufeejh .gt_footnote {
+#sskrjfqekc .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -697,7 +735,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#zhfoufeejh .gt_sourcenotes {
+#sskrjfqekc .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -711,7 +749,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#zhfoufeejh .gt_sourcenote {
+#sskrjfqekc .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -719,63 +757,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#zhfoufeejh .gt_left {
+#sskrjfqekc .gt_left {
   text-align: left;
 }
 
-#zhfoufeejh .gt_center {
+#sskrjfqekc .gt_center {
   text-align: center;
 }
 
-#zhfoufeejh .gt_right {
+#sskrjfqekc .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#zhfoufeejh .gt_font_normal {
+#sskrjfqekc .gt_font_normal {
   font-weight: normal;
 }
 
-#zhfoufeejh .gt_font_bold {
+#sskrjfqekc .gt_font_bold {
   font-weight: bold;
 }
 
-#zhfoufeejh .gt_font_italic {
+#sskrjfqekc .gt_font_italic {
   font-style: italic;
 }
 
-#zhfoufeejh .gt_super {
+#sskrjfqekc .gt_super {
   font-size: 65%;
 }
 
-#zhfoufeejh .gt_footnote_marks {
+#sskrjfqekc .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#zhfoufeejh .gt_asterisk {
+#sskrjfqekc .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#zhfoufeejh .gt_indent_1 {
+#sskrjfqekc .gt_indent_1 {
   text-indent: 5px;
 }
 
-#zhfoufeejh .gt_indent_2 {
+#sskrjfqekc .gt_indent_2 {
   text-indent: 10px;
 }
 
-#zhfoufeejh .gt_indent_3 {
+#sskrjfqekc .gt_indent_3 {
   text-indent: 15px;
 }
 
-#zhfoufeejh .gt_indent_4 {
+#sskrjfqekc .gt_indent_4 {
   text-indent: 20px;
 }
 
-#zhfoufeejh .gt_indent_5 {
+#sskrjfqekc .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -784,9 +822,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <thead>
 <tr class="header gt_col_headings gt_spanner_row">
 <th rowspan="2" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"></th>
-<th rowspan="2" id="Randomised" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Randomised</th>
-<th rowspan="2" id="Treatment" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Treatment</th>
-<th colspan="2" id="Domain A (late silo)" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">Domain A (late silo)</span></th>
+<th rowspan="2" id="Revealed<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>2</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Revealed<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>2</sup></span></th>
+<th rowspan="2" id="Treatment<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>3</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Treatment<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>3</sup></span></th>
+<th rowspan="2" id="Surgery recvd<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>4</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Surgery recvd<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>4</sup></span></th>
+<th colspan="2" id="Domain A (late silo)<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>1</sup></span>" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">Domain A (late silo)<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></span></th>
+<th rowspan="2" id="Total" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Total</th>
 </tr>
 <tr class="odd gt_col_headings">
 <th id="DAIR" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">DAIR</th>
@@ -795,82 +835,170 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </thead>
 <tbody class="gt_table_body">
 <tr class="odd gt_group_heading_row">
-<td colspan="5" id="AB Duration" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">AB Duration</td>
+<td colspan="7" id="Choice" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Choice</td>
 </tr>
 <tr class="even gt_row_group_first">
 <td id="stub_1_1" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_1 rand">N</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_1 group">w12</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_1 dair">627</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_1 rev">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_1 rand">0</td>
+<td class="gt_row gt_right" headers="Choice stub_1_1 group">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_1 surgery">0</td>
+<td class="gt_row gt_right" headers="Choice stub_1_1 dair">253</td>
+<td class="gt_row gt_right" headers="Choice stub_1_1 rev">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_1 total">253</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_2" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_2 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_2 group">w06p1</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_2 dair">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_2 rev">75</td>
+<td class="gt_row gt_right" headers="Choice stub_1_2 rand">0</td>
+<td class="gt_row gt_right" headers="Choice stub_1_2 group">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_2 surgery">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_2 dair">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_2 rev">82</td>
+<td class="gt_row gt_right" headers="Choice stub_1_2 total">83</td>
 </tr>
 <tr class="even">
 <td id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_3 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_3 group">w12p1</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_3 dair">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_3 rev">97</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 rand">0</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 group">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 surgery">2</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 dair">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 rev">175</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 total">175</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_4 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_4 group">d07p2</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_4 dair">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_4 rev">216</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 rand">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 group">0</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 surgery">0</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 dair">179</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 rev">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 total">179</td>
 </tr>
 <tr class="even">
 <td id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_5 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_5 group">w12p2</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_5 dair">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_5 rev">208</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 rand">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 group">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 surgery">0</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 dair">199</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 rev">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 total">199</td>
 </tr>
 <tr class="odd">
-<td id="summary_stub_AB Duration_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 rand">—</td>
-<td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 group">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 dair">627</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 rev">596</td>
-</tr>
-<tr class="even gt_group_heading_row">
-<td colspan="5" id="AB Type" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">AB Type</td>
-</tr>
-<tr class="odd gt_row_group_first">
 <td id="stub_1_6" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Type stub_1_6 rand">N</td>
-<td class="gt_row gt_center" headers="AB Type stub_1_6 group">other</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_6 dair">241</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_6 rev">244</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 rand">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 group">0</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 surgery">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 dair">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 rev">72</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 total">72</td>
 </tr>
 <tr class="even">
 <td id="stub_1_7" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Type stub_1_7 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Type stub_1_7 group">norif</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_7 dair">195</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_7 rev">184</td>
+<td class="gt_row gt_right" headers="Choice stub_1_7 rand">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_7 group">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_7 surgery">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_7 dair">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_7 rev">50</td>
+<td class="gt_row gt_right" headers="Choice stub_1_7 total">50</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_8" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Type stub_1_8 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Type stub_1_8 group">rif</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_8 dair">191</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_8 rev">168</td>
+<td class="gt_row gt_right" headers="Choice stub_1_8 rand">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_8 group">0</td>
+<td class="gt_row gt_right" headers="Choice stub_1_8 surgery">2</td>
+<td class="gt_row gt_right" headers="Choice stub_1_8 dair">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_8 rev">127</td>
+<td class="gt_row gt_right" headers="Choice stub_1_8 total">128</td>
 </tr>
 <tr class="even">
-<td id="summary_stub_AB Type_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 rand">—</td>
-<td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 group">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 dair">627</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 rev">596</td>
+<td id="stub_1_9" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_right" headers="Choice stub_1_9 rand">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_9 group">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_9 surgery">2</td>
+<td class="gt_row gt_right" headers="Choice stub_1_9 dair">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_9 rev">136</td>
+<td class="gt_row gt_right" headers="Choice stub_1_9 total">136</td>
 </tr>
-</tbody>
+<tr class="odd">
+<td id="summary_stub_Choice_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 rand">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 group">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 surgery">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 dair">633</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 rev">642</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 total">1275</td>
+</tr>
+<tr class="even gt_group_heading_row">
+<td colspan="7" id="Duration" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Duration</td>
+</tr>
+<tr class="odd gt_row_group_first">
+<td id="stub_1_10" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 rand">0</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 group">-</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 surgery">0</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 dair">631</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 rev">-</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 total">631</td>
+</tr>
+<tr class="even">
+<td id="stub_1_11" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 rand">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 group">0</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 surgery">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 dair">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 rev">98</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 total">99</td>
+</tr>
+<tr class="odd">
+<td id="stub_1_12" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 rand">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 group">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 surgery">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 dair">-</td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 rev">106</td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 total">106</td>
+</tr>
+<tr class="even">
+<td id="stub_1_13" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_right" headers="Duration stub_1_13 rand">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_13 group">0</td>
+<td class="gt_row gt_right" headers="Duration stub_1_13 surgery">2</td>
+<td class="gt_row gt_right" headers="Duration stub_1_13 dair">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_13 rev">215</td>
+<td class="gt_row gt_right" headers="Duration stub_1_13 total">216</td>
+</tr>
+<tr class="odd">
+<td id="stub_1_14" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_right" headers="Duration stub_1_14 rand">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_14 group">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_14 surgery">2</td>
+<td class="gt_row gt_right" headers="Duration stub_1_14 dair">-</td>
+<td class="gt_row gt_right" headers="Duration stub_1_14 rev">223</td>
+<td class="gt_row gt_right" headers="Duration stub_1_14 total">223</td>
+</tr>
+<tr class="even">
+<td id="summary_stub_Duration_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 rand">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 group">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 surgery">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 dair">633</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 rev">642</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 total">1275</td>
+</tr>
+</tbody><tfoot class="gt_footnotes">
+<tr class="even">
+<td colspan="7" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> Only units randomised to surgery domain reported.</td>
+</tr>
+<tr class="odd">
+<td colspan="7" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>2</sup></span> Revealed indicates whether units were randomised into choice/duration domain (0: No, 1: Yes)</td>
+</tr>
+<tr class="even">
+<td colspan="7" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>3</sup></span> Treatment indicates which treatment assigned within domain. For choice (0: no-rif, 1: rif). For duration is specific to surgery type received (0: long, 1: short). Units that were not randomised within the choice/duration domain have undefined randomised treatment status.</td>
+</tr>
+<tr class="odd">
+<td colspan="7" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>4</sup></span> Surgery recvd indicates surgery type actually perfromed (0: dair, 1: one-stage, 2: two-stage). Surgery recvd may deviate from original randomisation/plan.</td>
+</tr>
+</tfoot>
+
 </table>
 
 </div>
@@ -882,77 +1010,98 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
 </figure>
 </div>
 </div>
-<p><a href="#tbl-smry-chronic-Da" class="quarto-xref">Table&nbsp;2</a> shows the allocation to (chronic stage infection) one vs two-stage and the balance across the remaining group levels in the data.</p>
+<p><a href="#tbl-smry-Db" class="quarto-xref">Table&nbsp;2</a> shows the allocation to the duration domain conditional on surgery type actually received and the balance across the remaining group levels in the data. Only units randomised within the duration domain are reported.</p>
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># domain B</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a>d_tmp1 <span class="ot">&lt;-</span> d[silo <span class="sc">==</span> <span class="st">"chronic"</span>, .(ea, a, eb, b)]</span>
-<span id="cb3-3"><a href="#cb3-3"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(a, eb, b)]</span>
-<span id="cb3-4"><a href="#cb3-4"></a>d_B <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, eb <span class="sc">+</span> b <span class="sc">~</span> a, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
-<span id="cb3-5"><a href="#cb3-5"></a>d_B[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"B"</span>]</span>
-<span id="cb3-6"><a href="#cb3-6"></a><span class="fu">colnames</span>(d_B) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="st">"one"</span>, <span class="st">"two"</span>, <span class="st">"domain"</span>)</span>
-<span id="cb3-7"><a href="#cb3-7"></a><span class="fu">setcolorder</span>(d_B, <span class="st">"domain"</span>)</span>
-<span id="cb3-8"><a href="#cb3-8"></a><span class="co"># domain C</span></span>
-<span id="cb3-9"><a href="#cb3-9"></a>d_tmp1 <span class="ot">&lt;-</span> d[silo <span class="sc">==</span> <span class="st">"chronic"</span>, .(ea, a, ec, c)]</span>
-<span id="cb3-10"><a href="#cb3-10"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(a, ec, c)]</span>
-<span id="cb3-11"><a href="#cb3-11"></a>d_C <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, ec <span class="sc">+</span> c <span class="sc">~</span> a, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
-<span id="cb3-12"><a href="#cb3-12"></a>d_C[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"C"</span>]</span>
-<span id="cb3-13"><a href="#cb3-13"></a><span class="fu">colnames</span>(d_C) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="st">"one"</span>, <span class="st">"two"</span>, <span class="st">"domain"</span>)</span>
-<span id="cb3-14"><a href="#cb3-14"></a><span class="fu">setcolorder</span>(d_C, <span class="st">"domain"</span>)</span>
-<span id="cb3-15"><a href="#cb3-15"></a></span>
-<span id="cb3-16"><a href="#cb3-16"></a>d_tbl <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_B, d_C)</span>
-<span id="cb3-17"><a href="#cb3-17"></a>d_tbl[, group <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(group, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>, <span class="st">"other"</span>, <span class="st">"norif"</span>, <span class="st">"rif"</span>))]</span>
-<span id="cb3-18"><a href="#cb3-18"></a>d_tbl <span class="ot">&lt;-</span> d_tbl[<span class="fu">order</span>(domain, rand, group)]</span>
+<span id="cb3-2"><a href="#cb3-2"></a>d_tmp1 <span class="ot">&lt;-</span> d[ed <span class="sc">==</span> <span class="dv">1</span>, .(ed, d, er, r, ic,srp)]</span>
+<span id="cb3-3"><a href="#cb3-3"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(d, er, r,srp)]</span>
+<span id="cb3-4"><a href="#cb3-4"></a><span class="co"># d_tmp2[, b := factor(b, levels = c("w12", "w06p1", "w12p1", "d07p2", "w12p2"))]</span></span>
+<span id="cb3-5"><a href="#cb3-5"></a>d_B <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, er <span class="sc">+</span> r <span class="sc">~</span> srp <span class="sc">+</span> d, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
+<span id="cb3-6"><a href="#cb3-6"></a>d_B[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"Surgery"</span>]</span>
+<span id="cb3-7"><a href="#cb3-7"></a><span class="fu">colnames</span>(d_B) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="fu">c</span>(<span class="st">"long_1"</span>, <span class="st">"short_1"</span>, <span class="st">"long_2"</span>, <span class="st">"short_2"</span>), <span class="st">"domain"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8"></a><span class="fu">setcolorder</span>(d_B, <span class="st">"domain"</span>)</span>
+<span id="cb3-9"><a href="#cb3-9"></a><span class="co"># domain C</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>d_tmp1 <span class="ot">&lt;-</span> d[ed <span class="sc">==</span> <span class="dv">1</span>, .(ed, d, ef, f, srp)]</span>
+<span id="cb3-11"><a href="#cb3-11"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(d, ef, f, srp)]</span>
+<span id="cb3-12"><a href="#cb3-12"></a><span class="co"># d_tmp2[, b := factor(b, levels = c("w12", "w06p1", "w12p1", "d07p2", "w12p2"))]</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a>d_C <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, ef <span class="sc">+</span> f <span class="sc">~</span> srp <span class="sc">+</span> d, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
+<span id="cb3-14"><a href="#cb3-14"></a>d_C[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"Choice"</span>]</span>
+<span id="cb3-15"><a href="#cb3-15"></a><span class="fu">colnames</span>(d_C) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="fu">c</span>(<span class="st">"long_1"</span>, <span class="st">"short_1"</span>, <span class="st">"long_2"</span>, <span class="st">"short_2"</span>), <span class="st">"domain"</span>)</span>
+<span id="cb3-16"><a href="#cb3-16"></a><span class="fu">setcolorder</span>(d_C, <span class="st">"domain"</span>)</span>
+<span id="cb3-17"><a href="#cb3-17"></a></span>
+<span id="cb3-18"><a href="#cb3-18"></a>d_tbl <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_B, d_C, <span class="at">fill =</span> T)</span>
 <span id="cb3-19"><a href="#cb3-19"></a></span>
-<span id="cb3-20"><a href="#cb3-20"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"B"</span>, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"AB Duration"</span>]</span>
-<span id="cb3-21"><a href="#cb3-21"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"C"</span>, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"AB Type"</span>]</span>
-<span id="cb3-22"><a href="#cb3-22"></a></span>
-<span id="cb3-23"><a href="#cb3-23"></a>cols <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Domain"</span>, <span class="st">"Randomised"</span>, <span class="st">"Treatment"</span>, <span class="st">"One-stage"</span>, <span class="st">"Two-stage"</span>)</span>
-<span id="cb3-24"><a href="#cb3-24"></a><span class="fu">names</span>(cols) <span class="ot">&lt;-</span> <span class="fu">names</span>(d_tbl)</span>
-<span id="cb3-25"><a href="#cb3-25"></a></span>
-<span id="cb3-26"><a href="#cb3-26"></a>gt_tbl <span class="ot">&lt;-</span> d_tbl <span class="sc">|&gt;</span> </span>
-<span id="cb3-27"><a href="#cb3-27"></a>  <span class="fu">gt</span>(<span class="at">groupname_col =</span> <span class="st">"domain"</span></span>
-<span id="cb3-28"><a href="#cb3-28"></a>  )  <span class="sc">|&gt;</span> </span>
-<span id="cb3-29"><a href="#cb3-29"></a>  <span class="fu">summary_rows</span>(</span>
-<span id="cb3-30"><a href="#cb3-30"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"one"</span>, <span class="st">"two"</span>),</span>
-<span id="cb3-31"><a href="#cb3-31"></a>    <span class="at">fns =</span> <span class="fu">list</span>(</span>
-<span id="cb3-32"><a href="#cb3-32"></a>      <span class="at">subtotal =</span> <span class="sc">~</span> <span class="fu">sum</span>(., <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb3-33"><a href="#cb3-33"></a>    )</span>
-<span id="cb3-34"><a href="#cb3-34"></a>  )   <span class="sc">|&gt;</span></span>
-<span id="cb3-35"><a href="#cb3-35"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb3-36"><a href="#cb3-36"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Domain A (chronic silo)"</span>),</span>
-<span id="cb3-37"><a href="#cb3-37"></a>    <span class="at">columns =</span> <span class="fu">c</span>(one, two)</span>
-<span id="cb3-38"><a href="#cb3-38"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb3-39"><a href="#cb3-39"></a>  <span class="fu">sub_missing</span>(</span>
-<span id="cb3-40"><a href="#cb3-40"></a>    <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
-<span id="cb3-41"><a href="#cb3-41"></a>    <span class="at">missing_text =</span> <span class="st">"-"</span></span>
-<span id="cb3-42"><a href="#cb3-42"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb3-43"><a href="#cb3-43"></a>  <span class="fu">cols_label</span>(<span class="at">.list =</span> cols)</span>
-<span id="cb3-44"><a href="#cb3-44"></a></span>
-<span id="cb3-45"><a href="#cb3-45"></a>gt_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb3-20"><a href="#cb3-20"></a>d_tbl[, total <span class="sc">:</span><span class="er">=</span> <span class="fu">rowSums</span>(d_tbl[, .(long_1, short_1, long_2, short_2)], <span class="at">na.rm =</span> T)]</span>
+<span id="cb3-21"><a href="#cb3-21"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"Surgery"</span> <span class="sc">&amp;</span> rand <span class="sc">==</span> <span class="dv">0</span>, group <span class="sc">:</span><span class="er">=</span> <span class="cn">NA</span>]</span>
+<span id="cb3-22"><a href="#cb3-22"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"Choice"</span> <span class="sc">&amp;</span> rand <span class="sc">==</span> <span class="dv">0</span>, group <span class="sc">:</span><span class="er">=</span> <span class="cn">NA</span>]</span>
+<span id="cb3-23"><a href="#cb3-23"></a></span>
+<span id="cb3-24"><a href="#cb3-24"></a>cols <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Domain"</span>, <span class="st">"Revealed"</span>, <span class="st">"Treatment"</span>, <span class="fu">c</span>(<span class="st">"long"</span>, <span class="st">"short"</span>, <span class="st">"long"</span>, <span class="st">"short"</span>), <span class="st">"Total"</span>)</span>
+<span id="cb3-25"><a href="#cb3-25"></a><span class="fu">names</span>(cols) <span class="ot">&lt;-</span> <span class="fu">names</span>(d_tbl)</span>
+<span id="cb3-26"><a href="#cb3-26"></a></span>
+<span id="cb3-27"><a href="#cb3-27"></a>gt_tbl <span class="ot">&lt;-</span> d_tbl <span class="sc">|&gt;</span> </span>
+<span id="cb3-28"><a href="#cb3-28"></a>  <span class="fu">gt</span>(<span class="at">groupname_col =</span> <span class="st">"domain"</span></span>
+<span id="cb3-29"><a href="#cb3-29"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb3-30"><a href="#cb3-30"></a>  <span class="fu">summary_rows</span>(</span>
+<span id="cb3-31"><a href="#cb3-31"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"long_1"</span>, <span class="st">"short_1"</span>, <span class="st">"long_2"</span>, <span class="st">"short_2"</span>, <span class="st">"total"</span>),</span>
+<span id="cb3-32"><a href="#cb3-32"></a>    <span class="at">fns =</span> <span class="fu">list</span>(</span>
+<span id="cb3-33"><a href="#cb3-33"></a>      <span class="at">subtotal =</span> <span class="sc">~</span> <span class="fu">sum</span>(., <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb3-34"><a href="#cb3-34"></a>    )</span>
+<span id="cb3-35"><a href="#cb3-35"></a>  )   <span class="sc">|&gt;</span></span>
+<span id="cb3-36"><a href="#cb3-36"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb3-37"><a href="#cb3-37"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"AB Duration &lt;br&gt;(one-stage)"</span>),</span>
+<span id="cb3-38"><a href="#cb3-38"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"long_1"</span>, <span class="st">"short_1"</span>),</span>
+<span id="cb3-39"><a href="#cb3-39"></a>    <span class="at">id =</span> <span class="st">"d1"</span></span>
+<span id="cb3-40"><a href="#cb3-40"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb3-41"><a href="#cb3-41"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb3-42"><a href="#cb3-42"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"AB Duration &lt;br&gt;(two-stage)"</span>),</span>
+<span id="cb3-43"><a href="#cb3-43"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"long_2"</span>, <span class="st">"short_2"</span>),</span>
+<span id="cb3-44"><a href="#cb3-44"></a>    <span class="at">id =</span> <span class="st">"d2"</span></span>
+<span id="cb3-45"><a href="#cb3-45"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb3-46"><a href="#cb3-46"></a>  <span class="fu">sub_missing</span>(</span>
+<span id="cb3-47"><a href="#cb3-47"></a>    <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
+<span id="cb3-48"><a href="#cb3-48"></a>    <span class="at">missing_text =</span> <span class="st">"-"</span></span>
+<span id="cb3-49"><a href="#cb3-49"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb3-50"><a href="#cb3-50"></a>  <span class="fu">cols_label</span>(<span class="at">.list =</span> cols)  <span class="sc">|&gt;</span></span>
+<span id="cb3-51"><a href="#cb3-51"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb3-52"><a href="#cb3-52"></a>    <span class="at">footnote =</span> <span class="st">"Revealed indicates whether units were randomised into surgery/duration domain (0: No, 1: Yes)"</span>,</span>
+<span id="cb3-53"><a href="#cb3-53"></a>    <span class="at">locations =</span> <span class="fu">cells_column_labels</span>(<span class="at">columns =</span> rand)</span>
+<span id="cb3-54"><a href="#cb3-54"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb3-55"><a href="#cb3-55"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb3-56"><a href="#cb3-56"></a>    <span class="at">footnote =</span> <span class="st">"Treatment indicates which treatment assigned within domain. For choice (0: no-rif, 1: rif). For duration is specific to surgery type received (0: long, 1: short). Units that were not randomised within the surgery/choice domain have undefined randomised treatment status."</span>,</span>
+<span id="cb3-57"><a href="#cb3-57"></a>    <span class="at">locations =</span> <span class="fu">cells_column_labels</span>(<span class="at">columns =</span> group)</span>
+<span id="cb3-58"><a href="#cb3-58"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb3-59"><a href="#cb3-59"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb3-60"><a href="#cb3-60"></a>    <span class="at">footnote =</span> <span class="st">"Only units randomised to interventions in the surgery domain reported. One-stage/two-stage is by clinician selection"</span>,</span>
+<span id="cb3-61"><a href="#cb3-61"></a>    <span class="at">locations =</span> <span class="fu">cells_column_spanners</span>(<span class="at">spanners =</span> <span class="fu">c</span>(<span class="st">"d1"</span>, <span class="st">"d2"</span>))</span>
+<span id="cb3-62"><a href="#cb3-62"></a>  )</span>
+<span id="cb3-63"><a href="#cb3-63"></a></span>
+<span id="cb3-64"><a href="#cb3-64"></a></span>
+<span id="cb3-65"><a href="#cb3-65"></a></span>
+<span id="cb3-66"><a href="#cb3-66"></a>gt_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
-<div id="tbl-smry-chronic-Da" class="cell quarto-float anchored page-columns page-full">
+<div id="tbl-smry-Db" class="cell quarto-float anchored page-columns page-full">
 <figure class="quarto-float quarto-float-tbl figure page-columns page-full">
-<div aria-describedby="tbl-smry-chronic-Da-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<div class="cell-output-display column-page">
-<div id="crydbnesuc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#crydbnesuc table {
+<div aria-describedby="tbl-smry-Db-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<div id="nxqrnhkqhp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#nxqrnhkqhp table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#crydbnesuc thead, #crydbnesuc tbody, #crydbnesuc tfoot, #crydbnesuc tr, #crydbnesuc td, #crydbnesuc th {
+#nxqrnhkqhp thead, #nxqrnhkqhp tbody, #nxqrnhkqhp tfoot, #nxqrnhkqhp tr, #nxqrnhkqhp td, #nxqrnhkqhp th {
   border-style: none;
 }
 
-#crydbnesuc p {
+#nxqrnhkqhp p {
   margin: 0;
   padding: 0;
 }
 
-#crydbnesuc .gt_table {
+#nxqrnhkqhp .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -978,12 +1127,12 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-left-color: #D3D3D3;
 }
 
-#crydbnesuc .gt_caption {
+#nxqrnhkqhp .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#crydbnesuc .gt_title {
+#nxqrnhkqhp .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -995,7 +1144,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-bottom-width: 0;
 }
 
-#crydbnesuc .gt_subtitle {
+#nxqrnhkqhp .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1007,7 +1156,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-top-width: 0;
 }
 
-#crydbnesuc .gt_heading {
+#nxqrnhkqhp .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1019,13 +1168,13 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-right-color: #D3D3D3;
 }
 
-#crydbnesuc .gt_bottom_border {
+#nxqrnhkqhp .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#crydbnesuc .gt_col_headings {
+#nxqrnhkqhp .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1040,7 +1189,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-right-color: #D3D3D3;
 }
 
-#crydbnesuc .gt_col_heading {
+#nxqrnhkqhp .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1060,7 +1209,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   overflow-x: hidden;
 }
 
-#crydbnesuc .gt_column_spanner_outer {
+#nxqrnhkqhp .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1072,15 +1221,15 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   padding-right: 4px;
 }
 
-#crydbnesuc .gt_column_spanner_outer:first-child {
+#nxqrnhkqhp .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#crydbnesuc .gt_column_spanner_outer:last-child {
+#nxqrnhkqhp .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#crydbnesuc .gt_column_spanner {
+#nxqrnhkqhp .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1092,11 +1241,11 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   width: 100%;
 }
 
-#crydbnesuc .gt_spanner_row {
+#nxqrnhkqhp .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#crydbnesuc .gt_group_heading {
+#nxqrnhkqhp .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1122,7 +1271,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   text-align: left;
 }
 
-#crydbnesuc .gt_empty_group_heading {
+#nxqrnhkqhp .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1137,15 +1286,15 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   vertical-align: middle;
 }
 
-#crydbnesuc .gt_from_md > :first-child {
+#nxqrnhkqhp .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#crydbnesuc .gt_from_md > :last-child {
+#nxqrnhkqhp .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#crydbnesuc .gt_row {
+#nxqrnhkqhp .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1164,7 +1313,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   overflow-x: hidden;
 }
 
-#crydbnesuc .gt_stub {
+#nxqrnhkqhp .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1177,596 +1326,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   padding-right: 5px;
 }
 
-#crydbnesuc .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#crydbnesuc .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#crydbnesuc .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#crydbnesuc .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#crydbnesuc .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#crydbnesuc .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#crydbnesuc .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#crydbnesuc .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#crydbnesuc .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#crydbnesuc .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#crydbnesuc .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#crydbnesuc .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#crydbnesuc .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#crydbnesuc .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#crydbnesuc .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#crydbnesuc .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#crydbnesuc .gt_left {
-  text-align: left;
-}
-
-#crydbnesuc .gt_center {
-  text-align: center;
-}
-
-#crydbnesuc .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#crydbnesuc .gt_font_normal {
-  font-weight: normal;
-}
-
-#crydbnesuc .gt_font_bold {
-  font-weight: bold;
-}
-
-#crydbnesuc .gt_font_italic {
-  font-style: italic;
-}
-
-#crydbnesuc .gt_super {
-  font-size: 65%;
-}
-
-#crydbnesuc .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#crydbnesuc .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#crydbnesuc .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#crydbnesuc .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#crydbnesuc .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#crydbnesuc .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#crydbnesuc .gt_indent_5 {
-  text-indent: 25px;
-}
-</style>
-
-<table class="gt_table do-not-create-environment cell table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
-<thead>
-<tr class="header gt_col_headings gt_spanner_row">
-<th rowspan="2" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"></th>
-<th rowspan="2" id="Randomised" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Randomised</th>
-<th rowspan="2" id="Treatment" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Treatment</th>
-<th colspan="2" id="Domain A (chronic silo)" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">Domain A (chronic silo)</span></th>
-</tr>
-<tr class="odd gt_col_headings">
-<th id="One-stage" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">One-stage</th>
-<th id="Two-stage" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Two-stage</th>
-</tr>
-</thead>
-<tbody class="gt_table_body">
-<tr class="odd gt_group_heading_row">
-<td colspan="5" id="AB Duration" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">AB Duration</td>
-</tr>
-<tr class="even gt_row_group_first">
-<td id="stub_1_1" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_1 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_1 group">w06p1</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_1 one">132</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_1 two">-</td>
-</tr>
-<tr class="odd">
-<td id="stub_1_2" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_2 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_2 group">w12p1</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_2 one">135</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_2 two">-</td>
-</tr>
-<tr class="even">
-<td id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_3 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_3 group">d07p2</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_3 one">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_3 two">124</td>
-</tr>
-<tr class="odd">
-<td id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_4 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_4 group">w12p2</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_4 one">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_4 two">131</td>
-</tr>
-<tr class="even">
-<td id="summary_stub_AB Duration_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 rand">—</td>
-<td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 group">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 one">267</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 two">255</td>
-</tr>
-<tr class="odd gt_group_heading_row">
-<td colspan="5" id="AB Type" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">AB Type</td>
-</tr>
-<tr class="even gt_row_group_first">
-<td id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Type stub_1_5 rand">N</td>
-<td class="gt_row gt_center" headers="AB Type stub_1_5 group">other</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_5 one">103</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_5 two">95</td>
-</tr>
-<tr class="odd">
-<td id="stub_1_6" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Type stub_1_6 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Type stub_1_6 group">norif</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_6 one">100</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_6 two">78</td>
-</tr>
-<tr class="even">
-<td id="stub_1_7" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Type stub_1_7 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Type stub_1_7 group">rif</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_7 one">64</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_7 two">82</td>
-</tr>
-<tr class="odd">
-<td id="summary_stub_AB Type_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 rand">—</td>
-<td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 group">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 one">267</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 two">255</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-</div>
-</div>
-<figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-tbl margin-caption" id="tbl-smry-chronic-Da-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;2: Simulated trial data for (chronic silo) surgical domain - covariate balance across other groups
-</figcaption>
-</figure>
-</div>
-</div>
-<p><a href="#tbl-smry-late-Db" class="quarto-xref">Table&nbsp;3</a> shows the allocation to (late stage infection) dair vs rev and the balance across the remaining group levels in the data. The subsequent tables show analogous summaries.</p>
-<div class="cell page-columns page-full">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="co"># domain B</span></span>
-<span id="cb4-2"><a href="#cb4-2"></a>d_tmp1 <span class="ot">&lt;-</span> d[silo <span class="sc">==</span> <span class="st">"late"</span>, .(eb, b, ea, a, qa)]</span>
-<span id="cb4-3"><a href="#cb4-3"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(b, ea, a, qa)]</span>
-<span id="cb4-4"><a href="#cb4-4"></a>d_tmp2[, b <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(b, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"w12"</span>, <span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>))]</span>
-<span id="cb4-5"><a href="#cb4-5"></a>d_B <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, ea <span class="sc">+</span> a <span class="sc">+</span> qa <span class="sc">~</span> b, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
-<span id="cb4-6"><a href="#cb4-6"></a>d_B[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"A"</span>]</span>
-<span id="cb4-7"><a href="#cb4-7"></a><span class="fu">colnames</span>(d_B) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="st">"plan"</span>, <span class="fu">c</span>(<span class="st">"w12"</span>, <span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>), <span class="st">"domain"</span>)</span>
-<span id="cb4-8"><a href="#cb4-8"></a><span class="fu">setcolorder</span>(d_B, <span class="st">"domain"</span>)</span>
-<span id="cb4-9"><a href="#cb4-9"></a><span class="co"># domain C</span></span>
-<span id="cb4-10"><a href="#cb4-10"></a>d_tmp1 <span class="ot">&lt;-</span> d[silo <span class="sc">==</span> <span class="st">"late"</span>, .(eb, b, ec, c)]</span>
-<span id="cb4-11"><a href="#cb4-11"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(b, ec, c)]</span>
-<span id="cb4-12"><a href="#cb4-12"></a>d_tmp2[, b <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(b, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"w12"</span>, <span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>))]</span>
-<span id="cb4-13"><a href="#cb4-13"></a>d_C <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, ec <span class="sc">+</span> c <span class="sc">~</span> b, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
-<span id="cb4-14"><a href="#cb4-14"></a>d_C[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"C"</span>]</span>
-<span id="cb4-15"><a href="#cb4-15"></a><span class="fu">colnames</span>(d_C) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="fu">c</span>(<span class="st">"w12"</span>, <span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>), <span class="st">"domain"</span>)</span>
-<span id="cb4-16"><a href="#cb4-16"></a><span class="fu">setcolorder</span>(d_C, <span class="st">"domain"</span>)</span>
-<span id="cb4-17"><a href="#cb4-17"></a></span>
-<span id="cb4-18"><a href="#cb4-18"></a>d_tbl <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_B, d_C, <span class="at">fill =</span> T)</span>
-<span id="cb4-19"><a href="#cb4-19"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"A"</span>, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"AB Duration"</span>]</span>
-<span id="cb4-20"><a href="#cb4-20"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"C"</span>, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"AB Type"</span>]</span>
-<span id="cb4-21"><a href="#cb4-21"></a></span>
-<span id="cb4-22"><a href="#cb4-22"></a>cols <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Domain"</span>, <span class="st">"Randomised"</span>, <span class="st">"Treatment"</span>, <span class="st">"Plan"</span>,<span class="fu">c</span>(<span class="st">"w12"</span>, <span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>))</span>
-<span id="cb4-23"><a href="#cb4-23"></a><span class="fu">names</span>(cols) <span class="ot">&lt;-</span> <span class="fu">names</span>(d_tbl)</span>
-<span id="cb4-24"><a href="#cb4-24"></a></span>
-<span id="cb4-25"><a href="#cb4-25"></a>gt_tbl <span class="ot">&lt;-</span> d_tbl <span class="sc">|&gt;</span> </span>
-<span id="cb4-26"><a href="#cb4-26"></a>  <span class="fu">gt</span>(<span class="at">groupname_col =</span> <span class="st">"domain"</span></span>
-<span id="cb4-27"><a href="#cb4-27"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb4-28"><a href="#cb4-28"></a>  <span class="fu">summary_rows</span>(</span>
-<span id="cb4-29"><a href="#cb4-29"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"w12"</span>, <span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>),</span>
-<span id="cb4-30"><a href="#cb4-30"></a>    <span class="at">fns =</span> <span class="fu">list</span>(</span>
-<span id="cb4-31"><a href="#cb4-31"></a>      <span class="at">subtotal =</span> <span class="sc">~</span> <span class="fu">sum</span>(., <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-32"><a href="#cb4-32"></a>    )</span>
-<span id="cb4-33"><a href="#cb4-33"></a>  )   <span class="sc">|&gt;</span></span>
-<span id="cb4-34"><a href="#cb4-34"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb4-35"><a href="#cb4-35"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Domain B (late silo)"</span>),</span>
-<span id="cb4-36"><a href="#cb4-36"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"w12"</span>, <span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>)</span>
-<span id="cb4-37"><a href="#cb4-37"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb4-38"><a href="#cb4-38"></a>  <span class="fu">sub_missing</span>(</span>
-<span id="cb4-39"><a href="#cb4-39"></a>    <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
-<span id="cb4-40"><a href="#cb4-40"></a>    <span class="at">missing_text =</span> <span class="st">"-"</span></span>
-<span id="cb4-41"><a href="#cb4-41"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb4-42"><a href="#cb4-42"></a>  <span class="fu">cols_label</span>(<span class="at">.list =</span> cols)</span>
-<span id="cb4-43"><a href="#cb4-43"></a></span>
-<span id="cb4-44"><a href="#cb4-44"></a>gt_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div id="tbl-smry-late-Db" class="cell quarto-float anchored page-columns page-full">
-<figure class="quarto-float quarto-float-tbl figure page-columns page-full">
-<div aria-describedby="tbl-smry-late-Db-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<div class="cell-output-display column-page">
-<div id="ebxitqfyzs" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#ebxitqfyzs table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#ebxitqfyzs thead, #ebxitqfyzs tbody, #ebxitqfyzs tfoot, #ebxitqfyzs tr, #ebxitqfyzs td, #ebxitqfyzs th {
-  border-style: none;
-}
-
-#ebxitqfyzs p {
-  margin: 0;
-  padding: 0;
-}
-
-#ebxitqfyzs .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#ebxitqfyzs .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#ebxitqfyzs .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#ebxitqfyzs .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#ebxitqfyzs .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#ebxitqfyzs .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#ebxitqfyzs .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#ebxitqfyzs .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#ebxitqfyzs .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#ebxitqfyzs .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#ebxitqfyzs .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#ebxitqfyzs .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#ebxitqfyzs .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#ebxitqfyzs .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#ebxitqfyzs .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#ebxitqfyzs .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#ebxitqfyzs .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#ebxitqfyzs .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#ebxitqfyzs .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#ebxitqfyzs .gt_stub_row_group {
+#nxqrnhkqhp .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1780,15 +1340,15 @@ Table&nbsp;2: Simulated trial data for (chronic silo) surgical domain - covariat
   vertical-align: top;
 }
 
-#ebxitqfyzs .gt_row_group_first td {
+#nxqrnhkqhp .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#ebxitqfyzs .gt_row_group_first th {
+#nxqrnhkqhp .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#ebxitqfyzs .gt_summary_row {
+#nxqrnhkqhp .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1798,16 +1358,16 @@ Table&nbsp;2: Simulated trial data for (chronic silo) surgical domain - covariat
   padding-right: 5px;
 }
 
-#ebxitqfyzs .gt_first_summary_row {
+#nxqrnhkqhp .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#ebxitqfyzs .gt_first_summary_row.thick {
+#nxqrnhkqhp .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#ebxitqfyzs .gt_last_summary_row {
+#nxqrnhkqhp .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1817,7 +1377,7 @@ Table&nbsp;2: Simulated trial data for (chronic silo) surgical domain - covariat
   border-bottom-color: #D3D3D3;
 }
 
-#ebxitqfyzs .gt_grand_summary_row {
+#nxqrnhkqhp .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1827,7 +1387,7 @@ Table&nbsp;2: Simulated trial data for (chronic silo) surgical domain - covariat
   padding-right: 5px;
 }
 
-#ebxitqfyzs .gt_first_grand_summary_row {
+#nxqrnhkqhp .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1837,7 +1397,7 @@ Table&nbsp;2: Simulated trial data for (chronic silo) surgical domain - covariat
   border-top-color: #D3D3D3;
 }
 
-#ebxitqfyzs .gt_last_grand_summary_row_top {
+#nxqrnhkqhp .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1847,11 +1407,11 @@ Table&nbsp;2: Simulated trial data for (chronic silo) surgical domain - covariat
   border-bottom-color: #D3D3D3;
 }
 
-#ebxitqfyzs .gt_striped {
+#nxqrnhkqhp .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#ebxitqfyzs .gt_table_body {
+#nxqrnhkqhp .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1860,7 +1420,7 @@ Table&nbsp;2: Simulated trial data for (chronic silo) surgical domain - covariat
   border-bottom-color: #D3D3D3;
 }
 
-#ebxitqfyzs .gt_footnotes {
+#nxqrnhkqhp .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1874,7 +1434,7 @@ Table&nbsp;2: Simulated trial data for (chronic silo) surgical domain - covariat
   border-right-color: #D3D3D3;
 }
 
-#ebxitqfyzs .gt_footnote {
+#nxqrnhkqhp .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1883,7 +1443,7 @@ Table&nbsp;2: Simulated trial data for (chronic silo) surgical domain - covariat
   padding-right: 5px;
 }
 
-#ebxitqfyzs .gt_sourcenotes {
+#nxqrnhkqhp .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1897,7 +1457,7 @@ Table&nbsp;2: Simulated trial data for (chronic silo) surgical domain - covariat
   border-right-color: #D3D3D3;
 }
 
-#ebxitqfyzs .gt_sourcenote {
+#nxqrnhkqhp .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1905,853 +1465,297 @@ Table&nbsp;2: Simulated trial data for (chronic silo) surgical domain - covariat
   padding-right: 5px;
 }
 
-#ebxitqfyzs .gt_left {
+#nxqrnhkqhp .gt_left {
   text-align: left;
 }
 
-#ebxitqfyzs .gt_center {
+#nxqrnhkqhp .gt_center {
   text-align: center;
 }
 
-#ebxitqfyzs .gt_right {
+#nxqrnhkqhp .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#ebxitqfyzs .gt_font_normal {
+#nxqrnhkqhp .gt_font_normal {
   font-weight: normal;
 }
 
-#ebxitqfyzs .gt_font_bold {
+#nxqrnhkqhp .gt_font_bold {
   font-weight: bold;
 }
 
-#ebxitqfyzs .gt_font_italic {
+#nxqrnhkqhp .gt_font_italic {
   font-style: italic;
 }
 
-#ebxitqfyzs .gt_super {
+#nxqrnhkqhp .gt_super {
   font-size: 65%;
 }
 
-#ebxitqfyzs .gt_footnote_marks {
+#nxqrnhkqhp .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#ebxitqfyzs .gt_asterisk {
+#nxqrnhkqhp .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#ebxitqfyzs .gt_indent_1 {
+#nxqrnhkqhp .gt_indent_1 {
   text-indent: 5px;
 }
 
-#ebxitqfyzs .gt_indent_2 {
+#nxqrnhkqhp .gt_indent_2 {
   text-indent: 10px;
 }
 
-#ebxitqfyzs .gt_indent_3 {
+#nxqrnhkqhp .gt_indent_3 {
   text-indent: 15px;
 }
 
-#ebxitqfyzs .gt_indent_4 {
+#nxqrnhkqhp .gt_indent_4 {
   text-indent: 20px;
 }
 
-#ebxitqfyzs .gt_indent_5 {
+#nxqrnhkqhp .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
 
 <table class="gt_table do-not-create-environment cell table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+<colgroup>
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+<col style="width: 12%">
+</colgroup>
 <thead>
 <tr class="header gt_col_headings gt_spanner_row">
 <th rowspan="2" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"></th>
-<th rowspan="2" id="Randomised" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Randomised</th>
-<th rowspan="2" id="Treatment" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Treatment</th>
-<th rowspan="2" id="Plan" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Plan</th>
-<th colspan="5" id="Domain B (late silo)" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">Domain B (late silo)</span></th>
+<th rowspan="2" id="Revealed<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>2</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Revealed<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>2</sup></span></th>
+<th rowspan="2" id="Treatment<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>3</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Treatment<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>3</sup></span></th>
+<th colspan="2" id="AB Duration <br>(one-stage)<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>1</sup></span>" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">AB Duration<br>
+(one-stage)<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></span></th>
+<th colspan="2" id="AB Duration <br>(two-stage)<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>1</sup></span>" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">AB Duration<br>
+(two-stage)<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></span></th>
+<th rowspan="2" id="Total" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Total</th>
 </tr>
 <tr class="odd gt_col_headings">
-<th id="w12" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">w12</th>
-<th id="w06p1" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">w06p1</th>
-<th id="w12p1" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">w12p1</th>
-<th id="d07p2" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">d07p2</th>
-<th id="w12p2" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">w12p2</th>
+<th id="long" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">long</th>
+<th id="short" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">short</th>
+<th id="long" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">long</th>
+<th id="short" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">short</th>
 </tr>
 </thead>
 <tbody class="gt_table_body">
 <tr class="odd gt_group_heading_row">
-<td colspan="9" id="AB Duration" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">AB Duration</td>
+<td colspan="8" id="Surgery" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Surgery</td>
 </tr>
 <tr class="even gt_row_group_first">
 <td id="stub_1_1" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_1 rand">Y</td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_1 group">dair</td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_1 plan">dair</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_1 w12">627</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_1 w06p1">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_1 w12p1">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_1 d07p2">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_1 w12p2">-</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 rand">0</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 group">-</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 long_1">86</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 short_1">76</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 long_2">174</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 short_2">157</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 total">493</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_2" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_2 rand">Y</td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_2 group">rev</td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_2 plan">one</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_2 w12">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_2 w06p1">75</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_2 w12p1">97</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_2 d07p2">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_2 w12p2">-</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 rand">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 group">0</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 long_1">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 short_1">-</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 long_2">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 short_2">-</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 total">2</td>
 </tr>
 <tr class="even">
 <td id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_3 rand">Y</td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_3 group">rev</td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_3 plan">two</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_3 w12">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_3 w06p1">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_3 w12p1">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_3 d07p2">216</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_3 w12p2">208</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 rand">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 group">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 long_1">98</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 short_1">106</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 long_2">215</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 short_2">223</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 total">642</td>
 </tr>
 <tr class="odd">
-<td id="summary_stub_AB Duration_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 rand">—</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 group">—</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 plan">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 w12">627</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 w06p1">75</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 w12p1">97</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 d07p2">216</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 w12p2">208</td>
+<td id="summary_stub_Surgery_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 rand">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 group">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 long_1">185</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 short_1">182</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 long_2">390</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 short_2">380</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 total">1137</td>
 </tr>
 <tr class="even gt_group_heading_row">
-<td colspan="9" id="AB Type" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">AB Type</td>
+<td colspan="8" id="Choice" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Choice</td>
 </tr>
 <tr class="odd gt_row_group_first">
 <td id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Type stub_1_4 rand">N</td>
-<td class="gt_row gt_left" headers="AB Type stub_1_4 group">other</td>
-<td class="gt_row gt_left" headers="AB Type stub_1_4 plan">-</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_4 w12">241</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_4 w06p1">35</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_4 w12p1">40</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_4 d07p2">88</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_4 w12p2">81</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 rand">0</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 group">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 long_1">77</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 short_1">72</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 long_2">156</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 short_2">155</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 total">460</td>
 </tr>
 <tr class="even">
 <td id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Type stub_1_5 rand">Y</td>
-<td class="gt_row gt_left" headers="AB Type stub_1_5 group">norif</td>
-<td class="gt_row gt_left" headers="AB Type stub_1_5 plan">-</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_5 w12">195</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_5 w06p1">24</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_5 w12p1">24</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_5 d07p2">68</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_5 w12p2">68</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 rand">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 group">0</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 long_1">54</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 short_1">65</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 long_2">122</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 short_2">97</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 total">338</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_6" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Type stub_1_6 rand">Y</td>
-<td class="gt_row gt_left" headers="AB Type stub_1_6 group">rif</td>
-<td class="gt_row gt_left" headers="AB Type stub_1_6 plan">-</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_6 w12">191</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_6 w06p1">16</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_6 w12p1">33</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_6 d07p2">60</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_6 w12p2">59</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 rand">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 group">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 long_1">54</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 short_1">45</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 long_2">112</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 short_2">128</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 total">339</td>
 </tr>
 <tr class="even">
-<td id="summary_stub_AB Type_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 rand">—</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 group">—</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 plan">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 w12">627</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 w06p1">75</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 w12p1">97</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 d07p2">216</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 w12p2">208</td>
+<td id="summary_stub_Choice_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 rand">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 group">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 long_1">185</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 short_1">182</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 long_2">390</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 short_2">380</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 total">1137</td>
 </tr>
-</tbody>
+</tbody><tfoot class="gt_footnotes">
+<tr class="even">
+<td colspan="8" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> Only units randomised to interventions in the surgery domain reported. One-stage/two-stage is by clinician selection</td>
+</tr>
+<tr class="odd">
+<td colspan="8" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>2</sup></span> Revealed indicates whether units were randomised into surgery/duration domain (0: No, 1: Yes)</td>
+</tr>
+<tr class="even">
+<td colspan="8" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>3</sup></span> Treatment indicates which treatment assigned within domain. For choice (0: no-rif, 1: rif). For duration is specific to surgery type received (0: long, 1: short). Units that were not randomised within the surgery/choice domain have undefined randomised treatment status.</td>
+</tr>
+</tfoot>
+
 </table>
 
 </div>
 </div>
 </div>
-<figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-tbl margin-caption" id="tbl-smry-late-Db-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;3: Simulated trial data for (late silo) duration domain - covariate balance across other groups
+<figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-tbl margin-caption" id="tbl-smry-Db-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance across other groups
 </figcaption>
 </figure>
 </div>
 </div>
+<p><a href="#tbl-smry-Dc" class="quarto-xref">Table&nbsp;3</a> shows the allocation to the duration domain conditional on surgery type actually received and the balance across the remaining group levels in the data. Only units randomised within the antibiotic choice domain are reported.</p>
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># domain B</span></span>
-<span id="cb5-2"><a href="#cb5-2"></a>d_tmp1 <span class="ot">&lt;-</span> d[silo <span class="sc">==</span> <span class="st">"chronic"</span>, .(eb, b, ea, a)]</span>
-<span id="cb5-3"><a href="#cb5-3"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(b, ea, a)]</span>
-<span id="cb5-4"><a href="#cb5-4"></a>d_tmp2[, b <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(b, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>))]</span>
-<span id="cb5-5"><a href="#cb5-5"></a>d_B <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, ea <span class="sc">+</span> a <span class="sc">~</span> b, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
-<span id="cb5-6"><a href="#cb5-6"></a>d_B[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"A"</span>]</span>
-<span id="cb5-7"><a href="#cb5-7"></a><span class="fu">colnames</span>(d_B) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="fu">c</span>(<span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>), <span class="st">"domain"</span>)</span>
-<span id="cb5-8"><a href="#cb5-8"></a><span class="fu">setcolorder</span>(d_B, <span class="st">"domain"</span>)</span>
-<span id="cb5-9"><a href="#cb5-9"></a><span class="co"># domain C</span></span>
-<span id="cb5-10"><a href="#cb5-10"></a>d_tmp1 <span class="ot">&lt;-</span> d[silo <span class="sc">==</span> <span class="st">"chronic"</span>, .(eb, b, ec, c)]</span>
-<span id="cb5-11"><a href="#cb5-11"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(b, ec, c)]</span>
-<span id="cb5-12"><a href="#cb5-12"></a>d_tmp2[, b <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(b, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>))]</span>
-<span id="cb5-13"><a href="#cb5-13"></a>d_C <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, ec <span class="sc">+</span> c <span class="sc">~</span> b, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
-<span id="cb5-14"><a href="#cb5-14"></a>d_C[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"C"</span>]</span>
-<span id="cb5-15"><a href="#cb5-15"></a><span class="fu">colnames</span>(d_C) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="fu">c</span>(<span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>), <span class="st">"domain"</span>)</span>
-<span id="cb5-16"><a href="#cb5-16"></a><span class="fu">setcolorder</span>(d_C, <span class="st">"domain"</span>)</span>
-<span id="cb5-17"><a href="#cb5-17"></a></span>
-<span id="cb5-18"><a href="#cb5-18"></a>d_tbl <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_B, d_C, <span class="at">fill =</span> T)</span>
-<span id="cb5-19"><a href="#cb5-19"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"A"</span>, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"AB Duration"</span>]</span>
-<span id="cb5-20"><a href="#cb5-20"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"C"</span>, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"AB Type"</span>]</span>
-<span id="cb5-21"><a href="#cb5-21"></a></span>
-<span id="cb5-22"><a href="#cb5-22"></a>cols <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Domain"</span>, <span class="st">"Randomised"</span>, <span class="st">"Treatment"</span>, <span class="fu">c</span>(<span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>))</span>
-<span id="cb5-23"><a href="#cb5-23"></a><span class="fu">names</span>(cols) <span class="ot">&lt;-</span> <span class="fu">names</span>(d_tbl)</span>
-<span id="cb5-24"><a href="#cb5-24"></a></span>
-<span id="cb5-25"><a href="#cb5-25"></a>gt_tbl <span class="ot">&lt;-</span> d_tbl <span class="sc">|&gt;</span> </span>
-<span id="cb5-26"><a href="#cb5-26"></a>  <span class="fu">gt</span>(<span class="at">groupname_col =</span> <span class="st">"domain"</span></span>
-<span id="cb5-27"><a href="#cb5-27"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb5-28"><a href="#cb5-28"></a>  <span class="fu">summary_rows</span>(</span>
-<span id="cb5-29"><a href="#cb5-29"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>),</span>
-<span id="cb5-30"><a href="#cb5-30"></a>    <span class="at">fns =</span> <span class="fu">list</span>(</span>
-<span id="cb5-31"><a href="#cb5-31"></a>      <span class="at">subtotal =</span> <span class="sc">~</span> <span class="fu">sum</span>(., <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb5-32"><a href="#cb5-32"></a>    )</span>
-<span id="cb5-33"><a href="#cb5-33"></a>  )   <span class="sc">|&gt;</span></span>
-<span id="cb5-34"><a href="#cb5-34"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb5-35"><a href="#cb5-35"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Domain B (chronic silo)"</span>),</span>
-<span id="cb5-36"><a href="#cb5-36"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>)</span>
-<span id="cb5-37"><a href="#cb5-37"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb5-38"><a href="#cb5-38"></a>  <span class="fu">sub_missing</span>(</span>
-<span id="cb5-39"><a href="#cb5-39"></a>    <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
-<span id="cb5-40"><a href="#cb5-40"></a>    <span class="at">missing_text =</span> <span class="st">"-"</span></span>
-<span id="cb5-41"><a href="#cb5-41"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb5-42"><a href="#cb5-42"></a>  <span class="fu">cols_label</span>(<span class="at">.list =</span> cols)</span>
-<span id="cb5-43"><a href="#cb5-43"></a></span>
-<span id="cb5-44"><a href="#cb5-44"></a>gt_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div id="tbl-smry-chronic-Db" class="cell quarto-float anchored page-columns page-full">
-<figure class="quarto-float quarto-float-tbl figure page-columns page-full">
-<div aria-describedby="tbl-smry-chronic-Db-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<div class="cell-output-display column-page">
-<div id="kchurjyigc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#kchurjyigc table {
-  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-#kchurjyigc thead, #kchurjyigc tbody, #kchurjyigc tfoot, #kchurjyigc tr, #kchurjyigc td, #kchurjyigc th {
-  border-style: none;
-}
-
-#kchurjyigc p {
-  margin: 0;
-  padding: 0;
-}
-
-#kchurjyigc .gt_table {
-  display: table;
-  border-collapse: collapse;
-  line-height: normal;
-  margin-left: auto;
-  margin-right: auto;
-  color: #333333;
-  font-size: 16px;
-  font-weight: normal;
-  font-style: normal;
-  background-color: #FFFFFF;
-  width: auto;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #A8A8A8;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-}
-
-#kchurjyigc .gt_caption {
-  padding-top: 4px;
-  padding-bottom: 4px;
-}
-
-#kchurjyigc .gt_title {
-  color: #333333;
-  font-size: 125%;
-  font-weight: initial;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-color: #FFFFFF;
-  border-bottom-width: 0;
-}
-
-#kchurjyigc .gt_subtitle {
-  color: #333333;
-  font-size: 85%;
-  font-weight: initial;
-  padding-top: 3px;
-  padding-bottom: 5px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-color: #FFFFFF;
-  border-top-width: 0;
-}
-
-#kchurjyigc .gt_heading {
-  background-color: #FFFFFF;
-  text-align: center;
-  border-bottom-color: #FFFFFF;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#kchurjyigc .gt_bottom_border {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#kchurjyigc .gt_col_headings {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-}
-
-#kchurjyigc .gt_col_heading {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 6px;
-  padding-left: 5px;
-  padding-right: 5px;
-  overflow-x: hidden;
-}
-
-#kchurjyigc .gt_column_spanner_outer {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: normal;
-  text-transform: inherit;
-  padding-top: 0;
-  padding-bottom: 0;
-  padding-left: 4px;
-  padding-right: 4px;
-}
-
-#kchurjyigc .gt_column_spanner_outer:first-child {
-  padding-left: 0;
-}
-
-#kchurjyigc .gt_column_spanner_outer:last-child {
-  padding-right: 0;
-}
-
-#kchurjyigc .gt_column_spanner {
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: bottom;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  overflow-x: hidden;
-  display: inline-block;
-  width: 100%;
-}
-
-#kchurjyigc .gt_spanner_row {
-  border-bottom-style: hidden;
-}
-
-#kchurjyigc .gt_group_heading {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  text-align: left;
-}
-
-#kchurjyigc .gt_empty_group_heading {
-  padding: 0.5px;
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  vertical-align: middle;
-}
-
-#kchurjyigc .gt_from_md > :first-child {
-  margin-top: 0;
-}
-
-#kchurjyigc .gt_from_md > :last-child {
-  margin-bottom: 0;
-}
-
-#kchurjyigc .gt_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  margin: 10px;
-  border-top-style: solid;
-  border-top-width: 1px;
-  border-top-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 1px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 1px;
-  border-right-color: #D3D3D3;
-  vertical-align: middle;
-  overflow-x: hidden;
-}
-
-#kchurjyigc .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#kchurjyigc .gt_stub_row_group {
-  color: #333333;
-  background-color: #FFFFFF;
-  font-size: 100%;
-  font-weight: initial;
-  text-transform: inherit;
-  border-right-style: solid;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-  padding-left: 5px;
-  padding-right: 5px;
-  vertical-align: top;
-}
-
-#kchurjyigc .gt_row_group_first td {
-  border-top-width: 2px;
-}
-
-#kchurjyigc .gt_row_group_first th {
-  border-top-width: 2px;
-}
-
-#kchurjyigc .gt_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#kchurjyigc .gt_first_summary_row {
-  border-top-style: solid;
-  border-top-color: #D3D3D3;
-}
-
-#kchurjyigc .gt_first_summary_row.thick {
-  border-top-width: 2px;
-}
-
-#kchurjyigc .gt_last_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#kchurjyigc .gt_grand_summary_row {
-  color: #333333;
-  background-color: #FFFFFF;
-  text-transform: inherit;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#kchurjyigc .gt_first_grand_summary_row {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-top-style: double;
-  border-top-width: 6px;
-  border-top-color: #D3D3D3;
-}
-
-#kchurjyigc .gt_last_grand_summary_row_top {
-  padding-top: 8px;
-  padding-bottom: 8px;
-  padding-left: 5px;
-  padding-right: 5px;
-  border-bottom-style: double;
-  border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
-}
-
-#kchurjyigc .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
-}
-
-#kchurjyigc .gt_table_body {
-  border-top-style: solid;
-  border-top-width: 2px;
-  border-top-color: #D3D3D3;
-  border-bottom-style: solid;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-}
-
-#kchurjyigc .gt_footnotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#kchurjyigc .gt_footnote {
-  margin: 0px;
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#kchurjyigc .gt_sourcenotes {
-  color: #333333;
-  background-color: #FFFFFF;
-  border-bottom-style: none;
-  border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
-  border-left-style: none;
-  border-left-width: 2px;
-  border-left-color: #D3D3D3;
-  border-right-style: none;
-  border-right-width: 2px;
-  border-right-color: #D3D3D3;
-}
-
-#kchurjyigc .gt_sourcenote {
-  font-size: 90%;
-  padding-top: 4px;
-  padding-bottom: 4px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-#kchurjyigc .gt_left {
-  text-align: left;
-}
-
-#kchurjyigc .gt_center {
-  text-align: center;
-}
-
-#kchurjyigc .gt_right {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-#kchurjyigc .gt_font_normal {
-  font-weight: normal;
-}
-
-#kchurjyigc .gt_font_bold {
-  font-weight: bold;
-}
-
-#kchurjyigc .gt_font_italic {
-  font-style: italic;
-}
-
-#kchurjyigc .gt_super {
-  font-size: 65%;
-}
-
-#kchurjyigc .gt_footnote_marks {
-  font-size: 75%;
-  vertical-align: 0.4em;
-  position: initial;
-}
-
-#kchurjyigc .gt_asterisk {
-  font-size: 100%;
-  vertical-align: 0;
-}
-
-#kchurjyigc .gt_indent_1 {
-  text-indent: 5px;
-}
-
-#kchurjyigc .gt_indent_2 {
-  text-indent: 10px;
-}
-
-#kchurjyigc .gt_indent_3 {
-  text-indent: 15px;
-}
-
-#kchurjyigc .gt_indent_4 {
-  text-indent: 20px;
-}
-
-#kchurjyigc .gt_indent_5 {
-  text-indent: 25px;
-}
-</style>
-
-<table class="gt_table do-not-create-environment cell table table-sm table-striped small" data-quarto-postprocess="true" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
-<thead>
-<tr class="header gt_col_headings gt_spanner_row">
-<th rowspan="2" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"></th>
-<th rowspan="2" id="Randomised" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Randomised</th>
-<th rowspan="2" id="Treatment" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Treatment</th>
-<th colspan="4" id="Domain B (chronic silo)" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">Domain B (chronic silo)</span></th>
-</tr>
-<tr class="odd gt_col_headings">
-<th id="w06p1" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">w06p1</th>
-<th id="w12p1" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">w12p1</th>
-<th id="d07p2" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">d07p2</th>
-<th id="w12p2" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">w12p2</th>
-</tr>
-</thead>
-<tbody class="gt_table_body">
-<tr class="odd gt_group_heading_row">
-<td colspan="7" id="AB Duration" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">AB Duration</td>
-</tr>
-<tr class="even gt_row_group_first">
-<td id="stub_1_1" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_1 rand">Y</td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_1 group">one</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_1 w06p1">132</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_1 w12p1">135</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_1 d07p2">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_1 w12p2">-</td>
-</tr>
-<tr class="odd">
-<td id="stub_1_2" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_2 rand">Y</td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_2 group">two</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_2 w06p1">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_2 w12p1">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_2 d07p2">124</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_2 w12p2">131</td>
-</tr>
-<tr class="even">
-<td id="summary_stub_AB Duration_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 rand">—</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 group">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 w06p1">132</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 w12p1">135</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 d07p2">124</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 w12p2">131</td>
-</tr>
-<tr class="odd gt_group_heading_row">
-<td colspan="7" id="AB Type" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">AB Type</td>
-</tr>
-<tr class="even gt_row_group_first">
-<td id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Type stub_1_3 rand">N</td>
-<td class="gt_row gt_left" headers="AB Type stub_1_3 group">other</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_3 w06p1">54</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_3 w12p1">49</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_3 d07p2">42</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_3 w12p2">53</td>
-</tr>
-<tr class="odd">
-<td id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Type stub_1_4 rand">Y</td>
-<td class="gt_row gt_left" headers="AB Type stub_1_4 group">norif</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_4 w06p1">44</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_4 w12p1">56</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_4 d07p2">40</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_4 w12p2">38</td>
-</tr>
-<tr class="even">
-<td id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Type stub_1_5 rand">Y</td>
-<td class="gt_row gt_left" headers="AB Type stub_1_5 group">rif</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_5 w06p1">34</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_5 w12p1">30</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_5 d07p2">42</td>
-<td class="gt_row gt_right" headers="AB Type stub_1_5 w12p2">40</td>
-</tr>
-<tr class="odd">
-<td id="summary_stub_AB Type_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 rand">—</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 group">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 w06p1">132</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 w12p1">135</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 d07p2">124</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Type summary_stub_AB Type_1 w12p2">131</td>
-</tr>
-</tbody>
-</table>
-
-</div>
-</div>
-</div>
-<figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-tbl margin-caption" id="tbl-smry-chronic-Db-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariate balance across other groups
-</figcaption>
-</figure>
-</div>
-</div>
-<div class="cell page-columns page-full">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co"># domain B</span></span>
-<span id="cb6-2"><a href="#cb6-2"></a>d_tmp1 <span class="ot">&lt;-</span> d[, .(c, ea, a, qa)]</span>
-<span id="cb6-3"><a href="#cb6-3"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(c, ea, a, qa)]</span>
-<span id="cb6-4"><a href="#cb6-4"></a>d_tmp2[, a <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(a, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"dair"</span>, <span class="st">"rev"</span>, <span class="st">"one"</span>, <span class="st">"two"</span>))]</span>
-<span id="cb6-5"><a href="#cb6-5"></a>d_tmp2[, qa <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(qa, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"dair"</span>, <span class="st">"one"</span>, <span class="st">"two"</span>))]</span>
-<span id="cb6-6"><a href="#cb6-6"></a>d_tmp2[, c <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(c, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"other"</span>, <span class="st">"norif"</span>, <span class="st">"rif"</span>))]</span>
-<span id="cb6-7"><a href="#cb6-7"></a>d_A <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, ea <span class="sc">+</span> a <span class="sc">+</span> qa <span class="sc">~</span> c, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
-<span id="cb6-8"><a href="#cb6-8"></a>d_A[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"A"</span>]</span>
-<span id="cb6-9"><a href="#cb6-9"></a><span class="fu">colnames</span>(d_A) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="st">"plan"</span>, <span class="fu">c</span>(<span class="st">"other"</span>, <span class="st">"norif"</span>, <span class="st">"rif"</span>), <span class="st">"domain"</span>)</span>
-<span id="cb6-10"><a href="#cb6-10"></a><span class="fu">setcolorder</span>(d_A, <span class="st">"domain"</span>)</span>
-<span id="cb6-11"><a href="#cb6-11"></a><span class="co"># domain B</span></span>
-<span id="cb6-12"><a href="#cb6-12"></a>d_tmp1 <span class="ot">&lt;-</span> d[, .(c, eb, b)]</span>
-<span id="cb6-13"><a href="#cb6-13"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(c, eb, b)]</span>
-<span id="cb6-14"><a href="#cb6-14"></a>d_tmp2[, b <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(b, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"w12"</span>, <span class="st">"w06p1"</span>, <span class="st">"w12p1"</span>, <span class="st">"d07p2"</span>, <span class="st">"w12p2"</span>))]</span>
-<span id="cb6-15"><a href="#cb6-15"></a>d_tmp2[, c <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(c, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"other"</span>, <span class="st">"norif"</span>, <span class="st">"rif"</span>))]</span>
-<span id="cb6-16"><a href="#cb6-16"></a>d_B <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, eb <span class="sc">+</span> b <span class="sc">~</span> c, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
-<span id="cb6-17"><a href="#cb6-17"></a>d_B[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"B"</span>]</span>
-<span id="cb6-18"><a href="#cb6-18"></a><span class="fu">colnames</span>(d_B) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"group"</span>, <span class="fu">c</span>(<span class="st">"other"</span>, <span class="st">"norif"</span>, <span class="st">"rif"</span>), <span class="st">"domain"</span>)</span>
-<span id="cb6-19"><a href="#cb6-19"></a><span class="fu">setcolorder</span>(d_B, <span class="st">"domain"</span>)</span>
-<span id="cb6-20"><a href="#cb6-20"></a></span>
-<span id="cb6-21"><a href="#cb6-21"></a>d_tbl <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_A, d_B, <span class="at">fill =</span> T)</span>
-<span id="cb6-22"><a href="#cb6-22"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"A"</span>, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"Surgical"</span>]</span>
-<span id="cb6-23"><a href="#cb6-23"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"B"</span>, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"AB Duration"</span>]</span>
-<span id="cb6-24"><a href="#cb6-24"></a></span>
-<span id="cb6-25"><a href="#cb6-25"></a>cols <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Domain"</span>, <span class="st">"Randomised"</span>, <span class="st">"Treatment"</span>, <span class="st">"Plan"</span>, <span class="fu">c</span>(<span class="st">"other"</span>, <span class="st">"norif"</span>, <span class="st">"rif"</span>))</span>
-<span id="cb6-26"><a href="#cb6-26"></a><span class="fu">names</span>(cols) <span class="ot">&lt;-</span> <span class="fu">names</span>(d_tbl)</span>
-<span id="cb6-27"><a href="#cb6-27"></a></span>
-<span id="cb6-28"><a href="#cb6-28"></a>gt_tbl <span class="ot">&lt;-</span> d_tbl <span class="sc">|&gt;</span> </span>
-<span id="cb6-29"><a href="#cb6-29"></a>  <span class="fu">gt</span>(<span class="at">groupname_col =</span> <span class="st">"domain"</span></span>
-<span id="cb6-30"><a href="#cb6-30"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb6-31"><a href="#cb6-31"></a>  <span class="fu">summary_rows</span>(</span>
-<span id="cb6-32"><a href="#cb6-32"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"other"</span>, <span class="st">"norif"</span>, <span class="st">"rif"</span>),</span>
-<span id="cb6-33"><a href="#cb6-33"></a>    <span class="at">fns =</span> <span class="fu">list</span>(</span>
-<span id="cb6-34"><a href="#cb6-34"></a>      <span class="at">subtotal =</span> <span class="sc">~</span> <span class="fu">sum</span>(., <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb6-35"><a href="#cb6-35"></a>    )</span>
-<span id="cb6-36"><a href="#cb6-36"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb6-37"><a href="#cb6-37"></a>  <span class="fu">tab_spanner</span>(</span>
-<span id="cb6-38"><a href="#cb6-38"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"Domain C"</span>),</span>
-<span id="cb6-39"><a href="#cb6-39"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"other"</span>, <span class="st">"norif"</span>, <span class="st">"rif"</span>)</span>
-<span id="cb6-40"><a href="#cb6-40"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb6-41"><a href="#cb6-41"></a>  <span class="fu">sub_missing</span>(</span>
-<span id="cb6-42"><a href="#cb6-42"></a>    <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
-<span id="cb6-43"><a href="#cb6-43"></a>    <span class="at">missing_text =</span> <span class="st">"-"</span></span>
-<span id="cb6-44"><a href="#cb6-44"></a>  ) <span class="sc">|&gt;</span></span>
-<span id="cb6-45"><a href="#cb6-45"></a>  <span class="fu">cols_label</span>(<span class="at">.list =</span> cols)</span>
-<span id="cb6-46"><a href="#cb6-46"></a></span>
-<span id="cb6-47"><a href="#cb6-47"></a>gt_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="co"># domain </span></span>
+<span id="cb4-2"><a href="#cb4-2"></a>d_tmp1 <span class="ot">&lt;-</span> d[ef <span class="sc">==</span> <span class="dv">1</span>, .(f, er, r, srp)]</span>
+<span id="cb4-3"><a href="#cb4-3"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(f, er, r, srp)]</span>
+<span id="cb4-4"><a href="#cb4-4"></a><span class="co"># d_tmp2[, a := factor(a, levels = c("dair", "rev", "one", "two"))]</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a><span class="co"># d_tmp2[, qa := factor(qa, levels = c("dair", "one", "two"))]</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a><span class="co"># d_tmp2[, c := factor(c, levels = c("other", "norif", "rif"))]</span></span>
+<span id="cb4-7"><a href="#cb4-7"></a>d_A <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, er <span class="sc">+</span> srp <span class="sc">+</span> r <span class="sc">~</span> f, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
+<span id="cb4-8"><a href="#cb4-8"></a>d_A[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"Surgery"</span>]</span>
+<span id="cb4-9"><a href="#cb4-9"></a><span class="fu">colnames</span>(d_A) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"surgery"</span>,<span class="st">"group"</span>,  <span class="fu">c</span>(<span class="st">"norif"</span>, <span class="st">"rif"</span>), <span class="st">"domain"</span>)</span>
+<span id="cb4-10"><a href="#cb4-10"></a><span class="fu">setcolorder</span>(d_A, <span class="st">"domain"</span>)</span>
+<span id="cb4-11"><a href="#cb4-11"></a><span class="co"># domain</span></span>
+<span id="cb4-12"><a href="#cb4-12"></a>d_tmp1 <span class="ot">&lt;-</span> d[ef <span class="sc">==</span> <span class="dv">1</span>, .(f, ed, d, srp)]</span>
+<span id="cb4-13"><a href="#cb4-13"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(f, ed, d, srp)]</span>
+<span id="cb4-14"><a href="#cb4-14"></a><span class="co"># d_tmp2[, b := factor(b, levels = c("w12", "w06p1", "w12p1", "d07p2", "w12p2"))]</span></span>
+<span id="cb4-15"><a href="#cb4-15"></a><span class="co"># d_tmp2[, c := factor(c, levels = c("other", "norif", "rif"))]</span></span>
+<span id="cb4-16"><a href="#cb4-16"></a>d_B <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, ed <span class="sc">+</span> srp <span class="sc">+</span> d <span class="sc">~</span> f, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
+<span id="cb4-17"><a href="#cb4-17"></a>d_B[, domain <span class="sc">:</span><span class="er">=</span> <span class="st">"Duration"</span>]</span>
+<span id="cb4-18"><a href="#cb4-18"></a><span class="fu">colnames</span>(d_B) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"rand"</span>, <span class="st">"surgery"</span>, <span class="st">"group"</span>, <span class="fu">c</span>(<span class="st">"norif"</span>, <span class="st">"rif"</span>), <span class="st">"domain"</span>)</span>
+<span id="cb4-19"><a href="#cb4-19"></a><span class="fu">setcolorder</span>(d_B, <span class="st">"domain"</span>)</span>
+<span id="cb4-20"><a href="#cb4-20"></a></span>
+<span id="cb4-21"><a href="#cb4-21"></a>d_tbl <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_A, d_B, <span class="at">fill =</span> T)</span>
+<span id="cb4-22"><a href="#cb4-22"></a></span>
+<span id="cb4-23"><a href="#cb4-23"></a>d_tbl[, total <span class="sc">:</span><span class="er">=</span> <span class="fu">rowSums</span>(d_tbl[, .(norif, rif)], <span class="at">na.rm =</span> T)]</span>
+<span id="cb4-24"><a href="#cb4-24"></a></span>
+<span id="cb4-25"><a href="#cb4-25"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"Surgery"</span> <span class="sc">&amp;</span> rand <span class="sc">==</span> <span class="dv">0</span>, group <span class="sc">:</span><span class="er">=</span> <span class="cn">NA</span>]</span>
+<span id="cb4-26"><a href="#cb4-26"></a>d_tbl[domain <span class="sc">==</span> <span class="st">"Duration"</span> <span class="sc">&amp;</span> rand <span class="sc">==</span> <span class="dv">0</span>, group <span class="sc">:</span><span class="er">=</span> <span class="cn">NA</span>]</span>
+<span id="cb4-27"><a href="#cb4-27"></a></span>
+<span id="cb4-28"><a href="#cb4-28"></a></span>
+<span id="cb4-29"><a href="#cb4-29"></a></span>
+<span id="cb4-30"><a href="#cb4-30"></a>cols <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"Domain"</span>, <span class="st">"Revealed"</span>, <span class="st">"Surgery recvd"</span>, <span class="st">"Treatment"</span>, <span class="fu">c</span>(<span class="st">"norif"</span>, <span class="st">"rif"</span>), <span class="st">"Total"</span>)</span>
+<span id="cb4-31"><a href="#cb4-31"></a><span class="fu">names</span>(cols) <span class="ot">&lt;-</span> <span class="fu">names</span>(d_tbl)</span>
+<span id="cb4-32"><a href="#cb4-32"></a></span>
+<span id="cb4-33"><a href="#cb4-33"></a>gt_tbl <span class="ot">&lt;-</span> d_tbl <span class="sc">|&gt;</span> </span>
+<span id="cb4-34"><a href="#cb4-34"></a>  <span class="fu">gt</span>(<span class="at">groupname_col =</span> <span class="st">"domain"</span></span>
+<span id="cb4-35"><a href="#cb4-35"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb4-36"><a href="#cb4-36"></a>  <span class="fu">summary_rows</span>(</span>
+<span id="cb4-37"><a href="#cb4-37"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"norif"</span>, <span class="st">"rif"</span>, <span class="st">"total"</span>),</span>
+<span id="cb4-38"><a href="#cb4-38"></a>    <span class="at">fns =</span> <span class="fu">list</span>(</span>
+<span id="cb4-39"><a href="#cb4-39"></a>      <span class="at">subtotal =</span> <span class="sc">~</span> <span class="fu">sum</span>(., <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb4-40"><a href="#cb4-40"></a>    )</span>
+<span id="cb4-41"><a href="#cb4-41"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb4-42"><a href="#cb4-42"></a>  <span class="fu">tab_spanner</span>(</span>
+<span id="cb4-43"><a href="#cb4-43"></a>    <span class="at">label =</span> <span class="fu">html</span>(<span class="st">"AB Choice"</span>),</span>
+<span id="cb4-44"><a href="#cb4-44"></a>    <span class="at">columns =</span> <span class="fu">c</span>(<span class="st">"norif"</span>, <span class="st">"rif"</span>),</span>
+<span id="cb4-45"><a href="#cb4-45"></a>    <span class="at">id =</span> <span class="st">"c1"</span></span>
+<span id="cb4-46"><a href="#cb4-46"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb4-47"><a href="#cb4-47"></a>  <span class="fu">sub_missing</span>(</span>
+<span id="cb4-48"><a href="#cb4-48"></a>    <span class="at">columns =</span> <span class="fu">everything</span>(),</span>
+<span id="cb4-49"><a href="#cb4-49"></a>    <span class="at">missing_text =</span> <span class="st">"-"</span></span>
+<span id="cb4-50"><a href="#cb4-50"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb4-51"><a href="#cb4-51"></a>  <span class="fu">cols_label</span>(<span class="at">.list =</span> cols)<span class="sc">|&gt;</span></span>
+<span id="cb4-52"><a href="#cb4-52"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb4-53"><a href="#cb4-53"></a>    <span class="at">footnote =</span> <span class="st">"Revealed indicates whether units were randomised into surgery/choice domain (0: No, 1: Yes)"</span>,</span>
+<span id="cb4-54"><a href="#cb4-54"></a>    <span class="at">locations =</span> <span class="fu">cells_column_labels</span>(<span class="at">columns =</span> rand)</span>
+<span id="cb4-55"><a href="#cb4-55"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb4-56"><a href="#cb4-56"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb4-57"><a href="#cb4-57"></a>    <span class="at">footnote =</span> <span class="st">"Treatment indicates which treatment assigned within domain. For surgery (0: dair, 1: rev). For duration is specific to surgery type received (0: long, 1: short). Units that were not randomised within the surgery/duration domain have undefined randomised treatment status."</span>,</span>
+<span id="cb4-58"><a href="#cb4-58"></a>    <span class="at">locations =</span> <span class="fu">cells_column_labels</span>(<span class="at">columns =</span> group)</span>
+<span id="cb4-59"><a href="#cb4-59"></a>  ) <span class="sc">|&gt;</span></span>
+<span id="cb4-60"><a href="#cb4-60"></a>  <span class="fu">tab_footnote</span>(</span>
+<span id="cb4-61"><a href="#cb4-61"></a>    <span class="at">footnote =</span> <span class="st">"Only units randomised to interventions in the antibiotic choice domain reported."</span>,</span>
+<span id="cb4-62"><a href="#cb4-62"></a>    <span class="at">locations =</span> <span class="fu">cells_column_spanners</span>(<span class="at">spanners =</span> <span class="fu">c</span>(<span class="st">"c1"</span>))</span>
+<span id="cb4-63"><a href="#cb4-63"></a>  )</span>
+<span id="cb4-64"><a href="#cb4-64"></a></span>
+<span id="cb4-65"><a href="#cb4-65"></a>gt_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div id="tbl-smry-Dc" class="cell quarto-float anchored page-columns page-full">
 <figure class="quarto-float quarto-float-tbl figure page-columns page-full">
-<div aria-describedby="tbl-smry-Dc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
-<div class="cell-output-display column-page">
-<div id="dudmxchtou" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#dudmxchtou table {
+<div aria-describedby="tbl-smry-Dc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<div id="abfbqpdvho" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#abfbqpdvho table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#dudmxchtou thead, #dudmxchtou tbody, #dudmxchtou tfoot, #dudmxchtou tr, #dudmxchtou td, #dudmxchtou th {
+#abfbqpdvho thead, #abfbqpdvho tbody, #abfbqpdvho tfoot, #abfbqpdvho tr, #abfbqpdvho td, #abfbqpdvho th {
   border-style: none;
 }
 
-#dudmxchtou p {
+#abfbqpdvho p {
   margin: 0;
   padding: 0;
 }
 
-#dudmxchtou .gt_table {
+#abfbqpdvho .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -2777,12 +1781,12 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   border-left-color: #D3D3D3;
 }
 
-#dudmxchtou .gt_caption {
+#abfbqpdvho .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#dudmxchtou .gt_title {
+#abfbqpdvho .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -2794,7 +1798,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   border-bottom-width: 0;
 }
 
-#dudmxchtou .gt_subtitle {
+#abfbqpdvho .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -2806,7 +1810,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   border-top-width: 0;
 }
 
-#dudmxchtou .gt_heading {
+#abfbqpdvho .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -2818,13 +1822,13 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   border-right-color: #D3D3D3;
 }
 
-#dudmxchtou .gt_bottom_border {
+#abfbqpdvho .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#dudmxchtou .gt_col_headings {
+#abfbqpdvho .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2839,7 +1843,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   border-right-color: #D3D3D3;
 }
 
-#dudmxchtou .gt_col_heading {
+#abfbqpdvho .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2859,7 +1863,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   overflow-x: hidden;
 }
 
-#dudmxchtou .gt_column_spanner_outer {
+#abfbqpdvho .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2871,15 +1875,15 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   padding-right: 4px;
 }
 
-#dudmxchtou .gt_column_spanner_outer:first-child {
+#abfbqpdvho .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#dudmxchtou .gt_column_spanner_outer:last-child {
+#abfbqpdvho .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#dudmxchtou .gt_column_spanner {
+#abfbqpdvho .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -2891,11 +1895,11 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   width: 100%;
 }
 
-#dudmxchtou .gt_spanner_row {
+#abfbqpdvho .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#dudmxchtou .gt_group_heading {
+#abfbqpdvho .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2921,7 +1925,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   text-align: left;
 }
 
-#dudmxchtou .gt_empty_group_heading {
+#abfbqpdvho .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -2936,15 +1940,15 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   vertical-align: middle;
 }
 
-#dudmxchtou .gt_from_md > :first-child {
+#abfbqpdvho .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#dudmxchtou .gt_from_md > :last-child {
+#abfbqpdvho .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#dudmxchtou .gt_row {
+#abfbqpdvho .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2963,7 +1967,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   overflow-x: hidden;
 }
 
-#dudmxchtou .gt_stub {
+#abfbqpdvho .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2976,7 +1980,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   padding-right: 5px;
 }
 
-#dudmxchtou .gt_stub_row_group {
+#abfbqpdvho .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2990,15 +1994,15 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   vertical-align: top;
 }
 
-#dudmxchtou .gt_row_group_first td {
+#abfbqpdvho .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#dudmxchtou .gt_row_group_first th {
+#abfbqpdvho .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#dudmxchtou .gt_summary_row {
+#abfbqpdvho .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3008,16 +2012,16 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   padding-right: 5px;
 }
 
-#dudmxchtou .gt_first_summary_row {
+#abfbqpdvho .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#dudmxchtou .gt_first_summary_row.thick {
+#abfbqpdvho .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#dudmxchtou .gt_last_summary_row {
+#abfbqpdvho .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3027,7 +2031,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   border-bottom-color: #D3D3D3;
 }
 
-#dudmxchtou .gt_grand_summary_row {
+#abfbqpdvho .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -3037,7 +2041,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   padding-right: 5px;
 }
 
-#dudmxchtou .gt_first_grand_summary_row {
+#abfbqpdvho .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3047,7 +2051,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   border-top-color: #D3D3D3;
 }
 
-#dudmxchtou .gt_last_grand_summary_row_top {
+#abfbqpdvho .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -3057,11 +2061,11 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   border-bottom-color: #D3D3D3;
 }
 
-#dudmxchtou .gt_striped {
+#abfbqpdvho .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#dudmxchtou .gt_table_body {
+#abfbqpdvho .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -3070,7 +2074,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   border-bottom-color: #D3D3D3;
 }
 
-#dudmxchtou .gt_footnotes {
+#abfbqpdvho .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3084,7 +2088,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   border-right-color: #D3D3D3;
 }
 
-#dudmxchtou .gt_footnote {
+#abfbqpdvho .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -3093,7 +2097,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   padding-right: 5px;
 }
 
-#dudmxchtou .gt_sourcenotes {
+#abfbqpdvho .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -3107,7 +2111,7 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   border-right-color: #D3D3D3;
 }
 
-#dudmxchtou .gt_sourcenote {
+#abfbqpdvho .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -3115,63 +2119,63 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
   padding-right: 5px;
 }
 
-#dudmxchtou .gt_left {
+#abfbqpdvho .gt_left {
   text-align: left;
 }
 
-#dudmxchtou .gt_center {
+#abfbqpdvho .gt_center {
   text-align: center;
 }
 
-#dudmxchtou .gt_right {
+#abfbqpdvho .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#dudmxchtou .gt_font_normal {
+#abfbqpdvho .gt_font_normal {
   font-weight: normal;
 }
 
-#dudmxchtou .gt_font_bold {
+#abfbqpdvho .gt_font_bold {
   font-weight: bold;
 }
 
-#dudmxchtou .gt_font_italic {
+#abfbqpdvho .gt_font_italic {
   font-style: italic;
 }
 
-#dudmxchtou .gt_super {
+#abfbqpdvho .gt_super {
   font-size: 65%;
 }
 
-#dudmxchtou .gt_footnote_marks {
+#abfbqpdvho .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#dudmxchtou .gt_asterisk {
+#abfbqpdvho .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#dudmxchtou .gt_indent_1 {
+#abfbqpdvho .gt_indent_1 {
   text-indent: 5px;
 }
 
-#dudmxchtou .gt_indent_2 {
+#abfbqpdvho .gt_indent_2 {
   text-indent: 10px;
 }
 
-#dudmxchtou .gt_indent_3 {
+#abfbqpdvho .gt_indent_3 {
   text-indent: 15px;
 }
 
-#dudmxchtou .gt_indent_4 {
+#abfbqpdvho .gt_indent_4 {
   text-indent: 20px;
 }
 
-#dudmxchtou .gt_indent_5 {
+#abfbqpdvho .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -3180,149 +2184,169 @@ Table&nbsp;4: Simulated trial data for (chronic silo) duration domain - covariat
 <thead>
 <tr class="header gt_col_headings gt_spanner_row">
 <th rowspan="2" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col"></th>
-<th rowspan="2" id="Randomised" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">Randomised</th>
-<th rowspan="2" id="Treatment" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Treatment</th>
-<th rowspan="2" id="Plan" class="gt_col_heading gt_columns_bottom_border gt_center" data-quarto-table-cell-role="th" scope="col">Plan</th>
-<th colspan="3" id="Domain C" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">Domain C</span></th>
+<th rowspan="2" id="Revealed<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>2</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Revealed<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>2</sup></span></th>
+<th rowspan="2" id="Surgery recvd" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Surgery recvd</th>
+<th rowspan="2" id="Treatment<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>3</sup></span>" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Treatment<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>3</sup></span></th>
+<th colspan="2" id="AB Choice<span class=&quot;gt_footnote_marks&quot; style=&quot;white-space:nowrap;font-style:italic;font-weight:normal;&quot;><sup>1</sup></span>" class="gt_center gt_columns_top_border gt_column_spanner_outer" data-quarto-table-cell-role="th" scope="colgroup"><span class="gt_column_spanner">AB Choice<span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span></span></th>
+<th rowspan="2" id="Total" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Total</th>
 </tr>
 <tr class="odd gt_col_headings">
-<th id="other" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">other</th>
 <th id="norif" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">norif</th>
 <th id="rif" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">rif</th>
 </tr>
 </thead>
 <tbody class="gt_table_body">
 <tr class="odd gt_group_heading_row">
-<td colspan="7" id="Surgical" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Surgical</td>
+<td colspan="7" id="Surgery" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Surgery</td>
 </tr>
 <tr class="even gt_row_group_first">
 <td id="stub_1_1" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="Surgical stub_1_1 rand">N</td>
-<td class="gt_row gt_center" headers="Surgical stub_1_1 group">dair</td>
-<td class="gt_row gt_center" headers="Surgical stub_1_1 plan">dair</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_1 other">295</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_1 norif">237</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_1 rif">223</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 rand">0</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 surgery">0</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 group">-</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 norif">235</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 rif">221</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 total">456</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_2" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="Surgical stub_1_2 rand">Y</td>
-<td class="gt_row gt_center" headers="Surgical stub_1_2 group">dair</td>
-<td class="gt_row gt_center" headers="Surgical stub_1_2 plan">dair</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_2 other">241</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_2 norif">195</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_2 rif">191</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 rand">0</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 surgery">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 group">-</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 norif">47</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 rif">49</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 total">96</td>
 </tr>
 <tr class="even">
 <td id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="Surgical stub_1_3 rand">Y</td>
-<td class="gt_row gt_center" headers="Surgical stub_1_3 group">rev</td>
-<td class="gt_row gt_center" headers="Surgical stub_1_3 plan">one</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_3 other">75</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_3 norif">48</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_3 rif">49</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 rand">0</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 surgery">2</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 group">-</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 norif">91</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 rif">104</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 total">195</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="Surgical stub_1_4 rand">Y</td>
-<td class="gt_row gt_center" headers="Surgical stub_1_4 group">rev</td>
-<td class="gt_row gt_center" headers="Surgical stub_1_4 plan">two</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_4 other">169</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_4 norif">136</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_4 rif">119</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_4 rand">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_4 surgery">0</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_4 group">0</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_4 norif">179</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_4 rif">199</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_4 total">378</td>
 </tr>
 <tr class="even">
 <td id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="Surgical stub_1_5 rand">Y</td>
-<td class="gt_row gt_center" headers="Surgical stub_1_5 group">one</td>
-<td class="gt_row gt_center" headers="Surgical stub_1_5 plan">one</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_5 other">103</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_5 norif">100</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_5 rif">64</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_5 rand">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_5 surgery">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_5 group">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_5 norif">72</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_5 rif">50</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_5 total">122</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_6" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="Surgical stub_1_6 rand">Y</td>
-<td class="gt_row gt_center" headers="Surgical stub_1_6 group">two</td>
-<td class="gt_row gt_center" headers="Surgical stub_1_6 plan">two</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_6 other">95</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_6 norif">78</td>
-<td class="gt_row gt_right" headers="Surgical stub_1_6 rif">82</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_6 rand">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_6 surgery">2</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_6 group">0</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_6 norif">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_6 rif">-</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_6 total">1</td>
 </tr>
 <tr class="even">
-<td id="summary_stub_Surgical_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgical summary_stub_Surgical_1 rand">—</td>
-<td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgical summary_stub_Surgical_1 group">—</td>
-<td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgical summary_stub_Surgical_1 plan">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgical summary_stub_Surgical_1 other">978</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgical summary_stub_Surgical_1 norif">794</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgical summary_stub_Surgical_1 rif">728</td>
-</tr>
-<tr class="odd gt_group_heading_row">
-<td colspan="7" id="AB Duration" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">AB Duration</td>
-</tr>
-<tr class="even gt_row_group_first">
 <td id="stub_1_7" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_7 rand">N</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_7 group">w12</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_7 plan">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_7 other">536</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_7 norif">432</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_7 rif">414</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_7 rand">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_7 surgery">2</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_7 group">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_7 norif">127</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_7 rif">136</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_7 total">263</td>
 </tr>
 <tr class="odd">
+<td id="summary_stub_Surgery_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 rand">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 surgery">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 group">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 norif">752</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 rif">759</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 total">1511</td>
+</tr>
+<tr class="even gt_group_heading_row">
+<td colspan="7" id="Duration" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Duration</td>
+</tr>
+<tr class="odd gt_row_group_first">
 <td id="stub_1_8" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_8 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_8 group">w06p1</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_8 plan">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_8 other">89</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_8 norif">68</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_8 rif">50</td>
+<td class="gt_row gt_right" headers="Duration stub_1_8 rand">0</td>
+<td class="gt_row gt_right" headers="Duration stub_1_8 surgery">0</td>
+<td class="gt_row gt_right" headers="Duration stub_1_8 group">-</td>
+<td class="gt_row gt_right" headers="Duration stub_1_8 norif">414</td>
+<td class="gt_row gt_right" headers="Duration stub_1_8 rif">420</td>
+<td class="gt_row gt_right" headers="Duration stub_1_8 total">834</td>
 </tr>
 <tr class="even">
 <td id="stub_1_9" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_9 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_9 group">w12p1</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_9 plan">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_9 other">89</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_9 norif">80</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_9 rif">63</td>
+<td class="gt_row gt_right" headers="Duration stub_1_9 rand">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_9 surgery">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_9 group">0</td>
+<td class="gt_row gt_right" headers="Duration stub_1_9 norif">54</td>
+<td class="gt_row gt_right" headers="Duration stub_1_9 rif">54</td>
+<td class="gt_row gt_right" headers="Duration stub_1_9 total">108</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_10" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_10 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_10 group">d07p2</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_10 plan">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_10 other">130</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_10 norif">108</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_10 rif">102</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 rand">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 surgery">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 group">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 norif">65</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 rif">45</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 total">110</td>
 </tr>
 <tr class="even">
 <td id="stub_1_11" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_left" headers="AB Duration stub_1_11 rand">Y</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_11 group">w12p2</td>
-<td class="gt_row gt_center" headers="AB Duration stub_1_11 plan">-</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_11 other">134</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_11 norif">106</td>
-<td class="gt_row gt_right" headers="AB Duration stub_1_11 rif">99</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 rand">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 surgery">2</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 group">0</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 norif">122</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 rif">112</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 total">234</td>
 </tr>
 <tr class="odd">
-<td id="summary_stub_AB Duration_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
-<td class="gt_row gt_left gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 rand">—</td>
-<td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 group">—</td>
-<td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 plan">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 other">978</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 norif">794</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="AB Duration summary_stub_AB Duration_1 rif">728</td>
+<td id="stub_1_12" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 rand">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 surgery">2</td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 group">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 norif">97</td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 rif">128</td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 total">225</td>
 </tr>
-</tbody>
+<tr class="even">
+<td id="summary_stub_Duration_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 rand">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 surgery">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 group">—</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 norif">752</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 rif">759</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 total">1511</td>
+</tr>
+</tbody><tfoot class="gt_footnotes">
+<tr class="even">
+<td colspan="7" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> Only units randomised to interventions in the antibiotic choice domain reported.</td>
+</tr>
+<tr class="odd">
+<td colspan="7" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>2</sup></span> Revealed indicates whether units were randomised into surgery/choice domain (0: No, 1: Yes)</td>
+</tr>
+<tr class="even">
+<td colspan="7" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>3</sup></span> Treatment indicates which treatment assigned within domain. For surgery (0: dair, 1: rev). For duration is specific to surgery type received (0: long, 1: short). Units that were not randomised within the surgery/duration domain have undefined randomised treatment status.</td>
+</tr>
+</tfoot>
+
 </table>
 
 </div>
 </div>
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-tbl margin-caption" id="tbl-smry-Dc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-Table&nbsp;5: Simulated trial data for surgical domain - covariate balance across other groups
+Table&nbsp;3: Simulated trial data for AB choice domain - covariate balance across other groups
 </figcaption>
 </figure>
 </div>

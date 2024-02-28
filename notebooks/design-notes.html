@@ -252,7 +252,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../notebooks/simulation-results.html" class="sidebar-item-text sidebar-link">
+  <a href="../notebooks/sim-design1-results.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Simulation results 1</span></a>
   </div>
 </li>
@@ -266,6 +266,12 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="../notebooks/design-notes.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Design Notes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../notebooks/misc-notes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reminders</span></a>
   </div>
 </li>
       </ul>
@@ -310,7 +316,6 @@ window.Quarto = {
 <header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/design-notes.html">Design Notes</a></li></ol></nav>
 <div class="quarto-title">
 <h1 class="title">Design Notes</h1>
-<p class="subtitle lead">Late Acute Silo</p>
 </div>
 
 
@@ -328,7 +333,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">February 18, 2024</p>
+      <p class="date-modified">February 23, 2024</p>
     </div>
   </div>
     
@@ -3777,7 +3782,8 @@ Type:  response </code></pre>
 </section>
 <section id="silos" class="level2">
 <h2 class="anchored" data-anchor-id="silos">Silos</h2>
-<p>The above has considered the late-acute silo in isolation. Suppose we also had a chronic silo with the same limitations: randomise to DAIR vs.&nbsp;revision, then revision type is determined by the surgeon/patient, duration is randomised. In the new setting, nothing really changes, we can just introduce silo-specific parameters. For lack of letters, let <span class="math inline">\(G\)</span> denote group (silo). Then</p>
+<p>The above has considered the late-acute silo in isolation. Suppose we also had a chronic silo with the same limitations: randomise to DAIR vs.&nbsp;revision, then revision type is determined by the surgeon/patient, duration is randomised. In the new setting, nothing really changes, we can just introduce silo-specific parameters.</p>
+<p>For lack of letters, let <span class="math inline">\(G\)</span> denote group (silo). Then</p>
 <p><span class="math display">\[
 \mathbb{E}[Y|G=g,R,S,D] = \text{expit}(\beta_{0,g} + \beta_{1,g}R + \beta_{2,g}S + \beta_{3,g}RS + \beta_{4,g}RD + \beta_{5,g}RSD + \gamma_g^\mathsf{T}X)
 \]</span></p>
@@ -4167,25 +4173,27 @@ Note
 <div class="sourceCode cell-code" id="cb59"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb59-1"><a href="#cb59-1"></a><span class="co"># Revision vs. DAIR</span></span>
 <span id="cb59-2"><a href="#cb59-2"></a>cmp <span class="ot">&lt;-</span> <span class="fu">avg_comparisons</span>(fit2, <span class="at">variables =</span> <span class="st">"r"</span>, <span class="at">comparison =</span> <span class="st">"lnor"</span>)</span>
 <span id="cb59-3"><a href="#cb59-3"></a></span>
-<span id="cb59-4"><a href="#cb59-4"></a>d_new <span class="ot">&lt;-</span> <span class="fu">copy</span>(D)</span>
+<span id="cb59-4"><a href="#cb59-4"></a><span class="co"># avg_comparisons(fit2, variables = "r", comparison = "lnor", by = "er")</span></span>
 <span id="cb59-5"><a href="#cb59-5"></a></span>
-<span id="cb59-6"><a href="#cb59-6"></a><span class="co"># equivalent to using lnor</span></span>
-<span id="cb59-7"><a href="#cb59-7"></a>d_new[, r <span class="sc">:</span><span class="er">=</span> <span class="dv">1</span>]</span>
-<span id="cb59-8"><a href="#cb59-8"></a>lo1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit2, <span class="at">newdata =</span> d_new)</span>
-<span id="cb59-9"><a href="#cb59-9"></a>d_new[, r <span class="sc">:</span><span class="er">=</span> <span class="dv">0</span>]</span>
-<span id="cb59-10"><a href="#cb59-10"></a>lo0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit2, <span class="at">newdata =</span> d_new)</span>
-<span id="cb59-11"><a href="#cb59-11"></a></span>
-<span id="cb59-12"><a href="#cb59-12"></a><span class="co"># equivalent to weighted combination of parameters</span></span>
-<span id="cb59-13"><a href="#cb59-13"></a>b <span class="ot">&lt;-</span> <span class="fu">coef</span>(fit2)</span>
-<span id="cb59-14"><a href="#cb59-14"></a></span>
-<span id="cb59-15"><a href="#cb59-15"></a>w_srp <span class="ot">&lt;-</span> D[er <span class="sc">==</span> <span class="dv">1</span>, <span class="fu">mean</span>(srp2)]</span>
-<span id="cb59-16"><a href="#cb59-16"></a>w_er <span class="ot">&lt;-</span> D[, <span class="fu">mean</span>(er)]</span>
-<span id="cb59-17"><a href="#cb59-17"></a></span>
-<span id="cb59-18"><a href="#cb59-18"></a><span class="fu">rbind</span>(</span>
-<span id="cb59-19"><a href="#cb59-19"></a>  <span class="st">"predict at r = 0/1"</span> <span class="ot">=</span> <span class="fu">mean</span>(lo1 <span class="sc">-</span> lo0),</span>
-<span id="cb59-20"><a href="#cb59-20"></a>  <span class="st">"weighting coef by er and srp (condit on reveal)"</span> <span class="ot">=</span> w_er <span class="sc">*</span> b[<span class="st">"er:r"</span>] <span class="sc">+</span> w_er <span class="sc">*</span> w_srp <span class="sc">*</span> b[<span class="st">"er:r:srp2"</span>] , </span>
-<span id="cb59-21"><a href="#cb59-21"></a>  <span class="st">"avg_comparisons (lnor)"</span> <span class="ot">=</span> cmp<span class="sc">$</span>estimate</span>
-<span id="cb59-22"><a href="#cb59-22"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb59-6"><a href="#cb59-6"></a>d_new <span class="ot">&lt;-</span> <span class="fu">copy</span>(D)</span>
+<span id="cb59-7"><a href="#cb59-7"></a></span>
+<span id="cb59-8"><a href="#cb59-8"></a><span class="co"># equivalent to using lnor</span></span>
+<span id="cb59-9"><a href="#cb59-9"></a>d_new[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">r =</span> <span class="dv">1</span>)]</span>
+<span id="cb59-10"><a href="#cb59-10"></a>lo1 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit2, <span class="at">newdata =</span> d_new)</span>
+<span id="cb59-11"><a href="#cb59-11"></a>d_new[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">r =</span> <span class="dv">0</span>)]</span>
+<span id="cb59-12"><a href="#cb59-12"></a>lo0 <span class="ot">&lt;-</span> <span class="fu">predict</span>(fit2, <span class="at">newdata =</span> d_new)</span>
+<span id="cb59-13"><a href="#cb59-13"></a></span>
+<span id="cb59-14"><a href="#cb59-14"></a><span class="co"># in this setting is equivalent to weighted combination of parameters</span></span>
+<span id="cb59-15"><a href="#cb59-15"></a>b <span class="ot">&lt;-</span> <span class="fu">coef</span>(fit2)</span>
+<span id="cb59-16"><a href="#cb59-16"></a></span>
+<span id="cb59-17"><a href="#cb59-17"></a>w_srp <span class="ot">&lt;-</span> D[er <span class="sc">==</span> <span class="dv">1</span>, <span class="fu">mean</span>(srp2)]</span>
+<span id="cb59-18"><a href="#cb59-18"></a>w_er <span class="ot">&lt;-</span> D[, <span class="fu">mean</span>(er)]</span>
+<span id="cb59-19"><a href="#cb59-19"></a></span>
+<span id="cb59-20"><a href="#cb59-20"></a><span class="fu">rbind</span>(</span>
+<span id="cb59-21"><a href="#cb59-21"></a>  <span class="st">"predict at r = 0/1"</span> <span class="ot">=</span> <span class="fu">mean</span>(lo1 <span class="sc">-</span> lo0),</span>
+<span id="cb59-22"><a href="#cb59-22"></a>  <span class="st">"weighting coef by er and srp (condit on reveal)"</span> <span class="ot">=</span> w_er <span class="sc">*</span> b[<span class="st">"er:r"</span>] <span class="sc">+</span> w_er <span class="sc">*</span> w_srp <span class="sc">*</span> b[<span class="st">"er:r:srp2"</span>] , </span>
+<span id="cb59-23"><a href="#cb59-23"></a>  <span class="st">"avg_comparisons (lnor)"</span> <span class="ot">=</span> cmp<span class="sc">$</span>estimate</span>
+<span id="cb59-24"><a href="#cb59-24"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>                                                     er:r

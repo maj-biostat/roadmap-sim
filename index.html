@@ -73,35 +73,6 @@ ul.task-list li input[type="checkbox"] {
   });
 </script>
 
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
-
-<script type="text/javascript">
-const typesetMath = (el) => {
-  if (window.MathJax) {
-    // MathJax Typeset
-    window.MathJax.typeset([el]);
-  } else if (window.katex) {
-    // KaTeX Render
-    var mathElements = el.getElementsByClassName("math");
-    var macros = [];
-    for (var i = 0; i < mathElements.length; i++) {
-      var texText = mathElements[i].firstChild;
-      if (mathElements[i].tagName == "SPAN") {
-        window.katex.render(texText.data, mathElements[i], {
-          displayMode: mathElements[i].classList.contains('display'),
-          throwOnError: false,
-          macros: macros,
-          fleqn: false
-        });
-      }
-    }
-  }
-}
-window.Quarto = {
-  typesetMath
-};
-</script>
 
 </head>
 
@@ -214,7 +185,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./notebooks/simulation-results.html" class="sidebar-item-text sidebar-link">
+  <a href="./notebooks/sim-design1-results.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Simulation results 1</span></a>
   </div>
 </li>
@@ -228,6 +199,12 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="./notebooks/design-notes.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Design Notes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./notebooks/misc-notes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reminders</span></a>
   </div>
 </li>
       </ul>
@@ -248,7 +225,7 @@ window.Quarto = {
     <h2 id="toc-title">Contents</h2>
    
   <ul>
-  <li><a href="#notes" id="toc-notes" class="nav-link active" data-scroll-target="#notes">Notes</a></li>
+  <li><a href="#notestodo" id="toc-notestodo" class="nav-link active" data-scroll-target="#notestodo">Notes/TODO</a></li>
   </ul>
 </nav>
     </div>
@@ -276,10 +253,20 @@ window.Quarto = {
 
 <p>This site contains notes, data summaries and simulation results for the ROADMAP study.</p>
 <p>All the code can be found on github, just use the icon to the top right. The functionality herein has a dependency on the <code>roadmap.data</code> R package, which can also be found via the above link (see the readme for this repo). If you find any issues, let me know and I will prioritise accordingly.</p>
-<section id="notes" class="level2">
-<h2 class="anchored" data-anchor-id="notes">Notes</h2>
+<section id="notestodo" class="level2">
+<h2 class="anchored" data-anchor-id="notestodo">Notes/TODO</h2>
 <ul>
-<li>Does not explore impact of effect heterogeneity on <span class="math inline">\(C\)</span></li>
+<li>Analyses based on cohorts having reached primary endpoint (12 months post rand)</li>
+<li>Query definition and implementation of targets of inference (<code>b_r</code>, <code>b_r1d</code> etc)</li>
+<li>Query what actions should occur when a decision threshold is met for a specific decision type (sup, inf etc)</li>
+<li>Should inference and decisions leading to trial actions be restricted to very specific questions ?</li>
+<li>Some actions imply implications for other domains, e.g.&nbsp;rev inferior to dair =&gt; duration no longer of interest???</li>
+<li>Should actions be augmented to also consider uncertainty of estimate?</li>
+<li>Should the design restrict stopping to specific pairwise questions or are all questions of interest?</li>
+<li>Query approach for NI whereby we evaluate and report on both (trt ni ref) to get to (ref ni trt)</li>
+<li>Currently do not implement stopping for NI</li>
+<li>TODO - compute implications of NI margin in terms of risk for each parameter</li>
+<li>TODO - compute family wise type-i errors?</li>
 </ul>
 
 

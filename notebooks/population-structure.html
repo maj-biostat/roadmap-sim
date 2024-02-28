@@ -6,6 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
+<meta name="dcterms.date" content="2024-02-28">
 
 <title>ROADMAP - design notes and simulations - Population structure</title>
 <style>
@@ -248,7 +249,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../notebooks/simulation-results.html" class="sidebar-item-text sidebar-link">
+  <a href="../notebooks/sim-design1-results.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Simulation results 1</span></a>
   </div>
 </li>
@@ -262,6 +263,12 @@ window.Quarto = {
   <div class="sidebar-item-container"> 
   <a href="../notebooks/design-notes.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Design Notes</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../notebooks/misc-notes.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Reminders</span></a>
   </div>
 </li>
       </ul>
@@ -308,7 +315,19 @@ window.Quarto = {
 <div class="quarto-title-meta">
 
     
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">February 28, 2024</p>
+    </div>
+  </div>
   
+    <div>
+    <div class="quarto-title-meta-heading">Modified</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date-modified">February 26, 2024</p>
+    </div>
+  </div>
     
   </div>
   
@@ -407,32 +426,7 @@ window.Quarto = {
 </section>
 <section id="randomisation-into-surgery-domain-a" class="level2">
 <h2 class="anchored" data-anchor-id="randomisation-into-surgery-domain-a">Randomisation into surgery domain (A)</h2>
-<p>Randomisation into domain A is conditional on silo membership as detailed below.</p>
-<div class="column" style="width:50%;">
-<table class="table-striped table-hover table">
-<caption>Randomisation within domain A</caption>
-<thead>
-<tr class="header">
-<th>Silo</th>
-<th>Randomised (<span class="math inline">\(e_a\)</span>)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>early</td>
-<td>N</td>
-</tr>
-<tr class="even">
-<td>late</td>
-<td>Y</td>
-</tr>
-<tr class="odd">
-<td>chronic</td>
-<td>N</td>
-</tr>
-</tbody>
-</table>
-</div>
+<p>Only the late-stage infection cohort presently have randomisation options for surgery type. Other silos are assigned by clinician/patient preference.</p>
 </section>
 <section id="surgery-domain-a" class="level2">
 <h2 class="anchored" data-anchor-id="surgery-domain-a">Surgery domain (A)</h2>
@@ -491,470 +485,197 @@ window.Quarto = {
 </section>
 <section id="intended-surgery" class="level2">
 <h2 class="anchored" data-anchor-id="intended-surgery">Intended surgery</h2>
-<p>Late stage infections will be randomised to DAIR vs revision where revision would be planned as one or two-stage, determined by the treating clinician, i.e.&nbsp;not randomised.</p>
-<p>We do not know the assignment mechanism for one vs two-stage for the late-stage infection patients. We do the same for chronic stage patients.</p>
-<p>In all other cases, the intended surgery is set to allocated surgery.</p>
-<div class="column" style="width:70%;">
-<table class="table-striped table-hover table">
-<caption>Indended surgical approach (<span class="math inline">\(\pi\)</span> denotes probability allocation to surgery type conditional on silo membership)</caption>
-<thead>
-<tr class="header">
-<th>Silo</th>
-<th>Allocation (<span class="math inline">\(a\)</span>)</th>
-<th>Intended surgery (<span class="math inline">\(q\)</span>)</th>
-<th><span class="math inline">\(\pi\)</span></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>early</td>
-<td>dair</td>
-<td>dair</td>
-<td>-</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>late</td>
-<td>dair</td>
-<td>dair</td>
-<td>-</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>late</td>
-<td>revision</td>
-<td>one-stage</td>
-<td>0.3</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>late</td>
-<td>revision</td>
-<td>two-stage</td>
-<td>0.7</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>chronic</td>
-<td>dair</td>
-<td>dair</td>
-<td>0.2</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>chronic</td>
-<td>one-stage</td>
-<td>one-stage</td>
-<td>0.2</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>chronic</td>
-<td>two-stage</td>
-<td>two-stage</td>
-<td>0.6</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</div>
+<p>Intended or planned surgery relates to the surgical preference, which may be conditional on which intervention is randomised.</p>
+<p>For early stage infection, we take preference towards dair, one and two-stage surgery to be distributed as 90%, 10% and 0%.</p>
+<p>For late stage infection, we take preference towards one and two-stage as 30% and 70%, if randomised to revision. When randomised to dair, we assume the preference to dair, one and two-stage is 20%, 24% and 56%.</p>
+<p>For chronic stage infection, we take preference towards dair, one and two-stage surgery to be distributed as 20%, 20% and 60%.</p>
 </section>
 <section id="randomisation-into-duration-domain-b" class="level2">
 <h2 class="anchored" data-anchor-id="randomisation-into-duration-domain-b">Randomisation into duration domain (B)</h2>
-<p>Entry into domain B is dependent on the domain A entry and allocation and is detailed below.</p>
-<div class="column" style="width:70%;">
-<table class="table-striped table-hover table">
-<caption>Randomisation within domain B</caption>
-<thead>
-<tr class="header">
-<th>Intended surgery (<span class="math inline">\(q\)</span>)</th>
-<th>Randomised (<span class="math inline">\(e_b\)</span>)</th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>dair</td>
-<td>N</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>revision</td>
-<td>Y</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>one-stage</td>
-<td>Y</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>two-stage</td>
-<td>Y</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</div>
+<p>Entry into domain B is dependent on the surgery that was actually received.</p>
+<p>Surgery received is dependent on whether surgery was randomised (as in late infection patients) and what the surgical preference is (as in chronic infection patients).</p>
+<p>While allocated surgery (dair, one and two-stage) is a linear function of randomised surgery and preference, the surgery received may deviate from the original plan.</p>
 </section>
 <section id="duration-domain-b" class="level2">
 <h2 class="anchored" data-anchor-id="duration-domain-b">Duration domain (B)</h2>
-<p>The treatment options and allocation probabilities for domain B are detailed below. Duration of antibiotic is conditional on allocated (intended) surgery type, see above. Patients receiving DAIR are assumed to have 12 wk duration (not randomised).</p>
-<div class="column" style="width:70%;">
-<table class="table-striped table-hover table">
-<caption>Allocation within duration domain (<span class="math inline">\(\pi\)</span> denotes probability allocation to surgery type conditional on allocated/intended surgery)</caption>
-<thead>
-<tr class="header">
-<th>Silo</th>
-<th>Allocation/Intended surgery (<span class="math inline">\(q\)</span>)</th>
-<th>Allocation (<span class="math inline">\(b\)</span>)</th>
-<th><span class="math inline">\(\pi\)</span></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>early</td>
-<td>dair</td>
-<td>12 wk</td>
-<td>-</td>
-</tr>
-<tr class="even">
-<td>late</td>
-<td>one-stage</td>
-<td>6 wk</td>
-<td>0.5</td>
-</tr>
-<tr class="odd">
-<td>late</td>
-<td>one-stage</td>
-<td>12 wk</td>
-<td>0.5</td>
-</tr>
-<tr class="even">
-<td>late</td>
-<td>two-stage</td>
-<td>7 day post 2</td>
-<td>0.5</td>
-</tr>
-<tr class="odd">
-<td>late</td>
-<td>two-stage</td>
-<td>12 wk post 2</td>
-<td>0.5</td>
-</tr>
-<tr class="even">
-<td>chronic</td>
-<td>one-stage</td>
-<td>6 wk</td>
-<td>0.5</td>
-</tr>
-<tr class="odd">
-<td>chronic</td>
-<td>one-stage</td>
-<td>12 wk</td>
-<td>0.5</td>
-</tr>
-<tr class="even">
-<td>chronic</td>
-<td>two-stage</td>
-<td>7 day post 2</td>
-<td>0.5</td>
-</tr>
-<tr class="odd">
-<td>chronic</td>
-<td>two-stage</td>
-<td>12 wk post 2</td>
-<td>0.5</td>
-</tr>
-</tbody>
-</table>
-</div>
+<p>Within the duration domain, allocation is to long vs short duration, the meaning of which differs under one and two-stage surgery. Patients receiving DAIR are assumed to have 12 wk duration (not randomised). Default randomisation is 1:1 for long vs short within surgery type.</p>
 </section>
 <section id="randomisation-into-antibiotic-choice-domain-c" class="level2">
 <h2 class="anchored" data-anchor-id="randomisation-into-antibiotic-choice-domain-c">Randomisation into antibiotic choice domain (C)</h2>
 <p>The data generating process assume that 60% of the cohort enter into this domain at random, unrelated to risk factors. The remainder are held out so that we do not over-estimate the operating characteristics, such as power.</p>
-<div class="column" style="width:70%;">
-<table class="table-striped table-hover table">
-<caption>Randomisation within domain C (<span class="math inline">\(\pi\)</span> denotes probability patient is indicated as eligible for domain)</caption>
-<thead>
-<tr class="header">
-<th>Silo</th>
-<th>Randomised (<span class="math inline">\(e_c\)</span>)</th>
-<th><span class="math inline">\(\pi\)</span></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>early</td>
-<td>Y</td>
-<td>0.6</td>
-</tr>
-<tr class="even">
-<td>late</td>
-<td>Y</td>
-<td>0.6</td>
-</tr>
-<tr class="odd">
-<td>chronic</td>
-<td>Y</td>
-<td>0.6</td>
-</tr>
-</tbody>
-</table>
-</div>
 </section>
 <section id="antibiotic-choice-domain-c" class="level2">
 <h2 class="anchored" data-anchor-id="antibiotic-choice-domain-c">Antibiotic choice domain (C)</h2>
-<p>The treatment options and allocation probabilities for domain C are detailed below.</p>
-<div class="column" style="width:70%;">
-<table class="table-striped table-hover table">
-<caption>Allocation within antibiotic choice domain (<span class="math inline">\(\pi\)</span> denotes probability that an eligible patient is allocated to no rif vs rif)</caption>
-<thead>
-<tr class="header">
-<th>Allocation (<span class="math inline">\(c\)</span>)</th>
-<th><span class="math inline">\(\pi\)</span></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>no rif</td>
-<td>0.5</td>
-</tr>
-<tr class="even">
-<td>rif</td>
-<td>0.5</td>
-</tr>
-</tbody>
-</table>
-</div>
+<p>The treatment options and allocation probabilities for domain C are 1:1.</p>
 </section>
 <section id="encoded-specification" class="level2">
 <h2 class="anchored" data-anchor-id="encoded-specification">Encoded specification</h2>
 <p>The above specification is bundled into an R package (<code>roadmap.data</code>) for consistent data generation for ROADMAP.</p>
 <div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>roadmap.data<span class="sc">::</span><span class="fu">get_pop_spec</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 <div class="cell-output cell-output-stdout">
 <pre><code>$r_silo
-      silo   p
-1:   early 0.3
-2:    late 0.5
-3: chronic 0.2
+  early    late chronic 
+    0.3     0.5     0.2 
 
 $r_joint
-      silo joint   p
-1:   early  knee 0.4
-2:   early   hip 0.6
-3:    late  knee 0.7
-4:    late   hip 0.3
-5: chronic  knee 0.5
-6: chronic   hip 0.5
-
-$r_ea
-      silo rand
-1:   early    N
-2:    late    Y
-3: chronic    Y
+        knee hip
+early    0.4 0.6
+late     0.7 0.3
+chronic  0.5 0.5
 
 $r_a
-      silo    a   p
-1:   early dair  NA
-2:    late dair 0.5
-3:    late  rev 0.5
-4: chronic  one 0.5
-5: chronic  two 0.5
+$r_a$early
+[1] NA
+
+$r_a$late
+dair  rev 
+ 0.5  0.5 
+
+$r_a$chronic
+[1] NA
+
 
 $r_a_q
-      silo    a   qa   p
-1:   early dair dair  NA
-2:    late dair dair  NA
-3:    late  rev  one 0.3
-4:    late  rev  two 0.7
-5: chronic  one  one  NA
-6: chronic  two  two  NA
+$r_a_q$early
+dair  one  two 
+ 0.9  0.1  0.0 
 
-$r_eb
-     qa rand
-1: dair    N
-2:  rev    Y
-3:  one    Y
-4:  two    Y
+$r_a_q$late
+dair  one  two 
+0.20 0.24 0.56 
+
+$r_a_q$chronic
+dair  one  two 
+ 0.2  0.2  0.6 
+
 
 $r_b
-      silo   qa     b   p
-1:   early dair   w12 1.0
-2:    late  one w06p1 0.5
-3:    late  one w12p1 0.5
-4:    late  two d07p2 0.5
-5:    late  two w12p2 0.5
-6: chronic  one w06p1 0.5
-7: chronic  one w12p1 0.5
-8: chronic  two d07p2 0.5
-9: chronic  two w12p2 0.5
+$r_b$dair
+[1] NA
 
-$r_ec
-      silo rand   p
-1:   early    Y 0.6
-2:    late    Y 0.6
-3: chronic    Y 0.6
+$r_b$one
+ long short 
+  0.5   0.5 
+
+$r_b$two
+ long short 
+  0.5   0.5 
+
 
 $r_c
-       c   p
-1: norif 0.5
-2:   rif 0.5</code></pre>
+norif   rif 
+  0.5   0.5 </code></pre>
 </div>
 </div>
 <p>The following function simulates the design matrix.</p>
 <div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>roadmap.data<span class="sc">::</span>get_design</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
 <div class="cell-output cell-output-stdout">
-<pre><code>function (N = 1e+05, pop_spec = NULL, idx_s = 1) 
+<pre><code>function (N = 2500, pop_spec = NULL, idx_s = 1) 
 {
     if (is.null(pop_spec)) {
         pop_spec &lt;- get_pop_spec()
     }
-    d &lt;- data.table()
-    d[, `:=`(id, idx_s:(N + idx_s - 1))]
-    d[, `:=`(silo, sample(pop_spec$r_silo$silo, size = N, replace = T, 
-        prob = pop_spec$r_silo$p))]
-    setkey(d, silo)
-    setkey(pop_spec$r_joint, silo)
-    setkey(pop_spec$r_ea, silo)
-    for (z in pop_spec$r_silo$silo) {
-        d[z, `:=`(joint, sample(pop_spec$r_joint[z, joint], size = .N, 
-            replace = T, prob = pop_spec$r_joint[z, p]))]
-        d[z, `:=`(ea, pop_spec$r_ea[z, rand])]
+    l &lt;- sample(0:2, N, replace = T, prob = pop_spec$r_silo)
+    l1 = as.numeric(l == 1)
+    l2 = as.numeric(l == 2)
+    j &lt;- rbinom(N, 1, pop_spec$r_joint[l + 1, 2])
+    if (all(is.na(unlist(pop_spec$r_a)))) {
+        er &lt;- rep(0, N)
     }
-    setkey(pop_spec$r_a, silo)
-    d["early", `:=`(a, "dair")]
-    z &lt;- "late"
-    d[z, `:=`(a, sample(pop_spec$r_a[z, a], size = .N, replace = T, 
-        prob = pop_spec$r_a[z, p]))]
-    z &lt;- "chronic"
-    d[z, `:=`(a, sample(pop_spec$r_a[z, a], size = .N, replace = T, 
-        prob = pop_spec$r_a[z, p]))]
-    setkey(d, silo, a)
-    setkey(pop_spec$r_a_q, silo, a)
-    d[.("late", "rev"), `:=`(qa, sample(pop_spec$r_a_q[.("late", 
-        "rev"), qa], size = .N, replace = T, prob = pop_spec$r_a_q[.("late", 
-        "rev"), p]))]
-    d[is.na(qa), `:=`(qa, copy(a))]
-    d &lt;- merge(d, pop_spec$r_eb[, .(qa, eb = rand)], by = c("qa"), 
-        all.x = T)
-    setcolorder(d, c("id", "silo", "joint", "ea", "a", "qa", 
-        "eb"))
-    setkey(d, id)
-    setkey(d, qa)
-    setkey(pop_spec$r_b, qa)
-    d["dair", `:=`(b, pop_spec$r_b["dair", unique(b)])]
-    setkey(d, silo, qa)
-    setkey(pop_spec$r_b, silo, qa)
-    d[.("late", "one"), `:=`(b, sample(pop_spec$r_b[.("late", 
-        "one"), b], size = .N, replace = T, prob = pop_spec$r_b[.("late", 
-        "one"), p]))]
-    d[.("late", "two"), `:=`(b, sample(pop_spec$r_b[.("late", 
-        "two"), b], size = .N, replace = T, prob = pop_spec$r_b[.("late", 
-        "two"), p]))]
-    d[.("chronic", "one"), `:=`(b, sample(pop_spec$r_b[.("chronic", 
-        "one"), b], size = .N, replace = T, prob = pop_spec$r_b[.("chronic", 
-        "one"), p]))]
-    d[.("chronic", "two"), `:=`(b, sample(pop_spec$r_b[.("chronic", 
-        "two"), b], size = .N, replace = T, prob = pop_spec$r_b[.("chronic", 
-        "two"), p]))]
-    setkey(d, id)
-    setkey(d, silo)
-    setkey(pop_spec$r_ec, silo)
-    for (z in pop_spec$r_ec$silo) {
-        d[z, `:=`(ec, sample(c("Y", "N"), size = .N, replace = T, 
-            prob = c(pop_spec$r_ec[z, p], 1 - pop_spec$r_ec[z, 
-                p])))]
+    else {
+        er &lt;- as.numeric(l == 1)
+        i_rec &lt;- as.logical(rbinom(er[l == 1], 1, 0.02))
+        er[l == 1][i_rec] &lt;- 0
     }
-    d[ec == "Y", `:=`(c, sample(pop_spec$r_c[, c], size = .N, 
-        replace = T, prob = pop_spec$r_c[, p]))]
-    d[ec == "N", `:=`(c, "other")]
-    setkey(d, id)
-    d
+    r &lt;- rep(NA, N)
+    for (i in 1:length(pop_spec$r_a)) {
+        z &lt;- pop_spec$r_a[[i]]
+        if (all(!is.na(z))) {
+            r[l == (i - 1)] &lt;- sample(0:(length(z) - 1), sum(l == 
+                (i - 1)), TRUE, z)
+        }
+        else {
+            r[l == (i - 1)] &lt;- 0
+        }
+    }
+    r[er == 0] &lt;- 0
+    sr &lt;- rep(NA, N)
+    for (i in 1:length(pop_spec$r_a_q)) {
+        z &lt;- pop_spec$r_a_q[[i]]
+        if (all(!is.na(z))) {
+            r_0 &lt;- (r == 0) &amp; (l == i - 1)
+            sr[r_0] &lt;- sample(0:(length(z) - 1), sum(r_0), TRUE, 
+                z)
+            r_1 &lt;- (r == 1) &amp; (l == i - 1)
+            sr[r_1] &lt;- sample(1:(length(z) - 1), sum(r_1), TRUE, 
+                z[2:length(z)]/sum(z[2:length(z)]))
+        }
+        else {
+            sr[(l == i - 1)] &lt;- 0
+        }
+    }
+    sra &lt;- as.numeric(sr == 2)
+    ra &lt;- (1 - er) * sr + er * r * (sr)
+    srp &lt;- ra
+    ic &lt;- rbinom(N, 1, 0.005)
+    if (all(ic == 0)) {
+        ic[sample(length(ic), 1)] &lt;- 1
+    }
+    srp[as.logical(ic)] &lt;- sample(0:2, sum(ic), replace = T, 
+        prob = c(0.1, 0.3, 0.6))
+    rp &lt;- as.numeric(srp %in% 1:2)
+    dtmp &lt;- data.table(rp, srp, ed = rep(0, N))
+    if (all(!is.na(pop_spec$r_b$one))) {
+        dtmp[rp == 1 &amp; srp == 1, `:=`(ed, 1)]
+    }
+    if (all(!is.na(pop_spec$r_b$two))) {
+        dtmp[rp == 1 &amp; srp == 2, `:=`(ed, 1)]
+    }
+    ed &lt;- dtmp$ed
+    d &lt;- rep(NA, N)
+    for (i in 1:length(pop_spec$r_b)) {
+        z &lt;- pop_spec$r_b[[i]]
+        if (all(!is.na(z))) {
+            d[srp == (i - 1)] &lt;- sample(0:(length(z) - 1), sum(srp == 
+                (i - 1)), TRUE, z)
+        }
+        else {
+            d[srp == (i - 1)] &lt;- 0
+        }
+    }
+    if (all(is.na(pop_spec$r_c))) {
+        ef &lt;- rep(0, N)
+        f &lt;- rep(0, N)
+    }
+    else {
+        ef &lt;- rbinom(N, 1, 0.6)
+        f &lt;- as.numeric((ef == 1) * rbinom(N, 1, pop_spec$r_c))
+    }
+    D &lt;- data.table(l, l1, l2, j, er, ed, ef, erx = 1 - er, edx = 1 - 
+        ed, efx = 1 - ef, r, sr, sra, ra, ic, rp, srp, srp2 = as.numeric(srp == 
+        2), d, f)
+    D[, `:=`(id, idx_s:(N + idx_s - 1))]
+    setcolorder(D, "id")
+    D
 }
-&lt;bytecode: 0x112e40ac8&gt;
+&lt;bytecode: 0x10a14cab8&gt;
 &lt;environment: namespace:roadmap.data&gt;</code></pre>
 </div>
 </div>
 <p>The data generation assumptions imply unique patients groups on which we would observe the outcome. The outcome is known to be heterogenous across these groups and yet the stated goal is to aggregate measures of effect (odds ratios) across all these groups, e.g.&nbsp;no rif vs rif. However, the effect of interest is assumed to be obtained from the model parameter that characterises the effect of antibiotic type conditional on the other covariates in the model.</p>
 <div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>d <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_design</span>()</span>
-<span id="cb5-2"><a href="#cb5-2"></a><span class="fu">unique</span>(d[<span class="fu">order</span>(silo, joint, ea, a, qa, eb, b, ec, c), .SD, <span class="at">.SDcols =</span> <span class="sc">!</span><span class="fu">c</span>(<span class="st">"id"</span>)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="fu">head</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>       silo joint ea    a   qa eb     b ec     c
- 1: chronic   hip  Y  one  one  Y w06p1  N other
- 2: chronic   hip  Y  one  one  Y w06p1  Y norif
- 3: chronic   hip  Y  one  one  Y w06p1  Y   rif
- 4: chronic   hip  Y  one  one  Y w12p1  N other
- 5: chronic   hip  Y  one  one  Y w12p1  Y norif
- 6: chronic   hip  Y  one  one  Y w12p1  Y   rif
- 7: chronic   hip  Y  two  two  Y d07p2  N other
- 8: chronic   hip  Y  two  two  Y d07p2  Y norif
- 9: chronic   hip  Y  two  two  Y d07p2  Y   rif
-10: chronic   hip  Y  two  two  Y w12p2  N other
-11: chronic   hip  Y  two  two  Y w12p2  Y norif
-12: chronic   hip  Y  two  two  Y w12p2  Y   rif
-13: chronic  knee  Y  one  one  Y w06p1  N other
-14: chronic  knee  Y  one  one  Y w06p1  Y norif
-15: chronic  knee  Y  one  one  Y w06p1  Y   rif
-16: chronic  knee  Y  one  one  Y w12p1  N other
-17: chronic  knee  Y  one  one  Y w12p1  Y norif
-18: chronic  knee  Y  one  one  Y w12p1  Y   rif
-19: chronic  knee  Y  two  two  Y d07p2  N other
-20: chronic  knee  Y  two  two  Y d07p2  Y norif
-21: chronic  knee  Y  two  two  Y d07p2  Y   rif
-22: chronic  knee  Y  two  two  Y w12p2  N other
-23: chronic  knee  Y  two  two  Y w12p2  Y norif
-24: chronic  knee  Y  two  two  Y w12p2  Y   rif
-25:   early   hip  N dair dair  N   w12  N other
-26:   early   hip  N dair dair  N   w12  Y norif
-27:   early   hip  N dair dair  N   w12  Y   rif
-28:   early  knee  N dair dair  N   w12  N other
-29:   early  knee  N dair dair  N   w12  Y norif
-30:   early  knee  N dair dair  N   w12  Y   rif
-31:    late   hip  Y dair dair  N   w12  N other
-32:    late   hip  Y dair dair  N   w12  Y norif
-33:    late   hip  Y dair dair  N   w12  Y   rif
-34:    late   hip  Y  rev  one  Y w06p1  N other
-35:    late   hip  Y  rev  one  Y w06p1  Y norif
-36:    late   hip  Y  rev  one  Y w06p1  Y   rif
-37:    late   hip  Y  rev  one  Y w12p1  N other
-38:    late   hip  Y  rev  one  Y w12p1  Y norif
-39:    late   hip  Y  rev  one  Y w12p1  Y   rif
-40:    late   hip  Y  rev  two  Y d07p2  N other
-41:    late   hip  Y  rev  two  Y d07p2  Y norif
-42:    late   hip  Y  rev  two  Y d07p2  Y   rif
-43:    late   hip  Y  rev  two  Y w12p2  N other
-44:    late   hip  Y  rev  two  Y w12p2  Y norif
-45:    late   hip  Y  rev  two  Y w12p2  Y   rif
-46:    late  knee  Y dair dair  N   w12  N other
-47:    late  knee  Y dair dair  N   w12  Y norif
-48:    late  knee  Y dair dair  N   w12  Y   rif
-49:    late  knee  Y  rev  one  Y w06p1  N other
-50:    late  knee  Y  rev  one  Y w06p1  Y norif
-51:    late  knee  Y  rev  one  Y w06p1  Y   rif
-52:    late  knee  Y  rev  one  Y w12p1  N other
-53:    late  knee  Y  rev  one  Y w12p1  Y norif
-54:    late  knee  Y  rev  one  Y w12p1  Y   rif
-55:    late  knee  Y  rev  two  Y d07p2  N other
-56:    late  knee  Y  rev  two  Y d07p2  Y norif
-57:    late  knee  Y  rev  two  Y d07p2  Y   rif
-58:    late  knee  Y  rev  two  Y w12p2  N other
-59:    late  knee  Y  rev  two  Y w12p2  Y norif
-60:    late  knee  Y  rev  two  Y w12p2  Y   rif
-       silo joint ea    a   qa eb     b ec     c</code></pre>
+<pre><code>   id l l1 l2 j er ed ef erx edx efx r sr sra ra ic rp srp srp2 d f
+1:  1 0  0  0 0  0  1  0   1   0   1 0  1   0  1  0  1   1    0 0 0
+2:  2 0  0  0 1  0  0  1   1   1   0 0  0   0  0  0  0   0    0 0 0
+3:  3 1  1  0 0  1  0  1   0   1   0 0  2   1  0  0  0   0    0 0 1
+4:  4 0  0  0 1  0  0  1   1   1   0 0  0   0  0  0  0   0    0 0 1
+5:  5 1  1  0 0  1  1  1   0   0   0 1  1   0  1  0  1   1    0 0 1
+6:  6 1  1  0 0  1  1  1   0   0   0 1  2   1  2  0  1   2    1 1 1</code></pre>
 </div>
 </div>
 
