@@ -4,16 +4,23 @@ default:
   v: "v08"
   nsim: 500
   mc_cores: 5
-  N_pt: 2500
-  b_a_l_2: -0.3364722 # b_a_late_rev
-  b_a_c_2: -0.3364722 # b_a_chronic_two
-  b_b1_l_2: -0.3364722 # b_b1_late_one_w12p1
-  b_b2_l_2: -0.3364722 # b_b2_late_two_w12p2
-  b_b1_c_2: -0.3364722 # b_b1_chronic_one_w12p1
-  b_b2_c_2: -0.3364722 # b_b2_chronic_two_w12p2
-  b_c_2: -0.3364722 # b_c_rif
-  d_sup: 0.975
-  d_inf: 0.975
-  d_fut: 0.050
+  N_pt: 25
+  p_a0: 0.65 # intercept (probability scale)
+  m_l1: 0.57 # late silo baseline log-odds trt success
+  m_l2: 0.64 # late silo baseline log-odds trt success
+  b_erx: -0.1 # effect of non-reveal for surgery
+  b_r1: -0.3364722 # increment for one-stage surg
+  b_r2: 0 # relative increment for surgery under two-stage
+  b_edx: -0.15 # effect of non-reveal for duration
+  b_r1d: -0.3364722 # increment for duration under one-stage
+  b_r2d: 0 # relative increment for duration under two-stage
+  b_efx: -0.2 # effect of non-reveal for choice domain
+  b_f: -0.3364722 # b_b2_chronic_two_w12p2
+  delta_sup: 1 # translated to log(delta_sup)
+  delta_ni: 1.1 # translated to log(1/delta_ni)
+  thresh_sup: 0.975
+  thresh_non_inf: 0.975
+  thresh_fut: 0.050
+
   
 
