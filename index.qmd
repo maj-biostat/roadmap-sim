@@ -13,6 +13,8 @@ If you find any issues, let me know and I will prioritise accordingly.
 + Analyses based on cohorts having reached primary endpoint (12 months post rand)
 + Query definition and implementation of targets of inference (`b_r`, `b_r1d` etc)
 + Query what actions should occur when a decision threshold is met for a specific decision type (sup, inf etc)
++ Should inference and decisions leading to trial actions be restricted to very specific questions ?
++ Some actions imply implications for other domains, e.g. rev inferior to dair => duration no longer of interest???
 + Should actions be augmented to also consider uncertainty of estimate?
 + Should the design restrict stopping to specific pairwise questions or are all questions of interest?
 + Query approach for NI whereby we evaluate and report on both (trt ni ref) to get to (ref ni trt)
