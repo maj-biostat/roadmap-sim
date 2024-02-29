@@ -1,6 +1,6 @@
 ---
-title: "Simulation results 2"
-subtitle: "Sequential design with early stopping"
+title: "Simulation results 3"
+subtitle: "Sequential design with early stopping (restricted action set)"
 date: today
 date-modified: last-modified
 ---
@@ -23,7 +23,7 @@ or_num <- c(1/2, 1/1.5, 1, 1.5, 2)
 names(or_lab) <- paste0("v0",c(1, 2, 3, 4, 5))
 names(or_num) <- paste0("v0",c(1, 2, 3, 4, 5))
 
-flist <- list.files("data", pattern = "sim02-sc01")
+flist <- list.files("data", pattern = "sim03-sc01")
 
 toks <- list()
 l <- list()
@@ -88,20 +88,20 @@ d_dec <- rbindlist(lapply(seq_along(l), function(i){
   cbind(sc = tok[2], v = tok[3], m)
 }))
 
-d_stopping <- rbindlist(lapply(seq_along(l), function(i){
-  tok <- toks[[i]]
-  # l[[i]]$d_decision
-
-  d_decision <- copy(l[[i]]$d_decision[quant %in% c("sup", "inf", "fut")])
-  d_decision[, stopped_all := as.numeric(b_r + b_r1d + b_r2d + b_f == 4)]
-  
-  # d_early_stop <- d_decision[stopped_all == 1, .SD[1], keyby = .(sim, quant)]
-  # d_no_stop <- d_decision[!(sim %in% unique(d_stopped_trials$sim)), .SD[.N], keyby = .(sim, quant)]
-  # 
-  # d_decision <- rbind(d_early_stop, d_no_stop)
-
-  cbind(sc = tok[2], v = tok[3], d_decision)
-}))
+# d_stopping <- rbindlist(lapply(seq_along(l), function(i){
+#   tok <- toks[[i]]
+#   # l[[i]]$d_decision
+# 
+#   d_decision <- copy(l[[i]]$d_decision[quant %in% c("sup", "inf", "fut")])
+#   d_decision[, stopped_all := as.numeric(b_r + b_r1d + b_r2d + b_f == 4)]
+#   
+#   # d_early_stop <- d_decision[stopped_all == 1, .SD[1], keyby = .(sim, quant)]
+#   # d_no_stop <- d_decision[!(sim %in% unique(d_stopped_trials$sim)), .SD[.N], keyby = .(sim, quant)]
+#   # 
+#   # d_decision <- rbind(d_early_stop, d_no_stop)
+# 
+#   cbind(sc = tok[2], v = tok[3], d_decision)
+# }))
 
 d_post_smry_2 <- rbindlist(lapply(seq_along(l), function(i){
   tok <- toks[[i]]
@@ -119,13 +119,13 @@ d_all <- rbindlist(lapply(seq_along(l), function(i){
 
 ```
 
-@tbl-sim-design2-par summarises the setup for the simulated effect sizes (from $\log(1/2)$ to $\log(2)$). 
+@tbl-sim-design3-par summarises the setup for the simulated effect sizes from $\log(1/2)$ to $\log(2)$ on all arms. 
 All parameters are simulated to have the same effect size such that all parameters are effective, show no effect or are harmful.
 Decision thresholds remain constant throughout the duration of the study.
 The margins for non-inferiority and superiority are `r log(1/1.1)` and `r log(1)` on the log-odds scale applied across all treatment effect parameters.
 
 ```{r}
-#| label: tbl-sim-design2-par
+#| label: tbl-sim-design3-par
 #| tbl-cap: 'Parameters used to simulate treatment effects and decision thresholds'
 #| column: page
 #| out-width: 100%
@@ -190,26 +190,58 @@ g_tbl <- d_tbl |> gt() |>
     )
   ) |>
   tab_options(
-    table.font.size = "80%"
+    table.font.size = "70%"
   ) 
 
 g_tbl
 ```
 
-@fig-pr-design2-1 shows the change in the cumulative probability of declaring each of the decision types for each parameter with changing effects size (odds ratios).
 
-All domains are set so that the treatment effects are all equal, e.g. all set to $\log(2)$ etc.
+Notes:
 
-Note:
+1. For the surgical domain we evaluate whether revision is superior to dair.
+We also consider futility. 
+Specifically, if we determine that the probability of superiority is less than 5% then we declare futility, to be interpreted as a low chance of superiority given the data observed to date.
+If either superiority or futility (for superiority) were established further enrolment into the surgical domain is halted.
 
-1. Superiority decisions^[These have been kept with reference to a clinically important difference of zero as the performance is clearly going to be unacceptable with any non-zero measure.] consider the question of whether the treatment arm is superior to the reference as parameterised in the current model. For example *Is revision superior to dair?"* or *Is short duration superior to long when one-stage revision is received?* etc. Also note that for superiority decisions we currently specify the same decision threshold for all domains and we might want to consider the requirement of differing levels of evidence to support our conclusions, accepting that these would also change the likelihood of making a wrong decision, in a repeat sampling setting.
-2. Inferiority (as presently implemented) is simply the mirror of superiority and hence answers the question of whether the reference arm is superior to the treatment arm. However, given that futility is implemented as a mechanism to stop enrolment, the cumulative probability of inferiority is not symmetrical for symmetrical positive and negative effects. Basically, what happens under negative effects is that futility kicks in, which stops enrolment, which means that you do not have as much information to inform an inferiority decision.
-3. Non-inferiority decisions are implemented for both directions. That is we address the questions of whether treatment is non-inferior to the reference arm and whether the reference arm is non-inferior to the treatmen arm. In the former and where the treatment arm is simulated as being superior, then non-inferiority is trivially achieved (as noted by Tom and Chris in the last session).
-4. Futility considers whether there is negligible chance of establishing superiority. This is not in a predictive sense (i.e. not conditional power) but rather simply a direct assessment of the posterior looking at whether there is less than a 5% chance that the treatment arm is superior. We can be more aggressive and therefore make such decisions earlier (albeit with a greater chance that they would be incorrect) with this by increasing the present decision threshold.
 
+::: {.callout-note collapse=false}
+
+If revision is futile then should there be some implication on the duration domain. 
+Specifically, if revision is futile then why would we consider antibiotic duration effects within revision?
+
+:::
+
+2. For the duration domain (under one-stage revision) we consider whether short duration is non-inferior to long duration antibiotic treatment.
+The model is parameterised such that long duration is the reference level for both one-stage and two-stage revision and therefore we can evaluate this quantity directly.
+We also consider inferiority.
+If either the short duration is non-inferior or inferior, futher enrolment into this randomised comparison would be halted.
+
+3. For the duration domain (under two-stage revision) we consider whether long duration is superior to short duration.
+Since the parameterisation of the model uses long duration as the reference group, this can be evaluated by considering whether short duration is inferior to the long duration where inferiority is simply the complement of superiority.
+Futility is also evaluated in an analogous manner.
+If either the long duration is superior or futility is indicated, futher enrolment into this randomised comparison would be halted.
+
+4. For the choice domain we evaluate whether rif is superior to no-rif.
+We also consider futility.
+If either are triggered, further enrolment into the choice domain is halted.
+
+@fig-pr-design3-1 reports the cumulative probability of each decision quantity with enrolment halted only for the questions detailed above.
+
++ The first row details the cumulative probability of decisions within the surgical domain. 
+Superiority (`sup`) and futility (`fut_sup`) are the relevant quantities of interest.
+
++ The second row details the cumulative probability of decisions within the duration domain under one-stage revision.
+Non-inferiority (`trt_ni_ref`) and inferiority (`inf`) are the relevant quantities of interest.
+
++ The third row details the cumulative probability of decisions within the duration domain under two-stage revision.
+Since we evaluate the complement (short is inferior to long) inferiority (`inf`) and futility (`fut_inf`) are the relevant quantities of interest.
+
++ The fourth row details the cumulative probability of decisions within the choice domain. 
+Superiority (`sup`) and futility (`fut_sup`) are the relevant quantities of interest.
 
 ```{r}
-#| label: fig-pr-design2-1
+#| label: fig-pr-design3-1
 #| fig-cap: 'Probability of declaring decision by parameter by effect size (all pars set with same OR).'
 #| fig-cap-location: margin
 #| fig-height: 8
@@ -219,11 +251,16 @@ Note:
 d_fig <- melt(d_dec, id.vars = c("sc", "v", "analys", "parname"), variable.name = "quant")
 # d_fig <- merge(d_fig, d_pars, by = c("sc", "v", "analys", "parname"))
 d_fig[, quant := factor(quant, 
-                        labels = c("sup", "inf", "fut", "trt ni ref", "ref ni trt"),
-                        levels = c("sup", "inf", "fut", "trt_ni_ref", "ref_ni_trt"))]
+                        levels = c("sup", "inf", "fut_sup", "fut_inf", "trt_ni_ref", "ref_ni_trt"))]
 # add in the number of pts having reached 12 months post rand by analysis num
 d_fig <- merge(d_fig, unique(d_cfg[, .(analys, N_pt)]), by = "analys")
 
+d_fig <- rbind(
+  d_fig[parname == "b_r" & quant %in% c("sup", "fut_sup"), ],
+  d_fig[parname == "b_r1d" & quant %in% c("trt_ni_ref", "inf"), ],
+  d_fig[parname == "b_r2d" & quant %in% c("inf", "fut_inf"), ],
+  d_fig[parname == "b_f" & quant %in% c("sup", "fut_sup"), ]
+)
 
 d_fig[, or_tru := or_lab[v]]
 d_fig[, or_tru := factor(
@@ -235,9 +272,28 @@ d_fig[, parname_lab := factor(
   names(fx[parname]), levels = c("rev vs ref", "short vs ref (one)", "short vs ref (two)", "rif vs ref")
   ) ]
 
+d_text <- unique(d_fig[, .(parname_lab, or_tru, quant)])
+d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
+       `:=`(label = c("revision inferior \nto dair"), x = 500, y = 0.2)]
+d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 1.5", "OR 2"), 
+       `:=`(label = c("revision superior \nto dair"), x = 500, y = 0.2)]
+d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
+       `:=`(label = c("short inferior \nto long"), x = 500, y = 0.2)]
+d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 1.5", "OR 2"), 
+       `:=`(label = c("short non-inferior \nto long"), x = 500, y = 0.2)]
 
 
-ggplot(d_fig, aes(x = N_pt, y = value, group = quant, col = quant)) +
+d_text[parname_lab == "short vs ref (two)" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
+       `:=`(label = c("long superior \nto short"), x = 500, y = 0.2)]
+d_text[parname_lab == "short vs ref (two)" & or_tru %in% c("OR 1.5", "OR 2"), 
+       `:=`(label = c("long inferior \nto short"), x = 500, y = 0.2)]
+
+d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
+       `:=`(label = c("rif inferior \nto no-rif"), x = 500, y = 0.2)]
+d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 1.5", "OR 2"), 
+       `:=`(label = c("rif superior \nto no-rif"), x = 500, y = 0.2)]
+
+p <- ggplot(d_fig, aes(x = N_pt, y = value, group = quant, col = quant)) +
   geom_point(size = 0.5) +
   geom_line(lwd = 0.4) +
   geom_hline(yintercept = 0.05, lwd = 0.2) +
@@ -245,27 +301,36 @@ ggplot(d_fig, aes(x = N_pt, y = value, group = quant, col = quant)) +
     "", palette = "Tableau 10",
   type = "regular",
   direction = 1) +
+  geom_text(
+    data = d_text,
+    aes(x = x, y = y, label = label),
+    hjust   = 0,
+    vjust   = 0, col = 1, size = 3) +
   scale_linetype_discrete("") +
   scale_x_continuous("N (12-months post rand)", guide = guide_axis(angle = 45)) +
   scale_y_continuous("Cumulative probability", breaks = seq(0, 1, by = 0.1)) +
   facet_grid(parname_lab ~ or_tru)
+
+suppressWarnings(print(p))
 ```
 
-@tbl-sim-design2-oc1a provides the same detail as the above figure, but makes it easier to see what the magnitudes of the cumulate probabilities are.
+@tbl-sim-design3-oc1a provides the same detail as the above figure, but makes it easier to see what the magnitudes of the cumulate probabilities are.
 
 ```{r}
-#| label: tbl-sim-design2-oc1a
+#| label: tbl-sim-design3-oc1a
 #| tbl-cap: 'Cumulative probability of decision'
 #| column: page
 #| out-width: 100%
 
 # Widen data so that power is shown by col with each col corresponding to an
 # analysis
-d_tbl <- d_fig[quant %in% c("sup", "fut", "inf")]
+d_tbl <- d_fig[quant %in% c("sup", "fut_sup", "fut_inf", "trt_ni_ref", "inf")]
 d_tbl <- dcast(d_tbl, parname + or_tru ~ quant + analys, value.var = "value")
 names(d_tbl) <- gsub("superiority", "sup", names(d_tbl))
 names(d_tbl) <- gsub("inf", "inf", names(d_tbl))
-names(d_tbl) <- gsub("futility", "fut", names(d_tbl))
+names(d_tbl) <- gsub("futility (sup)", "fut_sup", names(d_tbl))
+names(d_tbl) <- gsub("futility (inf)", "fut_inf", names(d_tbl))
+names(d_tbl) <- gsub("NI (trt ni ref)", "trt_ni_inf", names(d_tbl))
 d_tbl <- d_tbl[order(or_tru, parname)]
 # d_tbl[, parlab := paste0(parname, " - ", get_effect_label(as.character(parname), do_html = F))]
 # d_tbl[, parname := NULL]
@@ -276,12 +341,20 @@ g_tbl <- d_tbl |> gt(groupname_col = "parname") |>
     columns = paste0("sup_", 1:5)
   ) |>
   tab_spanner(
-    label = html("Futility"),
-    columns = paste0("fut_", 1:5)
+    label = html("Futility (on sup)"),
+    columns = c(paste0("fut_sup_", 1:5))
+  ) |>
+  tab_spanner(
+    label = html("Futility (on inf)"),
+    columns = c(paste0("fut_inf_", 1:5))
   ) |>
   tab_spanner(
     label = html("Inferiority"),
     columns = paste0("inf_", 1:5)
+  ) |>
+  tab_spanner(
+    label = html("NI (trt ni ref)"),
+    columns = paste0("trt_ni_ref_", 1:5)
   ) |>
   cols_label(
     or_tru = html("OR (true)"),
@@ -290,23 +363,33 @@ g_tbl <- d_tbl |> gt(groupname_col = "parname") |>
     sup_3 = html("1500"),
     sup_4 = html("2000"),
     sup_5 = html("2500"),
-    fut_1 = html("500"),
-    fut_2 = html("1000"),
-    fut_3 = html("1500"),
-    fut_4 = html("2000"),
-    fut_5 = html("2500"),
+    fut_sup_1 = html("500"),
+    fut_sup_2 = html("1000"),
+    fut_sup_3 = html("1500"),
+    fut_sup_4 = html("2000"),
+    fut_sup_5 = html("2500"),
+    fut_inf_1 = html("500"),
+    fut_inf_2 = html("1000"),
+    fut_inf_3 = html("1500"),
+    fut_inf_4 = html("2000"),
+    fut_inf_5 = html("2500"),
     inf_1 = html("500"),
     inf_2 = html("1000"),
     inf_3 = html("1500"),
     inf_4 = html("2000"),
-    inf_5 = html("2500")
+    inf_5 = html("2500"),
+    trt_ni_ref_1 = html("500"),
+    trt_ni_ref_2 = html("1000"),
+    trt_ni_ref_3 = html("1500"),
+    trt_ni_ref_4 = html("2000"),
+    trt_ni_ref_5 = html("2500")
   ) |>
   tab_style(
     style = cell_borders(
       sides = c("left"),
       weight = px(1)),
     locations = cells_body(
-      columns = c(sup_1, fut_1, inf_1)
+      columns = c(sup_1, fut_sup_1, fut_inf_1, trt_ni_ref_1, inf_1)
       )
     ) |>
   tab_style(
@@ -323,15 +406,16 @@ g_tbl <- d_tbl |> gt(groupname_col = "parname") |>
   ) |>
   tab_options(
     table.font.size = "80%"
-  ) 
+  ) |>
+  sub_missing(columns = everything(), missing_text = "") 
 
 g_tbl
 ```
 
-@fig-est-design2-1 shows the distribution of estimated posterior means by simulated effect size, parameter and sample size.
+@fig-est-design3-1 shows the distribution of estimated posterior means by simulated effect size, parameter and sample size.
 
 ```{r}
-#| label: fig-est-design2-1
+#| label: fig-est-design3-1
 #| fig-cap: 'Distribution of posterior means (true log OR shown in red).'
 #| fig-cap-location: margin
 #| fig-height: 8
@@ -381,7 +465,7 @@ How many do not contribute to surgery, how many do not contributed to duration e
 The next figure shows how many patients contributed to the comparisons.
 
 ```{r}
-#| label: fig-est-design2-3
+#| label: fig-est-design3-3
 #| fig-cap: 'Participants contributing to comparison.'
 #| fig-cap-location: margin
 #| fig-height: 8
@@ -389,152 +473,5 @@ The next figure shows how many patients contributed to the comparisons.
 
 # TODO
 
-```
-
-
-
-## Single effective treatment
-
-```{r, eval = FALSE, echo = F}
-
-
-flist <- list.files("data", pattern = "sim02-sc02")
-toks <- list()
-l <- list()
-for(i in 1:length(flist)){
-  l[[i]] <- qs::qread(file.path("data", flist[i]))
-  toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
-}
-
-# cfg - decision thresholds currently static but could be varied over time
-d_cfg <- rbindlist(lapply(seq_along(l), function(i){
-  tok <- toks[[i]]
-  m <- data.table(do.call(cbind, l[[i]]$cfg))
-  data.table(cbind(sc = tok[2], v = tok[3], analys = 1:nrow(m), m))
-}))
-
-d_pars <- melt(d_cfg[, c("sc", "v", "analys", g_effs), with = F], 
-               id.vars = c("sc", "v", "analys"), 
-               value.name = "lor_tru", variable.name = "parname")
-
-
-d_trig <- rbindlist(lapply(seq_along(l), function(i){
-  tok <- toks[[i]]
-  l[[i]]$d_trig
-
-  m <- melt(l[[i]]$d_trig, id.vars = c("sim", "analys", "quant"), variable.name = "parname")
-  # Should be right, but just in case...
-  m[is.na(value), value := FALSE]
-  m[, value := as.logical(cumsum(value)>0), keyby = .(sim, quant, parname)]
-  m <- m[, .(pr_val = mean(value)), keyby = .(analys, quant, parname)]
-  m <- dcast(m, parname + analys ~ quant, value.var = "pr_val")
-
-  cbind(sc = tok[2], v = tok[3], m)
-}))
-
-d_fig <- melt(d_trig, id.vars = c("sc", "v", "analys", "parname"), variable.name = "quant")
-d_fig <- merge(d_fig, d_pars, by = c("sc", "v", "analys", "parname"))
-d_fig[, quant := factor(quant, 
-                        labels = c("superiority", "futility", "inferiority"),
-                        levels = c("sup", "fut", "inf"))]
-d_fig <- merge(d_fig, unique(d_cfg[, .(analys, N_pt)]), by = "analys")
-
-d_fig[, or_tru := round(exp(lor_tru), 3)]
-
-d_fig[, or_tru := factor(
-  or_tru, 
-  labels = c("OR 1/1.25" , "OR 1", "OR 1.25", "OR 1.5", "OR 1.75", "OR 2"),
-  levels = c("0.8", "1", "1.25", "1.5", "1.75", "2"))]
-
-setkey(d_fig, sc, v, analys, N_pt)
-```
-
-```{r, eval = FALSE, echo = F}
-#| label: fig-pr-design2-2
-#| fig-cap: 'Probability of declaring decision by parameter by effect size (all pars set with same OR).'
-#| fig-cap-location: margin
-#| fig-height: 8
-#| fig-width: 8
-
-ggplot(d_fig, aes(x = N_pt, y = value, group = quant, col = quant)) +
-  geom_point(size = 0.5) +
-  geom_line(aes(lty = quant), lwd = 0.3) +
-  scale_color_discrete("") +
-  scale_linetype_discrete("") +
-  scale_x_continuous("Sample size", guide = guide_axis(angle = 45)) +
-  scale_y_continuous("Cumulative probability", breaks = seq(0, 1, by = 0.2)) +
-  facet_grid(parname~or_tru)
-```
-
-
-@tbl-sim-design2-oc2 provides the same detail as the above figure, but makes it easier to see what the magnitudes of the cumulate probabilities are.
-
-```{r, eval = FALSE, echo = F}
-#| label: tbl-sim-design2-oc2
-#| tbl-cap: 'Cumulative probability of decision'
-#| column: page
-#| out-width: 100%
-
-d_tbl <- dcast(d_fig, parname + or_tru ~ quant + analys, value.var = "value")
-names(d_tbl) <- gsub("superiority", "sup", names(d_tbl))
-names(d_tbl) <- gsub("inferiority", "inf", names(d_tbl))
-names(d_tbl) <- gsub("futility", "fut", names(d_tbl))
-d_tbl <- d_tbl[order(or_tru, parname)]
-d_tbl[, parlab := paste0(parname, " - ", get_effect_label(as.character(parname), do_html = F))]
-d_tbl[, parname := NULL]
-
-g_tbl <- d_tbl |> gt(groupname_col = "parlab") |> 
-  tab_spanner(
-    label = html("Superiority"),
-    columns = c("sup_1", "sup_2", "sup_3", "sup_4")
-  ) |>
-  tab_spanner(
-    label = html("Futility"),
-    columns = c("fut_1", "fut_2", "fut_3", "fut_4")
-  ) |>
-  tab_spanner(
-    label = html("Inferiority"),
-    columns = c("inf_1", "inf_2", "inf_3", "inf_4")
-  ) |>
-  cols_label(
-    or_tru = html("OR (true)"),
-    sup_1 = html("1000"),
-    sup_2 = html("1500"),
-    sup_3 = html("2000"),
-    sup_4 = html("2500"),
-    fut_1 = html("1000"),
-    fut_2 = html("1500"),
-    fut_3 = html("2000"),
-    fut_4 = html("2500"),
-    inf_1 = html("1000"),
-    inf_2 = html("1500"),
-    inf_3 = html("2000"),
-    inf_4 = html("2500")
-  ) |>
-  tab_style(
-    style = cell_borders(
-      sides = c("left"),
-      weight = px(1)),
-    locations = cells_body(
-      columns = c(sup_1, fut_1, inf_1)
-      )
-    ) |>
-  tab_style(
-    style = list(
-      cell_borders(
-        sides = c("top", "bottom"), color = "red", weight = px(1), style = "solid"
-      )),
-    locations = list(
-      cells_body(
-        columns = everything(),
-        rows = or_tru == "OR 1"
-      )
-    )
-  ) |>
-  tab_options(
-    table.font.size = "80%"
-  ) 
-
-g_tbl
 ```
 
