@@ -59,49 +59,14 @@ sim01:
 	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc01-v04.yml
 	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc01-v05.yml
 
-# sim01 at 1000 pts
+# sequential design sim-02.R 
 .PHONY: sim02
 sim02:
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc02-01.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc02-02.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc02-03.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc02-04.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc02-05.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc02-06.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc02-07.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc02-08.yml
-
-# sim01 at 500 pts
-.PHONY: sim03
-sim03:
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-01.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-02.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-03.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-04.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-05.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-06.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-07.yml
-	Rscript $(R_OPTS) ./R/sim-01.R run_sim_01 cfg-sim01-sc03-08.yml
-
-# sequential design sim-02.R 
-.PHONY: sim04
-sim04:
 	Rscript $(R_OPTS) ./R/sim-02.R run_sim_02 cfg-sim02-sc01-v01.yml
 	Rscript $(R_OPTS) ./R/sim-02.R run_sim_02 cfg-sim02-sc01-v02.yml
 	Rscript $(R_OPTS) ./R/sim-02.R run_sim_02 cfg-sim02-sc01-v03.yml
 	Rscript $(R_OPTS) ./R/sim-02.R run_sim_02 cfg-sim02-sc01-v04.yml
 	Rscript $(R_OPTS) ./R/sim-02.R run_sim_02 cfg-sim02-sc01-v05.yml
 
-# sequential design sim-02.R 
-.PHONY: sim05
-sim05:
-	Rscript $(R_OPTS) ./R/sim-02.R run_sim_02 cfg-sim02-sc02-v01.yml
-	Rscript $(R_OPTS) ./R/sim-02.R run_sim_02 cfg-sim02-sc02-v02.yml
-	Rscript $(R_OPTS) ./R/sim-02.R run_sim_02 cfg-sim02-sc02-v03.yml
-	Rscript $(R_OPTS) ./R/sim-02.R run_sim_02 cfg-sim02-sc02-v04.yml
-	Rscript $(R_OPTS) ./R/sim-02.R run_sim_02 cfg-sim02-sc02-v05.yml
-	Rscript $(R_OPTS) ./R/sim-02.R run_sim_02 cfg-sim02-sc02-v06.yml
-	Rscript $(R_OPTS) ./R/sim-02.R run_sim_02 cfg-sim02-sc02-v07.yml
-	Rscript $(R_OPTS) ./R/sim-02.R run_sim_02 cfg-sim02-sc02-v08.yml
 
 
