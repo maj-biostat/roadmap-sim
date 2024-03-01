@@ -504,39 +504,6 @@ ggplot(d_fig_1, aes(x = lor_lab, y = mu_N, fill = l)) +
   scale_y_continuous("Patients by silo", breaks = seq(0, 2500, by = 200)) 
 ```
 
-```{r, out.width="60%"}
-#| label: fig-est-design3-4
-#| fig-cap: 'Silo level representation'
-#| fig-cap-location: margin
-#| fig-height: 5
-#| fig-width: 5
-
-d_fig <- copy(d_all)
-# N in each strata by simulation
-d_fig <- d_fig[, .(N = sum(N)), keyby = .(sc, v, sim, l, srp)]
-# Average N across simulations
-d_fig <- d_fig[, .(mu_N = mean(N)), keyby = .(sc, v, l)] 
-
-d_fig[, pct := round(100*mu_N / sum(mu_N), 1), keyby = .(sc, v)]
-
-lor_lab <- c("log-OR 1/2" , "log-OR 1/1.5", "log-OR 1", "log-OR 1.5", "log-OR 2")
-names(lor_lab) <- paste0("v0", 1:5)
-
-d_fig[, lor_lab := lor_lab[v]]
-d_fig[, lor_lab := factor(lor_lab, labels = lor_lab, levels = lor_lab)]
-
-d_fig[, l := factor(l, levels = c(0, 1, 2), labels = c("early", "late", "chronic"))]
-
-ggplot(d_fig, aes(x = lor_lab, y = mu_N, fill = l)) +
-  geom_bar(position="stack", stat="identity") +
-  geom_text(aes(label = paste0(pct,"%")),
-            position = position_stack(vjust = 0.5), size = 3) +
-  scale_fill_discrete("") +
-  scale_x_discrete("Scenario (all arms equal)") +
-  scale_y_continuous("Patients by silo", breaks = seq(0, 2500, by = 200)) 
-```
-
-
 @fig-est-design3-5 shows the expected number of patients that were revealed and contributing to within domain randomised comparisons.
 
 ```{r}
