@@ -105,6 +105,7 @@ run_trial <- function(ix){
   
   # return results
   list(
+    d_grp = ll$d[, .(y = sum(y), .N), keyby = .(l, er, r, srp, ed, d, ef, f)],
     pr_sup = pr_sup,
     pr_inf = pr_inf,
     pr_ref_ni_trt = pr_ref_ni_trt,
@@ -126,8 +127,8 @@ run_sim_01 <- function(){
   e = NULL
   log_info("Starting simulation")   #
   r <- parallel::mclapply(
-    X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
-    # X=1:50, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    # X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    X=1:5, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
       log_info("Simulation ", ix);
       ll <- tryCatch({
         run_trial(ix)
@@ -152,6 +153,18 @@ run_sim_01 <- function(){
   d_ref_ni_trt <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$ref_ni_trt } )))
   d_fut <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$fut } )))
   
+  # posterior parameter summary
+  d_post_smry_2 <- data.table(do.call(rbind, lapply(1:length(r), function(i){ 
+    m <- data.table(
+      sim = i, par = rownames(r[[i]]$post_smry_2), r[[i]]$post_smry_2)
+    m
+  } )))
+  
+  # data from each simulated trial
+  d_grp <- rbindlist(lapply(1:length(r), function(i){ 
+    r[[i]]$d_grp
+  } ), idcol = "sim")
+  
   l <- list(
     cfg = g_cfgsc,
     d_pr_sup = d_pr_sup, 
@@ -163,7 +176,9 @@ run_sim_01 <- function(){
     d_inf = d_inf,
     d_trt_ni_ref = d_trt_ni_ref,
     d_ref_ni_trt = d_ref_ni_trt,
-    d_fut = d_fut
+    d_fut = d_fut,
+    d_post_smry_2 = d_post_smry_2,
+    d_grp = d_grp
     )
   
   toks <- unlist(tstrsplit(args[2], "[-.]"))

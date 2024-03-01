@@ -1,6 +1,6 @@
 # simulation configuration (all OR = log(1.6))
 default:
-  nsim: 500
+  nsim: 1000
   mc_cores: 5
   N_pt: 2500
   p_a0: 0.65 # intercept (probability scale)
