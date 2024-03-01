@@ -373,168 +373,155 @@ p <- ggplot(d_fig, aes(x = N_pt, y = mu)) +
 suppressWarnings(print(p))
 ```
 
-TODO - refer to the DSA and evaluate specific questions.
+@fig-est-design2-3 shows the expected number of patients entering into the study by silo under each simulation scenario.
 
 
-Next figure shows the average number of patients per silo, per domain, per treatment.
-How many do not contribute to surgery, how many do not contributed to duration etc.
-The next figure shows how many patients contributed to the comparisons.
+::: {.callout-note collapse=false}
+
+Am curious about how many within each silo were revealed but have not implemented the summaries yet.
+What else?
+
+:::
+
+```{r, out.width="60%"}
+#| label: fig-est-design2-3
+#| fig-cap: 'Silo level representation'
+#| fig-cap-location: margin
+#| fig-height: 5
+#| fig-width: 5
+
+d_fig_1 <- copy(d_all)
+# N in each strata by simulation
+d_fig_1 <- d_fig_1[, .(N = sum(N)), keyby = .(sc, v, sim, l)]
+# Average N across simulations
+d_fig_1 <- d_fig_1[, .(mu_N = mean(N)), keyby = .(sc, v, l)] 
+d_fig_1[, pct := round(100*mu_N / sum(mu_N), 1), keyby = .(sc, v)]
+
+# d_fig_2 <- copy(d_all)
+# d_fig_2 <- d_fig_2[, .(N = sum(N)), keyby = .(sc, v, sim, l, er, ed, ef)]
+# d_fig_2[er == 1]
+
+
+lor_lab <- c("log-OR 1/2" , "log-OR 1/1.5", "log-OR 1", "log-OR 1.5", "log-OR 2")
+names(lor_lab) <- paste0("v0", 1:5)
+
+d_fig_1[, lor_lab := lor_lab[v]]
+d_fig_1[, lor_lab := factor(lor_lab, labels = lor_lab, levels = lor_lab)]
+
+d_fig_1[, l := factor(l, levels = c(0, 1, 2), labels = c("early", "late", "chronic"))]
+
+ggplot(d_fig_1, aes(x = lor_lab, y = mu_N, fill = l)) +
+  geom_bar(position="stack", stat="identity") +
+  geom_text(aes(label = paste0(pct,"%")),
+            position = position_stack(vjust = 0.5), size = 3) +
+  scale_fill_discrete("") +
+  scale_x_discrete("Scenario (all arms equal)") +
+  scale_y_continuous("Patients by silo", breaks = seq(0, 2500, by = 200)) 
+```
+
+
+@fig-est-design2-4 shows the expected number of patients revealed in the surgical (`er`) duration (`ed`) and choice (`ef`) domain by silo and simulation scenario.
+
+```{r, out.width="70%"}
+#| label: fig-est-design2-4
+#| fig-cap: 'Silo level representation'
+#| fig-cap-location: margin
+#| fig-height: 7
+#| fig-width: 5
+
+d_fig <- copy(d_all)
+# N in each strata by simulation
+d_fig <- rbind(
+  d_fig[er == 1, .(N = sum(N), reveal = "er"), keyby = .(sc, v, sim, l)],
+  d_fig[ed == 1, .(N = sum(N), reveal = "ed"), keyby = .(sc, v, sim, l)],
+  d_fig[ef == 1, .(N = sum(N), reveal = "ef"), keyby = .(sc, v, sim, l)]
+)
+# Average N across simulations
+d_fig <- d_fig[, .(mu_N = mean(N)), keyby = .(sc, v, l, reveal)] 
+d_fig[, pct := round(100*mu_N / sum(mu_N), 1), keyby = .(sc, v, reveal)]
+
+lor_lab <- c("log-OR 1/2" , "log-OR 1/1.5", "log-OR 1", "log-OR 1.5", "log-OR 2")
+names(lor_lab) <- paste0("v0", 1:5)
+d_fig[, lor_lab := lor_lab[v]]
+d_fig[, lor_lab := factor(lor_lab, labels = lor_lab, levels = lor_lab)]
+
+d_fig[, l := factor(l, levels = c(0, 1, 2), labels = c("early", "late", "chronic"))]
+d_fig[, reveal := factor(
+  reveal, levels = c("er", "ed", "ef"), 
+  labels = c("surgery", "duration", "choice"))]
+
+ggplot(d_fig, aes(x = lor_lab, y = mu_N, fill = l)) +
+  geom_bar(position="stack", stat="identity") +
+  geom_text(aes(label = paste0(pct,"%")),
+            position = position_stack(vjust = 0.5), size = 3) +
+  scale_fill_discrete("") +
+  scale_x_discrete("Scenario (all arms equal)") +
+  scale_y_continuous("Patients by silo", breaks = seq(0, 2500, by = 200)) +
+  facet_grid(reveal~.)
+```
+
+@fig-est-design2-5 shows the expected number of patients that were revealed and contributing to within domain randomised comparisons.
 
 ```{r}
-#| label: fig-est-design2-3
+#| label: fig-est-design2-5
 #| fig-cap: 'Participants contributing to comparison.'
 #| fig-cap-location: margin
 #| fig-height: 8
 #| fig-width: 8
 
-# TODO
+d_fig <- copy(d_all)
 
+# Do these one by one so that the domains do not interfere with one another.
+d_er <- d_fig[er == 1, .(N = sum(N)), keyby = .(sc, v, sim, l, analys)]
+# I want to have a value (even if 0 via fill) for each analysis so spread then melt
+d_er <- dcast(d_er, sc + v + sim + l ~ analys, value.var = "N", fill = 0)
+d_er <- melt(d_er, measure.vars = paste0(1:5), variable.name = "analys", value.name = "N")
+d_er[, cN := cumsum(N), keyby = .(sc, v, sim, l)]
+d_er <- d_er[, .(domain = "surgery", mu_N = mean(cN)), keyby = .(sc, v, l, analys)]
+
+# Do these one by one so that the domains do not interfere with one another.
+d_ed1 <- d_fig[ed == 1 & srp == 1, .(N = sum(N)), keyby = .(sc, v, sim, l, analys)]
+# I want to have a value (even if 0 via fill) for each analysis so spread then melt
+d_ed1 <- dcast(d_ed1, sc + v + sim + l ~ analys, value.var = "N", fill = 0)
+d_ed1 <- melt(d_ed1, measure.vars = paste0(1:5), variable.name = "analys", value.name = "N")
+d_ed1[, cN := cumsum(N), keyby = .(sc, v, sim, l)]
+d_ed1 <- d_ed1[, .(domain = "duration (one)", mu_N = mean(cN)), keyby = .(sc, v, l, analys)]
+
+# Do these one by one so that the domains do not interfere with one another.
+d_ed2 <- d_fig[ed == 1 & srp == 2, .(N = sum(N)), keyby = .(sc, v, sim, l, analys)]
+# I want to have a value (even if 0 via fill) for each analysis so spread then melt
+d_ed2 <- dcast(d_ed2, sc + v + sim + l ~ analys, value.var = "N", fill = 0)
+d_ed2 <- melt(d_ed2, measure.vars = paste0(1:5), variable.name = "analys", value.name = "N")
+d_ed2[, cN := cumsum(N), keyby = .(sc, v, sim, l)]
+d_ed2 <- d_ed2[, .(domain = "duration (two)", mu_N = mean(cN)), keyby = .(sc, v, l, analys)]
+
+# Do these one by one so that the domains do not interfere with one another.
+d_ef <- d_fig[ef == 1, .(N = sum(N)), keyby = .(sc, v, sim, l, analys)]
+# I want to have a value (even if 0 via fill) for each analysis so spread then melt
+d_ef <- dcast(d_ef, sc + v + sim + l ~ analys, value.var = "N", fill = 0)
+d_ef <- melt(d_ef, measure.vars = paste0(1:5), variable.name = "analys", value.name = "N")
+d_ef[, cN := cumsum(N), keyby = .(sc, v, sim, l)]
+d_ef <- d_ef[, .(domain = "choice", mu_N = mean(cN)), keyby = .(sc, v, l, analys)]
+
+
+d_fig <- rbind(d_er, d_ed1, d_ed2, d_ef)
+d_fig[, domain := factor(
+  domain, levels = c("surgery", "duration (one)", "duration (two)", "choice"))]
+
+lor_lab <- c("log-OR 1/2" , "log-OR 1/1.5", "log-OR 1", "log-OR 1.5", "log-OR 2")
+names(lor_lab) <- paste0("v0", 1:5)
+
+d_fig[, lor_lab := lor_lab[v]]
+d_fig[, lor_lab := factor(lor_lab, labels = lor_lab, levels = lor_lab)]
+d_fig[, analys := as.numeric(analys)]
+
+d_fig[, l := factor(l, levels = c(0, 1, 2), labels = c("early", "late", "chronic"))]
+
+ggplot(d_fig, aes(x = analys, y = mu_N, fill = l)) +
+  geom_bar(position="stack", stat="identity") +
+  scale_fill_discrete("") +
+  scale_x_continuous("Analysis") +
+  scale_y_continuous("Patients contributing to comparison",
+                     breaks = seq(0, 2000, by = 200)) +
+  facet_grid(domain ~ lor_lab)
 ```
-
-
-
-## Single effective treatment
-
-```{r, eval = FALSE, echo = F}
-
-
-flist <- list.files("data", pattern = "sim02-sc02")
-toks <- list()
-l <- list()
-for(i in 1:length(flist)){
-  l[[i]] <- qs::qread(file.path("data", flist[i]))
-  toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
-}
-
-# cfg - decision thresholds currently static but could be varied over time
-d_cfg <- rbindlist(lapply(seq_along(l), function(i){
-  tok <- toks[[i]]
-  m <- data.table(do.call(cbind, l[[i]]$cfg))
-  data.table(cbind(sc = tok[2], v = tok[3], analys = 1:nrow(m), m))
-}))
-
-d_pars <- melt(d_cfg[, c("sc", "v", "analys", g_effs), with = F], 
-               id.vars = c("sc", "v", "analys"), 
-               value.name = "lor_tru", variable.name = "parname")
-
-
-d_trig <- rbindlist(lapply(seq_along(l), function(i){
-  tok <- toks[[i]]
-  l[[i]]$d_trig
-
-  m <- melt(l[[i]]$d_trig, id.vars = c("sim", "analys", "quant"), variable.name = "parname")
-  # Should be right, but just in case...
-  m[is.na(value), value := FALSE]
-  m[, value := as.logical(cumsum(value)>0), keyby = .(sim, quant, parname)]
-  m <- m[, .(pr_val = mean(value)), keyby = .(analys, quant, parname)]
-  m <- dcast(m, parname + analys ~ quant, value.var = "pr_val")
-
-  cbind(sc = tok[2], v = tok[3], m)
-}))
-
-d_fig <- melt(d_trig, id.vars = c("sc", "v", "analys", "parname"), variable.name = "quant")
-d_fig <- merge(d_fig, d_pars, by = c("sc", "v", "analys", "parname"))
-d_fig[, quant := factor(quant, 
-                        labels = c("superiority", "futility", "inferiority"),
-                        levels = c("sup", "fut", "inf"))]
-d_fig <- merge(d_fig, unique(d_cfg[, .(analys, N_pt)]), by = "analys")
-
-d_fig[, or_tru := round(exp(lor_tru), 3)]
-
-d_fig[, or_tru := factor(
-  or_tru, 
-  labels = c("OR 1/1.25" , "OR 1", "OR 1.25", "OR 1.5", "OR 1.75", "OR 2"),
-  levels = c("0.8", "1", "1.25", "1.5", "1.75", "2"))]
-
-setkey(d_fig, sc, v, analys, N_pt)
-```
-
-```{r, eval = FALSE, echo = F}
-#| label: fig-pr-design2-2
-#| fig-cap: 'Probability of declaring decision by parameter by effect size (all pars set with same OR).'
-#| fig-cap-location: margin
-#| fig-height: 8
-#| fig-width: 8
-
-ggplot(d_fig, aes(x = N_pt, y = value, group = quant, col = quant)) +
-  geom_point(size = 0.5) +
-  geom_line(aes(lty = quant), lwd = 0.3) +
-  scale_color_discrete("") +
-  scale_linetype_discrete("") +
-  scale_x_continuous("Sample size", guide = guide_axis(angle = 45)) +
-  scale_y_continuous("Cumulative probability", breaks = seq(0, 1, by = 0.2)) +
-  facet_grid(parname~or_tru)
-```
-
-
-@tbl-sim-design2-oc2 provides the same detail as the above figure, but makes it easier to see what the magnitudes of the cumulate probabilities are.
-
-```{r, eval = FALSE, echo = F}
-#| label: tbl-sim-design2-oc2
-#| tbl-cap: 'Cumulative probability of decision'
-#| column: page
-#| out-width: 100%
-
-d_tbl <- dcast(d_fig, parname + or_tru ~ quant + analys, value.var = "value")
-names(d_tbl) <- gsub("superiority", "sup", names(d_tbl))
-names(d_tbl) <- gsub("inferiority", "inf", names(d_tbl))
-names(d_tbl) <- gsub("futility", "fut", names(d_tbl))
-d_tbl <- d_tbl[order(or_tru, parname)]
-d_tbl[, parlab := paste0(parname, " - ", get_effect_label(as.character(parname), do_html = F))]
-d_tbl[, parname := NULL]
-
-g_tbl <- d_tbl |> gt(groupname_col = "parlab") |> 
-  tab_spanner(
-    label = html("Superiority"),
-    columns = c("sup_1", "sup_2", "sup_3", "sup_4")
-  ) |>
-  tab_spanner(
-    label = html("Futility"),
-    columns = c("fut_1", "fut_2", "fut_3", "fut_4")
-  ) |>
-  tab_spanner(
-    label = html("Inferiority"),
-    columns = c("inf_1", "inf_2", "inf_3", "inf_4")
-  ) |>
-  cols_label(
-    or_tru = html("OR (true)"),
-    sup_1 = html("1000"),
-    sup_2 = html("1500"),
-    sup_3 = html("2000"),
-    sup_4 = html("2500"),
-    fut_1 = html("1000"),
-    fut_2 = html("1500"),
-    fut_3 = html("2000"),
-    fut_4 = html("2500"),
-    inf_1 = html("1000"),
-    inf_2 = html("1500"),
-    inf_3 = html("2000"),
-    inf_4 = html("2500")
-  ) |>
-  tab_style(
-    style = cell_borders(
-      sides = c("left"),
-      weight = px(1)),
-    locations = cells_body(
-      columns = c(sup_1, fut_1, inf_1)
-      )
-    ) |>
-  tab_style(
-    style = list(
-      cell_borders(
-        sides = c("top", "bottom"), color = "red", weight = px(1), style = "solid"
-      )),
-    locations = list(
-      cells_body(
-        columns = everything(),
-        rows = or_tru == "OR 1"
-      )
-    )
-  ) |>
-  tab_options(
-    table.font.size = "80%"
-  ) 
-
-g_tbl
-```
-
