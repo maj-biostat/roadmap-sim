@@ -504,6 +504,47 @@ ggplot(d_fig_1, aes(x = lor_lab, y = mu_N, fill = l)) +
   scale_y_continuous("Patients by silo", breaks = seq(0, 2500, by = 200)) 
 ```
 
+
+@fig-est-design3-4 shows the expected number of patients revealed in the surgical (`er`) duration (`ed`) and choice (`ef`) domain by silo and simulation scenario.
+
+```{r, out.width="70%"}
+#| label: fig-est-design3-4
+#| fig-cap: 'Silo level representation'
+#| fig-cap-location: margin
+#| fig-height: 7
+#| fig-width: 5
+
+d_fig <- copy(d_all)
+# N in each strata by simulation
+d_fig <- rbind(
+  d_fig[er == 1, .(N = sum(N), reveal = "er"), keyby = .(sc, v, sim, l)],
+  d_fig[ed == 1, .(N = sum(N), reveal = "ed"), keyby = .(sc, v, sim, l)],
+  d_fig[ef == 1, .(N = sum(N), reveal = "ef"), keyby = .(sc, v, sim, l)]
+)
+# Average N across simulations
+d_fig <- d_fig[, .(mu_N = mean(N)), keyby = .(sc, v, l, reveal)] 
+d_fig[, pct := round(100*mu_N / sum(mu_N), 1), keyby = .(sc, v, reveal)]
+
+lor_lab <- c("log-OR 1/2" , "log-OR 1/1.5", "log-OR 1", "log-OR 1.5", "log-OR 2")
+names(lor_lab) <- paste0("v0", 1:5)
+d_fig[, lor_lab := lor_lab[v]]
+d_fig[, lor_lab := factor(lor_lab, labels = lor_lab, levels = lor_lab)]
+
+d_fig[, l := factor(l, levels = c(0, 1, 2), labels = c("early", "late", "chronic"))]
+d_fig[, reveal := factor(
+  reveal, levels = c("er", "ed", "ef"), 
+  labels = c("surgery", "duration", "choice"))]
+
+ggplot(d_fig, aes(x = lor_lab, y = mu_N, fill = l)) +
+  geom_bar(position="stack", stat="identity") +
+  geom_text(aes(label = paste0(pct,"%")),
+            position = position_stack(vjust = 0.5), size = 3) +
+  scale_fill_discrete("") +
+  scale_x_discrete("Scenario (all arms equal)") +
+  scale_y_continuous("Patients by silo", breaks = seq(0, 2500, by = 200)) +
+  facet_grid(reveal~.)
+```
+
 @fig-est-design3-5 shows the expected number of patients that were revealed and contributing to within domain randomised comparisons.
 
 ```{r}
