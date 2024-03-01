@@ -274,7 +274,7 @@ d_fig[, parname_lab := factor(
 
 d_text <- unique(d_fig[, .(parname_lab, or_tru, quant)])
 d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
-       `:=`(label = c("revision inferior \nto dair"), x = 500, y = 0.2)]
+       `:=`(label = c("revision futile \nto dair"), x = 500, y = 0.2)]
 d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 1.5", "OR 2"), 
        `:=`(label = c("revision superior \nto dair"), x = 500, y = 0.2)]
 d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
@@ -289,7 +289,7 @@ d_text[parname_lab == "short vs ref (two)" & or_tru %in% c("OR 1.5", "OR 2"),
        `:=`(label = c("long inferior \nto short"), x = 500, y = 0.2)]
 
 d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
-       `:=`(label = c("rif inferior \nto no-rif"), x = 500, y = 0.2)]
+       `:=`(label = c("rif futile \nto no-rif"), x = 500, y = 0.2)]
 d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 1.5", "OR 2"), 
        `:=`(label = c("rif superior \nto no-rif"), x = 500, y = 0.2)]
 
@@ -457,21 +457,149 @@ p <- ggplot(d_fig, aes(x = N_pt, y = mu)) +
 suppressWarnings(print(p))
 ```
 
-TODO - refer to the DSA and evaluate specific questions.
+
+@fig-est-design3-3 shows the expected number of patients entering into the study by silo under each simulation scenario.
 
 
-Next figure shows the average number of patients per silo, per domain, per treatment.
-How many do not contribute to surgery, how many do not contributed to duration etc.
-The next figure shows how many patients contributed to the comparisons.
+::: {.callout-note collapse=false}
+
+Am curious about how many within each silo were revealed but have not implemented the summaries yet.
+What else?
+
+:::
+
+```{r, out.width="60%"}
+#| label: fig-est-design3-3
+#| fig-cap: 'Silo level representation'
+#| fig-cap-location: margin
+#| fig-height: 5
+#| fig-width: 5
+
+d_fig_1 <- copy(d_all)
+# N in each strata by simulation
+d_fig_1 <- d_fig_1[, .(N = sum(N)), keyby = .(sc, v, sim, l)]
+# Average N across simulations
+d_fig_1 <- d_fig_1[, .(mu_N = mean(N)), keyby = .(sc, v, l)] 
+d_fig_1[, pct := round(100*mu_N / sum(mu_N), 1), keyby = .(sc, v)]
+
+# d_fig_2 <- copy(d_all)
+# d_fig_2 <- d_fig_2[, .(N = sum(N)), keyby = .(sc, v, sim, l, er, ed, ef)]
+# d_fig_2[er == 1]
+
+
+lor_lab <- c("log-OR 1/2" , "log-OR 1/1.5", "log-OR 1", "log-OR 1.5", "log-OR 2")
+names(lor_lab) <- paste0("v0", 1:5)
+
+d_fig_1[, lor_lab := lor_lab[v]]
+d_fig_1[, lor_lab := factor(lor_lab, labels = lor_lab, levels = lor_lab)]
+
+d_fig_1[, l := factor(l, levels = c(0, 1, 2), labels = c("early", "late", "chronic"))]
+
+ggplot(d_fig_1, aes(x = lor_lab, y = mu_N, fill = l)) +
+  geom_bar(position="stack", stat="identity") +
+  geom_text(aes(label = paste0(pct,"%")),
+            position = position_stack(vjust = 0.5), size = 3) +
+  scale_fill_discrete("") +
+  scale_x_discrete("Scenario (all arms equal)") +
+  scale_y_continuous("Patients by silo", breaks = seq(0, 2500, by = 200)) 
+```
+
+```{r, out.width="60%"}
+#| label: fig-est-design3-4
+#| fig-cap: 'Silo level representation'
+#| fig-cap-location: margin
+#| fig-height: 5
+#| fig-width: 5
+
+d_fig <- copy(d_all)
+# N in each strata by simulation
+d_fig <- d_fig[, .(N = sum(N)), keyby = .(sc, v, sim, l, srp)]
+# Average N across simulations
+d_fig <- d_fig[, .(mu_N = mean(N)), keyby = .(sc, v, l)] 
+
+d_fig[, pct := round(100*mu_N / sum(mu_N), 1), keyby = .(sc, v)]
+
+lor_lab <- c("log-OR 1/2" , "log-OR 1/1.5", "log-OR 1", "log-OR 1.5", "log-OR 2")
+names(lor_lab) <- paste0("v0", 1:5)
+
+d_fig[, lor_lab := lor_lab[v]]
+d_fig[, lor_lab := factor(lor_lab, labels = lor_lab, levels = lor_lab)]
+
+d_fig[, l := factor(l, levels = c(0, 1, 2), labels = c("early", "late", "chronic"))]
+
+ggplot(d_fig, aes(x = lor_lab, y = mu_N, fill = l)) +
+  geom_bar(position="stack", stat="identity") +
+  geom_text(aes(label = paste0(pct,"%")),
+            position = position_stack(vjust = 0.5), size = 3) +
+  scale_fill_discrete("") +
+  scale_x_discrete("Scenario (all arms equal)") +
+  scale_y_continuous("Patients by silo", breaks = seq(0, 2500, by = 200)) 
+```
+
+
+@fig-est-design3-5 shows the expected number of patients that were revealed and contributing to within domain randomised comparisons.
 
 ```{r}
-#| label: fig-est-design3-3
+#| label: fig-est-design3-5
 #| fig-cap: 'Participants contributing to comparison.'
 #| fig-cap-location: margin
 #| fig-height: 8
 #| fig-width: 8
 
-# TODO
+d_fig <- copy(d_all)
 
+# Do these one by one so that the domains do not interfere with one another.
+d_er <- d_fig[er == 1, .(N = sum(N)), keyby = .(sc, v, sim, l, analys)]
+# I want to have a value (even if 0 via fill) for each analysis so spread then melt
+d_er <- dcast(d_er, sc + v + sim + l ~ analys, value.var = "N", fill = 0)
+d_er <- melt(d_er, measure.vars = paste0(1:5), variable.name = "analys", value.name = "N")
+d_er[, cN := cumsum(N), keyby = .(sc, v, sim, l)]
+d_er <- d_er[, .(domain = "surgery", mu_N = mean(cN)), keyby = .(sc, v, l, analys)]
+
+# Do these one by one so that the domains do not interfere with one another.
+d_ed1 <- d_fig[ed == 1 & srp == 1, .(N = sum(N)), keyby = .(sc, v, sim, l, analys)]
+# I want to have a value (even if 0 via fill) for each analysis so spread then melt
+d_ed1 <- dcast(d_ed1, sc + v + sim + l ~ analys, value.var = "N", fill = 0)
+d_ed1 <- melt(d_ed1, measure.vars = paste0(1:5), variable.name = "analys", value.name = "N")
+d_ed1[, cN := cumsum(N), keyby = .(sc, v, sim, l)]
+d_ed1 <- d_ed1[, .(domain = "duration (one)", mu_N = mean(cN)), keyby = .(sc, v, l, analys)]
+
+# Do these one by one so that the domains do not interfere with one another.
+d_ed2 <- d_fig[ed == 1 & srp == 2, .(N = sum(N)), keyby = .(sc, v, sim, l, analys)]
+# I want to have a value (even if 0 via fill) for each analysis so spread then melt
+d_ed2 <- dcast(d_ed2, sc + v + sim + l ~ analys, value.var = "N", fill = 0)
+d_ed2 <- melt(d_ed2, measure.vars = paste0(1:5), variable.name = "analys", value.name = "N")
+d_ed2[, cN := cumsum(N), keyby = .(sc, v, sim, l)]
+d_ed2 <- d_ed2[, .(domain = "duration (two)", mu_N = mean(cN)), keyby = .(sc, v, l, analys)]
+
+# Do these one by one so that the domains do not interfere with one another.
+d_ef <- d_fig[ef == 1, .(N = sum(N)), keyby = .(sc, v, sim, l, analys)]
+# I want to have a value (even if 0 via fill) for each analysis so spread then melt
+d_ef <- dcast(d_ef, sc + v + sim + l ~ analys, value.var = "N", fill = 0)
+d_ef <- melt(d_ef, measure.vars = paste0(1:5), variable.name = "analys", value.name = "N")
+d_ef[, cN := cumsum(N), keyby = .(sc, v, sim, l)]
+d_ef <- d_ef[, .(domain = "choice", mu_N = mean(cN)), keyby = .(sc, v, l, analys)]
+
+
+d_fig <- rbind(d_er, d_ed1, d_ed2, d_ef)
+d_fig[, domain := factor(
+  domain, levels = c("surgery", "duration (one)", "duration (two)", "choice"))]
+
+lor_lab <- c("log-OR 1/2" , "log-OR 1/1.5", "log-OR 1", "log-OR 1.5", "log-OR 2")
+names(lor_lab) <- paste0("v0", 1:5)
+
+d_fig[, lor_lab := lor_lab[v]]
+d_fig[, lor_lab := factor(lor_lab, labels = lor_lab, levels = lor_lab)]
+d_fig[, analys := as.numeric(analys)]
+
+d_fig[, l := factor(l, levels = c(0, 1, 2), labels = c("early", "late", "chronic"))]
+
+ggplot(d_fig, aes(x = analys, y = mu_N, fill = l)) +
+  geom_bar(position="stack", stat="identity") +
+  scale_fill_discrete("") +
+  scale_x_continuous("Analysis") +
+  scale_y_continuous("Patients contributing to comparison",
+                     breaks = seq(0, 2000, by = 200)) +
+  facet_grid(domain ~ lor_lab)
 ```
 
