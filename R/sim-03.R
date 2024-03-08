@@ -77,8 +77,8 @@ run_trial <- function(ix){
     dim = c(N_analys, length(g_fx)),
     dimnames = list(1:N_analys, g_fx)
   )
-  # inferiority probs
-  pr_inf <- array(
+  # probability of futility wrt superiority decision
+  pr_sup_fut  <- array(
     NA, 
     dim = c(N_analys, length(g_fx)),
     dimnames = list(1:N_analys, g_fx)
@@ -89,16 +89,17 @@ run_trial <- function(ix){
     dim = c(N_analys, length(g_fx)),
     dimnames = list(1:N_analys, g_fx)
   )
-  pr_ref_ni_trt <- array(
-    NA, 
-    dim = c(N_analys, length(g_fx)),
-    dimnames = list(1:N_analys, g_fx)
-  )
+  
   # no need to track pr_fut as just taken as a treshold for pr_sup
   # i.e. fut iff pr_sup < 0.05 (or some other threshold)
   
   # decisions
-  g_dec_type <- c("sup", "inf", "trt_ni_ref", "ref_ni_trt", "fut_sup", "fut_inf")
+  g_dec_type <- c("sup", 
+                  "trt_ni_ref", 
+                  "fut_sup", 
+                  "fut_trt_ni_ref"
+                  )
+
   decision <- array(
     NA,
     dim = c(N_analys, length(g_fx), length(g_dec_type)),
@@ -186,13 +187,16 @@ run_trial <- function(ix){
   
     pr_sup[ii, ]  <- post_fx[, sapply(.SD, function(z){mean(z > log(g_cfgsc$delta_sup))}), .SDcols = g_fx]
     
+    
+    pr_sup_fut[ii, ]  <- post_fx[, sapply(.SD, function(z){mean(z < log(1/g_cfgsc$delta_sup_fut))}), .SDcols = g_fx]
+    
     # assume inferiority is just defined as 1 - pr_sup[ii, ], i.e. Pr(z < log(g_cfgsc$delta_sup))
     # 12 weeks is coded as reference arm but want to determine if
     # 12 weeks is superior to 7 days (soc) in the two stage group and so we 
     # answer via the equivalent question namely the probability that 
     # 7 days is inferior to 12 weeks (assuming that we can define superiority 
     # and inferiority as symmetrical - I see no reason why we cannot)
-    pr_inf[ii, ]  <- 1 - pr_sup[ii, ]
+    # pr_inf[ii, ]  <- 1 - pr_sup[ii, ]
     
     # non-inferiority
     # The reference groups are dair, long and no-rif respectively for each of the
@@ -204,77 +208,80 @@ run_trial <- function(ix){
     # empirical example in Untitled1.R (see non_inferiority_2 func) if 
     # you need further detail.
     pr_trt_ni_ref[ii, ] <- post_fx[, sapply(.SD, function(z){mean(z > log(1/g_cfgsc$delta_ni))}), .SDcols = g_fx]
-    pr_ref_ni_trt[ii, ] <- post_fx[, sapply(.SD, function(z){mean(-z > log(1/g_cfgsc$delta_ni))}), .SDcols = g_fx]
+    # pr_ref_ni_trt[ii, ] <- post_fx[, sapply(.SD, function(z){mean(-z > log(1/g_cfgsc$delta_ni))}), .SDcols = g_fx]
 
     # evaluate decisions
     decision[ii, , "sup"] <- pr_sup[ii, ] > g_cfgsc$thresh_sup
-    decision[ii, , "inf"] <- pr_inf[ii, ] > g_cfgsc$thresh_sup
+    # decision[ii, , "inf"] <- pr_inf[ii, ] > g_cfgsc$thresh_sup
     decision[ii, , "trt_ni_ref"] <- pr_trt_ni_ref[ii, ] > g_cfgsc$thresh_non_inf
-    decision[ii, , "ref_ni_trt"] <- pr_ref_ni_trt[ii, ] > g_cfgsc$thresh_non_inf
-    # taken to imply negligible chance of ever being superior
-    decision[ii, , "fut_sup"] <- pr_sup[ii, ] < g_cfgsc$thresh_fut
-    # taken to imply negligible chance of ever being inferior
-    decision[ii, , "fut_inf"] <- pr_inf[ii, ] < g_cfgsc$thresh_fut
+    # decision[ii, , "ref_ni_trt"] <- pr_ref_ni_trt[ii, ] > g_cfgsc$thresh_non_inf
+    # taken to imply negligible chance of being superior
+    decision[ii, , "fut_sup"] <- pr_sup_fut[ii, ] < g_cfgsc$thresh_fut_sup
+    # taken to imply negligible chance of being inferior
+    # decision[ii, , "fut_inf"] <- pr_inf[ii, ] < g_cfgsc$thresh_fut_inf
+    # taken to imply negligible chance of being ni 
+    decision[ii, , "fut_trt_ni_ref"] <- pr_trt_ni_ref[ii, ] < g_cfgsc$thresh_fut_ni
+    # decision[ii, , "fut_ref_ni_trt"] <- pr_ref_ni_trt[ii, ] < g_cfgsc$thresh_fut_ni
     
     # Earlier decisions are retained - once superiority has been decided, 
     # we retain this conclusion irrespective of subsequent post probabilities.
     # This means that there could be inconsistency with a silo pr_sup and the 
     # decision reported.
     decision[1:ii, , "sup"] <- apply(decision[1:ii, , "sup", drop = F], 2, function(z){ cumsum(z) > 0 })
-    decision[1:ii, , "inf"] <- apply(decision[1:ii, , "inf", drop = F], 2, function(z){ cumsum(z) > 0 })
+    # decision[1:ii, , "inf"] <- apply(decision[1:ii, , "inf", drop = F], 2, function(z){ cumsum(z) > 0 })
     decision[1:ii, , "trt_ni_ref"] <- apply(decision[1:ii, , "trt_ni_ref", drop = F], 2, function(z){ cumsum(z) > 0 })
-    decision[1:ii, , "ref_ni_trt"] <- apply(decision[1:ii, , "ref_ni_trt", drop = F], 2, function(z){ cumsum(z) > 0 })
+    # decision[1:ii, , "ref_ni_trt"] <- apply(decision[1:ii, , "ref_ni_trt", drop = F], 2, function(z){ cumsum(z) > 0 })
     decision[1:ii, , "fut_sup"] <- apply(decision[1:ii, , "fut_sup", drop = F], 2, function(z){ cumsum(z) > 0 })
-    decision[1:ii, , "fut_inf"] <- apply(decision[1:ii, , "fut_inf", drop = F], 2, function(z){ cumsum(z) > 0 })
+    # decision[1:ii, , "fut_inf"] <- apply(decision[1:ii, , "fut_inf", drop = F], 2, function(z){ cumsum(z) > 0 })
+    decision[1:ii, , "fut_trt_ni_ref"] <- apply(decision[1:ii, , "fut_trt_ni_ref", drop = F], 2, function(z){ cumsum(z) > 0 })
+    # decision[1:ii, , "fut_ref_ni_trt"] <- apply(decision[1:ii, , "fut_ref_ni_trt", drop = F], 2, function(z){ cumsum(z) > 0 })
 
     # update pop_spec
+    # if we set the alloc probs to NA, the data generation does not enter pt
+    # into the randomised comparison for that domain
+    
     if(any(decision[ii, , "sup"])){
+      
       # since there are only two treatments per cell, if a superiority decision 
       # is made then we have answered all the questions and we can stop 
       # enrolling into that cell. if there were more than two treatments then
-      # we may take a different approach.
+      # we would probably need to take a different approach.
       
-      # stop enrolling into the relevant domain, no further info 
-      # accrues to the parameter estimates that led to the stopping decision
+      # the only surgical intervention is for revision versus dair in the late cohort
+      # so b_r only relates to that group, so it is a silo specific decision
+      # note that r_a$early and r_a$chronic are NA from the start
       if(decision[ii, "b_r", "sup"]){
         pop_spec$r_a$late['dair'] <- NA
         pop_spec$r_a$late['rev'] <- NA
       }
+      # choice domain relates to all silo so decision on b_f impacts all cohorts
       if(decision[ii, "b_f", "sup"]){
         pop_spec$r_c['norif'] <- NA
         pop_spec$r_c['rif'] <- NA
       }
     }
-    # same approach under inferiority. we stop enrolment into the 
-    # respective domain. 
-    if(any(decision[ii, , "inf"])){
-      # rather than have futility for reaching the non-inferiority test just
-      # implement an inferiority test to assess if short is inferior to long for
-      # one stage
-      if(decision[ii, "b_r1d", "inf"]){
+    # they do not care about inf so remove
+    # if(any(decision[ii, , "inf"])){
+    # }
+    
+    # ni only applies to duration. if short is ni to long then stop enrolment
+    # for this randomised comparison
+    if(any(decision[ii, , "trt_ni_ref"])){
+      
+      if(decision[ii, "b_r1d", "trt_ni_ref"]){
         pop_spec$r_b$one['long'] <- NA
         pop_spec$r_b$one['short'] <- NA
       }
-      # if short is inferior to long that implies that long is superior to short
-      # which is a question of interest and results in stopping
-      if(decision[ii, "b_r2d", "inf"]){
+      
+      if(decision[ii, "b_r2d", "trt_ni_ref"]){
         pop_spec$r_b$two['long'] <- NA
         pop_spec$r_b$two['short'] <- NA
       }
     }
     
-    # dont take any action for ni decisions. just keep going as is:
-    if(any(decision[ii, , "trt_ni_ref"])){
-      if(decision[ii, "b_r1d", "trt_ni_ref"]){
-        pop_spec$r_b$one['long'] <- NA
-        pop_spec$r_b$one['short'] <- NA
-      }
-    }
-    # if(any(decision[ii, , "ref_ni_trt"])){
-    # }
-    
-    # stop enrolling if futility decision made
+    # stop enrolling if futility decision wrt superiority made
     if(any(decision[ii, , "fut_sup"])){
+      
       if(decision[ii, "b_r", "fut_sup"]){
         pop_spec$r_a$late['dair'] <- NA
         pop_spec$r_a$late['rev'] <- NA
@@ -285,12 +292,17 @@ run_trial <- function(ix){
       }
     }
     
-    # stop enrolling on futility decision made 
-    if(any(decision[ii, , "fut_inf"])){
-      # here we would basically mean that hoping that short is inferior to long
-      # (equivalently hoping that long is superior to short) 
-      # is a pointless exercise
-      if(decision[ii, "b_r2d", "fut_inf"]){
+    # they do not care about inf so remove
+    # if(any(decision[ii, , "fut_inf"])){
+    # }
+    
+    
+    if(any(decision[ii, , "fut_trt_ni_ref"])){
+      if(decision[ii, "b_r1d", "fut_trt_ni_ref"]){
+        pop_spec$r_b$one['long'] <- NA
+        pop_spec$r_b$one['short'] <- NA
+      }
+      if(decision[ii, "b_r2d", "fut_trt_ni_ref"]){
         pop_spec$r_b$two['long'] <- NA
         pop_spec$r_b$two['short'] <- NA
       }
@@ -305,10 +317,10 @@ run_trial <- function(ix){
       (decision[ii, "b_r", "sup"] | decision[ii, "b_r", "fut_sup"]) &
       # if b_f is superior or futile
       (decision[ii, "b_f", "sup"] | decision[ii, "b_f", "fut_sup"]) &
-      # if one stage short is non-inferior or inferior
-      (decision[ii, "b_r1d", "trt_ni_ref"] | decision[ii, "b_r1d", "inf"]) &
-      # if two stage short is inferior or inferiority is futile
-      (decision[ii, "b_r2d", "inf"] | decision[ii, "b_r1d", "fut_inf"])
+      # if one stage short is non-inferior or futile for non-inferiority
+      (decision[ii, "b_r1d", "trt_ni_ref"] | decision[ii, "b_r1d", "fut_trt_ni_ref"]) &
+      # if two stage short is non-inferior or futile for non-inferiority
+      (decision[ii, "b_r2d", "trt_ni_ref"] | decision[ii, "b_r1d", "fut_trt_ni_ref"])
     ){
       log_info("Stop trial all questions addressed ", ix)
       stop_enrol <- T  
@@ -323,8 +335,8 @@ run_trial <- function(ix){
   }
   
   # did we stop (for any reason) prior to the final interim?
-  stop_at <- 5
-  # review the first column of the superiority decision
+  stop_at <- N_analys
+  # any na's in any of the decision array rows means we stopped early:
   if(any(is.na(decision[, 1, "sup"]))){
     # interim where the stopping rule was met
     stop_at <- min(which(is.na(decision[, 1, "sup"]))) - 1
@@ -333,12 +345,14 @@ run_trial <- function(ix){
       message("stopped at analysis ", stop_at)
 
       log_info("Stopped at analysis ", stop_at, " filling all subsequent entries")
-      decision[(stop_at+1):N_analys, , "sup"] <- decision[(stop_at), , "sup"]
-      decision[(stop_at+1):N_analys, , "inf"] <- decision[(stop_at), , "inf"]
-      decision[(stop_at+1):N_analys, , "trt_ni_ref"] <- decision[(stop_at), , "trt_ni_ref"]
-      decision[(stop_at+1):N_analys, , "ref_ni_trt"] <- decision[(stop_at), , "ref_ni_trt"]
-      decision[(stop_at+1):N_analys, , "fut_sup"] <- decision[(stop_at), , "fut_sup"]
-      decision[(stop_at+1):N_analys, , "fut_inf"] <- decision[(stop_at), , "fut_inf"]
+      decision[(stop_at+1):N_analys, , "sup"] <- decision[rep(stop_at, N_analys-stop_at), , "sup"]
+      # decision[(stop_at+1):N_analys, , "inf"] <- decision[rep(stop_at, N_analys-stop_at), , "inf"]
+      decision[(stop_at+1):N_analys, , "trt_ni_ref"] <- decision[rep(stop_at, N_analys-stop_at), , "trt_ni_ref"]
+      # decision[(stop_at+1):N_analys, , "ref_ni_trt"] <- decision[rep(stop_at, N_analys-stop_at), , "ref_ni_trt"]
+      decision[(stop_at+1):N_analys, , "fut_sup"] <- decision[rep(stop_at, N_analys-stop_at), , "fut_sup"]
+      # decision[(stop_at+1):N_analys, , "fut_inf"] <- decision[rep(stop_at, N_analys-stop_at), , "fut_inf"]
+      decision[(stop_at+1):N_analys, , "fut_trt_ni_ref"] <- decision[rep(stop_at, N_analys-stop_at), , "fut_trt_ni_ref"]
+      # decision[(stop_at+1):N_analys, , "fut_ref_ni_trt"] <- decision[rep(stop_at, N_analys-stop_at), , "fut_ref_ni_trt"]
 
     }
   }
@@ -349,8 +363,9 @@ run_trial <- function(ix){
     post_smry_2 = post_smry_2,
     decision = decision,
     pr_sup = pr_sup,
-    pr_inf = pr_inf,
-    pr_ref_ni_trt = pr_ref_ni_trt,
+    pr_sup_fut = pr_sup_fut, 
+    # pr_inf = pr_inf,
+    # pr_ref_ni_trt = pr_ref_ni_trt,
     pr_trt_ni_ref = pr_trt_ni_ref,
     # decision made on analysing the data from this analysis
     # e.g. if all treatments were superior after analysing the data at the 
@@ -366,7 +381,7 @@ run_sim_03 <- function(){
   log_info("Starting simulation")
   r <- parallel::mclapply(
     X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
-    # X=1:50, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    # X=1:10, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
       log_info("Simulation ", ix);
       ll <- tryCatch({
         run_trial(ix)
@@ -385,25 +400,13 @@ run_sim_03 <- function(){
       cbind(
         sim = i, analys = as.integer(rownames(r[[i]]$pr_sup)),r[[i]]$pr_sup) 
       } )))
-  
-  d_pr_inf <- data.table(
-    do.call(rbind, lapply(1:length(r), function(i){ 
-      cbind(
-        sim = i, analys = as.integer(rownames(r[[i]]$pr_inf)),r[[i]]$pr_inf) 
-    } )))
-  
+
   d_pr_trt_ni_ref <- data.table(
     do.call(rbind, lapply(1:length(r), function(i){ 
       cbind(
         sim = i, analys = as.integer(rownames(r[[i]]$pr_trt_ni_ref)),r[[i]]$pr_trt_ni_ref) 
     } )))
-  
-  d_pr_ref_ni_trt <- data.table(
-    do.call(rbind, lapply(1:length(r), function(i){ 
-      cbind(
-        sim = i, analys = as.integer(rownames(r[[i]]$pr_ref_ni_trt)),r[[i]]$pr_ref_ni_trt) 
-    } )))
-  
+
   # decisions
   d_decision <- rbind(
     data.table(do.call(rbind, lapply(1:length(r), function(i){ 
@@ -412,18 +415,8 @@ run_sim_03 <- function(){
     } ))), 
     
     data.table(do.call(rbind, lapply(1:length(r), function(i){ 
-      m <- r[[i]]$decision[, , "inf"]
-      cbind(sim = i, analys = as.integer(rownames(m)), quant = "inf", m) 
-    } ))), 
-    
-    data.table(do.call(rbind, lapply(1:length(r), function(i){ 
       m <- r[[i]]$decision[, , "trt_ni_ref"]
       cbind(sim = i, analys = as.integer(rownames(m)), quant = "trt_ni_ref", m) 
-    } ))),
-    
-    data.table(do.call(rbind, lapply(1:length(r), function(i){ 
-      m <- r[[i]]$decision[, , "ref_ni_trt"]
-      cbind(sim = i, analys = as.integer(rownames(m)), quant = "ref_ni_trt", m) 
     } ))),
     
     data.table(do.call(rbind, lapply(1:length(r), function(i){ 
@@ -432,8 +425,8 @@ run_sim_03 <- function(){
     } ))),
     
     data.table(do.call(rbind, lapply(1:length(r), function(i){ 
-      m <- r[[i]]$decision[, , "fut_inf"]
-      cbind(sim = i, analys = as.integer(rownames(m)), quant = "fut_inf", m) 
+      m <- r[[i]]$decision[, , "fut_trt_ni_ref"]
+      cbind(sim = i, analys = as.integer(rownames(m)), quant = "fut_trt_ni_ref", m) 
     } )))
     
   )
@@ -496,9 +489,7 @@ run_sim_03 <- function(){
   l <- list(
     cfg = g_cfgsc,
     d_pr_sup = d_pr_sup, 
-    d_pr_inf = d_pr_inf,
     d_pr_trt_ni_ref = d_pr_trt_ni_ref,
-    d_pr_ref_ni_trt = d_pr_ref_ni_trt,
     d_decision = d_decision,
     d_post_smry_1 = d_post_smry_1,
     d_post_smry_2 = d_post_smry_2,
