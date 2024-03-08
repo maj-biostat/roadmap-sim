@@ -17,11 +17,19 @@ Entry into silo-specific (plus surgery specific) parameters is coordinated by tr
 ## Equal effects in all treatment arms
 
 ```{r}
-or_lab <- c("OR 1/2" , "OR 1/1.5", "OR 1", "OR 1.5", "OR 2")
-or_lev <- c("1/2", "1/1.5", "1", "1.5", "2")
-or_num <- c(1/2, 1/1.5, 1, 1.5, 2)
-names(or_lab) <- paste0("v0",c(1, 2, 3, 4, 5))
-names(or_num) <- paste0("v0",c(1, 2, 3, 4, 5))
+
+# OR
+g_or_lab <- c("OR 1/1.5" , "OR 1/1.2", "OR 1", "OR 1.2", "OR 1.5")
+g_or_lev <- c("1/1.5", "1/1.2", "1", "1.2", "1.5")
+g_or_num <- c(1/1.5, 1/1.2, 1, 1.2, 1.5)
+names(g_or_lab) <- paste0("v0",c(1, 2, 3, 4, 5))
+names(g_or_num) <- paste0("v0",c(1, 2, 3, 4, 5))
+
+# log OR
+g_lor_lab <- c("log-OR 1/1.5" , "log-OR 1/1.2", "log-OR 1", "log-OR 1.2", "log-OR 1.5")
+names(g_lor_lab) <- paste0("v0", 1:5)
+g_lor_num <- log(c(1/1.5, 1/1.2, 1, 1.2, 1.5))
+
 
 flist <- list.files("data", pattern = "sim03-sc01")
 
@@ -50,7 +58,8 @@ d_cfg[, `:=`(
   b_f = as.numeric(b_f),
   d_sup = as.numeric(thresh_sup),
   d_ni = as.numeric(thresh_non_inf),
-  d_fut = as.numeric(thresh_fut)
+  d_fut_sup = as.numeric(thresh_fut_sup),
+  d_fut_ni = as.numeric(thresh_fut_ni)
   )]
 
 # derive the true effect for surgery based on weight combination
@@ -88,21 +97,6 @@ d_dec <- rbindlist(lapply(seq_along(l), function(i){
   cbind(sc = tok[2], v = tok[3], m)
 }))
 
-# d_stopping <- rbindlist(lapply(seq_along(l), function(i){
-#   tok <- toks[[i]]
-#   # l[[i]]$d_decision
-# 
-#   d_decision <- copy(l[[i]]$d_decision[quant %in% c("sup", "inf", "fut")])
-#   d_decision[, stopped_all := as.numeric(b_r + b_r1d + b_r2d + b_f == 4)]
-#   
-#   # d_early_stop <- d_decision[stopped_all == 1, .SD[1], keyby = .(sim, quant)]
-#   # d_no_stop <- d_decision[!(sim %in% unique(d_stopped_trials$sim)), .SD[.N], keyby = .(sim, quant)]
-#   # 
-#   # d_decision <- rbind(d_early_stop, d_no_stop)
-# 
-#   cbind(sc = tok[2], v = tok[3], d_decision)
-# }))
-
 d_post_smry_2 <- rbindlist(lapply(seq_along(l), function(i){
   tok <- toks[[i]]
   m <- l[[i]]$d_post_smry_2
@@ -131,7 +125,8 @@ The margins for non-inferiority and superiority are `r log(1/1.1)` and `r log(1)
 #| out-width: 100%
 
 
-d_tbl <- d_cfg[, .(v, N_pt, b_r, b_r1d, b_r2d, b_f, thresh_sup, thresh_non_inf, thresh_fut)]
+d_tbl <- d_cfg[, .(v, N_pt, b_r, b_r1d, b_r2d, b_f, 
+                   thresh_sup, thresh_non_inf, thresh_fut_sup, thresh_fut_ni)]
 
 d_tbl[, b_r2d := b_r2d + b_r1d]
 
@@ -165,7 +160,7 @@ g_tbl <- d_tbl |> gt() |>
   ) |>
   tab_spanner(
     label = html("Decision thresholds"),
-    columns = c(thresh_sup, thresh_non_inf, thresh_fut)
+    columns = c(thresh_sup, thresh_non_inf, thresh_fut_sup, thresh_fut_ni)
   ) |>
   cols_label(
     v = html("Configuration"),
@@ -175,7 +170,8 @@ g_tbl <- d_tbl |> gt() |>
     b_f = html("rif"),
     thresh_sup = html("delta<sub>sup</sub>"),
     thresh_non_inf = html("delta<sub>ni</sub>"),
-    thresh_fut = html("delta<sub>fut</sub>")
+    thresh_fut_sup = html("delta<sub>fut-sup</sub>"),
+    thresh_fut_ni = html("delta<sub>fut-ni</sub>")
   ) |>
   tab_style(
     style = list(
@@ -212,17 +208,13 @@ Specifically, if revision is futile then why would we consider antibiotic durati
 
 :::
 
-2. For the duration domain (under one-stage revision) we consider whether short duration is non-inferior to long duration antibiotic treatment.
+2. For the duration domain (under both one-stage and two-stage revision) we consider whether short duration is non-inferior to long duration antibiotic treatment.
 The model is parameterised such that long duration is the reference level for both one-stage and two-stage revision and therefore we can evaluate this quantity directly.
-We also consider inferiority.
-If either the short duration is non-inferior or inferior, futher enrolment into this randomised comparison would be halted.
+Specifically, we consider a non-inferiority margin of $\delta = \log(1/1.2)\approx -0.18$ and deem short course duration to be non-inferior to long course if $Pr(\beta_5 + \delta > 0) > 0.99$ for one-stage and $Pr(\beta_5 + \beta_6 + \delta > 0) > 0.99$ for two-stage.
+We also consider futility to achieve non-inferiority whereby futility is indicated if the posterior probability of non-inferiority is less than 1%.
+If either the short duration is non-inferior or futile, futher enrolment into this randomised comparison would be halted with the consequence that no more of the uncertainty will be resolved.
 
-3. For the duration domain (under two-stage revision) we consider whether long duration is superior to short duration.
-Since the parameterisation of the model uses long duration as the reference group, this can be evaluated by considering whether short duration is inferior to the long duration where inferiority is simply the complement of superiority.
-Futility is also evaluated in an analogous manner.
-If either the long duration is superior or futility is indicated, futher enrolment into this randomised comparison would be halted.
-
-4. For the choice domain we evaluate whether rif is superior to no-rif.
+3. For the choice domain we evaluate whether rif is superior to no-rif.
 We also consider futility.
 If either are triggered, further enrolment into the choice domain is halted.
 
@@ -251,20 +243,20 @@ Superiority (`sup`) and futility (`fut_sup`) are the relevant quantities of inte
 d_fig <- melt(d_dec, id.vars = c("sc", "v", "analys", "parname"), variable.name = "quant")
 # d_fig <- merge(d_fig, d_pars, by = c("sc", "v", "analys", "parname"))
 d_fig[, quant := factor(quant, 
-                        levels = c("sup", "inf", "fut_sup", "fut_inf", "trt_ni_ref", "ref_ni_trt"))]
+                        levels = c("sup", "fut_sup", "trt_ni_ref", "fut_trt_ni_ref"))]
 # add in the number of pts having reached 12 months post rand by analysis num
 d_fig <- merge(d_fig, unique(d_cfg[, .(analys, N_pt)]), by = "analys")
 
 d_fig <- rbind(
   d_fig[parname == "b_r" & quant %in% c("sup", "fut_sup"), ],
-  d_fig[parname == "b_r1d" & quant %in% c("trt_ni_ref", "inf"), ],
-  d_fig[parname == "b_r2d" & quant %in% c("inf", "fut_inf"), ],
+  d_fig[parname == "b_r1d" & quant %in% c("trt_ni_ref", "fut_trt_ni_ref"), ],
+  d_fig[parname == "b_r2d" & quant %in% c("trt_ni_ref", "fut_trt_ni_ref"), ],
   d_fig[parname == "b_f" & quant %in% c("sup", "fut_sup"), ]
 )
 
-d_fig[, or_tru := or_lab[v]]
+d_fig[, or_tru := g_or_lab[v]]
 d_fig[, or_tru := factor(
-  or_tru, labels = or_lab, levels = or_lab)]
+  or_tru, labels = g_or_lab, levels = g_or_lab)]
 
 fx <- g_fx
 names(fx) <- c("rev vs ref", "short vs ref (one)", "short vs ref (two)", "rif vs ref")
@@ -272,26 +264,26 @@ d_fig[, parname_lab := factor(
   names(fx[parname]), levels = c("rev vs ref", "short vs ref (one)", "short vs ref (two)", "rif vs ref")
   ) ]
 
-d_text <- unique(d_fig[, .(parname_lab, or_tru, quant)])
-d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
-       `:=`(label = c("revision futile \nto dair"), x = 500, y = 0.2)]
-d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 1.5", "OR 2"), 
-       `:=`(label = c("revision superior \nto dair"), x = 500, y = 0.2)]
-d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
-       `:=`(label = c("short inferior \nto long"), x = 500, y = 0.2)]
-d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 1.5", "OR 2"), 
-       `:=`(label = c("short non-inferior \nto long"), x = 500, y = 0.2)]
-
-
-d_text[parname_lab == "short vs ref (two)" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
-       `:=`(label = c("long superior \nto short"), x = 500, y = 0.2)]
-d_text[parname_lab == "short vs ref (two)" & or_tru %in% c("OR 1.5", "OR 2"), 
-       `:=`(label = c("long inferior \nto short"), x = 500, y = 0.2)]
-
-d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
-       `:=`(label = c("rif futile \nto no-rif"), x = 500, y = 0.2)]
-d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 1.5", "OR 2"), 
-       `:=`(label = c("rif superior \nto no-rif"), x = 500, y = 0.2)]
+# d_text <- unique(d_fig[, .(parname_lab, or_tru, quant)])
+# d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
+#        `:=`(label = c("revision futile \nto dair"), x = 500, y = 0.2)]
+# d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 1.5", "OR 2"), 
+#        `:=`(label = c("revision superior \nto dair"), x = 500, y = 0.2)]
+# d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
+#        `:=`(label = c("short inferior \nto long"), x = 500, y = 0.2)]
+# d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 1.5", "OR 2"), 
+#        `:=`(label = c("short non-inferior \nto long"), x = 500, y = 0.2)]
+# 
+# 
+# d_text[parname_lab == "short vs ref (two)" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
+#        `:=`(label = c("long superior \nto short"), x = 500, y = 0.2)]
+# d_text[parname_lab == "short vs ref (two)" & or_tru %in% c("OR 1.5", "OR 2"), 
+#        `:=`(label = c("long inferior \nto short"), x = 500, y = 0.2)]
+# 
+# d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
+#        `:=`(label = c("rif futile \nto no-rif"), x = 500, y = 0.2)]
+# d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 1.5", "OR 2"), 
+#        `:=`(label = c("rif superior \nto no-rif"), x = 500, y = 0.2)]
 
 p <- ggplot(d_fig, aes(x = N_pt, y = value, group = quant, col = quant)) +
   geom_point(size = 0.5) +
@@ -301,11 +293,11 @@ p <- ggplot(d_fig, aes(x = N_pt, y = value, group = quant, col = quant)) +
     "", palette = "Tableau 10",
   type = "regular",
   direction = 1) +
-  geom_text(
-    data = d_text,
-    aes(x = x, y = y, label = label),
-    hjust   = 0,
-    vjust   = 0, col = 1, size = 3) +
+  # geom_text(
+  #   data = d_text,
+  #   aes(x = x, y = y, label = label),
+  #   hjust   = 0,
+  #   vjust   = 0, col = 1, size = 3) +
   scale_linetype_discrete("") +
   scale_x_continuous("N (12-months post rand)", guide = guide_axis(angle = 45)) +
   scale_y_continuous("Cumulative probability", breaks = seq(0, 1, by = 0.1)) +
@@ -324,13 +316,12 @@ suppressWarnings(print(p))
 
 # Widen data so that power is shown by col with each col corresponding to an
 # analysis
-d_tbl <- d_fig[quant %in% c("sup", "fut_sup", "fut_inf", "trt_ni_ref", "inf")]
+d_tbl <- d_fig[quant %in% c("sup", "fut_sup", "trt_ni_ref", "fut_trt_ni_ref")]
 d_tbl <- dcast(d_tbl, parname + or_tru ~ quant + analys, value.var = "value")
 names(d_tbl) <- gsub("superiority", "sup", names(d_tbl))
-names(d_tbl) <- gsub("inf", "inf", names(d_tbl))
 names(d_tbl) <- gsub("futility (sup)", "fut_sup", names(d_tbl))
-names(d_tbl) <- gsub("futility (inf)", "fut_inf", names(d_tbl))
 names(d_tbl) <- gsub("NI (trt ni ref)", "trt_ni_inf", names(d_tbl))
+names(d_tbl) <- gsub("futility (NI)", "fut_trt_ni_ref", names(d_tbl))
 d_tbl <- d_tbl[order(or_tru, parname)]
 # d_tbl[, parlab := paste0(parname, " - ", get_effect_label(as.character(parname), do_html = F))]
 # d_tbl[, parname := NULL]
@@ -345,16 +336,12 @@ g_tbl <- d_tbl |> gt(groupname_col = "parname") |>
     columns = c(paste0("fut_sup_", 1:5))
   ) |>
   tab_spanner(
-    label = html("Futility (on inf)"),
-    columns = c(paste0("fut_inf_", 1:5))
-  ) |>
-  tab_spanner(
-    label = html("Inferiority"),
-    columns = paste0("inf_", 1:5)
-  ) |>
-  tab_spanner(
     label = html("NI (trt ni ref)"),
     columns = paste0("trt_ni_ref_", 1:5)
+  ) |>
+  tab_spanner(
+    label = html("Futility (on ni)"),
+    columns = c(paste0("fut_trt_ni_ref_", 1:5))
   ) |>
   cols_label(
     or_tru = html("OR (true)"),
@@ -368,28 +355,23 @@ g_tbl <- d_tbl |> gt(groupname_col = "parname") |>
     fut_sup_3 = html("1500"),
     fut_sup_4 = html("2000"),
     fut_sup_5 = html("2500"),
-    fut_inf_1 = html("500"),
-    fut_inf_2 = html("1000"),
-    fut_inf_3 = html("1500"),
-    fut_inf_4 = html("2000"),
-    fut_inf_5 = html("2500"),
-    inf_1 = html("500"),
-    inf_2 = html("1000"),
-    inf_3 = html("1500"),
-    inf_4 = html("2000"),
-    inf_5 = html("2500"),
     trt_ni_ref_1 = html("500"),
     trt_ni_ref_2 = html("1000"),
     trt_ni_ref_3 = html("1500"),
     trt_ni_ref_4 = html("2000"),
-    trt_ni_ref_5 = html("2500")
+    trt_ni_ref_5 = html("2500"),
+    fut_trt_ni_ref_1 = html("500"),
+    fut_trt_ni_ref_2 = html("1000"),
+    fut_trt_ni_ref_3 = html("1500"),
+    fut_trt_ni_ref_4 = html("2000"),
+    fut_trt_ni_ref_5 = html("2500")
   ) |>
   tab_style(
     style = cell_borders(
       sides = c("left"),
       weight = px(1)),
     locations = cells_body(
-      columns = c(sup_1, fut_sup_1, fut_inf_1, trt_ni_ref_1, inf_1)
+      columns = c(sup_1, fut_sup_1, trt_ni_ref_1, fut_trt_ni_ref_1)
       )
     ) |>
   tab_style(
@@ -428,22 +410,17 @@ d_fig <- merge(d_fig, unique(d_cfg[, .(analys, N_pt)]), by = "analys")
 d_fig[, analys := factor(analys)]
 d_fig[, N_pt := factor(N_pt)]
 
-lor_lab <- c("log-OR 1/2" , "log-OR 1/1.5", "log-OR 1", "log-OR 1.5", "log-OR 2")
-names(lor_lab) <- paste0("v0", 1:5)
-# or_lev <- c("1/2", "1/1.5", "1", "1.5", "2")
-lor_num <- log(c(1/2, 1/1.5, 1, 1.5, 2))
-
-d_fig[, lor_lab := lor_lab[v]]
+d_fig[, lor_lab := g_lor_lab[v]]
 d_fig[, lor_lab := factor(
   lor_lab, 
-  levels = lor_lab,
-  labels = lor_lab)]
+  levels = g_lor_lab,
+  labels = g_lor_lab)]
 
 d_fig_2 <- CJ(
-  lor_lab = factor(lor_lab, levels = lor_lab, labels = lor_lab),
+  lor_lab = factor(g_lor_lab, levels = g_lor_lab, labels = g_lor_lab),
   par = factor(unique(d_fig$par), levels = unique(d_fig$par))
 )
-d_fig_2[, lor_num := rep(lor_num, each = length(unique(d_fig$par)))]
+d_fig_2[, lor_num := rep(g_lor_num, each = length(unique(d_fig$par)))]
 
 
 
@@ -482,16 +459,8 @@ d_fig_1 <- d_fig_1[, .(N = sum(N)), keyby = .(sc, v, sim, l)]
 d_fig_1 <- d_fig_1[, .(mu_N = mean(N)), keyby = .(sc, v, l)] 
 d_fig_1[, pct := round(100*mu_N / sum(mu_N), 1), keyby = .(sc, v)]
 
-# d_fig_2 <- copy(d_all)
-# d_fig_2 <- d_fig_2[, .(N = sum(N)), keyby = .(sc, v, sim, l, er, ed, ef)]
-# d_fig_2[er == 1]
-
-
-lor_lab <- c("log-OR 1/2" , "log-OR 1/1.5", "log-OR 1", "log-OR 1.5", "log-OR 2")
-names(lor_lab) <- paste0("v0", 1:5)
-
-d_fig_1[, lor_lab := lor_lab[v]]
-d_fig_1[, lor_lab := factor(lor_lab, labels = lor_lab, levels = lor_lab)]
+d_fig_1[, lor_lab := g_lor_lab[v]]
+d_fig_1[, lor_lab := factor(lor_lab, labels = g_lor_lab, levels = g_lor_lab)]
 
 d_fig_1[, l := factor(l, levels = c(0, 1, 2), labels = c("early", "late", "chronic"))]
 
@@ -525,10 +494,8 @@ d_fig <- rbind(
 d_fig <- d_fig[, .(mu_N = mean(N)), keyby = .(sc, v, l, reveal)] 
 d_fig[, pct := round(100*mu_N / sum(mu_N), 1), keyby = .(sc, v, reveal)]
 
-lor_lab <- c("log-OR 1/2" , "log-OR 1/1.5", "log-OR 1", "log-OR 1.5", "log-OR 2")
-names(lor_lab) <- paste0("v0", 1:5)
-d_fig[, lor_lab := lor_lab[v]]
-d_fig[, lor_lab := factor(lor_lab, labels = lor_lab, levels = lor_lab)]
+d_fig[, lor_lab := g_lor_lab[v]]
+d_fig[, lor_lab := factor(lor_lab, labels = g_lor_lab, levels = g_lor_lab)]
 
 d_fig[, l := factor(l, levels = c(0, 1, 2), labels = c("early", "late", "chronic"))]
 d_fig[, reveal := factor(
@@ -593,11 +560,8 @@ d_fig <- rbind(d_er, d_ed1, d_ed2, d_ef)
 d_fig[, domain := factor(
   domain, levels = c("surgery", "duration (one)", "duration (two)", "choice"))]
 
-lor_lab <- c("log-OR 1/2" , "log-OR 1/1.5", "log-OR 1", "log-OR 1.5", "log-OR 2")
-names(lor_lab) <- paste0("v0", 1:5)
-
-d_fig[, lor_lab := lor_lab[v]]
-d_fig[, lor_lab := factor(lor_lab, labels = lor_lab, levels = lor_lab)]
+d_fig[, lor_lab := g_lor_lab[v]]
+d_fig[, lor_lab := factor(lor_lab, labels = g_lor_lab, levels = g_lor_lab)]
 d_fig[, analys := as.numeric(analys)]
 
 d_fig[, l := factor(l, levels = c(0, 1, 2), labels = c("early", "late", "chronic"))]

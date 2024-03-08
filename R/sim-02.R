@@ -331,11 +331,11 @@ run_trial <- function(ix){
       message("stopped at analysis ", stop_at)
 
       log_info("Stopped at analysis ", stop_at, " filling all subsequent entries")
-      decision[(stop_at+1):N_analys, , "sup"] <- decision[(stop_at), , "sup"]
-      decision[(stop_at+1):N_analys, , "inf"] <- decision[(stop_at), , "inf"]
-      decision[(stop_at+1):N_analys, , "trt_ni_ref"] <- decision[(stop_at), , "trt_ni_ref"]
-      decision[(stop_at+1):N_analys, , "ref_ni_trt"] <- decision[(stop_at), , "ref_ni_trt"]
-      decision[(stop_at+1):N_analys, , "fut"] <- decision[(stop_at), , "fut"]
+      decision[(stop_at+1):N_analys, , "sup"] <- decision[rep(stop_at, N_analys-stop_at), , "sup"]
+      decision[(stop_at+1):N_analys, , "inf"] <- decision[rep(stop_at, N_analys-stop_at), , "inf"]
+      decision[(stop_at+1):N_analys, , "trt_ni_ref"] <- decision[rep(stop_at, N_analys-stop_at), , "trt_ni_ref"]
+      decision[(stop_at+1):N_analys, , "ref_ni_trt"] <- decision[rep(stop_at, N_analys-stop_at), , "ref_ni_trt"]
+      decision[(stop_at+1):N_analys, , "fut"] <- decision[rep(stop_at, N_analys-stop_at), , "fut"]
 
     }
   }
