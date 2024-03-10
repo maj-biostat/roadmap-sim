@@ -77,5 +77,6 @@ sim03:
 	Rscript $(R_OPTS) ./R/sim-03.R run_sim_03 cfg-sim03-sc01-v04.yml
 	Rscript $(R_OPTS) ./R/sim-03.R run_sim_03 cfg-sim03-sc01-v05.yml
 	Rscript $(R_OPTS) ./R/sim-03.R run_sim_03 cfg-sim03-sc01-v06.yml
+	Rscript $(R_OPTS) ./R/sim-03.R run_sim_03 cfg-sim03-sc01-v07.yml
 
 

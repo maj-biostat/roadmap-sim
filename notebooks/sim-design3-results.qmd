@@ -19,16 +19,16 @@ Entry into silo-specific (plus surgery specific) parameters is coordinated by tr
 ```{r}
 
 # OR
-g_or_lab <- c("OR 1/1.5" , "OR 1/1.2", "OR 1", "OR 1.2", "OR 1.5")
-g_or_lev <- c("1/1.5", "1/1.2", "1", "1.2", "1.5")
-g_or_num <- c(1/1.5, 1/1.2, 1, 1.2, 1.5)
-names(g_or_lab) <- paste0("v0",c(1, 2, 3, 4, 5))
-names(g_or_num) <- paste0("v0",c(1, 2, 3, 4, 5))
+g_or_lab <- c("OR 1/2" , "OR 1/1.5" , "OR 1/1.2", "OR 1", "OR 1.2", "OR 1.5", "OR 2")
+g_or_lev <- c("1/2", "1/1.5", "1/1.2", "1", "1.2", "1.5", "2")
+g_or_num <- c(1/2, 1/1.5, 1/1.2, 1, 1.2, 1.5, 2)
+names(g_or_lab) <- paste0("v0",c(1, 2, 3, 4, 5, 6, 7))
+names(g_or_num) <- paste0("v0",c(1, 2, 3, 4, 5, 6, 7))
 
 # log OR
-g_lor_lab <- c("log-OR 1/1.5" , "log-OR 1/1.2", "log-OR 1", "log-OR 1.2", "log-OR 1.5")
-names(g_lor_lab) <- paste0("v0", 1:5)
-g_lor_num <- log(c(1/1.5, 1/1.2, 1, 1.2, 1.5))
+g_lor_lab <- c("log(1/2)" , "log(1/1.5)" , "log(1/1.2)", "log(1)", "log(1.2)", "log(1.5)", "log(2)")
+names(g_lor_lab) <- paste0("v0", 1:7)
+g_lor_num <- log(c(1/2, 1/1.5, 1/1.2, 1, 1.2, 1.5, 2))
 
 
 flist <- list.files("data", pattern = "sim03-sc01")
@@ -113,10 +113,9 @@ d_all <- rbindlist(lapply(seq_along(l), function(i){
 
 ```
 
-@tbl-sim-design3-par summarises the setup for the simulated effect sizes from $\log(1/2)$ to $\log(2)$ on all arms. 
-All parameters are simulated to have the same effect size such that all parameters are effective, show no effect or are harmful.
+@tbl-sim-design3-par summarises the setup for the simulated ORs ranging from $1/2$ to $2$ on all arms. 
+All parameters are simulated to have the same effect size.
 Decision thresholds remain constant throughout the duration of the study.
-The margins for non-inferiority and superiority are `r log(1/1.1)` and `r log(1)` on the log-odds scale applied across all treatment effect parameters.
 
 ```{r}
 #| label: tbl-sim-design3-par
@@ -195,28 +194,15 @@ g_tbl
 
 Notes:
 
-1. For the surgical domain we evaluate whether revision is superior to dair.
-We also consider futility. 
-Specifically, if we determine that the probability of superiority is less than 5% then we declare futility, to be interpreted as a low chance of superiority given the data observed to date.
-If either superiority or futility (for superiority) were established further enrolment into the surgical domain is halted.
+1. For the surgical domain we evaluate whether revision is superior to dair and futility for superiority.
 
+2. For the duration domain (one-stage) we evaluate whether short duration is non-inferior to long duration antibiotic treatment and futility for non-inferiority.
 
-::: {.callout-note collapse=false}
+3. For the duration domain (two-stage) we evaluate whether long duration is superior to short duration antibiotic treatment (equivalently whether short duration is inferior to long) and futility for superiority.
 
-If revision is futile then should there be some implication on the duration domain. 
-Specifically, if revision is futile then why would we consider antibiotic duration effects within revision?
+3. For the choice domain we evaluate whether rif is superior to no-rif and futility for superiority.
 
-:::
-
-2. For the duration domain (under both one-stage and two-stage revision) we consider whether short duration is non-inferior to long duration antibiotic treatment.
-The model is parameterised such that long duration is the reference level for both one-stage and two-stage revision and therefore we can evaluate this quantity directly.
-Specifically, we consider a non-inferiority margin of $\delta = \log(1/1.2)\approx -0.18$ and deem short course duration to be non-inferior to long course if $Pr(\beta_5 + \delta > 0) > 0.99$ for one-stage and $Pr(\beta_5 + \beta_6 + \delta > 0) > 0.99$ for two-stage.
-We also consider futility to achieve non-inferiority whereby futility is indicated if the posterior probability of non-inferiority is less than 1%.
-If either the short duration is non-inferior or futile, futher enrolment into this randomised comparison would be halted with the consequence that no more of the uncertainty will be resolved.
-
-3. For the choice domain we evaluate whether rif is superior to no-rif.
-We also consider futility.
-If either are triggered, further enrolment into the choice domain is halted.
+Enrolment stops for the respective domain when any of the above are triggered.
 
 @fig-pr-design3-1 reports the cumulative probability of each decision quantity with enrolment halted only for the questions detailed above.
 
@@ -224,7 +210,7 @@ If either are triggered, further enrolment into the choice domain is halted.
 Superiority (`sup`) and futility (`fut_sup`) are the relevant quantities of interest.
 
 + The second row details the cumulative probability of decisions within the duration domain under one-stage revision.
-Non-inferiority (`trt_ni_ref`) and inferiority (`inf`) are the relevant quantities of interest.
+Non-inferiority (`trt_ni_ref`) and inferiority (`fut_trt_ni_ref`) are the relevant quantities of interest.
 
 + The third row details the cumulative probability of decisions within the duration domain under two-stage revision.
 Since we evaluate the complement (short is inferior to long) inferiority (`inf`) and futility (`fut_inf`) are the relevant quantities of interest.
@@ -243,14 +229,14 @@ Superiority (`sup`) and futility (`fut_sup`) are the relevant quantities of inte
 d_fig <- melt(d_dec, id.vars = c("sc", "v", "analys", "parname"), variable.name = "quant")
 # d_fig <- merge(d_fig, d_pars, by = c("sc", "v", "analys", "parname"))
 d_fig[, quant := factor(quant, 
-                        levels = c("sup", "fut_sup", "trt_ni_ref", "fut_trt_ni_ref"))]
+                        levels = c("sup", "fut_sup", "inf", "fut_inf","trt_ni_ref", "fut_trt_ni_ref"))]
 # add in the number of pts having reached 12 months post rand by analysis num
 d_fig <- merge(d_fig, unique(d_cfg[, .(analys, N_pt)]), by = "analys")
 
 d_fig <- rbind(
   d_fig[parname == "b_r" & quant %in% c("sup", "fut_sup"), ],
   d_fig[parname == "b_r1d" & quant %in% c("trt_ni_ref", "fut_trt_ni_ref"), ],
-  d_fig[parname == "b_r2d" & quant %in% c("trt_ni_ref", "fut_trt_ni_ref"), ],
+  d_fig[parname == "b_r2d" & quant %in% c("inf", "fut_inf"), ],
   d_fig[parname == "b_f" & quant %in% c("sup", "fut_sup"), ]
 )
 
@@ -264,26 +250,37 @@ d_fig[, parname_lab := factor(
   names(fx[parname]), levels = c("rev vs ref", "short vs ref (one)", "short vs ref (two)", "rif vs ref")
   ) ]
 
-# d_text <- unique(d_fig[, .(parname_lab, or_tru, quant)])
-# d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
-#        `:=`(label = c("revision futile \nto dair"), x = 500, y = 0.2)]
-# d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 1.5", "OR 2"), 
-#        `:=`(label = c("revision superior \nto dair"), x = 500, y = 0.2)]
-# d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
-#        `:=`(label = c("short inferior \nto long"), x = 500, y = 0.2)]
-# d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 1.5", "OR 2"), 
-#        `:=`(label = c("short non-inferior \nto long"), x = 500, y = 0.2)]
-# 
-# 
-# d_text[parname_lab == "short vs ref (two)" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
-#        `:=`(label = c("long superior \nto short"), x = 500, y = 0.2)]
-# d_text[parname_lab == "short vs ref (two)" & or_tru %in% c("OR 1.5", "OR 2"), 
-#        `:=`(label = c("long inferior \nto short"), x = 500, y = 0.2)]
-# 
-# d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 1/2", "OR 1/1.5"), 
-#        `:=`(label = c("rif futile \nto no-rif"), x = 500, y = 0.2)]
-# d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 1.5", "OR 2"), 
-#        `:=`(label = c("rif superior \nto no-rif"), x = 500, y = 0.2)]
+d_text <- unique(d_fig[, .(parname_lab, or_tru, quant)])
+d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 1/2"),
+       `:=`(label = c("rev fut (sup)"), x = 500, y = 0.2)]
+d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 2"),
+       `:=`(label = c("rev sup \nto dair"), x = 500, y = 0.2)]
+d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 1/2"),
+       `:=`(label = c("short fut (ni)"), x = 500, y = 0.2)]
+d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 2"),
+       `:=`(label = c("short ni \nto long"), x = 500, y = 0.2)]
+
+
+d_text[parname_lab == "short vs ref (two)" & or_tru %in% c("OR 1/2"),
+       `:=`(label = c("short sup \nto long"), x = 500, y = 0.2)]
+d_text[parname_lab == "short vs ref (two)" & or_tru %in% c("OR 2"),
+       `:=`(label = c("short fut (sup)"), x = 500, y = 0.2)]
+
+d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 1/2"),
+       `:=`(label = c("rif fut (sup)"), x = 500, y = 0.2)]
+d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 2"),
+       `:=`(label = c("rif sup \nto no-rif"), x = 500, y = 0.2)]
+
+
+names(d_tbl) <- gsub("superiority", "sup", names(d_tbl))
+names(d_tbl) <- gsub("futility (sup)", "fut_sup", names(d_tbl))
+names(d_tbl) <- gsub("NI (trt ni ref)", "trt_ni_inf", names(d_tbl))
+names(d_tbl) <- gsub("futility (NI)", "fut_trt_ni_ref", names(d_tbl))
+
+d_fig$quant <- factor(
+  d_fig$quant, 
+  levels = c("sup", "fut_sup", "inf", "fut_inf", "trt_ni_ref", "fut_trt_ni_ref"),
+  labels = c("sup", "fut_sup", "inf", "fut_inf", "ni", "fut_ni"))
 
 p <- ggplot(d_fig, aes(x = N_pt, y = value, group = quant, col = quant)) +
   geom_point(size = 0.5) +
@@ -293,11 +290,11 @@ p <- ggplot(d_fig, aes(x = N_pt, y = value, group = quant, col = quant)) +
     "", palette = "Tableau 10",
   type = "regular",
   direction = 1) +
-  # geom_text(
-  #   data = d_text,
-  #   aes(x = x, y = y, label = label),
-  #   hjust   = 0,
-  #   vjust   = 0, col = 1, size = 3) +
+  geom_text(
+    data = d_text,
+    aes(x = x, y = y, label = label),
+    hjust   = 0,
+    vjust   = 0, col = 1, size = 3) +
   scale_linetype_discrete("") +
   scale_x_continuous("N (12-months post rand)", guide = guide_axis(angle = 45)) +
   scale_y_continuous("Cumulative probability", breaks = seq(0, 1, by = 0.1)) +
@@ -316,12 +313,12 @@ suppressWarnings(print(p))
 
 # Widen data so that power is shown by col with each col corresponding to an
 # analysis
-d_tbl <- d_fig[quant %in% c("sup", "fut_sup", "trt_ni_ref", "fut_trt_ni_ref")]
+d_tbl <- d_fig[quant %in% c("sup", "fut_sup", "inf", "fut_inf", "ni", "fut_ni")]
 d_tbl <- dcast(d_tbl, parname + or_tru ~ quant + analys, value.var = "value")
-names(d_tbl) <- gsub("superiority", "sup", names(d_tbl))
-names(d_tbl) <- gsub("futility (sup)", "fut_sup", names(d_tbl))
-names(d_tbl) <- gsub("NI (trt ni ref)", "trt_ni_inf", names(d_tbl))
-names(d_tbl) <- gsub("futility (NI)", "fut_trt_ni_ref", names(d_tbl))
+# names(d_tbl) <- gsub("superiority", "sup", names(d_tbl))
+# names(d_tbl) <- gsub("futility (sup)", "fut_sup", names(d_tbl))
+# names(d_tbl) <- gsub("ni (trt ni ref)", "trt_ni_inf", names(d_tbl))
+# names(d_tbl) <- gsub("futility (ni)", "fut_trt_ni_ref", names(d_tbl))
 d_tbl <- d_tbl[order(or_tru, parname)]
 # d_tbl[, parlab := paste0(parname, " - ", get_effect_label(as.character(parname), do_html = F))]
 # d_tbl[, parname := NULL]
@@ -332,16 +329,24 @@ g_tbl <- d_tbl |> gt(groupname_col = "parname") |>
     columns = paste0("sup_", 1:5)
   ) |>
   tab_spanner(
-    label = html("Futility (on sup)"),
+    label = html("Futility (sup)"),
     columns = c(paste0("fut_sup_", 1:5))
   ) |>
   tab_spanner(
-    label = html("NI (trt ni ref)"),
-    columns = paste0("trt_ni_ref_", 1:5)
+    label = html("Inferiority"),
+    columns = paste0("inf_", 1:5)
   ) |>
   tab_spanner(
-    label = html("Futility (on ni)"),
-    columns = c(paste0("fut_trt_ni_ref_", 1:5))
+    label = html("Futility (inf)"),
+    columns = c(paste0("fut_inf_", 1:5))
+  ) |>
+  tab_spanner(
+    label = html("NI (trt ni ref)"),
+    columns = paste0("ni_", 1:5)
+  ) |>
+  tab_spanner(
+    label = html("Futility (ni)"),
+    columns = c(paste0("fut_ni_", 1:5))
   ) |>
   cols_label(
     or_tru = html("OR (true)"),
@@ -355,23 +360,33 @@ g_tbl <- d_tbl |> gt(groupname_col = "parname") |>
     fut_sup_3 = html("1500"),
     fut_sup_4 = html("2000"),
     fut_sup_5 = html("2500"),
-    trt_ni_ref_1 = html("500"),
-    trt_ni_ref_2 = html("1000"),
-    trt_ni_ref_3 = html("1500"),
-    trt_ni_ref_4 = html("2000"),
-    trt_ni_ref_5 = html("2500"),
-    fut_trt_ni_ref_1 = html("500"),
-    fut_trt_ni_ref_2 = html("1000"),
-    fut_trt_ni_ref_3 = html("1500"),
-    fut_trt_ni_ref_4 = html("2000"),
-    fut_trt_ni_ref_5 = html("2500")
+    inf_1 = html("500"),
+    inf_2 = html("1000"),
+    inf_3 = html("1500"),
+    inf_4 = html("2000"),
+    inf_5 = html("2500"),
+    fut_inf_1 = html("500"),
+    fut_inf_2 = html("1000"),
+    fut_inf_3 = html("1500"),
+    fut_inf_4 = html("2000"),
+    fut_inf_5 = html("2500"),
+    ni_1 = html("500"),
+    ni_2 = html("1000"),
+    ni_3 = html("1500"),
+    ni_4 = html("2000"),
+    ni_5 = html("2500"),
+    fut_ni_1 = html("500"),
+    fut_ni_2 = html("1000"),
+    fut_ni_3 = html("1500"),
+    fut_ni_4 = html("2000"),
+    fut_ni_5 = html("2500")
   ) |>
   tab_style(
     style = cell_borders(
       sides = c("left"),
       weight = px(1)),
     locations = cells_body(
-      columns = c(sup_1, fut_sup_1, trt_ni_ref_1, fut_trt_ni_ref_1)
+      columns = c(sup_1, fut_sup_1, inf_1, fut_inf_1, ni_1, fut_ni_1)
       )
     ) |>
   tab_style(

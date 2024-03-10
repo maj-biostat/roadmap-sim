@@ -165,26 +165,4 @@ Independent standard normal priors are assumed for all other covariate terms eff
 
 ## Treatment effects
 
-Assume that $\delta_{j,i} = \eta_j - \eta_i$ characterises a change in the log-odds of treatment success under intervention $j$ versus $i$ where the treatments are defined by some combination of parameters from the linear predictor and where the change may be silo-specific, pooled or some variation of these.
-Pre-specified trial adaptations and/or trial announcements are made in relation to the posterior probabilities associated with these parameteres.
-We consider non-inferiority, superiority, futility for non-inferiority and futility for superiority, defined as follows^[Irrespective of whether the treatments are used routinely, I think it is a mistake to completely dismiss the possibility of identifying a treatment as inferior.]:
-
-### Non-inferiority
-
-We define a non-inferiority margin of $\phi = \log{1/1.1} \approx -0.095$ to be used across all treatment effects and consider $j$ to be non-inferior to $i$ if $Pr(\delta_{j,i} > \phi) > 0.99$.
-
-That is, the non-inferiority decision rule will deem a slightly worse treatment to be non-inferior.
-
-### Superiority
-
-We define superiority relative to a zero difference between treatments and consider $j$ to be superior to $i$ if $Pr(\delta_{j,i} > 0) > 0.99$.
-
-### Futility
-
-We define futility relative to a zero difference between treatments and consider $j$ to be superior to $i$ if $Pr(\delta_{j,i} > 0) < 0.05$.
-
-
-
-
-
-
+All covariates relating to treatment effects have standard normal priors.

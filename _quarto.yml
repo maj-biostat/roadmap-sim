@@ -21,6 +21,7 @@ website:
         contents:
         - notebooks/population-structure.qmd
         - notebooks/model-spec.qmd
+        - notebooks/decision-rules.qmd
         - notebooks/simulation-pars.qmd
         - notebooks/trial-data.qmd
         - notebooks/model-implementation.qmd

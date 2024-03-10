@@ -1,0 +1,87 @@
+---
+title: "Decision rules"
+date: today
+date-modified: last-modified
+---
+
+```{r, echo = FALSE}
+source("./R/init.R")
+log_info("Called model-spec notebook")
+```
+
+In the following, all treatment effect parameters relate back to the model specification provided earlier.
+
+## Surgical domain
+
+The surgical domain considers the effect of revision relative to dair in the late-stage infection silo.
+
+Assume $\Delta = \beta_1 + \beta_2 \mathbb{E}[S_{R_P}]$ corresponds to the average conditional log-odds ratio associated with revision.
+The probability that revision is superior to dair is defined as:
+
+\begin{aligned}
+P_{\text{surgical (sup)}} = Pr(\Delta > 0)
+\end{aligned}
+
+and enrolment is stopped for superiority if $P_{\text{surgical (sup)}} > 0.99$.
+
+The probability of futility for revision being superior to dair is defined as:
+
+\begin{aligned}
+P_{\text{surgical (fut)}} = Pr(\Delta > \log(1.2))
+\end{aligned}
+
+and enrolment is stopped for futility (on superiority) if $P_{\text{surgical (fut)}} < 0.01$.
+
+## Duration domain
+
+The duration domain considers the effect of short relative to long duration therapy conditional on revision received.
+
+### One-stage revision
+
+Assume $\beta_5$ corresponds to the conditional log-odds ratio associated with short duration antibiotics relative to long when one-stage revision is received.
+The probability that short is non-inferior to long is defined as:
+
+\begin{aligned}
+P_{\text{duration-1 (ni)}} = Pr(\beta_5 > \log(1/1.2))
+\end{aligned}
+
+and enrolment is stopped for non-inferiority if $P_{\text{duration-1 (ni)}} > 0.99$ or $P_{\text{duration-1 (ni)}} < 0.2$, the latter being taken to imply futility (for non-inferiority).
+
+### Two-stage revision
+
+Assume $\Delta = \beta_5 + \beta_6$ corresponds to the conditional log-odds ratio associated with short duration antibiotics relative to long when two-stage revision is received.
+The probability that long duration is superior to short is defined as:
+
+\begin{aligned}
+P_{\text{duration-2 (sup)}} = Pr(\Delta < 0)
+\end{aligned}
+
+and enrolment is stopped for superiority if $P_{\text{duration-1 (sup)}} > 0.99$.
+
+The probability of futility for long duration being superior to short is defined as:
+
+\begin{aligned}
+P_{\text{duration-2 (fut)}} = Pr(\Delta < \log(1/1.2))
+\end{aligned}
+
+and enrolment is stopped for futility (on superiority) if $P_{\text{duration-2 (fut)}} < 0.01$.
+
+
+## Choice domain
+
+The choice domain considers the effect of rifampacin relative to no-rifampacin.
+
+Assume $\beta_{8}$ corresponds to the conditional log-odds ratio associated with rifampacin relative to no-rifampacin 
+The probability that rifampacin is superior to no-rifampacin is defined as:
+
+\begin{aligned}
+P_{\text{choice (sup)}} = Pr(\beta_{8} > 0)
+\end{aligned}
+
+The probability of futility for rifampacin being superior to no-rifampacin is defined as:
+
+\begin{aligned}
+P_{\text{choice (fut)}} = Pr(\beta_{8} > \log(1.2))
+\end{aligned}
+
+and enrolment is stopped for futility (on superiority) if $P_{\text{choice (fut)}} < 0.01$.
