@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-01">
+<meta name="dcterms.date" content="2024-03-10">
 
 <title>ROADMAP - design notes and simulations - Model specification</title>
 <style>
@@ -194,6 +194,12 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../notebooks/decision-rules.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Decision rules</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../notebooks/simulation-pars.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Simulation setup</span></a>
   </div>
@@ -272,12 +278,7 @@ window.Quarto = {
   <li><a href="#intercepts" id="toc-intercepts" class="nav-link" data-scroll-target="#intercepts">Intercepts</a></li>
   <li><a href="#other-covariates" id="toc-other-covariates" class="nav-link" data-scroll-target="#other-covariates">Other covariates</a></li>
   </ul></li>
-  <li><a href="#treatment-effects" id="toc-treatment-effects" class="nav-link" data-scroll-target="#treatment-effects">Treatment effects</a>
-  <ul>
-  <li><a href="#non-inferiority" id="toc-non-inferiority" class="nav-link" data-scroll-target="#non-inferiority">Non-inferiority</a></li>
-  <li><a href="#superiority" id="toc-superiority" class="nav-link" data-scroll-target="#superiority">Superiority</a></li>
-  <li><a href="#futility" id="toc-futility" class="nav-link" data-scroll-target="#futility">Futility</a></li>
-  </ul></li>
+  <li><a href="#treatment-effects" id="toc-treatment-effects" class="nav-link" data-scroll-target="#treatment-effects">Treatment effects</a></li>
   </ul>
 </nav>
     </div>
@@ -297,14 +298,14 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 1, 2024</p>
+      <p class="date">March 10, 2024</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">February 26, 2024</p>
+      <p class="date-modified">March 10, 2024</p>
     </div>
   </div>
     
@@ -487,22 +488,9 @@ Figure&nbsp;1: Assumed causal diagram representing the (simplified) processes on
 </section>
 <section id="treatment-effects" class="level2">
 <h2 class="anchored" data-anchor-id="treatment-effects">Treatment effects</h2>
-<p>Assume that <span class="math inline">\(\delta_{j,i} = \eta_j - \eta_i\)</span> characterises a change in the log-odds of treatment success under intervention <span class="math inline">\(j\)</span> versus <span class="math inline">\(i\)</span> where the treatments are defined by some combination of parameters from the linear predictor and where the change may be silo-specific, pooled or some variation of these. Pre-specified trial adaptations and/or trial announcements are made in relation to the posterior probabilities associated with these parameteres. We consider non-inferiority, superiority, futility for non-inferiority and futility for superiority, defined as follows<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>:</p>
-<section id="non-inferiority" class="level3">
-<h3 class="anchored" data-anchor-id="non-inferiority">Non-inferiority</h3>
-<p>We define a non-inferiority margin of <span class="math inline">\(\phi = \log{1/1.1} \approx -0.095\)</span> to be used across all treatment effects and consider <span class="math inline">\(j\)</span> to be non-inferior to <span class="math inline">\(i\)</span> if <span class="math inline">\(Pr(\delta_{j,i} &gt; \phi) &gt; 0.99\)</span>.</p>
-<p>That is, the non-inferiority decision rule will deem a slightly worse treatment to be non-inferior.</p>
-</section>
-<section id="superiority" class="level3">
-<h3 class="anchored" data-anchor-id="superiority">Superiority</h3>
-<p>We define superiority relative to a zero difference between treatments and consider <span class="math inline">\(j\)</span> to be superior to <span class="math inline">\(i\)</span> if <span class="math inline">\(Pr(\delta_{j,i} &gt; 0) &gt; 0.99\)</span>.</p>
-</section>
-<section id="futility" class="level3">
-<h3 class="anchored" data-anchor-id="futility">Futility</h3>
-<p>We define futility relative to a zero difference between treatments and consider <span class="math inline">\(j\)</span> to be superior to <span class="math inline">\(i\)</span> if <span class="math inline">\(Pr(\delta_{j,i} &gt; 0) &lt; 0.05\)</span>.</p>
+<p>All covariates relating to treatment effects have standard normal priors.</p>
 
 
-</section>
 </section>
 
 
@@ -510,7 +498,6 @@ Figure&nbsp;1: Assumed causal diagram representing the (simplified) processes on
 
 <ol>
 <li id="fn1"><p>The parameter ignores potential differentiation for surgical type.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn2"><p>Irrespective of whether the treatments are used routinely, I think it is a mistake to completely dismiss the possibility of identifying a treatment as inferior.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

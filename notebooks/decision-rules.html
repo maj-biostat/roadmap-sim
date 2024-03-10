@@ -8,7 +8,7 @@
 
 <meta name="dcterms.date" content="2024-03-10">
 
-<title>ROADMAP - design notes and simulations - Reminders</title>
+<title>ROADMAP - design notes and simulations - Decision rules</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -20,40 +20,6 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
-}
-/* CSS for syntax highlighting */
-pre > code.sourceCode { white-space: pre; position: relative; }
-pre > code.sourceCode > span { line-height: 1.25; }
-pre > code.sourceCode > span:empty { height: 1.2em; }
-.sourceCode { overflow: visible; }
-code.sourceCode > span { color: inherit; text-decoration: inherit; }
-div.sourceCode { margin: 1em 0; }
-pre.sourceCode { margin: 0; }
-@media screen {
-div.sourceCode { overflow: auto; }
-}
-@media print {
-pre > code.sourceCode { white-space: pre-wrap; }
-pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
-}
-pre.numberSource code
-  { counter-reset: source-line 0; }
-pre.numberSource code > span
-  { position: relative; left: -4em; counter-increment: source-line; }
-pre.numberSource code > span > a:first-child::before
-  { content: counter(source-line);
-    position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; display: inline-block;
-    -webkit-touch-callout: none; -webkit-user-select: none;
-    -khtml-user-select: none; -moz-user-select: none;
-    -ms-user-select: none; user-select: none;
-    padding: 0 4px; width: 4em;
-  }
-pre.numberSource { margin-left: 3em;  padding-left: 4px; }
-div.sourceCode
-  {   }
-@media screen {
-pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -176,7 +142,7 @@ window.Quarto = {
       <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
         <i class="bi bi-layout-text-sidebar-reverse"></i>
       </button>
-        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/misc-notes.html">Reminders</a></li></ol></nav>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/decision-rules.html">Decision rules</a></li></ol></nav>
         <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
         </a>
       <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
@@ -225,7 +191,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../notebooks/decision-rules.html" class="sidebar-item-text sidebar-link">
+  <a href="../notebooks/decision-rules.html" class="sidebar-item-text sidebar-link active">
  <span class="menu-text">Decision rules</span></a>
   </div>
 </li>
@@ -279,7 +245,7 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../notebooks/misc-notes.html" class="sidebar-item-text sidebar-link active">
+  <a href="../notebooks/misc-notes.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Reminders</span></a>
   </div>
 </li>
@@ -301,16 +267,22 @@ window.Quarto = {
     <h2 id="toc-title">Contents</h2>
    
   <ul>
-  <li><a href="#example---lotplote" id="toc-example---lotplote" class="nav-link active" data-scroll-target="#example---lotplote">Example - LOTP/LOTE</a></li>
+  <li><a href="#surgical-domain" id="toc-surgical-domain" class="nav-link active" data-scroll-target="#surgical-domain">Surgical domain</a></li>
+  <li><a href="#duration-domain" id="toc-duration-domain" class="nav-link" data-scroll-target="#duration-domain">Duration domain</a>
+  <ul>
+  <li><a href="#one-stage-revision" id="toc-one-stage-revision" class="nav-link" data-scroll-target="#one-stage-revision">One-stage revision</a></li>
+  <li><a href="#two-stage-revision" id="toc-two-stage-revision" class="nav-link" data-scroll-target="#two-stage-revision">Two-stage revision</a></li>
+  </ul></li>
+  <li><a href="#choice-domain" id="toc-choice-domain" class="nav-link" data-scroll-target="#choice-domain">Choice domain</a></li>
   </ul>
 </nav>
     </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
-<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/misc-notes.html">Reminders</a></li></ol></nav>
+<header id="title-block-header" class="quarto-title-block default"><nav class="quarto-page-breadcrumbs quarto-title-breadcrumbs d-none d-lg-block" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="../notebooks/population-structure.html">Design</a></li><li class="breadcrumb-item"><a href="../notebooks/decision-rules.html">Decision rules</a></li></ol></nav>
 <div class="quarto-title">
-<h1 class="title">Reminders</h1>
+<h1 class="title">Decision rules</h1>
 </div>
 
 
@@ -328,7 +300,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">February 21, 2024</p>
+      <p class="date-modified">March 10, 2024</p>
     </div>
   </div>
     
@@ -342,181 +314,63 @@ window.Quarto = {
 <div class="cell">
 
 </div>
-<p>Just some brief notes/examples to act as basics stats reminders.</p>
-<section id="example---lotplote" class="level2">
-<h2 class="anchored" data-anchor-id="example---lotplote">Example - LOTP/LOTE</h2>
-<p>Assume the following true joint distribution for some outcome <span class="math inline">\(Y\)</span> and its distribution conditional on sex, smoking and vegetarianism.</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb1-2"><a href="#cb1-2"></a>d_tru <span class="ot">&lt;-</span> <span class="fu">CJ</span>(<span class="at">sex =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1</span>, <span class="at">smk =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1</span>, <span class="at">veg =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1</span>)</span>
-<span id="cb1-3"><a href="#cb1-3"></a>g <span class="ot">&lt;-</span> <span class="cf">function</span>(sex, smk, veg){</span>
-<span id="cb1-4"><a href="#cb1-4"></a>  <span class="sc">-</span><span class="dv">1</span> <span class="sc">+</span> <span class="dv">2</span> <span class="sc">*</span> sex <span class="sc">-</span> <span class="dv">1</span> <span class="sc">*</span> smk <span class="sc">+</span> <span class="dv">3</span> <span class="sc">*</span> veg <span class="sc">+</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a>    <span class="sc">-</span><span class="dv">1</span> <span class="sc">*</span> sex <span class="sc">*</span> smk <span class="sc">-</span> <span class="dv">3</span> <span class="sc">*</span> sex <span class="sc">*</span> veg <span class="sc">+</span> <span class="dv">1</span> <span class="sc">*</span> smk <span class="sc">*</span> veg <span class="sc">+</span></span>
-<span id="cb1-6"><a href="#cb1-6"></a>    <span class="fl">0.5</span> <span class="sc">*</span> sex <span class="sc">*</span> smk <span class="sc">*</span> veg</span>
-<span id="cb1-7"><a href="#cb1-7"></a>}</span>
-<span id="cb1-8"><a href="#cb1-8"></a><span class="co"># probability of group membership</span></span>
-<span id="cb1-9"><a href="#cb1-9"></a>q <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(<span class="fu">nrow</span>(d_tru))</span>
-<span id="cb1-10"><a href="#cb1-10"></a>d_tru[, p_grp <span class="sc">:</span><span class="er">=</span> <span class="fu">exp</span>(q)<span class="sc">/</span><span class="fu">sum</span>(<span class="fu">exp</span>(q))]</span>
-<span id="cb1-11"><a href="#cb1-11"></a><span class="co"># probability of outcome</span></span>
-<span id="cb1-12"><a href="#cb1-12"></a>d_tru[, p_y <span class="sc">:</span><span class="er">=</span> <span class="fu">plogis</span>(<span class="fu">g</span>(sex,smk,veg))]</span>
-<span id="cb1-13"><a href="#cb1-13"></a>d_tru</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   sex smk veg      p_grp       p_y
-1:   0   0   0 0.04225019 0.2689414
-2:   0   0   1 0.09498377 0.8807971
-3:   0   1   0 0.03427561 0.1192029
-4:   0   1   1 0.38968687 0.8807971
-5:   1   0   0 0.10989996 0.7310586
-6:   1   0   1 0.03479920 0.7310586
-7:   1   1   0 0.12870098 0.2689414
-8:   1   1   1 0.16540341 0.6224593</code></pre>
-</div>
-</div>
-<p>Take a random sample from the population:</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>n <span class="ot">&lt;-</span> <span class="fl">1e7</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a>i <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d_tru), n, T, <span class="at">prob =</span> d_tru<span class="sc">$</span>p_grp)</span>
-<span id="cb3-3"><a href="#cb3-3"></a>d <span class="ot">&lt;-</span> d_tru[i]</span>
-<span id="cb3-4"><a href="#cb3-4"></a>d[, y <span class="sc">:</span><span class="er">=</span> <span class="fu">rbinom</span>(.N, <span class="dv">1</span>, p_y)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<p>Recover the distribution of the covariates (the <code>p_grp</code>)</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="co"># recover distribution of covariates</span></span>
-<span id="cb4-2"><a href="#cb4-2"></a>d[, .(.N<span class="sc">/</span><span class="fu">nrow</span>(d)), keyby <span class="ot">=</span> .(sex, smk, veg)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   sex smk veg        V1
-1:   0   0   0 0.0421805
-2:   0   0   1 0.0950815
-3:   0   1   0 0.0343139
-4:   0   1   1 0.3898065
-5:   1   0   0 0.1096864
-6:   1   0   1 0.0348148
-7:   1   1   0 0.1288739
-8:   1   1   1 0.1652425</code></pre>
-</div>
-</div>
-<p>Recover the joint distribution of the outcome (the <code>p_y</code>)</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="co"># recover distribution of outcome</span></span>
-<span id="cb6-2"><a href="#cb6-2"></a>d[, .(<span class="at">mu_y =</span> <span class="fu">mean</span>(y)), keyby <span class="ot">=</span> .(sex, smk, veg)]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   sex smk veg      mu_y
-1:   0   0   0 0.2693899
-2:   0   0   1 0.8812230
-3:   0   1   0 0.1189314
-4:   0   1   1 0.8805292
-5:   1   0   0 0.7309010
-6:   1   0   1 0.7311000
-7:   1   1   0 0.2692407
-8:   1   1   1 0.6217244</code></pre>
-</div>
-</div>
-<p>Estimate the probability of outcome by sex</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>d[, .(<span class="at">mu_y =</span> <span class="fu">mean</span>(y)), keyby <span class="ot">=</span> sex]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>   sex      mu_y
-1:   0 0.7881758
-2:   1 0.5541419</code></pre>
-</div>
-</div>
-<p>We are interested in <span class="math inline">\(\mathbb{E}[y | sex]\)</span>. Can we get to this via iterated expectation/LOTE?</p>
-<p>Think - is all we need LOTP (with extra conditioning), e.g.</p>
-<p><span id="eq-mn-1"><span class="math display">\[
-\begin{aligned}
-Pr(y | sex = s) &amp;= Pr(y | sex = s, smk = 0, veg = 0) Pr(smk = 0, veg = 0|sex = s) + \\
-&amp; \quad Pr(y | sex = s, smk = 0, veg = 1) Pr(smk = 0, veg = 1|sex = s) + \\
-&amp; \quad Pr(y | sex = s, smk = 1, veg = 0) Pr(smk = 1, veg = 0|sex = s) + \\
-&amp; \quad Pr(y | sex = s, smk = 1, veg = 1) Pr(smk = 1, veg = 1|sex = s)
-\end{aligned}
-\tag{1}\]</span></span></p>
-<p>Operationalised, based on the known distributions, we get:</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a><span class="fu">c</span>(</span>
-<span id="cb10-2"><a href="#cb10-2"></a>  <span class="st">"Pr(Y | sex = 0)"</span> <span class="ot">=</span> <span class="fu">sum</span>(d_tru[sex <span class="sc">==</span> <span class="dv">0</span>, p_y] <span class="sc">*</span> d_tru[sex <span class="sc">==</span> <span class="dv">0</span>, p_grp <span class="sc">/</span> <span class="fu">sum</span>(p_grp)] ),</span>
-<span id="cb10-3"><a href="#cb10-3"></a>  <span class="st">"Pr(Y | sex = 1)"</span> <span class="ot">=</span> <span class="fu">sum</span>(d_tru[sex <span class="sc">==</span> <span class="dv">1</span>, p_y] <span class="sc">*</span> d_tru[sex <span class="sc">==</span> <span class="dv">1</span>, p_grp <span class="sc">/</span> <span class="fu">sum</span>(p_grp)] )</span>
-<span id="cb10-4"><a href="#cb10-4"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Pr(Y | sex = 0) Pr(Y | sex = 1) 
-      0.7882179       0.5545841 </code></pre>
-</div>
-</div>
-<p>And which can be estimated from the simulated data:</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="fu">c</span>(</span>
-<span id="cb12-2"><a href="#cb12-2"></a>  <span class="st">"Pr(Y | sex = 0)"</span> <span class="ot">=</span> </span>
-<span id="cb12-3"><a href="#cb12-3"></a>    <span class="fu">sum</span>(d[sex <span class="sc">==</span> <span class="dv">0</span>, <span class="fu">mean</span>(y)] <span class="sc">*</span> </span>
-<span id="cb12-4"><a href="#cb12-4"></a>          d[sex <span class="sc">==</span> <span class="dv">0</span>, .(<span class="at">p_grp =</span> .N<span class="sc">/</span><span class="fu">nrow</span>(d[sex <span class="sc">==</span> <span class="dv">0</span>])), <span class="at">keyby =</span> .(smk, veg)]<span class="sc">$</span>p_grp ),</span>
-<span id="cb12-5"><a href="#cb12-5"></a>  <span class="st">"Pr(Y | sex = 1)"</span> <span class="ot">=</span> </span>
-<span id="cb12-6"><a href="#cb12-6"></a>    <span class="fu">sum</span>(d[sex <span class="sc">==</span> <span class="dv">1</span>, <span class="fu">mean</span>(y)] <span class="sc">*</span> </span>
-<span id="cb12-7"><a href="#cb12-7"></a>          d[sex <span class="sc">==</span> <span class="dv">1</span>, .(<span class="at">p_grp =</span> .N<span class="sc">/</span><span class="fu">nrow</span>(d[sex <span class="sc">==</span> <span class="dv">1</span>])), <span class="at">keyby =</span> .(smk, veg)]<span class="sc">$</span>p_grp)</span>
-<span id="cb12-8"><a href="#cb12-8"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Pr(Y | sex = 0) Pr(Y | sex = 1) 
-      0.7881758       0.5541419 </code></pre>
-</div>
-</div>
-<p>Take <a href="#eq-mn-1" class="quarto-xref">Equation&nbsp;1</a>, multiply both sides by <span class="math inline">\(y\)</span> and then sum over all <span class="math inline">\(y\)</span></p>
-<p><span id="eq-mn-2"><span class="math display">\[
-\begin{aligned}
-\sum_y y Pr(y | sex = s) &amp;= \sum_y y Pr(y | sex = s, smk = 0, veg = 0) Pr(smk = 0, veg = 0|sex = s) + \\
-&amp; \quad \sum_y y Pr(y | sex = s, smk = 0, veg = 1) Pr(smk = 0, veg = 1|sex = s) + \\
-&amp; \quad \sum_y y Pr(y | sex = s, smk = 1, veg = 0) Pr(smk = 1, veg = 0|sex = s) + \\
-&amp; \quad \sum_y y Pr(y | sex = s, smk = 1, veg = 1) Pr(smk = 1, veg = 1|sex = s)  
-\end{aligned}
-\tag{2}\]</span></span></p>
-<p>which (I think) can be re-stated as</p>
-<p><span id="eq-mn-3"><span class="math display">\[
-\begin{aligned}
-\mathbb{E}(Y|sex=s) &amp;= \mathbb{E}(Y|sex = s, smk = 0, veg = 0) Pr(smk = 0, veg = 0|sex = s) + \\
-&amp; \quad \mathbb{E}(Y|sex = s, smk = 0, veg = 1)  Pr(smk = 0, veg = 1|sex = s)  + \\
-&amp; \quad \mathbb{E}(Y|sex = s, smk = 1, veg = 0)  Pr(smk = 1, veg = 0|sex = s)  + \\
-&amp; \quad \mathbb{E}(Y|sex = s, smk = 1, veg = 1)  Pr(smk = 1, veg = 1|sex = s)  \\
-&amp;= \sum_{smk,veg} \mathbb{E}(Y|sex = s, smk, veg) Pr(smk, veg|sex = s)
-\end{aligned}
-\tag{3}\]</span></span></p>
-<p>also note<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> (just in case one is easier to determine than another):</p>
-<p><span class="math display">\[
-Pr(smk, veg|sex) = Pr(smk|veg, sex) Pr(veg | sex)
-\]</span></p>
-<p>so (perhaps) alternatively:</p>
-<p><span id="eq-mn-3"><span class="math display">\[
-\begin{aligned}
-\mathbb{E}(Y|sex=s) &amp;= \sum_{smk,veg} \mathbb{E}(Y|sex = s, smk, veg) Pr(smk|veg, sex = s) Pr(veg | sex = s)
-\end{aligned}
-\tag{4}\]</span></span></p>
+<p>In the following, all treatment effect parameters relate back to the model specification provided earlier.</p>
+<section id="surgical-domain" class="level2">
+<h2 class="anchored" data-anchor-id="surgical-domain">Surgical domain</h2>
+<p>The surgical domain considers the effect of revision relative to dair in the late-stage infection silo.</p>
+<p>Assume <span class="math inline">\(\Delta = \beta_1 + \beta_2 \mathbb{E}[S_{R_P}]\)</span> corresponds to the average conditional log-odds ratio associated with revision. The probability that revision is superior to dair is defined as:</p>
+<span class="math display">\[\begin{aligned}
+P_{\text{surgical (sup)}} = Pr(\Delta &gt; 0)
+\end{aligned}\]</span>
+<p>and enrolment is stopped for superiority if <span class="math inline">\(P_{\text{surgical (sup)}} &gt; 0.99\)</span>.</p>
+<p>The probability of futility for revision being superior to dair is defined as:</p>
+<span class="math display">\[\begin{aligned}
+P_{\text{surgical (fut)}} = Pr(\Delta &gt; \log(1.2))
+\end{aligned}\]</span>
+<p>and enrolment is stopped for futility (on superiority) if <span class="math inline">\(P_{\text{surgical (fut)}} &lt; 0.01\)</span>.</p>
+</section>
+<section id="duration-domain" class="level2">
+<h2 class="anchored" data-anchor-id="duration-domain">Duration domain</h2>
+<p>The duration domain considers the effect of short relative to long duration therapy conditional on revision received.</p>
+<section id="one-stage-revision" class="level3">
+<h3 class="anchored" data-anchor-id="one-stage-revision">One-stage revision</h3>
+<p>Assume <span class="math inline">\(\beta_5\)</span> corresponds to the conditional log-odds ratio associated with short duration antibiotics relative to long when one-stage revision is received. The probability that short is non-inferior to long is defined as:</p>
+<span class="math display">\[\begin{aligned}
+P_{\text{duration-1 (ni)}} = Pr(\beta_5 &gt; \log(1/1.2))
+\end{aligned}\]</span>
+<p>and enrolment is stopped for non-inferiority if <span class="math inline">\(P_{\text{duration-1 (ni)}} &gt; 0.99\)</span> or <span class="math inline">\(P_{\text{duration-1 (ni)}} &lt; 0.2\)</span>, the latter being taken to imply futility (for non-inferiority).</p>
+</section>
+<section id="two-stage-revision" class="level3">
+<h3 class="anchored" data-anchor-id="two-stage-revision">Two-stage revision</h3>
+<p>Assume <span class="math inline">\(\Delta = \beta_5 + \beta_6\)</span> corresponds to the conditional log-odds ratio associated with short duration antibiotics relative to long when two-stage revision is received. The probability that long duration is superior to short is defined as:</p>
+<span class="math display">\[\begin{aligned}
+P_{\text{duration-2 (sup)}} = Pr(\Delta &lt; 0)
+\end{aligned}\]</span>
+<p>and enrolment is stopped for superiority if <span class="math inline">\(P_{\text{duration-1 (sup)}} &gt; 0.99\)</span>.</p>
+<p>The probability of futility for long duration being superior to short is defined as:</p>
+<span class="math display">\[\begin{aligned}
+P_{\text{duration-2 (fut)}} = Pr(\Delta &lt; \log(1/1.2))
+\end{aligned}\]</span>
+<p>and enrolment is stopped for futility (on superiority) if <span class="math inline">\(P_{\text{duration-2 (fut)}} &lt; 0.01\)</span>.</p>
+</section>
+</section>
+<section id="choice-domain" class="level2">
+<h2 class="anchored" data-anchor-id="choice-domain">Choice domain</h2>
+<p>The choice domain considers the effect of rifampacin relative to no-rifampacin.</p>
+<p>Assume <span class="math inline">\(\beta_{8}\)</span> corresponds to the conditional log-odds ratio associated with rifampacin relative to no-rifampacin The probability that rifampacin is superior to no-rifampacin is defined as:</p>
+<span class="math display">\[\begin{aligned}
+P_{\text{choice (sup)}} = Pr(\beta_{8} &gt; 0)
+\end{aligned}\]</span>
+<p>The probability of futility for rifampacin being superior to no-rifampacin is defined as:</p>
+<span class="math display">\[\begin{aligned}
+P_{\text{choice (fut)}} = Pr(\beta_{8} &gt; \log(1.2))
+\end{aligned}\]</span>
+<p>and enrolment is stopped for futility (on superiority) if <span class="math inline">\(P_{\text{choice (fut)}} &lt; 0.01\)</span>.</p>
 
 
 </section>
 
-
-<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
-
-<ol>
-<li id="fn1"><p>For the proof, consider <span class="math inline">\(P(Y,X|Z) = \frac{Pr(X,Y,Z)}{Pr(Z)}\)</span>, <span class="math inline">\(P(Y|X,Z) = \frac{Pr(X,Y,Z)}{Pr(X,Z)}\)</span> and <span class="math inline">\(Pr(X|Z) = \frac{Pr(X,Z)}{Pr(Z)}\)</span>.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-</ol>
-</section></div></main> <!-- /main -->
+</main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {
