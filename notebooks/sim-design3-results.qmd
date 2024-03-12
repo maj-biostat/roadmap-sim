@@ -225,18 +225,19 @@ Superiority (`sup`) and futility (`fut_sup`) are the relevant quantities of inte
 #| fig-height: 8
 #| fig-width: 7
 
+
 # put power by scenario, variant and analysis in long format
 d_fig <- melt(d_dec, id.vars = c("sc", "v", "analys", "parname"), variable.name = "quant")
 # d_fig <- merge(d_fig, d_pars, by = c("sc", "v", "analys", "parname"))
 d_fig[, quant := factor(quant, 
-                        levels = c("sup", "fut_sup", "inf", "fut_inf","trt_ni_ref", "fut_trt_ni_ref"))]
+                        levels = c("sup", "fut_sup", "trt_ni_ref", "fut_trt_ni_ref"))]
 # add in the number of pts having reached 12 months post rand by analysis num
 d_fig <- merge(d_fig, unique(d_cfg[, .(analys, N_pt)]), by = "analys")
 
 d_fig <- rbind(
   d_fig[parname == "b_r" & quant %in% c("sup", "fut_sup"), ],
   d_fig[parname == "b_r1d" & quant %in% c("trt_ni_ref", "fut_trt_ni_ref"), ],
-  d_fig[parname == "b_r2d" & quant %in% c("inf", "fut_inf"), ],
+  d_fig[parname == "b_r2d" & quant %in% c("sup", "fut_sup"), ],
   d_fig[parname == "b_f" & quant %in% c("sup", "fut_sup"), ]
 )
 
@@ -245,9 +246,9 @@ d_fig[, or_tru := factor(
   or_tru, labels = g_or_lab, levels = g_or_lab)]
 
 fx <- g_fx
-names(fx) <- c("rev vs ref", "short vs ref (one)", "short vs ref (two)", "rif vs ref")
+names(fx) <- c("rev vs ref", "short vs ref (one)", "long vs ref (two)", "rif vs ref")
 d_fig[, parname_lab := factor(
-  names(fx[parname]), levels = c("rev vs ref", "short vs ref (one)", "short vs ref (two)", "rif vs ref")
+  names(fx[parname]), levels = c("rev vs ref", "short vs ref (one)", "long vs ref (two)", "rif vs ref")
   ) ]
 
 d_text <- unique(d_fig[, .(parname_lab, or_tru, quant)])
@@ -261,10 +262,10 @@ d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 2"),
        `:=`(label = c("short ni \nto long"), x = 500, y = 0.2)]
 
 
-d_text[parname_lab == "short vs ref (two)" & or_tru %in% c("OR 1/2"),
-       `:=`(label = c("short sup \nto long"), x = 500, y = 0.2)]
-d_text[parname_lab == "short vs ref (two)" & or_tru %in% c("OR 2"),
-       `:=`(label = c("short fut (sup)"), x = 500, y = 0.2)]
+d_text[parname_lab == "long vs ref (two)" & or_tru %in% c("OR 1/2"),
+       `:=`(label = c("long fut (sup)"), x = 500, y = 0.2)]
+d_text[parname_lab == "long vs ref (two)" & or_tru %in% c("OR 2"),
+       `:=`(label = c("long sup \nto short"), x = 500, y = 0.2)]
 
 d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 1/2"),
        `:=`(label = c("rif fut (sup)"), x = 500, y = 0.2)]
@@ -279,8 +280,8 @@ names(d_tbl) <- gsub("futility (NI)", "fut_trt_ni_ref", names(d_tbl))
 
 d_fig$quant <- factor(
   d_fig$quant, 
-  levels = c("sup", "fut_sup", "inf", "fut_inf", "trt_ni_ref", "fut_trt_ni_ref"),
-  labels = c("sup", "fut_sup", "inf", "fut_inf", "ni", "fut_ni"))
+  levels = c("sup", "fut_sup", "trt_ni_ref", "fut_trt_ni_ref"),
+  labels = c("sup", "fut_sup", "ni", "fut_ni"))
 
 p <- ggplot(d_fig, aes(x = N_pt, y = value, group = quant, col = quant)) +
   geom_point(size = 0.5) +
@@ -313,7 +314,7 @@ suppressWarnings(print(p))
 
 # Widen data so that power is shown by col with each col corresponding to an
 # analysis
-d_tbl <- d_fig[quant %in% c("sup", "fut_sup", "inf", "fut_inf", "ni", "fut_ni")]
+d_tbl <- d_fig[quant %in% c("sup", "fut_sup", "ni", "fut_ni")]
 d_tbl <- dcast(d_tbl, parname + or_tru ~ quant + analys, value.var = "value")
 # names(d_tbl) <- gsub("superiority", "sup", names(d_tbl))
 # names(d_tbl) <- gsub("futility (sup)", "fut_sup", names(d_tbl))
@@ -323,7 +324,12 @@ d_tbl <- d_tbl[order(or_tru, parname)]
 # d_tbl[, parlab := paste0(parname, " - ", get_effect_label(as.character(parname), do_html = F))]
 # d_tbl[, parname := NULL]
 
-g_tbl <- d_tbl |> gt(groupname_col = "parname") |> 
+g_tbl <- d_tbl |> gt(groupname_col = "parname") |>
+  fmt_number(
+    columns = everything(),
+    decimals = 2,
+    use_seps = FALSE
+  ) |> 
   tab_spanner(
     label = html("Superiority"),
     columns = paste0("sup_", 1:5)
@@ -332,14 +338,14 @@ g_tbl <- d_tbl |> gt(groupname_col = "parname") |>
     label = html("Futility (sup)"),
     columns = c(paste0("fut_sup_", 1:5))
   ) |>
-  tab_spanner(
-    label = html("Inferiority"),
-    columns = paste0("inf_", 1:5)
-  ) |>
-  tab_spanner(
-    label = html("Futility (inf)"),
-    columns = c(paste0("fut_inf_", 1:5))
-  ) |>
+  # tab_spanner(
+  #   label = html("Inferiority"),
+  #   columns = paste0("inf_", 1:5)
+  # ) |>
+  # tab_spanner(
+  #   label = html("Futility (inf)"),
+  #   columns = c(paste0("fut_inf_", 1:5))
+  # ) |>
   tab_spanner(
     label = html("NI (trt ni ref)"),
     columns = paste0("ni_", 1:5)
@@ -360,16 +366,16 @@ g_tbl <- d_tbl |> gt(groupname_col = "parname") |>
     fut_sup_3 = html("1500"),
     fut_sup_4 = html("2000"),
     fut_sup_5 = html("2500"),
-    inf_1 = html("500"),
-    inf_2 = html("1000"),
-    inf_3 = html("1500"),
-    inf_4 = html("2000"),
-    inf_5 = html("2500"),
-    fut_inf_1 = html("500"),
-    fut_inf_2 = html("1000"),
-    fut_inf_3 = html("1500"),
-    fut_inf_4 = html("2000"),
-    fut_inf_5 = html("2500"),
+    # inf_1 = html("500"),
+    # inf_2 = html("1000"),
+    # inf_3 = html("1500"),
+    # inf_4 = html("2000"),
+    # inf_5 = html("2500"),
+    # fut_inf_1 = html("500"),
+    # fut_inf_2 = html("1000"),
+    # fut_inf_3 = html("1500"),
+    # fut_inf_4 = html("2000"),
+    # fut_inf_5 = html("2500"),
     ni_1 = html("500"),
     ni_2 = html("1000"),
     ni_3 = html("1500"),
@@ -386,7 +392,8 @@ g_tbl <- d_tbl |> gt(groupname_col = "parname") |>
       sides = c("left"),
       weight = px(1)),
     locations = cells_body(
-      columns = c(sup_1, fut_sup_1, inf_1, fut_inf_1, ni_1, fut_ni_1)
+      # columns = c(sup_1, fut_sup_1, inf_1, fut_inf_1, ni_1, fut_ni_1)
+      columns = c(sup_1, fut_sup_1, ni_1, fut_ni_1)
       )
     ) |>
   tab_style(

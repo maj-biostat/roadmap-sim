@@ -16,7 +16,8 @@ data {
   // duration
   vector[N] d;
   vector[N] rp; // revision was recvd
-  vector[N] srp2; // two-stage revision was recvd
+  vector[N] srp1; // one-stage revision recvd
+  vector[N] srp2; // two-stage revision recvd
   // choice
   vector[N] f;
   
@@ -27,16 +28,17 @@ data {
 transformed data{
   vector[N] er_r;
   vector[N] er_r_srp2;
-  vector[N] ed_rp_d;
+  vector[N] ed_rp_d_srp1;
   vector[N] ed_rp_d_srp2;
   vector[N] ef_f;
   
   er_r = er .* r;
+  
   er_r_srp2 = er_r .* srp2;
-  
-  ed_rp_d = ed .* rp .* d;
-  ed_rp_d_srp2 = ed_rp_d .* srp2;
-  
+
+  ed_rp_d_srp1 = ed .* rp .* d .* srp1;
+  ed_rp_d_srp2 = ed .* rp .* d .* srp2;
+
   ef_f = ef .* f;
 }
 parameters {
@@ -50,7 +52,7 @@ transformed parameters{
   eta = a0 + 
       m[1]*l1 + m[2]*l2 +  
       b[1] * (1 - er) + (b[2]*er_r + b[3]*er_r_srp2) +
-      b[4] * (1 - ed) + (b[5]*ed_rp_d + b[6]*ed_rp_d_srp2)  + 
+      b[4] * (1 - ed) + (b[5]*ed_rp_d_srp1 + b[6]*ed_rp_d_srp2)  + 
       b[7] * (1 - ef) + (b[8]*ef_f);
       
 }
@@ -81,14 +83,14 @@ generated quantities{
     eta_r_0   =  a0 +
       m[1]*l1   + m[2]*l2 +
       b[1] * (1 - er  ) + 
-      b[4] * (1 - ed  ) + (b[5]*ed_rp_d   + b[6]*ed_rp_d_srp2)   +
+      b[4] * (1 - ed  ) + (b[5]*ed_rp_d_srp1   + b[6]*ed_rp_d_srp2)   +
       b[7] * (1 - ef  ) + (b[8]*ef_f)  ;
       
     eta_r_1   =  a0 +
       m[1]*l1   + m[2]*l2 +
       // note the use of er here and not er_r
       b[1] * (1 - er  ) + (b[2]*er + b[3]*er .* srp2) +
-      b[4] * (1 - ed  ) + (b[5]*ed_rp_d   + b[6]*ed_rp_d_srp2)   +
+      b[4] * (1 - ed  ) + (b[5]*ed_rp_d_srp1   + b[6]*ed_rp_d_srp2)   +
       b[7] * (1 - ef  ) + (b[8]*ef_f);
 
     // d
@@ -101,21 +103,21 @@ generated quantities{
     eta_d_1   =  a0 + 
       m[1]*l1 + m[2]*l2 +  
       b[1] * (1 - er) + (b[2]*er_r + b[3]*er_r_srp2) +
-      // note the use of ed and rp here and not ed_rp_d
-      b[4] * (1 - ed) + (b[5]*ed .* rp + b[6]*ed .* rp .* srp2)  + 
+      // note the use of ed and rp here and not ed_rp_d_srp1
+      b[4] * (1 - ed) + (b[5]*ed .* rp .* (1-srp2) + b[6]*ed .* rp .* srp2)  + 
       b[7] * (1 - ef) + (b[8]*ef_f);
 
     // f
     eta_f_0   =  a0 +
       m[1]*l1 + m[2]*l2 +
       b[1] * (1 - er) + (b[2]*er_r + b[3]*er_r_srp2) +
-      b[4] * (1 - ed) + (b[5]*ed_rp_d + b[6]*ed_rp_d_srp2)  +
+      b[4] * (1 - ed) + (b[5]*ed_rp_d_srp1 + b[6]*ed_rp_d_srp2)  +
       b[7] * (1 - ef)  ;
 
     eta_f_1   =  a0 +
       m[1]*l1 + m[2]*l2 +
       b[1] * (1 - er) + (b[2]*er_r + b[3]*er_r_srp2) +
-      b[4] * (1 - ed) + (b[5]*ed_rp_d + b[6]*ed_rp_d_srp2)  +
+      b[4] * (1 - ed) + (b[5]*ed_rp_d_srp1 + b[6]*ed_rp_d_srp2)  +
       // note the use of ef here and not ef_f
       b[7] * (1 - ef) + (b[8]*ef);
       
