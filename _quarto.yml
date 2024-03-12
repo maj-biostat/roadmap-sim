@@ -23,9 +23,9 @@ website:
         - notebooks/model-spec.qmd
         - notebooks/decision-rules.qmd
         - notebooks/simulation-pars.qmd
-        - notebooks/trial-data.qmd
-        - notebooks/model-implementation.qmd
-        - notebooks/example-trials.qmd
+        # - notebooks/trial-data.qmd
+        # - notebooks/model-implementation.qmd
+        # - notebooks/example-trials.qmd
         - notebooks/sim-design1-results.qmd
         - notebooks/sim-design2-results.qmd
         - notebooks/sim-design3-results.qmd
