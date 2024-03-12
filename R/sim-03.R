@@ -145,7 +145,7 @@ run_trial <- function(ix){
       pop_spec = pop_spec, 
       sim_spec = sim_spec, 
       idx_s = is, entry_times = FALSE)
-    
+  
     # add in a counter for tracking analysis
     l_new$d[, analys := ii]
 
@@ -187,7 +187,7 @@ run_trial <- function(ix){
       # short vs long (one-stage)
       b_r1d = post_1$b_5,
       # short vs long (two-stage)
-      b_r2d = post_1$b_5 + post_1$b_6,
+      b_r2d = post_1$b_6,
       # rif vs no-rif
       b_f = post_1$b_8
     ))
@@ -274,16 +274,21 @@ run_trial <- function(ix){
         pop_spec$r_c['norif'] <- NA
         pop_spec$r_c['rif'] <- NA
       }
-    }
-    
-    # we need to consider inferiority for duration under two-stage due to the 
-    # way the model is parameterised
-    if(any(decision[ii, , "inf"])){
-      if(decision[ii, "b_r2d", "inf"]){
+      # choice domain relates to all silo so decision on b_f impacts all cohorts
+      if(decision[ii, "b_r2d", "sup"]){
         pop_spec$r_b$two['long'] <- NA
         pop_spec$r_b$two['short'] <- NA
       }
     }
+    
+    # # we need to consider inferiority for duration under two-stage due to the 
+    # # way the model is parameterised
+    # if(any(decision[ii, , "inf"])){
+    #   if(decision[ii, "b_r2d", "inf"]){
+    #     pop_spec$r_b$two['long'] <- NA
+    #     pop_spec$r_b$two['short'] <- NA
+    #   }
+    # }
     
     # ni only applies to duration. if short is ni to long then stop enrolment
     # for this randomised comparison
@@ -299,6 +304,7 @@ run_trial <- function(ix){
     if(any(decision[ii, , "fut_sup"])){
       
       if(decision[ii, "b_r", "fut_sup"]){
+        # for late stage silo only
         pop_spec$r_a$late['dair'] <- NA
         pop_spec$r_a$late['rev'] <- NA
       }
@@ -306,24 +312,24 @@ run_trial <- function(ix){
         pop_spec$r_c['norif'] <- NA
         pop_spec$r_c['rif'] <- NA
       }
-    }
-    
-    # stop enrolling if futility decision wrt inferiority
-    if(any(decision[ii, , "fut_inf"])){
-      if(decision[ii, "b_r2d", "fut_inf"]){
+      if(decision[ii, "b_r2d", "fut_sup"]){
         pop_spec$r_b$two['long'] <- NA
         pop_spec$r_b$two['short'] <- NA
       }
     }
+    
+    # stop enrolling if futility decision wrt inferiority
+    # if(any(decision[ii, , "fut_inf"])){
+    #   if(decision[ii, "b_r2d", "fut_inf"]){
+    #     pop_spec$r_b$two['long'] <- NA
+    #     pop_spec$r_b$two['short'] <- NA
+    #   }
+    # }
     
     if(any(decision[ii, , "fut_trt_ni_ref"])){
       if(decision[ii, "b_r1d", "fut_trt_ni_ref"]){
         pop_spec$r_b$one['long'] <- NA
         pop_spec$r_b$one['short'] <- NA
-      }
-      if(decision[ii, "b_r2d", "fut_trt_ni_ref"]){
-        pop_spec$r_b$two['long'] <- NA
-        pop_spec$r_b$two['short'] <- NA
       }
     }
     
@@ -339,7 +345,7 @@ run_trial <- function(ix){
       # if one stage short is non-inferior or futile for non-inferiority
       (decision[ii, "b_r1d", "trt_ni_ref"] | decision[ii, "b_r1d", "fut_trt_ni_ref"]) &
       # if two stage short is inferior or futile for inferiority
-      (decision[ii, "b_r2d", "inf"] | decision[ii, "b_r2d", "fut_inf"])
+      (decision[ii, "b_r2d", "sup"] | decision[ii, "b_r2d", "fut_sup"])
     ){
       log_info("Stop trial all questions addressed ", ix)
       stop_enrol <- T  
@@ -397,8 +403,8 @@ run_sim_03 <- function(){
   e = NULL
   log_info("Starting simulation")
   r <- parallel::mclapply(
-    X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
-    # X=1:3, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    # X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    X=1:30, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
       log_info("Simulation ", ix);
       ll <- tryCatch({
         run_trial(ix)
