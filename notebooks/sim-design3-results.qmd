@@ -218,7 +218,7 @@ Superiority (`sup`) and futility (`fut_sup`) are the relevant quantities of inte
 Non-inferiority (`trt_ni_ref`) and inferiority (`fut_trt_ni_ref`) are the relevant quantities of interest.
 
 + The third row details the cumulative probability of decisions within the duration domain under two-stage revision.
-Since we evaluate the complement (short is inferior to long) inferiority (`inf`) and futility (`fut_inf`) are the relevant quantities of interest.
+Superiority (`sup`) and futility (`fut_sup`) are the relevant quantities of interest.
 
 + The fourth row details the cumulative probability of decisions within the choice domain. 
 Superiority (`sup`) and futility (`fut_sup`) are the relevant quantities of interest.
