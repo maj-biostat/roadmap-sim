@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-10">
+<meta name="dcterms.date" content="2024-03-13">
 
 <title>ROADMAP - design notes and simulations - Population structure</title>
 <style>
@@ -273,6 +273,12 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../notebooks/sim-design4-results.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulation results 4</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../notebooks/design-notes.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Design Notes</span></a>
   </div>
@@ -330,7 +336,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 10, 2024</p>
+      <p class="date">March 13, 2024</p>
     </div>
   </div>
   
@@ -666,13 +672,13 @@ norif   rif
         f &lt;- as.numeric((ef == 1) * rbinom(N, 1, pop_spec$r_c))
     }
     D &lt;- data.table(l, l1, l2, j, er, ed, ef, erx = 1 - er, edx = 1 - 
-        ed, efx = 1 - ef, r, sr, sra, ra, ic, rp, srp, srp2 = as.numeric(srp == 
-        2), d, f)
+        ed, efx = 1 - ef, r, sr, sra, ra, ic, rp, srp, srp1 = as.numeric(srp == 
+        1), srp2 = as.numeric(srp == 2), d, f)
     D[, `:=`(id, idx_s:(N + idx_s - 1))]
     setcolorder(D, "id")
     D
 }
-&lt;bytecode: 0x128bd5dc0&gt;
+&lt;bytecode: 0x10a8e3c68&gt;
 &lt;environment: namespace:roadmap.data&gt;</code></pre>
 </div>
 </div>
@@ -681,13 +687,13 @@ norif   rif
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>d <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_design</span>()</span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="fu">head</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>   id l l1 l2 j er ed ef erx edx efx r sr sra ra ic rp srp srp2 d f
-1:  1 1  1  0 0  1  0  0   0   1   1 0  2   1  0  0  0   0    0 0 0
-2:  2 2  0  1 0  0  1  1   1   0   0 0  2   1  2  0  1   2    1 1 0
-3:  3 1  1  0 1  1  0  1   0   1   0 0  2   1  0  0  0   0    0 0 1
-4:  4 1  1  0 0  1  0  1   0   1   0 0  2   1  0  0  0   0    0 0 0
-5:  5 2  0  1 0  0  1  1   1   0   0 0  1   0  1  0  1   1    0 0 0
-6:  6 1  1  0 1  1  0  0   0   1   1 0  2   1  0  0  0   0    0 0 0</code></pre>
+<pre><code>   id l l1 l2 j er ed ef erx edx efx r sr sra ra ic rp srp srp1 srp2 d f
+1:  1 2  0  1 1  0  1  1   1   0   0 0  2   1  2  0  1   2    0    1 1 1
+2:  2 2  0  1 1  0  1  1   1   0   0 0  2   1  2  0  1   2    0    1 0 1
+3:  3 1  1  0 0  1  1  1   0   0   0 1  2   1  2  0  1   2    0    1 0 0
+4:  4 1  1  0 0  1  0  1   0   1   0 0  1   0  0  0  0   0    0    0 0 1
+5:  5 1  1  0 0  1  0  1   0   1   0 0  2   1  0  0  0   0    0    0 0 1
+6:  6 1  1  0 0  1  0  1   0   1   0 0  2   1  0  0  0   0    0    0 0 1</code></pre>
 </div>
 </div>
 

@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-10">
+<meta name="dcterms.date" content="2024-03-13">
 
 <title>ROADMAP - design notes and simulations - Example trials</title>
 <style>
@@ -273,6 +273,12 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
+  <a href="../notebooks/sim-design4-results.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Simulation results 4</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
   <a href="../notebooks/design-notes.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Design Notes</span></a>
   </div>
@@ -322,7 +328,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 10, 2024</p>
+      <p class="date">March 13, 2024</p>
     </div>
   </div>
   
@@ -1677,11 +1683,11 @@ Table&nbsp;1: Summary of simulated trial data when no treatment effects present
 <pre><code>Running MCMC with 2 parallel chains...
 
 Chain 1 finished in 1.6 seconds.
-Chain 2 finished in 1.7 seconds.
+Chain 2 finished in 1.8 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 1.6 seconds.
-Total execution time: 1.7 seconds.</code></pre>
+Mean chain execution time: 1.7 seconds.
+Total execution time: 1.9 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -1709,12 +1715,12 @@ Total execution time: 1.7 seconds.</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 1 finished in 2.0 seconds.
-Chain 2 finished in 2.0 seconds.
+Chain 2 finished in 1.8 seconds.
+Chain 1 finished in 1.9 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 2.0 seconds.
-Total execution time: 2.1 seconds.</code></pre>
+Mean chain execution time: 1.8 seconds.
+Total execution time: 2.0 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -2572,10 +2578,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_22 d">1</td>
 <td class="gt_row gt_center" headers="late stub_1_22 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_22 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_22 y">6</td>
+<td class="gt_row gt_right" headers="late stub_1_22 y">5</td>
 <td class="gt_row gt_right" headers="late stub_1_22 n">8</td>
-<td class="gt_row gt_right" headers="late stub_1_22 p_mle">0.75</td>
-<td class="gt_row gt_right" headers="late stub_1_22 p">0.86</td>
+<td class="gt_row gt_right" headers="late stub_1_22 p_mle">0.62</td>
+<td class="gt_row gt_right" headers="late stub_1_22 p">0.75</td>
 </tr>
 <tr class="even">
 <td id="stub_1_23" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2589,7 +2595,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_right" headers="late stub_1_23 y">1</td>
 <td class="gt_row gt_right" headers="late stub_1_23 n">1</td>
 <td class="gt_row gt_right" headers="late stub_1_23 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="late stub_1_23 p">0.83</td>
+<td class="gt_row gt_right" headers="late stub_1_23 p">0.71</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_24" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2600,10 +2606,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_24 d">1</td>
 <td class="gt_row gt_center" headers="late stub_1_24 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_24 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_24 y">3</td>
+<td class="gt_row gt_right" headers="late stub_1_24 y">1</td>
 <td class="gt_row gt_right" headers="late stub_1_24 n">3</td>
-<td class="gt_row gt_right" headers="late stub_1_24 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="late stub_1_24 p">0.91</td>
+<td class="gt_row gt_right" headers="late stub_1_24 p_mle">0.33</td>
+<td class="gt_row gt_right" headers="late stub_1_24 p">0.83</td>
 </tr>
 <tr class="even">
 <td id="stub_1_25" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2687,7 +2693,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_right" headers="late stub_1_30 y">0</td>
 <td class="gt_row gt_right" headers="late stub_1_30 n">1</td>
 <td class="gt_row gt_right" headers="late stub_1_30 p_mle">0.00</td>
-<td class="gt_row gt_right" headers="late stub_1_30 p">0.87</td>
+<td class="gt_row gt_right" headers="late stub_1_30 p">0.77</td>
 </tr>
 <tr class="even">
 <td id="stub_1_31" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2824,10 +2830,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_40 d">1</td>
 <td class="gt_row gt_center" headers="late stub_1_40 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_40 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_40 y">82</td>
+<td class="gt_row gt_right" headers="late stub_1_40 y">80</td>
 <td class="gt_row gt_right" headers="late stub_1_40 n">89</td>
-<td class="gt_row gt_right" headers="late stub_1_40 p_mle">0.92</td>
-<td class="gt_row gt_right" headers="late stub_1_40 p">0.96</td>
+<td class="gt_row gt_right" headers="late stub_1_40 p_mle">0.90</td>
+<td class="gt_row gt_right" headers="late stub_1_40 p">0.93</td>
 </tr>
 <tr class="even">
 <td id="stub_1_41" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2838,10 +2844,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_41 d">1</td>
 <td class="gt_row gt_center" headers="late stub_1_41 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_41 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_41 y">55</td>
+<td class="gt_row gt_right" headers="late stub_1_41 y">53</td>
 <td class="gt_row gt_right" headers="late stub_1_41 n">56</td>
-<td class="gt_row gt_right" headers="late stub_1_41 p_mle">0.98</td>
-<td class="gt_row gt_right" headers="late stub_1_41 p">0.95</td>
+<td class="gt_row gt_right" headers="late stub_1_41 p_mle">0.95</td>
+<td class="gt_row gt_right" headers="late stub_1_41 p">0.91</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_42" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2852,10 +2858,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_42 d">1</td>
 <td class="gt_row gt_center" headers="late stub_1_42 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_42 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_42 y">55</td>
+<td class="gt_row gt_right" headers="late stub_1_42 y">51</td>
 <td class="gt_row gt_right" headers="late stub_1_42 n">57</td>
-<td class="gt_row gt_right" headers="late stub_1_42 p_mle">0.96</td>
-<td class="gt_row gt_right" headers="late stub_1_42 p">0.98</td>
+<td class="gt_row gt_right" headers="late stub_1_42 p_mle">0.89</td>
+<td class="gt_row gt_right" headers="late stub_1_42 p">0.95</td>
 </tr>
 <tr class="even">
 <td id="summary_stub_late_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
@@ -2866,9 +2872,9 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 d">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 ef">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 f">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 y">894</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 y">883</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 n">1253</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 p_mle">0.71</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 p_mle">0.70</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 p">—</td>
 </tr>
 <tr class="odd gt_group_heading_row">
@@ -3051,10 +3057,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="chronic stub_1_55 d">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_55 ef">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_55 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_55 y">51</td>
+<td class="gt_row gt_right" headers="chronic stub_1_55 y">48</td>
 <td class="gt_row gt_right" headers="chronic stub_1_55 n">59</td>
-<td class="gt_row gt_right" headers="chronic stub_1_55 p_mle">0.86</td>
-<td class="gt_row gt_right" headers="chronic stub_1_55 p">0.89</td>
+<td class="gt_row gt_right" headers="chronic stub_1_55 p_mle">0.81</td>
+<td class="gt_row gt_right" headers="chronic stub_1_55 p">0.80</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_56" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -3065,10 +3071,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="chronic stub_1_56 d">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_56 ef">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_56 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_56 y">49</td>
+<td class="gt_row gt_right" headers="chronic stub_1_56 y">46</td>
 <td class="gt_row gt_right" headers="chronic stub_1_56 n">59</td>
-<td class="gt_row gt_right" headers="chronic stub_1_56 p_mle">0.83</td>
-<td class="gt_row gt_right" headers="chronic stub_1_56 p">0.86</td>
+<td class="gt_row gt_right" headers="chronic stub_1_56 p_mle">0.78</td>
+<td class="gt_row gt_right" headers="chronic stub_1_56 p">0.75</td>
 </tr>
 <tr class="even">
 <td id="stub_1_57" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -3079,10 +3085,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="chronic stub_1_57 d">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_57 ef">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_57 f">1</td>
-<td class="gt_row gt_right" headers="chronic stub_1_57 y">34</td>
+<td class="gt_row gt_right" headers="chronic stub_1_57 y">33</td>
 <td class="gt_row gt_right" headers="chronic stub_1_57 n">36</td>
-<td class="gt_row gt_right" headers="chronic stub_1_57 p_mle">0.94</td>
-<td class="gt_row gt_right" headers="chronic stub_1_57 p">0.92</td>
+<td class="gt_row gt_right" headers="chronic stub_1_57 p_mle">0.92</td>
+<td class="gt_row gt_right" headers="chronic stub_1_57 p">0.86</td>
 </tr>
 <tr class="odd">
 <td id="summary_stub_chronic_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
@@ -3093,9 +3099,9 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 d">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 ef">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 f">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 y">411</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 y">404</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 n">548</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 p_mle">0.75</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 p_mle">0.74</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 p">—</td>
 </tr>
 <tr class="even">
@@ -3107,9 +3113,9 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 d">—</td>
 <td class="gt_row gt_center gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 ef">—</td>
 <td class="gt_row gt_center gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 f">—</td>
-<td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 y">1802</td>
+<td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 y">1784</td>
 <td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 n">2500</td>
-<td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 p_mle">0.72</td>
+<td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 p_mle">0.71</td>
 <td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 p">—</td>
 </tr>
 </tbody><tfoot class="gt_footnotes">
@@ -3146,12 +3152,12 @@ Table&nbsp;2: Summary of simulated trial data when all domains associated with p
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 2 finished in 1.4 seconds.
-Chain 1 finished in 1.5 seconds.
+Chain 2 finished in 1.5 seconds.
+Chain 1 finished in 1.6 seconds.
 
 Both chains finished successfully.
 Mean chain execution time: 1.5 seconds.
-Total execution time: 1.6 seconds.</code></pre>
+Total execution time: 1.7 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -3179,12 +3185,12 @@ Total execution time: 1.6 seconds.</code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 1 finished in 1.8 seconds.
-Chain 2 finished in 1.8 seconds.
+Chain 1 finished in 1.6 seconds.
+Chain 2 finished in 1.7 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 1.8 seconds.
-Total execution time: 1.9 seconds.</code></pre>
+Mean chain execution time: 1.6 seconds.
+Total execution time: 1.7 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
