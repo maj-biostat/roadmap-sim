@@ -561,7 +561,7 @@ suppressWarnings(print(p))
 
 # Widen data so that power is shown by col with each col corresponding to an
 # analysis
-d_tbl <- d_fig_0_01[quant %in% c("sup", "fut_sup", "ni", "fut_ni")]
+d_tbl <- d_fig_0_05[quant %in% c("sup", "fut_sup", "ni", "fut_ni")]
 d_tbl <- dcast(d_tbl, parname + or_tru ~ quant + analys, value.var = "value")
 d_tbl <- d_tbl[order(or_tru, parname)]
 
