@@ -1,5 +1,5 @@
 ---
-title: "Simulation results 3"
+title: "Simulation results 4"
 subtitle: "Sequential design with early stopping (restricted action set)"
 date: today
 date-modified: last-modified
@@ -31,7 +31,7 @@ names(g_lor_lab) <- paste0("v0", 1:7)
 g_lor_num <- log(c(1/2, 1/1.5, 1/1.2, 1, 1.2, 1.5, 2))
 
 
-flist <- list.files("data", pattern = "sim03-sc01")
+flist <- list.files("data", pattern = "sim04-sc01")
 
 toks <- list()
 l <- list()
@@ -113,17 +113,12 @@ d_all <- rbindlist(lapply(seq_along(l), function(i){
 
 ```
 
-
-
-
-
-
-@tbl-sim-design3-par summarises the setup for the simulated ORs ranging from $1/2$ to $2$ on all arms. 
+@tbl-sim-design4-par summarises the setup for the simulated ORs ranging from $1/2$ to $2$ on all arms. 
 All parameters are simulated to have the same effect size.
 Decision thresholds remain constant throughout the duration of the study.
 
 ```{r}
-#| label: tbl-sim-design3-par
+#| label: tbl-sim-design4-par
 #| tbl-cap: 'Parameters used to simulate treatment effects and decision thresholds'
 #| column: page
 #| out-width: 100%
@@ -209,7 +204,7 @@ Notes:
 
 Enrolment stops for the respective domain when any of the above are triggered.
 
-@fig-pr-design3-1 reports the cumulative probability of each decision quantity with enrolment halted only for the questions detailed above.
+@fig-pr-design4-1 reports the cumulative probability of each decision quantity with enrolment halted only for the questions detailed above.
 
 + The first row details the cumulative probability of decisions within the surgical domain. 
 Superiority (`sup`) and futility (`fut_sup`) are the relevant quantities of interest.
@@ -224,7 +219,7 @@ Since we evaluate the complement (short is inferior to long) inferiority (`inf`)
 Superiority (`sup`) and futility (`fut_sup`) are the relevant quantities of interest.
 
 ```{r}
-#| label: fig-pr-design3-1
+#| label: fig-pr-design4-1
 #| fig-cap: 'Probability of declaring decision by parameter by effect size (all pars set with same OR).'
 #| fig-cap-location: margin
 #| fig-height: 8
@@ -232,30 +227,30 @@ Superiority (`sup`) and futility (`fut_sup`) are the relevant quantities of inte
 
 
 # put power by scenario, variant and analysis in long format
-d_fig_0_01 <- melt(d_dec, id.vars = c("sc", "v", "analys", "parname"), variable.name = "quant")
-d_fig_0_01[, quant := factor(quant, 
+d_fig <- melt(d_dec, id.vars = c("sc", "v", "analys", "parname"), variable.name = "quant")
+d_fig[, quant := factor(quant, 
                         levels = c("sup", "fut_sup", "trt_ni_ref", "fut_trt_ni_ref"))]
 # add in the number of pts having reached 12 months post rand by analysis num
-d_fig_0_01 <- merge(d_fig_0_01, unique(d_cfg[, .(analys, N_pt)]), by = "analys")
+d_fig <- merge(d_fig, unique(d_cfg[, .(analys, N_pt)]), by = "analys")
 
-d_fig_0_01 <- rbind(
-  d_fig_0_01[parname == "b_r" & quant %in% c("sup", "fut_sup"), ],
-  d_fig_0_01[parname == "b_r1d" & quant %in% c("trt_ni_ref", "fut_trt_ni_ref"), ],
-  d_fig_0_01[parname == "b_r2d" & quant %in% c("sup", "fut_sup"), ],
-  d_fig_0_01[parname == "b_f" & quant %in% c("sup", "fut_sup"), ]
+d_fig <- rbind(
+  d_fig[parname == "b_r" & quant %in% c("sup", "fut_sup"), ],
+  d_fig[parname == "b_r1d" & quant %in% c("trt_ni_ref", "fut_trt_ni_ref"), ],
+  d_fig[parname == "b_r2d" & quant %in% c("sup", "fut_sup"), ],
+  d_fig[parname == "b_f" & quant %in% c("sup", "fut_sup"), ]
 )
 
-d_fig_0_01[, or_tru := g_or_lab[v]]
-d_fig_0_01[, or_tru := factor(
+d_fig[, or_tru := g_or_lab[v]]
+d_fig[, or_tru := factor(
   or_tru, labels = g_or_lab, levels = g_or_lab)]
 
 fx <- g_fx
 names(fx) <- c("rev vs ref", "short vs ref (one)", "long vs ref (two)", "rif vs ref")
-d_fig_0_01[, parname_lab := factor(
+d_fig[, parname_lab := factor(
   names(fx[parname]), levels = c("rev vs ref", "short vs ref (one)", "long vs ref (two)", "rif vs ref")
   ) ]
 
-d_text <- unique(d_fig_0_01[, .(parname_lab, or_tru, quant)])
+d_text <- unique(d_fig[, .(parname_lab, or_tru, quant)])
 d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 1/2"),
        `:=`(label = c("rev fut (sup)"), x = 500, y = 0.2)]
 d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 2"),
@@ -282,12 +277,12 @@ names(d_tbl) <- gsub("futility (sup)", "fut_sup", names(d_tbl))
 names(d_tbl) <- gsub("NI (trt ni ref)", "trt_ni_inf", names(d_tbl))
 names(d_tbl) <- gsub("futility (NI)", "fut_trt_ni_ref", names(d_tbl))
 
-d_fig_0_01$quant <- factor(
-  d_fig_0_01$quant, 
+d_fig$quant <- factor(
+  d_fig$quant, 
   levels = c("sup", "fut_sup", "trt_ni_ref", "fut_trt_ni_ref"),
   labels = c("sup", "fut_sup", "ni", "fut_ni"))
 
-p <- ggplot(d_fig_0_01, aes(x = N_pt, y = value, group = quant, col = quant)) +
+p <- ggplot(d_fig, aes(x = N_pt, y = value, group = quant, col = quant)) +
   geom_point(size = 0.5) +
   geom_line(lwd = 0.4) +
   geom_hline(yintercept = 0.05, lwd = 0.2) +
@@ -308,17 +303,17 @@ p <- ggplot(d_fig_0_01, aes(x = N_pt, y = value, group = quant, col = quant)) +
 suppressWarnings(print(p))
 ```
 
-@tbl-sim-design3-oc1a provides the same detail as the above figure, but makes it easier to see what the magnitudes of the cumulate probabilities are.
+@tbl-sim-design4-oc1a provides the same detail as the above figure, but makes it easier to see what the magnitudes of the cumulate probabilities are.
 
 ```{r}
-#| label: tbl-sim-design3-oc1a
+#| label: tbl-sim-design4-oc1a
 #| tbl-cap: 'Cumulative probability of decision'
 #| column: page
 #| out-width: 100%
 
 # Widen data so that power is shown by col with each col corresponding to an
 # analysis
-d_tbl <- d_fig_0_01[quant %in% c("sup", "fut_sup", "ni", "fut_ni")]
+d_tbl <- d_fig[quant %in% c("sup", "fut_sup", "ni", "fut_ni")]
 d_tbl <- dcast(d_tbl, parname + or_tru ~ quant + analys, value.var = "value")
 d_tbl <- d_tbl[order(or_tru, parname)]
 
@@ -396,253 +391,10 @@ g_tbl <- d_tbl |> gt(groupname_col = "parname") |>
 g_tbl
 ```
 
-```{r}
-
-flist <- list.files("data", pattern = "sim03-sc02")
-
-toks <- list()
-l2 <- list()
-for(i in 1:length(flist)){
-  l2[[i]] <- qs::qread(file.path("data", flist[i]))
-  toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
-}
-
-d_cfg <- rbindlist(lapply(seq_along(l2), function(i){
-  tok <- toks[[i]]
-  m <- data.table(do.call(cbind, l2[[i]]$cfg))
-  data.table(cbind(sc = tok[2], v = tok[3], analys = 1:nrow(m), m))
-}))
-
-# conversion to numeric
-d_cfg[, `:=`(
-  nsim = as.numeric(nsim),
-  N_pt = as.numeric(N_pt),
-  b_r1 = as.numeric(b_r1),
-  b_r2 = as.numeric(b_r2),
-  w_srp2 = as.numeric(w_srp2),
-  b_r1d = as.numeric(b_r1d),
-  b_r2d = as.numeric(b_r2d),
-  b_f = as.numeric(b_f),
-  d_sup = as.numeric(thresh_sup),
-  d_ni = as.numeric(thresh_non_inf),
-  d_fut_sup = as.numeric(thresh_fut_sup),
-  d_fut_ni = as.numeric(thresh_fut_ni)
-  )]
-
-# derive the true effect for surgery based on weight combination
-d_cfg[, b_r := b_r1 + w_srp2 * b_r2]
-d_cfg[, `:=`(b_r1 = NULL, b_r2 = NULL, w_srp2 = NULL)]
-
-d_tru <- melt(d_cfg[
-  , .SD, .SDcols = c("sc", "v", "analys", 
-                     "b_r", "b_r1d", "b_r2d", "b_f")], 
-  id.vars = c("sc", "v", "analys"), value.name = "lor_tru")
-
-
-i <- 1
-d_dec_2 <- rbindlist(lapply(seq_along(l2), function(i){
-  tok <- toks[[i]]
-
-  d_decision <- copy(l2[[i]]$d_decision)
-  m <- melt(d_decision, id.vars = c("sim", "analys", "quant"), variable.name = "parname")
-  
-  # Should be right, but just in case...
-  if(any(is.na(m$value))){
-    message("Some of the decision values are NA in index ", i, " file ", flist[i])
-    m[is.na(value), value := FALSE]
-  }
-  
-  # compute the cumulative instances of a decision being made by sim, each 
-  # decision type and by parameter
-  m[, value := as.logical(cumsum(value)>0), keyby = .(sim, quant, parname)]
-  # summarise by analysis, decision type and parameter
-  m <- m[, .(pr_val = mean(value)), keyby = .(analys, quant, parname)]
-  # put into wide format
-  m <- dcast(m, parname + analys ~ quant, value.var = "pr_val")
-
-  cbind(sc = tok[2], v = tok[3], m)
-}))
-
-```
-
-@fig-pr-design3-1b shows the cumulative probability of each decision quantity with enrolment halted only for the questions detailed above when the futility threshold is increased to 5%.
+@fig-est-design4-1 shows the distribution of estimated posterior means by simulated effect size, parameter and sample size.
 
 ```{r}
-#| label: fig-pr-design3-1b
-#| fig-cap: 'Probability of declaring decision by parameter by effect size (all pars set with same OR).'
-#| fig-cap-location: margin
-#| fig-height: 8
-#| fig-width: 7
-
-
-# put power by scenario, variant and analysis in long format
-d_fig_0_05 <- melt(d_dec_2, id.vars = c("sc", "v", "analys", "parname"), variable.name = "quant")
-d_fig_0_05[, quant := factor(quant, 
-                        levels = c("sup", "fut_sup", "trt_ni_ref", "fut_trt_ni_ref"))]
-# add in the number of pts having reached 12 months post rand by analysis num
-d_fig_0_05 <- merge(d_fig_0_05, unique(d_cfg[, .(analys, N_pt)]), by = "analys")
-
-d_fig_0_05 <- rbind(
-  d_fig_0_05[parname == "b_r" & quant %in% c("sup", "fut_sup"), ],
-  d_fig_0_05[parname == "b_r1d" & quant %in% c("trt_ni_ref", "fut_trt_ni_ref"), ],
-  d_fig_0_05[parname == "b_r2d" & quant %in% c("sup", "fut_sup"), ],
-  d_fig_0_05[parname == "b_f" & quant %in% c("sup", "fut_sup"), ]
-)
-
-d_fig_0_05[, or_tru := g_or_lab[v]]
-d_fig_0_05[, or_tru := factor(
-  or_tru, labels = g_or_lab, levels = g_or_lab)]
-
-fx <- g_fx
-names(fx) <- c("rev vs ref", "short vs ref (one)", "long vs ref (two)", "rif vs ref")
-d_fig_0_05[, parname_lab := factor(
-  names(fx[parname]), levels = c("rev vs ref", "short vs ref (one)", "long vs ref (two)", "rif vs ref")
-  ) ]
-
-d_text <- unique(d_fig_0_05[, .(parname_lab, or_tru, quant)])
-d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 1/2"),
-       `:=`(label = c("rev fut (sup)"), x = 500, y = 0.2)]
-d_text[parname_lab == "rev vs ref" & or_tru %in% c("OR 2"),
-       `:=`(label = c("rev sup \nto dair"), x = 500, y = 0.2)]
-d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 1/2"),
-       `:=`(label = c("short fut (ni)"), x = 500, y = 0.2)]
-d_text[parname_lab == "short vs ref (one)" & or_tru %in% c("OR 2"),
-       `:=`(label = c("short ni \nto long"), x = 500, y = 0.2)]
-
-
-d_text[parname_lab == "long vs ref (two)" & or_tru %in% c("OR 1/2"),
-       `:=`(label = c("long fut (sup)"), x = 500, y = 0.2)]
-d_text[parname_lab == "long vs ref (two)" & or_tru %in% c("OR 2"),
-       `:=`(label = c("long sup \nto short"), x = 500, y = 0.2)]
-
-d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 1/2"),
-       `:=`(label = c("rif fut (sup)"), x = 500, y = 0.2)]
-d_text[parname_lab == "rif vs ref" & or_tru %in% c("OR 2"),
-       `:=`(label = c("rif sup \nto no-rif"), x = 500, y = 0.2)]
-
-
-names(d_tbl) <- gsub("superiority", "sup", names(d_tbl))
-names(d_tbl) <- gsub("futility (sup)", "fut_sup", names(d_tbl))
-names(d_tbl) <- gsub("NI (trt ni ref)", "trt_ni_inf", names(d_tbl))
-names(d_tbl) <- gsub("futility (NI)", "fut_trt_ni_ref", names(d_tbl))
-
-d_fig_0_05$quant <- factor(
-  d_fig_0_05$quant, 
-  levels = c("sup", "fut_sup", "trt_ni_ref", "fut_trt_ni_ref"),
-  labels = c("sup", "fut_sup", "ni", "fut_ni"))
-
-p <- ggplot(d_fig_0_05, aes(x = N_pt, y = value, group = quant, col = quant)) +
-  geom_point(size = 0.5) +
-  geom_line(lwd = 0.4) +
-  geom_hline(yintercept = 0.05, lwd = 0.2) +
-  ggthemes::scale_colour_tableau(
-    "", palette = "Tableau 10",
-  type = "regular",
-  direction = 1) +
-  geom_text(
-    data = d_text,
-    aes(x = x, y = y, label = label),
-    hjust   = 0,
-    vjust   = 0, col = 1, size = 3) +
-  scale_linetype_discrete("") +
-  scale_x_continuous("N (12-months post rand)", guide = guide_axis(angle = 45)) +
-  scale_y_continuous("Cumulative probability", breaks = seq(0, 1, by = 0.1)) +
-  facet_grid(parname_lab ~ or_tru)
-
-suppressWarnings(print(p))
-```
-
-
-```{r}
-#| label: tbl-sim-design3-oc1a1
-#| tbl-cap: 'Cumulative probability of decision'
-#| column: page
-#| out-width: 100%
-
-# Widen data so that power is shown by col with each col corresponding to an
-# analysis
-d_tbl <- d_fig_0_01[quant %in% c("sup", "fut_sup", "ni", "fut_ni")]
-d_tbl <- dcast(d_tbl, parname + or_tru ~ quant + analys, value.var = "value")
-d_tbl <- d_tbl[order(or_tru, parname)]
-
-g_tbl <- d_tbl |> gt(groupname_col = "parname") |>
-  fmt_number(
-    columns = everything(),
-    decimals = 2,
-    use_seps = FALSE
-  ) |> 
-  tab_spanner(
-    label = html("Superiority"),
-    columns = paste0("sup_", 1:5)
-  ) |>
-  tab_spanner(
-    label = html("Futility (sup)"),
-    columns = c(paste0("fut_sup_", 1:5))
-  ) |>
-  tab_spanner(
-    label = html("NI (trt ni ref)"),
-    columns = paste0("ni_", 1:5)
-  ) |>
-  tab_spanner(
-    label = html("Futility (ni)"),
-    columns = c(paste0("fut_ni_", 1:5))
-  ) |>
-  cols_label(
-    or_tru = html("OR (true)"),
-    sup_1 = html("500"),
-    sup_2 = html("1000"),
-    sup_3 = html("1500"),
-    sup_4 = html("2000"),
-    sup_5 = html("2500"),
-    fut_sup_1 = html("500"),
-    fut_sup_2 = html("1000"),
-    fut_sup_3 = html("1500"),
-    fut_sup_4 = html("2000"),
-    fut_sup_5 = html("2500"),
-    ni_1 = html("500"),
-    ni_2 = html("1000"),
-    ni_3 = html("1500"),
-    ni_4 = html("2000"),
-    ni_5 = html("2500"),
-    fut_ni_1 = html("500"),
-    fut_ni_2 = html("1000"),
-    fut_ni_3 = html("1500"),
-    fut_ni_4 = html("2000"),
-    fut_ni_5 = html("2500")
-  ) |>
-  tab_style(
-    style = cell_borders(
-      sides = c("left"),
-      weight = px(1)),
-    locations = cells_body(
-      # columns = c(sup_1, fut_sup_1, inf_1, fut_inf_1, ni_1, fut_ni_1)
-      columns = c(sup_1, fut_sup_1, ni_1, fut_ni_1)
-      )
-    ) |>
-  tab_style(
-    style = list(
-      cell_borders(
-        sides = c("top", "bottom"), color = "red", weight = px(1), style = "solid"
-      )),
-    locations = list(
-      cells_body(
-        columns = everything(),
-        rows = or_tru == "OR 1"
-      )
-    )
-  ) |>
-  tab_options(
-    table.font.size = "80%"
-  ) |>
-  sub_missing(columns = everything(), missing_text = "") 
-
-g_tbl
-```
-
-@fig-est-design3-1 shows the distribution of estimated posterior means by simulated effect size, parameter and sample size.
-
-```{r}
-#| label: fig-est-design3-1
+#| label: fig-est-design4-1
 #| fig-cap: 'Distribution of posterior means (true log OR shown in red).'
 #| fig-cap-location: margin
 #| fig-height: 8
@@ -680,7 +432,7 @@ suppressWarnings(print(p))
 ```
 
 
-@fig-est-design3-3 shows the expected number of patients entering into the study by silo under each simulation scenario.
+@fig-est-design4-3 shows the expected number of patients entering into the study by silo under each simulation scenario.
 
 
 ::: {.callout-note collapse=false}
@@ -691,7 +443,7 @@ What else?
 :::
 
 ```{r, out.width="60%"}
-#| label: fig-est-design3-3
+#| label: fig-est-design4-3
 #| fig-cap: 'Silo level representation'
 #| fig-cap-location: margin
 #| fig-height: 5
@@ -719,10 +471,10 @@ ggplot(d_fig_1, aes(x = lor_lab, y = mu_N, fill = l)) +
 ```
 
 
-@fig-est-design3-4 shows the expected number of patients revealed in the surgical (`er`) duration (`ed`) and choice (`ef`) domain by silo and simulation scenario.
+@fig-est-design4-4 shows the expected number of patients revealed in the surgical (`er`) duration (`ed`) and choice (`ef`) domain by silo and simulation scenario.
 
 ```{r, out.width="70%"}
-#| label: fig-est-design3-4
+#| label: fig-est-design4-4
 #| fig-cap: 'Silo level representation'
 #| fig-cap-location: margin
 #| fig-height: 7
@@ -757,10 +509,10 @@ ggplot(d_fig, aes(x = lor_lab, y = mu_N, fill = l)) +
   facet_grid(reveal~.)
 ```
 
-@fig-est-design3-5 shows the expected number of patients that were revealed and contributing to within domain randomised comparisons.
+@fig-est-design4-5 shows the expected number of patients that were revealed and contributing to within domain randomised comparisons.
 
 ```{r}
-#| label: fig-est-design3-5
+#| label: fig-est-design4-5
 #| fig-cap: 'Participants contributing to comparison.'
 #| fig-cap-location: margin
 #| fig-height: 8
