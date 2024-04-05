@@ -9,6 +9,8 @@ source("./R/init.R")
 log_info("Called model-spec notebook")
 ```
 
+## Primary outcome
+
 The primary outcome is treatment success at 12 months post platform entry, defined as **all of**: 
 
 1. Alive
@@ -16,7 +18,28 @@ The primary outcome is treatment success at 12 months post platform entry, defin
 3. No ongoing use of antibiotics for the index joint; and
 4. The prosthesis present after the initial management strategy is complete (destination prosthesis) still in place
 
-hereafter referred to as 'treatment success'.
+referred to as 'treatment success'.
+
+## Early infection
+
+Patients with early stage infection are not revealed^[Dependent on how the randomisation process is designed and implemented, they might not even be randomised.] to the surgical domain.
+The surgical intervention will usually be dair for which the 12 weeks antibiotic duration is recommended.
+There are instances where early stage infection patients will receive a surgical intervention.
+These patients will be able to enter the duration domain for randomisation of long vs short dependent based on the type of revision received.
+
+## Late infection
+
+Patients with late infection enter all domains, but with some restrictions.
+They are randomised to dair vs revision in the surgical domain. 
+Patients allocated to revision will receive a one or two-stage procedure.
+Both the planned surgery (one-stage/two-stage) should be captured at the time of randomisation and the surgical intervention actually performed should also be captured as this may deviate from the original plan and the duration domain is based on the surgery performed rather than the surgery that was originally planned.
+
+## Chronic infection
+
+Patients with chronic stage infection are not randomised into the surgical domain, but they can enter into the duration domain based on the type of surgery they receive.
+These patients will also enter the choice domain.
+
+## Causal structure
 
 We assume the following DAG:
 
@@ -68,69 +91,129 @@ where the following definitions apply:
 -   $S_R$ revision type preference (pre-randomisation) - 0: DAIR, 1: one-stage, 2: two-stage
 -   $R_A$ allocated surgery - 0: DAIR, 1: one-stage, 2: two-stage
 -   $R_P$ performed surgery - 0: DAIR, 1: revision
--   $S_{R_P}$ revision type performed (post-randomisation) - 0: one-stage, 1: two-stage
--   $D$ randomised duration - 0: long, 1: short
+-   $S_{R_P}$ revision type performed (post-randomisation) - 0: dair, 1: one-stage, 2: two-stage
+-   $D$ randomised duration - 0: long, 1: short (for one-stage), 0: short, 1: long (for two-stage)
 -   $D_A$ allocated duration - 0: long, 1: short, 2: other
--   $S_D$ selected duration - 0: long, 1: short, 2: other
+-   $S_D$ selected duration - 0: long, 1: short, 2: other (sometimes duration will be selected rather than randomised)
 -   $F$ randomised choice - 0: norif, 1: rif
 -   $F_A$ allocated choice - 0: norif, 1: rif, 2: other
 -   $S_F$ selected choice - 0: norif, 1: rif, 2: other
 -   $Y$ treatment success - 0: no, 1: yes
 
-For each silo $l$ and site of infection $j$ we model the probability of treatment success as follows:
+## Research questions
+
+The questions of interest are:
+
++ Surg Domain – Early Silo – Revision is superior to DAIR (reference group)
++ AB Duration – One-stage revision – 6 weeks (short) is non-inferior to 12 weeks (long) (reference group)
++ AB Duration – Two-stage revision – 12 weeks (long) is superior to 7 days (short) (reference group)
++ AB Choice – All silos combined – Rifampicin is superior to no-rifampicin (reference group)
+
+In order to easily evaluate the duration effects, we to make the reference arm 12-weeks (long) in the case of one-stage revision and 7-days (short) in the case of two-stage revision.
+
+## Model specification
+
+For each silo $l$ and site of infection $j$ we therefore simulate and model the probability of treatment success as:
 
 $$
 \begin{aligned}
-\mathbb{E}[Y|L; \beta] &=  \text{expit}( \alpha_0 + \\ 
+\mathbb{E}[Y|Q; \alpha,  \beta,\lambda] &=  \text{expit}( \alpha_0 + \\ 
   &\quad \lambda_1 \mathbb{I}(L = 1) + \lambda_2 \mathbb{I}(L = 2) + \\
-  &\quad \beta_1 \mathbb{I}(1-E_R) + ([\beta_2 R + \beta_3 R \mathbb{I}(S_{R_P} = 2) ])\mathbb{I}(E_R) + \\
-  &\quad \beta_4 \mathbb{I}(1-E_D) + ([\beta_{5} R_P D + \beta_{6} R_P D \mathbb{I}(S_{R_P} = 2)])\mathbb{I}(E_D) + \\
-  &\quad \beta_{7} \mathbb{I}(1-E_F) + \beta_{8} F E_F )
+  &\quad (\beta_1 \mathbb{I}(S_{R_P} = 0) + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\ 
+  &\quad (\beta_4 \mathbb{I}(S_{R_P} = 1) + \beta_5 \mathbb{I}(S_{R_P} = 2) )R E_R + \\
+  &\quad \beta_6 (1-E_D) + \\
+  &\quad (\beta_{7} \mathbb{I}(S_{R_P} = 1) + \beta_{8} \mathbb{I}(S_{R_P} = 2)])D E_D + \\
+  &\quad \beta_{9} (1-E_F) + \beta_{10} F E_F )
 \end{aligned}
 $$ {#eq-mod-spec-1}
 
-where 
+where the $Q$, $\alpha$, $\lambda$ and $\beta$ denote the terms and parameters included in the model and specifically
 
 + $\alpha_0$ denotes the baseline log-odds of treatment success 
-+ $\lambda_1$ denotes the shift associated with membership of the late silo
-+ $\lambda_2$ denotes the shift associated with membership of the chronic silo
-+ $\beta_{1}$ shift under non-reveal (surgery^[The parameter ignores potential differentiation for surgical type.])
-+ $\beta_{2}$ shift under revision that was performed with one-stage procedure for long duration and no-rif
-+ $\beta_{3}$ relative shift under revision that was performed with two-stage procedure for long duration and no-rif
-+ $\beta_{4}$ shift under non-reveal (duration) with no differentiation for surgical nor duration preference
-+ $\beta_{5}$ shift for short duration when one-stage was actually performed
-+ $\beta_{6}$ shift for short duration when two-stage was actually performed
-+ $\beta_{7}$ shift under non-reveal (choice) with no differentiation for choice preference
-+ $\beta_{8}$ shift for rif
++ $\lambda_1$ change associated with membership of the late silo
++ $\lambda_2$ change associated with membership of the chronic silo
++ $\beta_{1}$ change under non-reveal surgery receiving dair
++ $\beta_{2}$ change under non-reveal surgery receiving one-stage
++ $\beta_{3}$ change under non-reveal surgery receiving two-stage
++ $\beta_{4}$ change under revision that was performed with one-stage procedure
++ $\beta_{5}$ change under revision that was performed with two-stage procedure
++ $\beta_{6}$ change under non-reveal (duration) 
++ $\beta_{7}$ change for short duration when one-stage was actually performed
++ $\beta_{8}$ change for long duration when two-stage was actually performed
++ $\beta_{9}$ change under non-reveal (choice) 
++ $\beta_{10}$ change for rif
 
-There are situations where the design matrix could be singular, which would necessitate removing redundant terms from the model.
+In the full model, there would be additional terms to capture time trends, site variation, prognostic covariates and joint (knee/hip) effects.
 
-In the full model, there would be additional terms to capture time trends, site variation and prognostic covariates.
+$\beta_1$, $\beta_2$ and $\beta_3$ are required because there will be some patients who are not randomised to revision and yet will still receive either a one-stage or two-stage surgical procedure. 
+These patients may be eligible to enter into the duration domain and so the duration domain effects will be informed by patients that entered into the surgical domain for randomised surgical treatment and also patients that did not receive randomised treatment.
+The $\beta_1$, $\beta_2$ and $\beta_3$ parameters provide adjustment for non-randomised surgical treatment and $\beta_4$ and $\beta_5$ provide adjustment for the patients that did.
+
+Notice that $E_D = 0$ generally implies $S_{R_P} \notin \{1, 2\}$ such that $1-E_D$ is some linear function of the other terms in the model.
+This can lead to estimation problems that might necessitate model re-parameterisation and it is for this reason that the simulation model drops the $(1 - E_D)$ term:
 
 
-### Early infection
+$$
+\begin{aligned}
+\mathbb{E}[Y|Q; \alpha,  \beta,\lambda] &=  \text{expit}( \alpha_0 + \\ 
+  &\quad \lambda_1 \mathbb{I}(L = 1) + \lambda_2 \mathbb{I}(L = 2) + \\
+  &\quad (\beta_1 \mathbb{I}(S_{R_P} = 0) + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\ 
+  &\quad (\beta_4 \mathbb{I}(S_{R_P} = 1) + \beta_5 \mathbb{I}(S_{R_P} = 2) )R E_R + \\
+  &\quad (\beta_{6} \mathbb{I}(S_{R_P} = 1) + \beta_{7} \mathbb{I}(S_{R_P} = 2)])D E_D + \\
+  &\quad \beta_{8} (1-E_F) + \beta_{9} F E_F )
+\end{aligned}
+$$ {#eq-mod-spec-2}
 
-Patients with early stage infection are not randomised into the surgical domain.
-The surgical intervention will usually be dair and the 12 weeks antibiotic duration is recommended.
-There are instances where early stage infection patients will receive a surgical intervention, in which case they will enter the duration domain for randomisation of long vs short dependent on the type of revision received.
 
-### Late infection
+## Examples
 
-Patients with late infection enter all domains, but with some restrictions.
-They are randomised to dair vs revision in the surgical domain. 
-Patients allocated to revision will receive a one or two-stage procedure, the plan for which should be captured at the time of randomisation.
-The surgical intervention actually received should also be captured as this may deviate from the original plan.
+The following characterise how patients enter into the likelihood under various scenarios under @eq-mod-spec-2.
 
-The reference level parameters for the treatment effects are all set to zero.
-Duration effects are currently completely pooled across silo, although this will likely be revised.
 
-### Chronic infection
+::: {.column width="100%"}
 
-Patients with chronic stage infection are not randomised into the surgical domain.
+| ID | Patient type |  Log-odds treatment success |
+|-|----|----|
+| 1 | Late silo receiving rand DAIR, non-rand 12 weeks AB and rand rif |  $\alpha_0 + \lambda_1 + \beta_{9}$  |
+| 2 | Late silo receiving rand rev (one-stage), rand 12 weeks AB (ref group) and rand rif |  $\alpha_0 + \lambda_1 + \beta_4 + \beta_{9}$ |
+| 3 | Late silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref group) and rand rif | $\alpha_0 + \lambda_1 + \beta_2 + \beta_{9}$ |
+| 4 | Chronic silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref group) and rand rif | $\alpha_0 + \lambda_2 + \beta_2 + \beta_{9}$ |
+| 5 | Late silo receiving non-rand rev (two-stage), rand 7 days AB (ref group) and rand rif | $\alpha_0 + \lambda_1 + \beta_3 + \beta_{9}$ |
+| 6 | Chronic silo receiving non-rand rev (two-stage), rand 7 days AB (ref group) and rand rif | $\alpha_0 + \lambda_2 + \beta_3 + \beta_{9}$ |
+| 7 | Late silo receiving rand rev (one-stage), rand 6 weeks AB and rand rif | $\alpha_0 + \lambda_1 + \beta_4 + \beta_6 + \beta_{9}$ |
+| 8 | Late silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif | $\alpha_0 + \lambda_1 + \beta_2 + \beta_6 + \beta_{9}$ |
+| 9 | Chronic silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif | $\alpha_0 + \lambda_2 + \beta_2 + \beta_6 + \beta_{9}$ |
+| 10 | Late silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif | $\alpha_0 + \lambda_1 + \beta_3 + \beta_7 + \beta_{9}$ |
+| 11 | Chronic silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif | $\alpha_0 + \lambda_2 + \beta_3 + \beta_7 + \beta_{9}$ |
+
+: Likelihood contributions under various scenarios {.striped .hover}
+:::
+
+If the non-reveal parameters for the surgical domain were not split by surgery type, then ID 3 above would have the same terms as ID 5 and ID 4 would have the same terms as ID 6.
+
+
+
+
+
+## Treatment effects
+
+The effect of interest is an average conditional log-odds ratio and is applicable to the late silo.
+For the surgical domain, this amounts to a weighted combination of $\beta_2$ and $\beta_3$ where the weights are the sample based expectations for the probability of receiving one-stage and two-stage surgery.
+
+$$
+\begin{aligned}
+\Delta_R = \beta_4 \mathbb{E}[S_{R_P} == 1] + \beta_5 \mathbb{E}[S_{R_P} == 2]
+\end{aligned}
+$$
+
+For the duration domain, the conditional log-odds ratios of interest are $\beta_6$ and $\beta_7$ which characterise the effect of 6 weeks (short) vs 12 weeks (long) under one-stage revision and 12 weeks (long) vs 7 days (short) in two-stage revision.
+For the choice domain, the conditional log-odd ratios of interest is $\beta_{9}$, characterising the effect of rifampacin vs no-rifampacin.
+For the duration and choice domains, the effects are applicable to all silos.
+
 
 ## Priors
 
-As with the linear predictor, the priors are currently targeted towards the simulation work but may be appropriate for the final model.
+As with the linear predictor, the priors are currently targeted towards the simulation work and may be modified in the final model.
 
 ### Intercepts
 
@@ -142,27 +225,11 @@ The silo and infection site intercepts are given independent normal priors
 
 On the probability scale, these concentrate on 0.5 with 95% of the density between 0.04 and 0.96, approximately uniform across this interval.
 
-While the intercept priors are currently independent, consideration should be given to partial pooling across site of infection.
-
-There are no randomisation options for early stage infection in domains A and B and therefore the baseline log-odds (intercept) refers to the cohort of patients that were not randomised within A nor B and randomised to the reference group for domain C.
-In contrast, for the late stage patients, the baseline log-odds of treatment success is interpreted contextually for the cohort of patients that were randomised to the reference level of domains A, B and C, see below.
-
-::: {.column width="50%"}
-
-| Silo |  A | B | C | 
-|------|-----|---|---|
-| early |  - | - | no-rif | 
-| late  | dair | - | no-rif |
-| chronic | one | long | no-rif |
-
-: Groups corresponding to baseline log-odds of treatment success {.striped .hover}
-:::
-
 ### Other covariates
 
 Independent standard normal priors are assumed for all other covariate terms effects.
 
 
-## Treatment effects
+### Treatment effects
 
 All covariates relating to treatment effects have standard normal priors.

@@ -6,6 +6,7 @@ date-modified: last-modified
 
 ```{r, echo = FALSE}
 source("./R/init.R")
+source("./R/util.R")
 log_info("Called model-implementation notebook")
 ```
 
@@ -16,7 +17,7 @@ For example with the linear predictor:
 #| code-fold: false
 
 # data generation process
-formals(get_trial_data)$g
+formals(roadmap.data::get_trial_data)$g
 ```
 
 I get:
@@ -26,21 +27,47 @@ I get:
 
 # simulate data
 set.seed(1)
-sim_spec <- get_sim_spec()
+sim_spec <- roadmap.data::get_sim_spec()
 
 unlist(sim_spec)
 
-ll <- get_trial_data(N = 2500, sim_spec = sim_spec)
+ll <- roadmap.data::get_trial_data(N = 2500, sim_spec = sim_spec)
 d <- copy(ll$d)
-head(d[, .(y = sum(y), n = .N), keyby = .(l, er, ed, ef, r, rp, srp2, d, f)])
+head(d[, .(y = sum(y), n = .N), keyby = .(l, er, ed, ef, r, srp0, srp1, srp2, d, f)])
 ```
 
+The columns correspond to:
+
++ l: strata 0 early, 1 late, 2 chronic
++ er: revealed indicator surgery
++ ed: revealed indicator duration
++ ef: revealed indicator choice
++ r: randomisation for surgery domain, dair vs rev
++ srp0: indicator for dair performed
++ srp1: indicator for one-stage performed
++ srp2: indicator for two-stage performed
++ d: indicator for duration (see below)
++ f: indicator for choice (0 no-rif, 1 rif)
++ y: number of treatment success
++ n: number of patients
+
+<!-- + rp: indicator of surgical approach that was performed (0 dair, 1 rev) -->
+
+Duration domain depends on what surgery was received, NOT what was originally planned/assigned.
+For one-stage 12-weeks is reference group (indicated by 0) vs 6 weeks.
+For two-stage 7 days is reference group (indicated by 0) vs 12 weeks (1).
+
+Within early, late and chronic stage infection, the percentage (by silo, `l`) receiving each surgery type (`srp`) as a randomised or non-randomised treatment (`er`) are:
 
 ```{r}
-ll <- get_trial_data(N = 1e7, sim_spec = sim_spec)
-head(ll$d)
-ll$d[er == 1, .N, keyby = srp][, .(p = N/nrow(ll$d[er == 1]))]
-ll$d[er == 1, .N, keyby = srp2][, .(p = N/nrow(ll$d[er == 1]))]
+#| code-summary: Percent receiving each surgery type within silo
+
+ll <- roadmap.data::get_trial_data(N = 1e6, sim_spec = sim_spec)
+d_tbl <- ll$d[, .(n = .N), keyby = .(l, er, srp)]
+d_tbl[, N_l := sum(n), keyby = l]
+d_tbl[, pct := 100 * n / N_l]
+d_tbl[, N_l := NULL]
+d_tbl
 ```
 
 ## Stan implementation 
@@ -50,48 +77,73 @@ The model spec can be translated into stan, albeit using a different likelihood 
 ```{r}
 #| class-output: stan
 #| echo: false
+
 cat(readLines("stan/model-sim-04.stan"), sep = "\n")
 ```
 
-To establish consistency, I create data with a million patients (orders of magnitude more than we will have available) and fit the model in an attempt to recover the simulation parameters.
-If this cannot be done with a million records, it cannot be done with 2500.
-I fit the stan model and extract and summarise the posterior.
+Fit the stan model and extract and summarise the posterior in order to see if the parameter estimates are close to the true values.
 
-```{r}
+::: {.callout-note collapse=false}
+
+There are some terms in the model that under 'ideal' situation where all patients are revealed as they should be that will cause estimation problems.
+These issues can manifest as sluggish MCMC or weird `NA` terms appearing in the regression results.
+In general an `NA` in the regression results from `lm` means that the coefficient is not estimable. This can happen due to exact collinearity, e.g. when Q3 = a Q1 + b Q2 + c for some a, b and c, but, it can also happen due to not having enough observations to estimate the relevant parameters (e.g. if p >> n). 
+If you predictors are categorical and you're adding interaction terms, an `NA` can also mean that there are no observations with that combination of levels of the factors.
+
+:::
+
+```{r, eval = T}
 m4 <- cmdstanr::cmdstan_model("stan/model-sim-04.stan")
 
 set.seed(1)
 
-ll <- get_trial_data(N = 1e6, sim_spec = sim_spec)
-
-lsd <- get_stan_data(ll$d)
+ll <- roadmap.data::get_trial_data(N = 1e6, sim_spec = sim_spec)
+lsd <- roadmap.data::get_stan_data(ll$d)
 
 d <- copy(ll$d)
-
-# d[, .(.N), keyby = srp][, .(pr_srp = N/nrow(d))]
-
 d_s <- copy(lsd$d_s)
 ld <- lsd$ld
 
 f1 <- m4$sample(
   ld, iter_warmup = 1000, iter_sampling = 2000,
-  parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
+  parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F,
   max_treedepth = 13)
 
-# frequentist version
+
+# See note above. edx is dropped from the model as it is collinear with
+# srp1 and srp2 and leads to an estimation issue.
+
 f2 <- glm(y ~ l1 + l2 +
-              erx + er:r + er:r:srp2 +
-              edx + ed:rp:d + ed:d:rp:srp2 +
-              efx + ef:f, 
-            data = d, family = binomial())
+            erx:srp0 + erx:srp1 + erx:srp2 +
+            er:r:srp1 + er:r:srp2 +
+            ed:d:srp1 + ed:d:srp2 +
+            efx + ef:f,  
+          data = d, family = binomial())
 
+# summary(f2)
 
+# dtmp <- data.table(model.matrix(f2)) 
+# dtmp <- cbind(model.matrix(f2), tot = 0)
+# pracma::rref(dtmp)
+# d_s
+
+# dtmp <- data.table(model.matrix(f2))
+# 
+# rref(dtmp)
+# dtmp.mean <- apply(dtmp, 2, mean)
+# dtmp <- sweep(dtmp, 2, dtmp.mean)
+# 
+# f3 <- prcomp(dtmp)
+# print(f3)
+# 
+# # Fairly unsafe - checking for full rank on removal of each var
+# linearly_dep_cols(f2)
 
 ```
 
-Raw parameter estimates align reasonably well to the simulation parameters used in the linear predictor:
+The parameter estimates align reasonably well to the simulation parameters used in the linear predictor:
 
-```{r}
+```{r, eval = T}
 post1 <- data.table(f1$draws(variables = c(c("a0", "m", "b")), format = "matrix"))
 cf <- coef(f2)
 
@@ -100,8 +152,9 @@ round(rbind(
   "Posterior means" = colMeans(post1),
   "Max likelihood" = c(
     cf[1:3], 
-    cf["erx"], cf["er:r"], cf["er:r:srp2"] , 
-    cf["edx"], cf["ed:rp:d"], cf["srp2:ed:rp:d"],
+    cf["erx:srp0"], cf["erx:srp1"], cf["erx:srp2"], 
+    cf["srp1:er:r"], cf["srp2:er:r"] , 
+    cf["srp1:ed:d"], cf["srp2:ed:d"],
     cf["efx"], cf["ef:f"]
   )
 ), 4)
@@ -112,13 +165,13 @@ round(rbind(
 ::: {.callout-note collapse=false}
 
 Calculations based on Bayesian model are complicated by virtue of use of binomial instead of bernoulli likelihood.
-The way to deal with this is to weight the log-odds contributions by the number of trials associated with each unique combination.
+To deal with this, we weight the log-odds contributions by the number of trials associated with each unique combination.
 
 :::
 
 Predictions on log-odds scale:
 
-```{r}
+```{r, eval = T}
 #| code-fold: false
 
 eta_r_0 <- f1$draws(variables = c("eta_r_0"), format = "matrix")
@@ -128,85 +181,92 @@ eta_d_1 <- f1$draws(variables = c("eta_d_1"), format = "matrix")
 eta_f_0 <- f1$draws(variables = c("eta_f_0"), format = "matrix")
 eta_f_1 <- f1$draws(variables = c("eta_f_1"), format = "matrix")
 
-# compare direct prediction
-d_new <- copy(d_s)
-hi <- d_new[, `:=`(d = 1, erx = 1-er, edx = 1-ed, efx = 1-ef)]
-d_new <- copy(d_s)
-lo <- d_new[, `:=`(d = 0, erx = 1-er, edx = 1-ed, efx = 1-ef)]
-
-rbind(
-  "MLE prediction (d = 0)" = predict(f2, newdata = lo[1:10]),
-  "Bayesian predictions (d = 0)" = colMeans(eta_d_0)[1:10],
-  "MLE prediction (d = 1)" = predict(f2, newdata = hi[1:10]),
-  "Bayesian predictions (d = 1)" = colMeans(eta_d_1)[1:10]
-)
 ```
 
-G-formula:
+The G-formula allows you to go from a conditional estimate to a marginal one via standardisation or other means.
 
-```{r}
+```{r, eval = T}
 #| code-fold: false
 
 # g-comp - calculations are complicated by virtue of use of binomial
 # instead of bernoulli model. Approach is to weight the log-odds contributions
 # by the number of trials associated with each unique combination.
 
+max_rows <- 4000
 
-b_r <- do.call(rbind, mclapply(1:(min(nrow(eta_r_0), 1000)), function(ii){
+# Compute the effect of revision
+b_r <- do.call(rbind, mclapply(1:(min(nrow(eta_r_0), max_rows)), function(ii){
+  
+  # columns in eta_r_0 correspond to the covariate groups, i.e. the rows in d_s
+  
+  # The repitition gives the right contribution (weight) for each covariate 
+  # combination i.e. each column (covariate combination) is replicated by 
+  # the number of pts with this covariate combination. 
+  
+  # This first one is averaged across both non-reveal and revealed. It is not
+  # what we want
   lo_0 <- eta_r_0[ii, rep(1:nrow(d_s), times = ld$n)]
   lo_1 <- eta_r_1[ii, rep(1:nrow(d_s), times = ld$n)]
-  mu_b_r = mean(lo_1 - lo_0)
+  mu_r = mean(lo_1 - lo_0)
   
   # Should be no effect of rev in those that were not rand to surg
-  idx <- d_s[er == 0 , which = T]
-  lo_0_erx <- eta_r_0[ii, rep(idx, times = ld$n[idx])]
-  lo_1_erx <- eta_r_1[ii, rep(idx, times = ld$n[idx])]
-  mu_f_erx <- sum(lo_1_erx - lo_0_erx) / sum(ld$n[idx])
+  # idx <- d_s[er == 0 , which = T]
+  # lo_0_erx <- eta_r_0[ii, rep(idx, times = ld$n[idx])]
+  # lo_1_erx <- eta_r_1[ii, rep(idx, times = ld$n[idx])]
+  # mu_r_erx <- sum(lo_1_erx - lo_0_erx) / sum(ld$n[idx])
   
+  # Finally, these give the effect in those revealed to surgery domain. This
+  # is what we want.
   idx <- d_s[er == 1 , which = T]
   lo_0_erx <- eta_r_0[ii, rep(idx, times = ld$n[idx])]
   lo_1_erx <- eta_r_1[ii, rep(idx, times = ld$n[idx])]
-  mu_f_er <- sum(lo_1_erx - lo_0_erx) / sum(ld$n[idx])
+  mu_r_er <- sum(lo_1_erx - lo_0_erx) / sum(ld$n[idx])
   
-  c("mu_b_r" = mu_b_r, "mu_f_erx" = mu_f_erx, "mu_f_er" = mu_f_er)
+  # avg effect then effect in non-reveal and reveal
+  c("mu_r" = mu_r, 
+    # "mu_r_erx" = mu_r_erx, 
+    "mu_r_er" = mu_r_er)
 }, mc.cores = 10))
 
 
-b_d <- do.call(rbind, mclapply(1:(min(nrow(eta_d_0), 1000)), function(ii){
+# Compute the effect of duration for the pt that received one-stage
+# and for those that received two-stage surgery.
+b_d <- do.call(rbind, mclapply(1:(min(nrow(eta_d_0), max_rows)), function(ii){
   
   lo_0 <- eta_d_0[ii, rep(1:nrow(d_s), times = ld$n)]
   lo_1 <- eta_d_1[ii, rep(1:nrow(d_s), times = ld$n)]
 
   # stratification, silo/revision type that actually took place
-  idx <- d_s[ed == 0 & srp2 == 0, which = T]
-  lo_0_edx_srp1 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
-  lo_1_edx_srp1 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
-  mu_edx_srp1 <- sum(lo_1_edx_srp1 - lo_0_edx_srp1) / sum(ld$n[idx])
-  
-  idx <- d_s[ed == 0 & srp2 == 1, which = T]
-  lo_0_edx_srp2 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
-  lo_1_edx_srp2 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
-  mu_edx_srp2 <- sum(lo_1_edx_srp2 - lo_0_edx_srp2) / sum(ld$n[idx])
+  # idx <- d_s[ed == 0 & srp2 == 0, which = T]
+  # lo_0_edx_srp1 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
+  # lo_1_edx_srp1 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
+  # mu_d_edx_srp1 <- sum(lo_1_edx_srp1 - lo_0_edx_srp1) / sum(ld$n[idx])
+  # 
+  # idx <- d_s[ed == 0 & srp2 == 1, which = T]
+  # lo_0_edx_srp2 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
+  # lo_1_edx_srp2 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
+  # mu_d_edx_srp2 <- sum(lo_1_edx_srp2 - lo_0_edx_srp2) / sum(ld$n[idx])
 
   idx <- d_s[ed == 1 & srp2 == 0, which = T]
   lo_0_ed_srp1 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
   lo_1_ed_srp1 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
-  mu_ed_srp1 <- sum(lo_1_ed_srp1 - lo_0_ed_srp1) / sum(ld$n[idx])
+  mu_d_ed_srp1 <- sum(lo_1_ed_srp1 - lo_0_ed_srp1) / sum(ld$n[idx])
 
   idx <- d_s[ed == 1 & srp2 == 1, which = T]
   lo_0_ed_srp2 <- eta_d_0[ii, rep(idx, times = ld$n[idx])]
   lo_1_ed_srp2 <- eta_d_1[ii, rep(idx, times = ld$n[idx])]
-  mu_ed_srp2 <- sum(lo_1_ed_srp2 - lo_0_ed_srp2) / sum(ld$n[idx])
+  mu_d_ed_srp2 <- sum(lo_1_ed_srp2 - lo_0_ed_srp2) / sum(ld$n[idx])
 
-  c("mu" = mean(lo_1 - lo_0), 
+  c("mu_d" = mean(lo_1 - lo_0), 
     # you need to base the mean on the n that were used in the strata
-    "mu_edx_srp1" = mu_edx_srp1,  "mu_edx_srp2" = mu_edx_srp2,
-    "mu_ed_srp1" = mu_ed_srp1, "mu_ed_srp2" = mu_ed_srp2
+    # "mu_d_edx_srp1" = mu_d_edx_srp1,  "mu_d_edx_srp2" = mu_d_edx_srp2,
+    "mu_d_ed_srp1" = mu_d_ed_srp1, "mu_d_ed_srp2" = mu_d_ed_srp2
     )
   
 }, mc.cores = 10))
 
-b_f <- do.call(rbind, mclapply(1:(min(nrow(eta_f_0), 1000)), function(ii){
+# Compute the effect of AB choice.
+b_f <- do.call(rbind, mclapply(1:(min(nrow(eta_f_0), max_rows)), function(ii){
   
   # Avg effect of rif - what is the effect of rif in the sample population
   # Might be wrong, but don't believe this is a meaningful/useful quantity.
@@ -215,10 +275,10 @@ b_f <- do.call(rbind, mclapply(1:(min(nrow(eta_f_0), 1000)), function(ii){
   mu_f <- mean(lo_1 - lo_0)
   
   # Should be no effect of rif in those that were not rand to choice
-  idx <- d_s[ef == 0 , which = T]
-  lo_0_efx <- eta_f_0[ii, rep(idx, times = ld$n[idx])]
-  lo_1_efx <- eta_f_1[ii, rep(idx, times = ld$n[idx])]
-  mu_f_efx <- sum(lo_1_efx - lo_0_efx) / sum(ld$n[idx])
+  # idx <- d_s[ef == 0 , which = T]
+  # lo_0_efx <- eta_f_0[ii, rep(idx, times = ld$n[idx])]
+  # lo_1_efx <- eta_f_1[ii, rep(idx, times = ld$n[idx])]
+  # mu_f_efx <- sum(lo_1_efx - lo_0_efx) / sum(ld$n[idx])
 
   # Effect of rif in those rand to choice domain
   idx <- d_s[ef == 1 , which = T]
@@ -226,11 +286,13 @@ b_f <- do.call(rbind, mclapply(1:(min(nrow(eta_f_0), 1000)), function(ii){
   lo_1_ef <- eta_f_1[ii, rep(idx, times = ld$n[idx])]
   mu_f_ef <- sum(lo_1_ef - lo_0_ef) / sum(ld$n[idx])
   
-  c("mu_f" = mu_f, "mu_f_efx" = mu_f_efx, "mu_f_ef" = mu_f_ef)
+  c("mu_f" = mu_f, 
+    # "mu_f_efx" = mu_f_efx, 
+    "mu_f_ef" = mu_f_ef)
 }, mc.cores = 10))
 ```
 
-The following shows the results and also comparisons to combinations of parameters used in data simulation.
+The following provides the results and also comparisons to combinations of parameters used in data simulation.
 
 For the surgery domain, the comparison of interest is dair (ref) vs revision, which can be obtained by averaging over the distribution of surgery type that took place.
 The revision effects are silo-specific in that only the late silo is randomised which we obtain by producing a conditional treatment effect by stratifying on the reveal status (`er`).
@@ -241,7 +303,7 @@ I don't believe that we currently need to worry about differential selection ($\
 
 :::
 
-```{r}
+```{r, eval = T}
 #| label: surg-quant-1
 #| code-summary: Surgery domain effect estimates
 #| code-fold: false
@@ -249,7 +311,7 @@ I don't believe that we currently need to worry about differential selection ($\
 # dair (ref)  vs revision (of any form)
 avg_comparisons(f2, variables = "r", comparison = "lnor")
 
-# Equivalent approach e.g. for `r`:
+# Here, the call to avg_comparisons is equivalent to:
 # w_eta_r0 <- sweep(eta_r0, 1, ld$n, "*")
 d_new <- copy(d)
 lo <- copy(d_new[, r := 0])
@@ -257,218 +319,57 @@ d_new <- copy(d)
 hi <- copy(d_new[, r := 1])
 y_lo <- predict(f2, newdata = lo)
 y_hi <- predict(f2, newdata = hi)
-# mean(y_hi - y_lo)
+mean(y_hi - y_lo)
 
-# narrows the focus to the randomised pts
-avg_comparisons(f2, variables = "r", comparison = "lnor", by = "er")
-colMeans(b_r)
+# we are only interested in the effect of r in the group that were revealed.
+cmp <- avg_comparisons(f2, newdata = d[er == 1], variables = "r", comparison = "lnor")
+print(cmp, digits = 6)
 # The randomised comparison should approx map to a weighted combination of the pars 
-mean(post1$`b[2]` + d[, mean(srp2)] * post1$`b[3]`) 
-mean(post1$`b[2]` + d[er == 1, mean(srp2)] * post1$`b[3]`) 
+mean(d[er == 1, mean(srp1)] * post1$`b[4]` + d[er == 1, mean(srp2)] * post1$`b[5]`) 
 ```
+
+The above series of outputs suggest somewhat that we are able to recover the required parameters using various approaches.
 
 For the choice domain, the comparison of interest is no-rf (ref) vs rif, which can be obtained directly from the parameter estimate that characterised the effects of the randomised comparisons.
 Choice domain effects reflect an average over the silos since all silos can enter this domain.
 
-```{r}
+```{r, eval = T}
 #| label: choice-quant-1
 #| code-summary: Choice domain effect estimates
 #| code-fold: false
 
 # no-rif (ref)  vs rif (of any form)
-avg_comparisons(f2, variables = "f", comparison = "lnor")
-avg_comparisons(f2, variables = "f", comparison = "lnor", by = "ef")
+# NO - avg_comparisons(f2, variables = "f", comparison = "lnor")
+# We are only interested in the effect of choice for those revealed to choice
+cmp <- avg_comparisons(f2, newdata = d[ef == 1], variables = "f", comparison = "lnor")
+print(cmp, digits = 6)
 colMeans(b_f)
 # And this should just be the same as the coefficient from the model
-mean(post1$`b[8]`)
+mean(post1$`b[9]`)
 ```
 
-::: {.callout-warning collapse=false}
-
-Question - for the duration domain, should we be producing silo-specific effects or an average view of the duration effects irrespective of silo membership?
-
-:::
-
-For the duration domain, the comparison of interest is long (ref) vs short, which can be obtained directly from the parameter estimate that characterised the effects of the randomised comparisons.
+For the duration domain, the comparison of interest can be obtained directly from the parameter estimates that characterised the effects of the randomised comparisons.
 Duration domain effects are also currently reflecting an average over the silos.
 
-```{r}
+```{r, eval = T}
 #| label: duration-quant-1
 #| code-summary: Duration domain effect estimates
 #| code-fold: false
 
 # long (ref) vs short (specific to the type of surg recvd - one or two stage)
-avg_comparisons(f2, variables = "d", comparison = "lnor")
-avg_comparisons(f2, variables = "d", comparison = "lnor", by = c("ed", "srp2"))
+
+cmp <- avg_comparisons(f2, newdata = d[ed == 1 & srp1 == 1], variables = "d", comparison = "lnor")
+print(cmp, digits = 6)
+
+cmp <- avg_comparisons(f2, newdata = d[ed == 1 & srp2 == 1], variables = "d", comparison = "lnor")
+print(cmp, digits = 6)
+
 colMeans(b_d)
 
 # The randomised comparison should approx map directly to the surg type 
 # specific pars 
-mean(post1$`b[5]`) 
-mean(post1$`b[5]` + post1$`b[6]` ) 
+mean(post1$`b[6]`) 
+mean(post1$`b[7]` ) 
 ```
 
-
-<!-- @fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model. -->
-<!-- It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset. -->
-
-```{r, eval = F, echo = F}
-#| label: fig-post-vs-tru
-#| fig-cap: 'Scatter plot comparing true vs estimated 95% credible interval for log-odds treatment success.'
-#| fig-cap-location: margin
-#| fig-height: 6
-#| fig-width: 6
-
-ggplot(d_fig, aes(x = eta, y = eta_med)) +
-  # geom_point() +
-  geom_linerange(aes(ymin = eta_q025, ymax = eta_q975)) +
-  geom_abline(intercept = 0, slope = 1, lwd = 0.1) +
-  scale_x_continuous("True log-odds success") +
-  scale_y_continuous("Posterior log-odds success (95% credible interval)") +
-  facet_grid(silo ~ joint) +
-  ggtitle("True log-odds success vs 95% credible interval")
-```
-
-
-```{r, eval = F, echo = F}
-post <- data.table(f2$draws(variables = c(
-    "alpha", "gamma_c", 
-    "b_a_l", 
-    "b_b1_l", 
-    "b_b2_l",
-    "b_a_c",
-    "b_b1_c", 
-    "b_b2_c",
-    "b_c"
-  ), format = "matrix"))
-  
-
-# test outcome
-cols <- names(post)
-cols <- gsub("[","_",cols,fixed = T)
-cols <- gsub("]","",cols,fixed = T)
-names(post) <- cols
-  
-# effects
-effs <- c(
-  # domain a, late (revision) and chronic (two-stage)
-  "b_a_l_2", "b_a_c_2", 
-  # domain b, (late/revision one stage pts)
-  # wk12p1 (ref is wk6p1)
-  "b_b1_l_2", 
-  # wk12p2 (ref is day7p2)
-  "b_b2_l_2", 
-  # wk12p1 (ref is wk6p1)
-  "b_b1_c_2", 
-  # wk12p2 (ref is day7p2)
-  "b_b2_c_2",
-  # rif (ref is no-rif)
-  "b_c_2")
-  
-d_beta <- post[, .SD, .SDcols = effs]
-d_beta <- melt(d_beta, measure.vars = names(d_beta))
-# unique(d_beta$variable)
-
-
-# parname_map <- roadmap.data::get_par_effects_mapping()
-# d_beta[, parname := parname_map[variable]]
-# d_beta[, parname := factor(parname, levels = roadmap.data::get_par_effects_mapping())]
-
-d_fig <- d_beta[, .(
-  lor_med = median(value), 
-  lor_q025 = quantile(value, prob = 0.025),
-  lor_q975 = quantile(value, prob = 0.975)), keyby = parname]
-
-d_effects <- roadmap.data::get_sim_spec_effects(roadmap.data::get_sim_spec())
-d_effects <- melt(d_effects, measure.vars = names(d_effects), value.name = "lor")
-
-d_fig <- merge(d_fig, d_effects, by.x = "parname", by.y = "variable")
-
-```
-
-<!-- @fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model. -->
-<!-- It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset. -->
-
-```{r, eval = F, echo = F}
-#| label: fig-post-lor
-#| fig-cap: 'Posterior estimates for log-odds-ratios (true values shown as triangles).'
-#| fig-cap-location: margin
-#| fig-height: 4
-#| fig-width: 5
-
-ggplot(d_fig, aes(x = parname, y = lor_med)) +
-  geom_point() +
-  geom_point(data = d_fig, aes(x = parname, y = lor), pch = 2) +
-  geom_linerange(aes(ymin = lor_q025, ymax = lor_q975))  +
-  scale_x_discrete("", guide = guide_axis(angle = 45)) +
-  scale_y_continuous("Posterior log-odds-ratio (95% credible interval)") 
-```
-
-```{r, eval = F, echo = F}
-post <- data.table(f2$draws(variables = c(
-    "alpha", "gamma_c", 
-    "b_a_l", 
-    "b_b1_l", 
-    "b_b2_l",
-    "b_a_c",
-    "b_b1_c", 
-    "b_b2_c",
-    "b_c"
-  ), format = "matrix"))
-  
-
-# test outcome
-cols <- names(post)
-cols <- gsub("[","_",cols,fixed = T)
-cols <- gsub("]","",cols,fixed = T)
-names(post) <- cols
-  
-# effects
-pars <- c(
-  "alpha", "gamma_c", 
-  # domain a, late (revision) and chronic (two-stage)
-  "b_a_l_2", "b_a_c_2", 
-  # domain b, (late/revision one stage pts)
-  # wk12p1 (ref is wk6p1)
-  "b_b1_l_2", 
-  # wk12p2 (ref is day7p2)
-  "b_b2_l_2", 
-  # wk12p1 (ref is wk6p1)
-  "b_b1_c_2", 
-  # wk12p2 (ref is day7p2)
-  "b_b2_c_2",
-  # rif (ref is no-rif)
-  "b_c_2")
-  
-d_pars <- post[, .SD, .SDcols = effs]
-m_cor <- d_pars[, cor(.SD)]
-d_cor <- data.table(cbind(var1 = rownames(m_cor), m_cor))
-d_cor <- melt(d_cor, id.vars = "var1", variable.name = "var2")
-d_cor[, value := as.numeric(value)]
-
-d_cor[, `:=`(
-  var1 = factor(var1, levels = c(pars[length(pars):1])),
-  var2 = factor(var2, levels = c(pars[length(pars):1]))
-)]
-
-```
-
-<!-- @fig-post-cor shows the correlation between parameters estimated from the model. -->
-
-```{r, eval = F, echo = F}
-#| label: fig-post-cor
-#| fig-cap: 'Parameter correlation (white indicates zero correlation)'
-#| fig-cap-location: margin
-#| fig-height: 7
-#| fig-width: 7
-
-ggplot(d_cor, aes(x = var1, y = var2, fill = value)) +
-  geom_tile(color = "white",
-            lwd = 1.5,
-            linetype = 1) +
-  geom_text(aes(label = round(value, 2)), color = "white", size = 4) +
-  scale_x_discrete("",position = "top", limits=rev) +
-  scale_y_discrete("") + 
-  scale_fill_gradient2("Pearson correlation") +
-  coord_fixed()
-```
+Based on the above, we seem to be in the right ballpark.

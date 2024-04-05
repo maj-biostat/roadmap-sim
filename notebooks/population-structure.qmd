@@ -9,15 +9,14 @@ source("./R/init.R")
 log_info("Called population-structure notebook")
 ```
 
-The following specification is for the partially factorial structure of the study.
+The following provides some detail on the assumptions relating to important design variables.
 The outcome model is specified separately.
 
 
 ## Silo
 
 The total sample size is divided across the silos in proportion to the values described in the table below.
-These proportions are expectations. 
-Each simulated dataset will vary somewhat from these proportions due to the stochastic nature of the generation process.
+Each simulated dataset will vary somewhat from these proportions due to the stochastic nature of the data generation process.
 
 ::: {.column width="50%"}
 
@@ -34,8 +33,7 @@ Each simulated dataset will vary somewhat from these proportions due to the stoc
 ## Site of infection (joint)
 
 Each silo comprises patients assumed to have primary infection in either knee or hip (not both).
-The proportion of infections associated with each joint for each silo are shown below.
-As previously, these proportions are expectations and the empirical proportions observed in simulated datasets will vary from these.
+The assumed proportion of infections for each joint and for each silo are shown below.
 
 ::: {.column width="70%"}
 
@@ -53,39 +51,27 @@ chronic |hip |  0.5 |
 
 ## Randomisation into surgery domain (A)
 
-Only the late-stage infection cohort presently have randomisation options for surgery type.
+Only the late-stage infection cohort has randomisation options for surgery type.
 Other silos are assigned by clinician/patient preference.
 
 ## Surgery domain (A)
 
-Allocation probabilities (conditional on entry into domain A) are shown below.
-Early stage patients do not receive randomisation and are assumed to receive DAIR.
+Only late stage patients enter the surgery domain and are randomised 1:1 to DAIR/revision.
+The clinician selects what type of revision to perform.
+
+Early stage patients do not receive randomisation and are assumed to mostly receive DAIR, although they may have any form of surgery.
 Chronic stage patients do not receive randomisation and are assumed to receive DAIR, one-stage and two-stage based on clinician assessment.
-
-::: {.column width="70%"}
-
-Silo | Surgery type ($a$) |  $\pi$ |
------|-----|----|----|
-early | dair |     - | 
-late | dair |     0.5 | 
-late |revision |  0.5 | 
-chronic |dair |  - | 
-chronic | one-stage | - | 
-chronic |two-stage |  - | 
-
-: Allocation within domain A ($\pi$ denotes probability allocation to surgery type conditional on silo membership) {.striped .hover}
-:::
 
 ## Intended surgery
 
-Intended or planned surgery relates to the surgical preference, which may be conditional on which intervention is randomised.
+The planned surgery will be based on a range of factors including clinician preference, hospital protocols etc.
 
-For early stage infection, we take preference towards dair, one and two-stage surgery to be distributed as 90%, 10% and 0%.
+For early stage infection patients, we assume the proportion of dair, one and two-stage surgery to be 90%, 10% and 0%.
 
-For late stage infection, we take preference towards one and two-stage as 30% and 70%, if randomised to revision.
-When randomised to dair, we assume the preference to dair, one and two-stage is 20%, 24% and 56%.
+For late stage infection patients randomised to revision, we assume that the preferences for one and two-stage are 30% and 70%.
+For late stage infection patients randomised to dair, we assume that the preferences for dair, one and two-stage are 20%, 24% and 56%.
 
-For chronic stage infection, we take preference towards dair, one and two-stage surgery to be distributed as 20%, 20% and 60%.
+For chronic stage infection patients, we assume that the preferences for dair, one and two-stage are 20%, 20% and 60%.
 
 ## Randomisation into duration domain (B)
 
@@ -93,26 +79,21 @@ Entry into domain B is dependent on the surgery that was actually received.
 
 Surgery received is dependent on whether surgery was randomised (as in late infection patients) and what the surgical preference is (as in chronic infection patients).
 
-While allocated surgery (dair, one and two-stage) is a linear function of randomised surgery and preference, the surgery received may deviate from the original plan.
-
+The surgery received may deviate from the original randomised allocation or preferred approach (in the case where randomisation was not applicable).
 
 ## Duration domain (B)
 
 Within the duration domain, allocation is to long vs short duration, the meaning of which differs under one and two-stage surgery.
 Patients receiving DAIR are assumed to have 12 wk duration (not randomised).
-Default randomisation is 1:1 for long vs short within surgery type.
-
+The default randomisation is 1:1 for long vs short within surgery type.
 
 ## Randomisation into antibiotic choice domain (C)
 
-The data generating process assume that 60% of the cohort enter into this domain at random, unrelated to risk factors.
-The remainder are held out so that we do not over-estimate the operating characteristics, such as power.
+The data generating process assumes that 60% of the total sample enter into this domain at random, unrelated to risk factors.
  
-
 ## Antibiotic choice domain (C)
 
 The treatment options and allocation probabilities for domain C are 1:1.
-
 
 ## Encoded specification
 

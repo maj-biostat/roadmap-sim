@@ -1,3 +1,8 @@
+# Sequential design based on truncated set of decisions that are of primary
+# interest to the researchers.
+# Uses posterior at current interim to coordinate decisions based on 
+# pre-specified thresholds. 
+
 source("./R/init.R")
 
 # Command line arguments list scenario (true dose response),
@@ -5,6 +10,7 @@ source("./R/init.R")
 # to use and the simulator to use.
 args = commandArgs(trailingOnly=TRUE)
 
+# Load cfg based on cmd line args.
 if (length(args)<1) {
   log_info("Setting default run method (does nothing)")
   args[1] = "run_none_sim_03"
@@ -14,10 +20,9 @@ if (length(args)<1) {
   log_info("Scenario config ", args[2])
 }
 
-# Logs
+# Log setup
 f_log_sim <- file.path("./logs", "log-sim.txt")
 log_appender(appender_file(f_log_sim))
-# message(Sys.time(), " Log file initialised ", f_log)
 log_info("*** START UP ***")
 # log_threshold(TRACE)
 
@@ -32,25 +37,33 @@ run_trial <- function(ix){
   
   log_info("Entered  run_trial for trial ", ix)
   
-  # init
-  pop_spec <- get_pop_spec()
-  sim_spec <- get_sim_spec()
+  # initialise simulation parameters
+  # get_pop_spec and get_sim_spec are defined in the roadmap.data package
+  # These functions allow us to simulate data according to our spec and also 
+  # to switch treatments on and off. 
+  pop_spec <- roadmap.data::get_pop_spec()
+  sim_spec <- roadmap.data::get_sim_spec()
   sim_spec$a0 <- qlogis(g_cfgsc$p_a0)
   sim_spec$m['l1'] <- qlogis(g_cfgsc$m_l1) - sim_spec$a0
   sim_spec$m['l2'] <- qlogis(g_cfgsc$m_l2) - sim_spec$a0
-  sim_spec$b['erx'] <- g_cfgsc$b_erx
+  
+  sim_spec$b['erx-r0'] <- g_cfgsc$b_erx_r0
+  sim_spec$b['erx-r1'] <- g_cfgsc$b_erx_r1
+  sim_spec$b['erx-r2'] <- g_cfgsc$b_erx_r2
+  
   sim_spec$b['r1'] <- g_cfgsc$b_r1
   sim_spec$b['r2'] <- g_cfgsc$b_r2
-  sim_spec$b['edx'] <- g_cfgsc$b_edx
+  # no longer required for the data generation process
+  # sim_spec$b['edx'] <- g_cfgsc$b_edx
   sim_spec$b['r1d'] <- g_cfgsc$b_r1d
   sim_spec$b['r2d'] <- g_cfgsc$b_r2d
   sim_spec$b['efx'] <- g_cfgsc$b_efx
   sim_spec$b['f'] <- g_cfgsc$b_f
 
   # enrol times
-  # easier to produce enrol times all in one hit rather than try to do them 
+  # easier to produce big list of enrol times all in one hit rather than do this
   # incrementally with a non-hom pp.
-  loc_t0 <- get_enrol_time(max(g_cfgsc$N_pt))
+  loc_t0 <- roadmap.data::get_enrol_time(max(g_cfgsc$N_pt))
 
   # loop controls
   stop_enrol <- FALSE
@@ -103,9 +116,6 @@ run_trial <- function(ix){
     dimnames = list(1:N_analys, g_fx)
   )
   
-  # no need to track pr_fut as just taken as a treshold for pr_sup
-  # i.e. fut iff pr_sup < 0.05 (or some other threshold)
-  
   # decisions
   g_dec_type <- c("sup", 
                   "inf",
@@ -139,8 +149,40 @@ run_trial <- function(ix){
       ie <- is + N_c
     }
     
-    # next block of pts that have reached 12 months post rand
-    l_new <- get_trial_data(
+    # Fields in data output:
+    # id: pt id
+    # l: strata 0 early, 1 late, 2 chronic
+    # l1: strata indicator for late
+    # l2: strata indicator for chronic
+    # j: joint indicator knee/hip
+    # er: revealed indicator surgery
+    # ed: revealed indicator duration
+    # ef: revealed indicator choice
+    # erx: 1 - revealed = non-revealed indicator for surgery
+    # edx: 1 - revealed = non-revealed indicator for duration
+    # efx: 1 - revealed = non-revealed indicator for choice
+    # r: randomisation for surgery domain, dair vs rev hard-coded restriction to late
+    # sr: preferred surgery at elicited at baseline (0 dair, 1 one-stage, 2 two-stage)
+    # sra: indicator derived from sr for preference for two-stage
+    # ra: allocated surgical approach accounting for whether rand in surg or not
+    # ic: indicator for treatment switch (what was planned was not received).
+    # rp: indicator of performed surgical approach (0 dair, 1 rev)
+    # srp: performed surgical approach (0 dair, 1 one-stage, 2 two-stage)
+    # srp1: indicator for one-stage performed
+    # srp2: indicator for two-stage performed
+    # Duration domain depends on what surgery was received, NOT what was planned.
+    # Because of the questions of interest:
+    # For one-stage long (0), short (1)
+    # For two-stage short (0), long (1)
+    # d: indicator for short/long duration
+    # f: indicator for choice (0 no-rif, 1 rif)
+    # t0: enrolment time
+    # eta_y: log-odds treatment success
+    # p_y: pr treatment success
+    # y: observed outcome (0 fail, 1 success)
+    
+    # next block of pts that are assumed to have reached 12 months post rand
+    l_new <- roadmap.data::get_trial_data(
       N = N_c, 
       pop_spec = pop_spec, 
       sim_spec = sim_spec, 
@@ -149,12 +191,12 @@ run_trial <- function(ix){
     # add in a counter for tracking analysis
     l_new$d[, analys := ii]
 
-    # combine the existing and new data
+    # combine the existing and new data and add enrolment time
     d_all <- rbind(d_all, l_new$d)
     d_all[, t0 := loc_t0[1:.N]]
     
-    # create stand data based on enrolled pt
-    lsd <- get_stan_data(d_all)
+    # convert all data into form suitable for stan
+    lsd <- roadmap.data::get_stan_data(d_all)
 
     # fit model
     f1 <- m1$sample(
@@ -180,16 +222,18 @@ run_trial <- function(ix){
     post_fx <- data.table(cbind(
       # revision vs dair
       # b_r = post_1$b_2 + d_all[, mean(srp2)] * post_1$b_2,
-      # need to think through whether this weighting should be from the whole
-      # pop or just those revealed to the surgery domain. think it is the 
-      # latter as implemented below.  
-      b_r = post_1$b_2 + d_all[er == 1, mean(srp2)] * post_1$b_2,
+      # query whether this weighting based on observed srp2 (indicator for 
+      # two-stage performed) should be from the whole pop or just those 
+      # revealed for the surgery domain. think it is the latter as currently
+      # implemented below.  
+      b_r = d_all[er == 1, mean(srp1)] * post_1$b_4 + d_all[er == 1, mean(srp2)] * post_1$b_5,
       # short vs long (one-stage)
-      b_r1d = post_1$b_5,
+      b_r1d = post_1$b_6,
       # short vs long (two-stage)
-      b_r2d = post_1$b_6,
+      # now based on a single parameter
+      b_r2d = post_1$b_7,
       # rif vs no-rif
-      b_f = post_1$b_8
+      b_f = post_1$b_9
     ))
     
     m <- post_fx[, sapply(.SD, function(z){
@@ -198,12 +242,10 @@ run_trial <- function(ix){
         q_975 = unname(quantile(z, prob = 0.975)))}),
       .SDcols = g_fx]
     post_smry_2[ii, ,] <- t(m)
-    
-    # 9.	Hypothesis testing – the Core protocol, Stats appendix and DSA all 
-    # describe superiority (OR<1), non-inf (OR>1.2) and futility – see below. 
+
     # The hypotheses tested, as outlines in the DSAs will be: 
     
-    # a.	A – Surg Domain – Early Silo – Revision is superior to DAIR
+    # a.	A – Surg Domain – Late Silo – Revision is superior to DAIR
     # b.	B – AB Choice – All silos combined – Rifampicin is superior to no-rifampicin
     
     # are these to be silo specific
@@ -220,24 +262,20 @@ run_trial <- function(ix){
     pr_inf_fut[ii, ]  <- post_fx[, sapply(.SD, function(z){mean(z < log(1/g_cfgsc$delta_sup_fut))}), .SDcols = g_fx]
     
     # non-inferiority
-    # The reference groups are dair, long and no-rif respectively for each of the
-    # domains but there is an interest in doing ni comparisons such as 
-    # "for the one-stage surgery cohort is 6-wks non-inferior to 12-wks"
-    # which necessitates taking the mirror image of the log-or as it is 
-    # originally parameterised.
-    # Anyway, that's why I produce both of these summaries. There is an 
-    # empirical example in Untitled1.R (see non_inferiority_2 func) if 
-    # you need further detail.
+    # all treatment terms coded such that NI relates directly to comparison of interest
+    # e.g. for one stage rev, is short non-inferior to long (soc)
     pr_trt_ni_ref[ii, ] <- post_fx[, sapply(.SD, function(z){mean(z > log(1/g_cfgsc$delta_ni))}), .SDcols = g_fx]
 
     # evaluate decisions
     decision[ii, , "sup"] <- pr_sup[ii, ] > g_cfgsc$thresh_sup
+    # leave inferiority in but not currently used
     decision[ii, , "inf"] <- pr_inf[ii, ] > g_cfgsc$thresh_inf
     decision[ii, , "trt_ni_ref"] <- pr_trt_ni_ref[ii, ] > g_cfgsc$thresh_non_inf
     # taken to imply negligible chance of being superior
     decision[ii, , "fut_sup"] <- pr_sup_fut[ii, ] < g_cfgsc$thresh_fut_sup
     decision[ii, , "fut_inf"] <- pr_inf_fut[ii, ] < g_cfgsc$thresh_fut_inf
     # taken to imply negligible chance of being ni 
+    # this is not symmetrical with the approach taken for superiority.
     decision[ii, , "fut_trt_ni_ref"] <- pr_trt_ni_ref[ii, ] < g_cfgsc$thresh_fut_ni
     
     # Earlier decisions are retained - once superiority has been decided, 
@@ -274,21 +312,14 @@ run_trial <- function(ix){
         pop_spec$r_c['norif'] <- NA
         pop_spec$r_c['rif'] <- NA
       }
-      # choice domain relates to all silo so decision on b_f impacts all cohorts
+      # duration domain relates to all silo so decision on b_r2d impacts all cohorts
       if(decision[ii, "b_r2d", "sup"]){
         pop_spec$r_b$two['long'] <- NA
         pop_spec$r_b$two['short'] <- NA
       }
     }
     
-    # # we need to consider inferiority for duration under two-stage due to the 
-    # # way the model is parameterised
-    # if(any(decision[ii, , "inf"])){
-    #   if(decision[ii, "b_r2d", "inf"]){
-    #     pop_spec$r_b$two['long'] <- NA
-    #     pop_spec$r_b$two['short'] <- NA
-    #   }
-    # }
+    # not considering inferiority
     
     # ni only applies to duration. if short is ni to long then stop enrolment
     # for this randomised comparison
@@ -300,7 +331,7 @@ run_trial <- function(ix){
       }
     }
     
-    # stop enrolling if futility decision wrt superiority
+    # stop enrolling if futile wrt superiority decision
     if(any(decision[ii, , "fut_sup"])){
       
       if(decision[ii, "b_r", "fut_sup"]){
@@ -318,14 +349,6 @@ run_trial <- function(ix){
       }
     }
     
-    # stop enrolling if futility decision wrt inferiority
-    # if(any(decision[ii, , "fut_inf"])){
-    #   if(decision[ii, "b_r2d", "fut_inf"]){
-    #     pop_spec$r_b$two['long'] <- NA
-    #     pop_spec$r_b$two['short'] <- NA
-    #   }
-    # }
-    
     if(any(decision[ii, , "fut_trt_ni_ref"])){
       if(decision[ii, "b_r1d", "fut_trt_ni_ref"]){
         pop_spec$r_b$one['long'] <- NA
@@ -333,9 +356,7 @@ run_trial <- function(ix){
       }
     }
     
-    # stop sim if all questions answered - for the above setup this is 
-    # redundant since these can no longer happen in all domains
-    
+    # stop sim if all questions answered - 
     
     if(
       # if b_r is superior or futile
@@ -344,7 +365,7 @@ run_trial <- function(ix){
       (decision[ii, "b_f", "sup"] | decision[ii, "b_f", "fut_sup"]) &
       # if one stage short is non-inferior or futile for non-inferiority
       (decision[ii, "b_r1d", "trt_ni_ref"] | decision[ii, "b_r1d", "fut_trt_ni_ref"]) &
-      # if two stage short is inferior or futile for inferiority
+      # if two stage short is superior or futile for superior
       (decision[ii, "b_r2d", "sup"] | decision[ii, "b_r2d", "fut_sup"])
     ){
       log_info("Stop trial all questions addressed ", ix)
@@ -403,8 +424,8 @@ run_sim_03 <- function(){
   e = NULL
   log_info("Starting simulation")
   r <- parallel::mclapply(
-    # X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
-    X=1:30, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    # X=1:10, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
       log_info("Simulation ", ix);
       ll <- tryCatch({
         run_trial(ix)

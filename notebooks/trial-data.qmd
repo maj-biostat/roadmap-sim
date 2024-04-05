@@ -103,7 +103,7 @@ Only units randomised within the duration domain are reported.
 #| tbl-cap: 'Simulated trial data for AB duration domain - covariate balance across other groups'
 
 # domain B
-d_tmp1 <- d[ed == 1, .(ed, d, er, r, ic,srp)]
+d_tmp1 <- d[ed == 1, .(ed, d, er, r, srp)]
 d_tmp2 <- d_tmp1[, .N, keyby = .(d, er, r,srp)]
 # d_tmp2[, b := factor(b, levels = c("w12", "w06p1", "w12p1", "d07p2", "w12p2"))]
 d_B <- dcast(d_tmp2, er + r ~ srp + d, value.var = "N")

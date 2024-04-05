@@ -10,7 +10,7 @@ source("./R/util.R")
 log_info("Called example-trials notebook")
 ```
 
-Example trials are provided to give insight into the cell sizes as well as the level of uncertainty associated with the parameter estimation process.
+Example trials are provided to give insight into typical cell sample sizes as well as the level of uncertainty associated with the parameter estimation process.
 Examples are from trials at their maximum sample size with all follow up completed.
 Sequential variants with adaptations will be added later.
 
@@ -24,7 +24,7 @@ Given that this is a summary of a single data set, some variation from the under
 #| tbl-cap: 'Summary of simulated trial data when no treatment effects present'
 #| column: page
 
-set.seed(1)
+set.seed(11)
 
 sim_spec <- get_sim_spec()
 
@@ -50,7 +50,7 @@ d_s <- copy(lsd$d_s)
 m2 <- cmdstanr::cmdstan_model("stan/model-sim-04.stan")
 
 f_null_1 <- m2$sample(
-  ld, iter_warmup = 1000, iter_sampling = 2000,
+  ld, iter_warmup = 1000, iter_sampling = 10000,
   parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
   max_treedepth = 13)
 
@@ -71,7 +71,7 @@ ld$pri_m_sd <- rep(10, length(ld$pri_m_sd))
 ld$pri_b_sd <- rep(10, length(ld$pri_b_sd))
 
 f_null_2 <- m2$sample(
-  ld, iter_warmup = 1000, iter_sampling = 2000,
+  ld, iter_warmup = 1000, iter_sampling = 10000,
   parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
   max_treedepth = 13)
 
@@ -105,7 +105,7 @@ d_fig$name_tru <- factor(d_fig$name_tru, levels = unique(d_fig$name_tru))
 ggplot(d_fig, aes(x = name_tru, y = mu, col = prior)) +
   scale_x_discrete("") +
   scale_y_continuous("log-OR") + 
-  scale_color_discrete("Prior sd on log-OR domain trt effects") +
+  scale_color_discrete("Prior sd on log-OR") +
   geom_point(data = d_fig, aes(x = name_tru, y = mu), position = position_dodge(width = 0.4)) +
   geom_linerange(aes(ymin = q_025, ymax = q_975), position = position_dodge2(width = 0.4)) +
   geom_point(data = d_fig, aes(x = name_tru, y = tru), col = 1, pch = 2) 
@@ -141,7 +141,7 @@ d_s <- copy(lsd$d_s)
 m2 <- cmdstanr::cmdstan_model("stan/model-sim-04.stan")
 
 f_alleff_1 <- m2$sample(
-  ld, iter_warmup = 1000, iter_sampling = 2000,
+  ld, iter_warmup = 1000, iter_sampling = 10000,
   parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
   max_treedepth = 13)
 
@@ -162,7 +162,7 @@ ld$pri_m_sd <- rep(10, length(ld$pri_m_sd))
 ld$pri_b_sd <- rep(10, length(ld$pri_b_sd))
 
 f_alleff_2 <- m2$sample(
-  ld, iter_warmup = 1000, iter_sampling = 2000,
+  ld, iter_warmup = 1000, iter_sampling = 10000,
   parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
   max_treedepth = 13)
 
@@ -194,7 +194,7 @@ d_fig$name_tru <- factor(d_fig$name_tru, levels = unique(d_fig$name_tru))
 ggplot(d_fig, aes(x = name_tru, y = mu, col = prior)) +
   scale_x_discrete("") +
   scale_y_continuous("log-OR") + 
-  scale_color_discrete("Prior sd on log-OR domain trt effects") +
+  scale_color_discrete("Prior sd on log-OR") +
   geom_point(data = d_fig, aes(x = name_tru, y = mu), position = position_dodge(width = 0.4)) +
   geom_linerange(aes(ymin = q_025, ymax = q_975), position = position_dodge2(width = 0.4)) +
   geom_point(data = d_fig, aes(x = name_tru, y = tru), col = 1, pch = 2) 

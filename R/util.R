@@ -29,9 +29,13 @@ yn_rand <- function(N, pr_y = 0.5){
 
 linearly_dep_cols <- function(fit){
   
-  
+  # https://stats.stackexchange.com/questions/16327/testing-for-linear-dependence-among-the-columns-of-a-matrix
   m <- model.matrix(fit)
   # head(m)
+  
+  # The columns which, when removed, result in the highest rank are the linearly 
+  # dependent ones (since removing those does not decrease rank, while removing 
+  # a linearly independent column does).
   rankifremoved <- sapply(1:ncol(m), function (x) {
     qr(m[,-x])$rank
   })
