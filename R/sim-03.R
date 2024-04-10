@@ -222,11 +222,13 @@ run_trial <- function(ix){
     post_fx <- data.table(cbind(
       # revision vs dair
       # b_r = post_1$b_2 + d_all[, mean(srp2)] * post_1$b_2,
-      # query whether this weighting based on observed srp2 (indicator for 
+      # Query whether this weighting based on observed srp2 (indicator for 
       # two-stage performed) should be from the whole pop or just those 
       # revealed for the surgery domain. think it is the latter as currently
-      # implemented below.  
-      b_r = d_all[er == 1, mean(srp1)] * post_1$b_4 + d_all[er == 1, mean(srp2)] * post_1$b_5,
+      # implemented below.  The weight calculation is restricted to those 
+      # that receive revision.
+      b_r = d_all[er == 1 & r == 1, mean(srp1)] * post_1$b_4 + 
+        d_all[er == 1 & r == 1, mean(srp2)] * post_1$b_5,
       # short vs long (one-stage)
       b_r1d = post_1$b_6,
       # short vs long (two-stage)
