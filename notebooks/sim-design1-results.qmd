@@ -268,6 +268,7 @@ The results based on `r n_sims` simulations for a cohort sample size of `r N_pt`
 #| fig-cap: 'Probability of declaring decision by parameter by effect size (all pars set with same OR).'
 #| fig-cap-location: margin
 #| fig-height: 7
+#| out-width: 80%
 
 d_fig <- copy(d_dec)
 
@@ -347,7 +348,7 @@ g_tbl
 #| fig-cap-location: margin
 #| fig-height: 5
 #| fig-width: 5
-#| out-width: 80%
+#| out-width: 70%
 
 # only interted in the distribution of posterior means for now
 d_fig <- d_post_smry_2[!is.na(mu), .(sc, v, N_pt = N_pt, sim, par, mu)]
