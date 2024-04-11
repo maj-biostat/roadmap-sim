@@ -282,6 +282,7 @@ run_trial <- function(ix){
     
     # Earlier decisions are retained - once superiority has been decided, 
     # we retain this conclusion irrespective of subsequent post probabilities.
+    # The following simply overwrites any decision reversal.
     # This means that there could be inconsistency with a silo pr_sup and the 
     # decision reported.
     decision[1:ii, , "sup"] <- apply(decision[1:ii, , "sup", drop = F], 2, function(z){ cumsum(z) > 0 })
