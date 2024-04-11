@@ -25,14 +25,16 @@ g_lor_num <- log(c(1/2, 1/1.5, 1/1.2, 1, 1.2, 1.5, 2))
 names(g_lor_lab) <- paste0("v0", 1:7)
 ```
 
-Simulation 3 was based on a sequential trial with decision criteria for superiority, futility wrt the superiority decision, non-inferiority and futility wrt the non-inferiority decision.
+Simulation 3 is based on a sequential trial with decision criteria for superiority, and non-inferiority and also for futility with respect to both superiority and non-inferiority.
 
 1. For the surgical domain we evaluate whether revision is superior to dair and futility for superiority.
-2. For the duration domain (one-stage) we evaluate whether short duration is non-inferior to long duration antibiotic treatment. We also evaluate whether the non-inferiority criterion is futile.
-3. For the duration domain (two-stage) we evaluate whether long duration is superior to short duration antibiotic treatment (equivalently whether short duration is inferior to long). We also evaluate whether the superiority criterion is futile.
-3. For the choice domain we evaluate whether rif is superior to no-rif. We also evaluate whether the superiority criterion is futile.
+2. For the duration domain (one-stage) we evaluate whether short duration is non-inferior to long duration antibiotic treatment. We also evaluate whether the non-inferiority decision is futile.
+3. For the duration domain (two-stage) we evaluate whether long duration is superior to short duration antibiotic treatment (equivalently whether short duration is inferior to long). We also evaluate whether the superiority decision is futile.
+3. For the choice domain we evaluate whether rif is superior to no-rif. We also evaluate whether the superiority decision is futile.
 
-Enrolment stops for the respective domain/cells when any of the above are triggered based the decision rules described earlier.
+Enrolment stops for the respective domain/cells when any of the above are triggered based the decision rules described [earlier](decision-rules.qmd).
+
+We provide summaries of each simulation scenario and the results that were obtained.
 
 ```{r}
 #| label: loadfiles
@@ -139,12 +141,12 @@ d_all <- rbindlist(lapply(seq_along(l), function(i){
 
 @tbl-sim-design3-par summarises the configurations used in each simulated scenario.
 Each treatment effect parameter is set to have the same magnitude of effect.
-The effects range from $1/2$ to $2$ in scenario 1 to scenario 7.
-Decision thresholds remain constant throughout the duration of the study.
+The effects range from $\log(1/2)$ in scenario 1 to $\log(2)$ in scenario 7.
+Decision rules and thresholds remain constant over the entire enrolment period.
 The decision processes are documented in the [Decision rules](decision-rules.qmd) page.
 
 Revision effects are computed as a weighted combination of the log-odds ratios for the one-stage and two-stage revision effects.
-The weights are the sample proportion receiving one-stage and two-stage surgery in those patients receiving randomised surgical treatment.
+The weights are the sample proportion receiving one-stage and two-stage surgery in those patients receiving randomised surgical treatment and randomised to revision.
 
 ```{r}
 #| label: tbl-sim-design3-par
@@ -265,13 +267,14 @@ g_tbl <- d_tbl |> gt() |>
 g_tbl
 ```
 
-@fig-pr-design3-1 reports the cumulative probability of each decision quantity with enrolment halted only for the questions detailed above.
+@fig-pr-design3-1 shows the cumulative probability of each decision quantity.
+Once answered, the questions are no longer evaluated.
 
 + The first row details the cumulative probability of decisions within the surgical domain, which currently applies only to the late silo.
 Superiority (`sup` in legend) and futility (`fut_sup`) are the relevant quantities of interest.
 
 + The second row details the cumulative probability of decisions within the duration domain under one-stage revision.
-Non-inferiority (`trt_ni_ref`) and inferiority (`fut_trt_ni_ref`) are the relevant quantities of interest.
+Non-inferiority (`ni`) and inferiority (`fut_ni`) are the relevant quantities of interest.
 
 + The third row details the cumulative probability of decisions within the duration domain under two-stage revision.
 Superiority (`sup`) and futility (`fut_sup`) are the relevant quantities of interest.
