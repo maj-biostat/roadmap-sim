@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-13">
+<meta name="dcterms.date" content="2024-04-11">
 
 <title>ROADMAP - design notes and simulations - Simulated trial data</title>
 <style>
@@ -226,26 +226,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design1-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 1</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design2-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 2</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../notebooks/sim-design3-results.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Simulation results 3</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design4-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 4</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -274,7 +256,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-        
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">Contents</h2>
+   
+  <ul>
+  <li><a href="#surgical-domain" id="toc-surgical-domain" class="nav-link active" data-scroll-target="#surgical-domain">Surgical domain</a></li>
+  <li><a href="#duration-domain" id="toc-duration-domain" class="nav-link" data-scroll-target="#duration-domain">Duration domain</a></li>
+  <li><a href="#choice-domain" id="toc-choice-domain" class="nav-link" data-scroll-target="#choice-domain">Choice domain</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
 <main class="content page-columns page-full" id="quarto-document-content">
@@ -292,14 +282,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 13, 2024</p>
+      <p class="date">April 11, 2024</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">February 26, 2024</p>
+      <p class="date-modified">April 11, 2024</p>
     </div>
   </div>
     
@@ -313,7 +303,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 
 </div>
-<p>Trial data is simulated under the model specification, see earlier section. The sub-totals sum to the size of the subset (e.g.&nbsp;patients under late stage infection) and not the size of the total sample. The missingness is a consequence of the partial factorial structure.</p>
+<p>The following give a sense of the number of participants contributing to each treatment arm and cell. The data are simulated under the <a href="../notebooks/model-spec.html#sec-model-spec">model specification</a> with a total sample size of 2500.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
@@ -323,7 +313,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-4"><a href="#cb1-4"></a>d <span class="ot">&lt;-</span> <span class="fu">copy</span>(ll<span class="sc">$</span>d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Only patients in the late stage infection silo enter into the surgical domain for randomised comparison of surgery type. <a href="#tbl-smry-late-Da" class="quarto-xref">Table&nbsp;1</a> shows the allocation to dair vs rev for this cohort and the balance across the remaining group levels in the data.</p>
+<section id="surgical-domain" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="surgical-domain">Surgical domain</h2>
+<p>Only patients in the late silo receive randomised surgical treatment (dair vs revision) with the type of revision selected by the clinician. <a href="#tbl-smry-late-Da" class="quarto-xref">Table&nbsp;1</a> shows the allocation to dair vs rev for this cohort and the balance across the remaining group levels in the data.</p>
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
@@ -395,23 +387,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <figure class="quarto-float quarto-float-tbl figure page-columns page-full">
 <div aria-describedby="tbl-smry-late-Da-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<div id="sskrjfqekc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#sskrjfqekc table {
+<div id="pnbwmncdfj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#pnbwmncdfj table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#sskrjfqekc thead, #sskrjfqekc tbody, #sskrjfqekc tfoot, #sskrjfqekc tr, #sskrjfqekc td, #sskrjfqekc th {
+#pnbwmncdfj thead, #pnbwmncdfj tbody, #pnbwmncdfj tfoot, #pnbwmncdfj tr, #pnbwmncdfj td, #pnbwmncdfj th {
   border-style: none;
 }
 
-#sskrjfqekc p {
+#pnbwmncdfj p {
   margin: 0;
   padding: 0;
 }
 
-#sskrjfqekc .gt_table {
+#pnbwmncdfj .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -437,12 +429,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-left-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_caption {
+#pnbwmncdfj .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#sskrjfqekc .gt_title {
+#pnbwmncdfj .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -454,7 +446,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-width: 0;
 }
 
-#sskrjfqekc .gt_subtitle {
+#pnbwmncdfj .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -466,7 +458,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-width: 0;
 }
 
-#sskrjfqekc .gt_heading {
+#pnbwmncdfj .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -478,13 +470,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_bottom_border {
+#pnbwmncdfj .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_col_headings {
+#pnbwmncdfj .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -499,7 +491,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_col_heading {
+#pnbwmncdfj .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -519,7 +511,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#sskrjfqekc .gt_column_spanner_outer {
+#pnbwmncdfj .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -531,15 +523,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 4px;
 }
 
-#sskrjfqekc .gt_column_spanner_outer:first-child {
+#pnbwmncdfj .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#sskrjfqekc .gt_column_spanner_outer:last-child {
+#pnbwmncdfj .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#sskrjfqekc .gt_column_spanner {
+#pnbwmncdfj .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -551,11 +543,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   width: 100%;
 }
 
-#sskrjfqekc .gt_spanner_row {
+#pnbwmncdfj .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#sskrjfqekc .gt_group_heading {
+#pnbwmncdfj .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -581,7 +573,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   text-align: left;
 }
 
-#sskrjfqekc .gt_empty_group_heading {
+#pnbwmncdfj .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -596,15 +588,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: middle;
 }
 
-#sskrjfqekc .gt_from_md > :first-child {
+#pnbwmncdfj .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#sskrjfqekc .gt_from_md > :last-child {
+#pnbwmncdfj .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#sskrjfqekc .gt_row {
+#pnbwmncdfj .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -623,7 +615,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#sskrjfqekc .gt_stub {
+#pnbwmncdfj .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -636,7 +628,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#sskrjfqekc .gt_stub_row_group {
+#pnbwmncdfj .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -650,15 +642,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: top;
 }
 
-#sskrjfqekc .gt_row_group_first td {
+#pnbwmncdfj .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#sskrjfqekc .gt_row_group_first th {
+#pnbwmncdfj .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#sskrjfqekc .gt_summary_row {
+#pnbwmncdfj .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -668,16 +660,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#sskrjfqekc .gt_first_summary_row {
+#pnbwmncdfj .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_first_summary_row.thick {
+#pnbwmncdfj .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#sskrjfqekc .gt_last_summary_row {
+#pnbwmncdfj .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -687,7 +679,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_grand_summary_row {
+#pnbwmncdfj .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -697,7 +689,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#sskrjfqekc .gt_first_grand_summary_row {
+#pnbwmncdfj .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -707,7 +699,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_last_grand_summary_row_top {
+#pnbwmncdfj .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -717,11 +709,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_striped {
+#pnbwmncdfj .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#sskrjfqekc .gt_table_body {
+#pnbwmncdfj .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -730,7 +722,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_footnotes {
+#pnbwmncdfj .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -744,7 +736,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_footnote {
+#pnbwmncdfj .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -753,7 +745,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#sskrjfqekc .gt_sourcenotes {
+#pnbwmncdfj .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -767,7 +759,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_sourcenote {
+#pnbwmncdfj .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -775,63 +767,63 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#sskrjfqekc .gt_left {
+#pnbwmncdfj .gt_left {
   text-align: left;
 }
 
-#sskrjfqekc .gt_center {
+#pnbwmncdfj .gt_center {
   text-align: center;
 }
 
-#sskrjfqekc .gt_right {
+#pnbwmncdfj .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#sskrjfqekc .gt_font_normal {
+#pnbwmncdfj .gt_font_normal {
   font-weight: normal;
 }
 
-#sskrjfqekc .gt_font_bold {
+#pnbwmncdfj .gt_font_bold {
   font-weight: bold;
 }
 
-#sskrjfqekc .gt_font_italic {
+#pnbwmncdfj .gt_font_italic {
   font-style: italic;
 }
 
-#sskrjfqekc .gt_super {
+#pnbwmncdfj .gt_super {
   font-size: 65%;
 }
 
-#sskrjfqekc .gt_footnote_marks {
+#pnbwmncdfj .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#sskrjfqekc .gt_asterisk {
+#pnbwmncdfj .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#sskrjfqekc .gt_indent_1 {
+#pnbwmncdfj .gt_indent_1 {
   text-indent: 5px;
 }
 
-#sskrjfqekc .gt_indent_2 {
+#pnbwmncdfj .gt_indent_2 {
   text-indent: 10px;
 }
 
-#sskrjfqekc .gt_indent_3 {
+#pnbwmncdfj .gt_indent_3 {
   text-indent: 15px;
 }
 
-#sskrjfqekc .gt_indent_4 {
+#pnbwmncdfj .gt_indent_4 {
   text-indent: 20px;
 }
 
-#sskrjfqekc .gt_indent_5 {
+#pnbwmncdfj .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -869,9 +861,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td class="gt_row gt_right" headers="Choice stub_1_2 rand">0</td>
 <td class="gt_row gt_right" headers="Choice stub_1_2 group">-</td>
 <td class="gt_row gt_right" headers="Choice stub_1_2 surgery">1</td>
-<td class="gt_row gt_right" headers="Choice stub_1_2 dair">1</td>
-<td class="gt_row gt_right" headers="Choice stub_1_2 rev">82</td>
-<td class="gt_row gt_right" headers="Choice stub_1_2 total">83</td>
+<td class="gt_row gt_right" headers="Choice stub_1_2 dair">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_2 rev">77</td>
+<td class="gt_row gt_right" headers="Choice stub_1_2 total">77</td>
 </tr>
 <tr class="even">
 <td id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -879,26 +871,26 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td class="gt_row gt_right" headers="Choice stub_1_3 group">-</td>
 <td class="gt_row gt_right" headers="Choice stub_1_3 surgery">2</td>
 <td class="gt_row gt_right" headers="Choice stub_1_3 dair">-</td>
-<td class="gt_row gt_right" headers="Choice stub_1_3 rev">175</td>
-<td class="gt_row gt_right" headers="Choice stub_1_3 total">175</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 rev">178</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 total">178</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Choice stub_1_4 rand">1</td>
 <td class="gt_row gt_right" headers="Choice stub_1_4 group">0</td>
 <td class="gt_row gt_right" headers="Choice stub_1_4 surgery">0</td>
-<td class="gt_row gt_right" headers="Choice stub_1_4 dair">179</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 dair">198</td>
 <td class="gt_row gt_right" headers="Choice stub_1_4 rev">-</td>
-<td class="gt_row gt_right" headers="Choice stub_1_4 total">179</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 total">198</td>
 </tr>
 <tr class="even">
 <td id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Choice stub_1_5 rand">1</td>
 <td class="gt_row gt_right" headers="Choice stub_1_5 group">1</td>
 <td class="gt_row gt_right" headers="Choice stub_1_5 surgery">0</td>
-<td class="gt_row gt_right" headers="Choice stub_1_5 dair">199</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 dair">182</td>
 <td class="gt_row gt_right" headers="Choice stub_1_5 rev">-</td>
-<td class="gt_row gt_right" headers="Choice stub_1_5 total">199</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 total">182</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_6" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -906,8 +898,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td class="gt_row gt_right" headers="Choice stub_1_6 group">0</td>
 <td class="gt_row gt_right" headers="Choice stub_1_6 surgery">1</td>
 <td class="gt_row gt_right" headers="Choice stub_1_6 dair">-</td>
-<td class="gt_row gt_right" headers="Choice stub_1_6 rev">72</td>
-<td class="gt_row gt_right" headers="Choice stub_1_6 total">72</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 rev">68</td>
+<td class="gt_row gt_right" headers="Choice stub_1_6 total">68</td>
 </tr>
 <tr class="even">
 <td id="stub_1_7" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -915,17 +907,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td class="gt_row gt_right" headers="Choice stub_1_7 group">1</td>
 <td class="gt_row gt_right" headers="Choice stub_1_7 surgery">1</td>
 <td class="gt_row gt_right" headers="Choice stub_1_7 dair">-</td>
-<td class="gt_row gt_right" headers="Choice stub_1_7 rev">50</td>
-<td class="gt_row gt_right" headers="Choice stub_1_7 total">50</td>
+<td class="gt_row gt_right" headers="Choice stub_1_7 rev">56</td>
+<td class="gt_row gt_right" headers="Choice stub_1_7 total">56</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_8" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Choice stub_1_8 rand">1</td>
 <td class="gt_row gt_right" headers="Choice stub_1_8 group">0</td>
 <td class="gt_row gt_right" headers="Choice stub_1_8 surgery">2</td>
-<td class="gt_row gt_right" headers="Choice stub_1_8 dair">1</td>
-<td class="gt_row gt_right" headers="Choice stub_1_8 rev">127</td>
-<td class="gt_row gt_right" headers="Choice stub_1_8 total">128</td>
+<td class="gt_row gt_right" headers="Choice stub_1_8 dair">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_8 rev">121</td>
+<td class="gt_row gt_right" headers="Choice stub_1_8 total">121</td>
 </tr>
 <tr class="even">
 <td id="stub_1_9" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -933,8 +925,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td class="gt_row gt_right" headers="Choice stub_1_9 group">1</td>
 <td class="gt_row gt_right" headers="Choice stub_1_9 surgery">2</td>
 <td class="gt_row gt_right" headers="Choice stub_1_9 dair">-</td>
-<td class="gt_row gt_right" headers="Choice stub_1_9 rev">136</td>
-<td class="gt_row gt_right" headers="Choice stub_1_9 total">136</td>
+<td class="gt_row gt_right" headers="Choice stub_1_9 rev">142</td>
+<td class="gt_row gt_right" headers="Choice stub_1_9 total">142</td>
 </tr>
 <tr class="odd">
 <td id="summary_stub_Choice_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
@@ -953,18 +945,18 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td class="gt_row gt_right" headers="Duration stub_1_10 rand">0</td>
 <td class="gt_row gt_right" headers="Duration stub_1_10 group">-</td>
 <td class="gt_row gt_right" headers="Duration stub_1_10 surgery">0</td>
-<td class="gt_row gt_right" headers="Duration stub_1_10 dair">631</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 dair">633</td>
 <td class="gt_row gt_right" headers="Duration stub_1_10 rev">-</td>
-<td class="gt_row gt_right" headers="Duration stub_1_10 total">631</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 total">633</td>
 </tr>
 <tr class="even">
 <td id="stub_1_11" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Duration stub_1_11 rand">1</td>
 <td class="gt_row gt_right" headers="Duration stub_1_11 group">0</td>
 <td class="gt_row gt_right" headers="Duration stub_1_11 surgery">1</td>
-<td class="gt_row gt_right" headers="Duration stub_1_11 dair">1</td>
-<td class="gt_row gt_right" headers="Duration stub_1_11 rev">98</td>
-<td class="gt_row gt_right" headers="Duration stub_1_11 total">99</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 dair">-</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 rev">91</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 total">91</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_12" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -972,17 +964,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td class="gt_row gt_right" headers="Duration stub_1_12 group">1</td>
 <td class="gt_row gt_right" headers="Duration stub_1_12 surgery">1</td>
 <td class="gt_row gt_right" headers="Duration stub_1_12 dair">-</td>
-<td class="gt_row gt_right" headers="Duration stub_1_12 rev">106</td>
-<td class="gt_row gt_right" headers="Duration stub_1_12 total">106</td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 rev">110</td>
+<td class="gt_row gt_right" headers="Duration stub_1_12 total">110</td>
 </tr>
 <tr class="even">
 <td id="stub_1_13" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Duration stub_1_13 rand">1</td>
 <td class="gt_row gt_right" headers="Duration stub_1_13 group">0</td>
 <td class="gt_row gt_right" headers="Duration stub_1_13 surgery">2</td>
-<td class="gt_row gt_right" headers="Duration stub_1_13 dair">1</td>
-<td class="gt_row gt_right" headers="Duration stub_1_13 rev">215</td>
-<td class="gt_row gt_right" headers="Duration stub_1_13 total">216</td>
+<td class="gt_row gt_right" headers="Duration stub_1_13 dair">-</td>
+<td class="gt_row gt_right" headers="Duration stub_1_13 rev">224</td>
+<td class="gt_row gt_right" headers="Duration stub_1_13 total">224</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_14" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -990,8 +982,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td class="gt_row gt_right" headers="Duration stub_1_14 group">1</td>
 <td class="gt_row gt_right" headers="Duration stub_1_14 surgery">2</td>
 <td class="gt_row gt_right" headers="Duration stub_1_14 dair">-</td>
-<td class="gt_row gt_right" headers="Duration stub_1_14 rev">223</td>
-<td class="gt_row gt_right" headers="Duration stub_1_14 total">223</td>
+<td class="gt_row gt_right" headers="Duration stub_1_14 rev">217</td>
+<td class="gt_row gt_right" headers="Duration stub_1_14 total">217</td>
 </tr>
 <tr class="even">
 <td id="summary_stub_Duration_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
@@ -1028,12 +1020,15 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
 </figure>
 </div>
 </div>
+</section>
+<section id="duration-domain" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="duration-domain">Duration domain</h2>
 <p><a href="#tbl-smry-Db" class="quarto-xref">Table&nbsp;2</a> shows the allocation to the duration domain conditional on surgery type actually received and the balance across the remaining group levels in the data. Only units randomised within the duration domain are reported.</p>
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># domain B</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a>d_tmp1 <span class="ot">&lt;-</span> d[ed <span class="sc">==</span> <span class="dv">1</span>, .(ed, d, er, r, ic,srp)]</span>
+<span id="cb3-2"><a href="#cb3-2"></a>d_tmp1 <span class="ot">&lt;-</span> d[ed <span class="sc">==</span> <span class="dv">1</span>, .(ed, d, er, r, srp)]</span>
 <span id="cb3-3"><a href="#cb3-3"></a>d_tmp2 <span class="ot">&lt;-</span> d_tmp1[, .N, keyby <span class="ot">=</span> .(d, er, r,srp)]</span>
 <span id="cb3-4"><a href="#cb3-4"></a><span class="co"># d_tmp2[, b := factor(b, levels = c("w12", "w06p1", "w12p1", "d07p2", "w12p2"))]</span></span>
 <span id="cb3-5"><a href="#cb3-5"></a>d_B <span class="ot">&lt;-</span> <span class="fu">dcast</span>(d_tmp2, er <span class="sc">+</span> r <span class="sc">~</span> srp <span class="sc">+</span> d, <span class="at">value.var =</span> <span class="st">"N"</span>)</span>
@@ -1103,23 +1098,23 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
 <figure class="quarto-float quarto-float-tbl figure page-columns page-full">
 <div aria-describedby="tbl-smry-Db-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<div id="nxqrnhkqhp" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#nxqrnhkqhp table {
+<div id="fxmpfkzczh" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#fxmpfkzczh table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#nxqrnhkqhp thead, #nxqrnhkqhp tbody, #nxqrnhkqhp tfoot, #nxqrnhkqhp tr, #nxqrnhkqhp td, #nxqrnhkqhp th {
+#fxmpfkzczh thead, #fxmpfkzczh tbody, #fxmpfkzczh tfoot, #fxmpfkzczh tr, #fxmpfkzczh td, #fxmpfkzczh th {
   border-style: none;
 }
 
-#nxqrnhkqhp p {
+#fxmpfkzczh p {
   margin: 0;
   padding: 0;
 }
 
-#nxqrnhkqhp .gt_table {
+#fxmpfkzczh .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1145,12 +1140,12 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-left-color: #D3D3D3;
 }
 
-#nxqrnhkqhp .gt_caption {
+#fxmpfkzczh .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#nxqrnhkqhp .gt_title {
+#fxmpfkzczh .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1162,7 +1157,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-bottom-width: 0;
 }
 
-#nxqrnhkqhp .gt_subtitle {
+#fxmpfkzczh .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1174,7 +1169,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-top-width: 0;
 }
 
-#nxqrnhkqhp .gt_heading {
+#fxmpfkzczh .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1186,13 +1181,13 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-right-color: #D3D3D3;
 }
 
-#nxqrnhkqhp .gt_bottom_border {
+#fxmpfkzczh .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#nxqrnhkqhp .gt_col_headings {
+#fxmpfkzczh .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1207,7 +1202,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-right-color: #D3D3D3;
 }
 
-#nxqrnhkqhp .gt_col_heading {
+#fxmpfkzczh .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1227,7 +1222,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   overflow-x: hidden;
 }
 
-#nxqrnhkqhp .gt_column_spanner_outer {
+#fxmpfkzczh .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1239,15 +1234,15 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   padding-right: 4px;
 }
 
-#nxqrnhkqhp .gt_column_spanner_outer:first-child {
+#fxmpfkzczh .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#nxqrnhkqhp .gt_column_spanner_outer:last-child {
+#fxmpfkzczh .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#nxqrnhkqhp .gt_column_spanner {
+#fxmpfkzczh .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1259,11 +1254,11 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   width: 100%;
 }
 
-#nxqrnhkqhp .gt_spanner_row {
+#fxmpfkzczh .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#nxqrnhkqhp .gt_group_heading {
+#fxmpfkzczh .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1289,7 +1284,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   text-align: left;
 }
 
-#nxqrnhkqhp .gt_empty_group_heading {
+#fxmpfkzczh .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1304,15 +1299,15 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   vertical-align: middle;
 }
 
-#nxqrnhkqhp .gt_from_md > :first-child {
+#fxmpfkzczh .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#nxqrnhkqhp .gt_from_md > :last-child {
+#fxmpfkzczh .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#nxqrnhkqhp .gt_row {
+#fxmpfkzczh .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1331,7 +1326,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   overflow-x: hidden;
 }
 
-#nxqrnhkqhp .gt_stub {
+#fxmpfkzczh .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1344,7 +1339,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   padding-right: 5px;
 }
 
-#nxqrnhkqhp .gt_stub_row_group {
+#fxmpfkzczh .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1358,15 +1353,15 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   vertical-align: top;
 }
 
-#nxqrnhkqhp .gt_row_group_first td {
+#fxmpfkzczh .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#nxqrnhkqhp .gt_row_group_first th {
+#fxmpfkzczh .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#nxqrnhkqhp .gt_summary_row {
+#fxmpfkzczh .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1376,16 +1371,16 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   padding-right: 5px;
 }
 
-#nxqrnhkqhp .gt_first_summary_row {
+#fxmpfkzczh .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#nxqrnhkqhp .gt_first_summary_row.thick {
+#fxmpfkzczh .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#nxqrnhkqhp .gt_last_summary_row {
+#fxmpfkzczh .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1395,7 +1390,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-bottom-color: #D3D3D3;
 }
 
-#nxqrnhkqhp .gt_grand_summary_row {
+#fxmpfkzczh .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -1405,7 +1400,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   padding-right: 5px;
 }
 
-#nxqrnhkqhp .gt_first_grand_summary_row {
+#fxmpfkzczh .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1415,7 +1410,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-top-color: #D3D3D3;
 }
 
-#nxqrnhkqhp .gt_last_grand_summary_row_top {
+#fxmpfkzczh .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1425,11 +1420,11 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-bottom-color: #D3D3D3;
 }
 
-#nxqrnhkqhp .gt_striped {
+#fxmpfkzczh .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#nxqrnhkqhp .gt_table_body {
+#fxmpfkzczh .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1438,7 +1433,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-bottom-color: #D3D3D3;
 }
 
-#nxqrnhkqhp .gt_footnotes {
+#fxmpfkzczh .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1452,7 +1447,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-right-color: #D3D3D3;
 }
 
-#nxqrnhkqhp .gt_footnote {
+#fxmpfkzczh .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -1461,7 +1456,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   padding-right: 5px;
 }
 
-#nxqrnhkqhp .gt_sourcenotes {
+#fxmpfkzczh .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -1475,7 +1470,7 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   border-right-color: #D3D3D3;
 }
 
-#nxqrnhkqhp .gt_sourcenote {
+#fxmpfkzczh .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -1483,63 +1478,63 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
   padding-right: 5px;
 }
 
-#nxqrnhkqhp .gt_left {
+#fxmpfkzczh .gt_left {
   text-align: left;
 }
 
-#nxqrnhkqhp .gt_center {
+#fxmpfkzczh .gt_center {
   text-align: center;
 }
 
-#nxqrnhkqhp .gt_right {
+#fxmpfkzczh .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#nxqrnhkqhp .gt_font_normal {
+#fxmpfkzczh .gt_font_normal {
   font-weight: normal;
 }
 
-#nxqrnhkqhp .gt_font_bold {
+#fxmpfkzczh .gt_font_bold {
   font-weight: bold;
 }
 
-#nxqrnhkqhp .gt_font_italic {
+#fxmpfkzczh .gt_font_italic {
   font-style: italic;
 }
 
-#nxqrnhkqhp .gt_super {
+#fxmpfkzczh .gt_super {
   font-size: 65%;
 }
 
-#nxqrnhkqhp .gt_footnote_marks {
+#fxmpfkzczh .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#nxqrnhkqhp .gt_asterisk {
+#fxmpfkzczh .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#nxqrnhkqhp .gt_indent_1 {
+#fxmpfkzczh .gt_indent_1 {
   text-indent: 5px;
 }
 
-#nxqrnhkqhp .gt_indent_2 {
+#fxmpfkzczh .gt_indent_2 {
   text-indent: 10px;
 }
 
-#nxqrnhkqhp .gt_indent_3 {
+#fxmpfkzczh .gt_indent_3 {
   text-indent: 15px;
 }
 
-#nxqrnhkqhp .gt_indent_4 {
+#fxmpfkzczh .gt_indent_4 {
   text-indent: 20px;
 }
 
-#nxqrnhkqhp .gt_indent_5 {
+#fxmpfkzczh .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -1581,93 +1576,83 @@ Table&nbsp;1: Simulated trial data for (late silo) surgical domain - covariate b
 <td id="stub_1_1" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Surgery stub_1_1 rand">0</td>
 <td class="gt_row gt_right" headers="Surgery stub_1_1 group">-</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_1 long_1">86</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_1 short_1">76</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_1 long_2">174</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_1 short_2">157</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_1 total">493</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 long_1">88</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 short_1">88</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 long_2">159</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 short_2">147</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 total">482</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_2" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Surgery stub_1_2 rand">1</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_2 group">0</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_2 long_1">1</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_2 short_1">-</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_2 long_2">1</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_2 short_2">-</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_2 total">2</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 group">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 long_1">91</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 short_1">110</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 long_2">224</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 short_2">217</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 total">642</td>
 </tr>
 <tr class="even">
-<td id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_right" headers="Surgery stub_1_3 rand">1</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_3 group">1</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_3 long_1">98</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_3 short_1">106</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_3 long_2">215</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_3 short_2">223</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_3 total">642</td>
-</tr>
-<tr class="odd">
 <td id="summary_stub_Surgery_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 rand">—</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 group">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 long_1">185</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 short_1">182</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 long_2">390</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 short_2">380</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 total">1137</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 long_1">179</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 short_1">198</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 long_2">383</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 short_2">364</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 total">1124</td>
 </tr>
-<tr class="even gt_group_heading_row">
+<tr class="odd gt_group_heading_row">
 <td colspan="8" id="Choice" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Choice</td>
 </tr>
-<tr class="odd gt_row_group_first">
+<tr class="even gt_row_group_first">
+<td id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 rand">0</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 group">-</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 long_1">71</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 short_1">83</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 long_2">151</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 short_2">151</td>
+<td class="gt_row gt_right" headers="Choice stub_1_3 total">456</td>
+</tr>
+<tr class="odd">
 <td id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_right" headers="Choice stub_1_4 rand">0</td>
-<td class="gt_row gt_right" headers="Choice stub_1_4 group">-</td>
-<td class="gt_row gt_right" headers="Choice stub_1_4 long_1">77</td>
-<td class="gt_row gt_right" headers="Choice stub_1_4 short_1">72</td>
-<td class="gt_row gt_right" headers="Choice stub_1_4 long_2">156</td>
-<td class="gt_row gt_right" headers="Choice stub_1_4 short_2">155</td>
-<td class="gt_row gt_right" headers="Choice stub_1_4 total">460</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 rand">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 group">0</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 long_1">56</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 short_1">60</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 long_2">100</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 short_2">105</td>
+<td class="gt_row gt_right" headers="Choice stub_1_4 total">321</td>
 </tr>
 <tr class="even">
 <td id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Choice stub_1_5 rand">1</td>
-<td class="gt_row gt_right" headers="Choice stub_1_5 group">0</td>
-<td class="gt_row gt_right" headers="Choice stub_1_5 long_1">54</td>
-<td class="gt_row gt_right" headers="Choice stub_1_5 short_1">65</td>
-<td class="gt_row gt_right" headers="Choice stub_1_5 long_2">122</td>
-<td class="gt_row gt_right" headers="Choice stub_1_5 short_2">97</td>
-<td class="gt_row gt_right" headers="Choice stub_1_5 total">338</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 group">1</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 long_1">52</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 short_1">55</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 long_2">132</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 short_2">108</td>
+<td class="gt_row gt_right" headers="Choice stub_1_5 total">347</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_6" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_right" headers="Choice stub_1_6 rand">1</td>
-<td class="gt_row gt_right" headers="Choice stub_1_6 group">1</td>
-<td class="gt_row gt_right" headers="Choice stub_1_6 long_1">54</td>
-<td class="gt_row gt_right" headers="Choice stub_1_6 short_1">45</td>
-<td class="gt_row gt_right" headers="Choice stub_1_6 long_2">112</td>
-<td class="gt_row gt_right" headers="Choice stub_1_6 short_2">128</td>
-<td class="gt_row gt_right" headers="Choice stub_1_6 total">339</td>
-</tr>
-<tr class="even">
 <td id="summary_stub_Choice_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 rand">—</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 group">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 long_1">185</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 short_1">182</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 long_2">390</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 short_2">380</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 total">1137</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 long_1">179</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 short_1">198</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 long_2">383</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 short_2">364</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Choice summary_stub_Choice_1 total">1124</td>
 </tr>
 </tbody><tfoot class="gt_footnotes">
-<tr class="even">
+<tr class="odd">
 <td colspan="8" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> Only units randomised to interventions in the surgery domain reported. One-stage/two-stage is by clinician selection</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td colspan="8" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>2</sup></span> Revealed indicates whether units were randomised into surgery/duration domain (0: No, 1: Yes)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td colspan="8" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>3</sup></span> Treatment indicates which treatment assigned within domain. For choice (0: no-rif, 1: rif). For duration is specific to surgery type received (0: long, 1: short). Units that were not randomised within the surgery/choice domain have undefined randomised treatment status.</td>
 </tr>
 </tfoot>
@@ -1683,7 +1668,10 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
 </figure>
 </div>
 </div>
-<p><a href="#tbl-smry-Dc" class="quarto-xref">Table&nbsp;3</a> shows the allocation to the duration domain conditional on surgery type actually received and the balance across the remaining group levels in the data. Only units randomised within the antibiotic choice domain are reported.</p>
+</section>
+<section id="choice-domain" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="choice-domain">Choice domain</h2>
+<p><a href="#tbl-smry-Dc" class="quarto-xref">Table&nbsp;3</a> shows the allocation to the choice domain and the balance across the remaining group levels in the data. Only units randomised within the antibiotic choice domain are reported.</p>
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
@@ -1757,23 +1745,23 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
 <figure class="quarto-float quarto-float-tbl figure page-columns page-full">
 <div aria-describedby="tbl-smry-Dc-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 <div class="cell-output-display">
-<div id="abfbqpdvho" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#abfbqpdvho table {
+<div id="htzhxakyyr" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#htzhxakyyr table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#abfbqpdvho thead, #abfbqpdvho tbody, #abfbqpdvho tfoot, #abfbqpdvho tr, #abfbqpdvho td, #abfbqpdvho th {
+#htzhxakyyr thead, #htzhxakyyr tbody, #htzhxakyyr tfoot, #htzhxakyyr tr, #htzhxakyyr td, #htzhxakyyr th {
   border-style: none;
 }
 
-#abfbqpdvho p {
+#htzhxakyyr p {
   margin: 0;
   padding: 0;
 }
 
-#abfbqpdvho .gt_table {
+#htzhxakyyr .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1799,12 +1787,12 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   border-left-color: #D3D3D3;
 }
 
-#abfbqpdvho .gt_caption {
+#htzhxakyyr .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#abfbqpdvho .gt_title {
+#htzhxakyyr .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1816,7 +1804,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   border-bottom-width: 0;
 }
 
-#abfbqpdvho .gt_subtitle {
+#htzhxakyyr .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1828,7 +1816,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   border-top-width: 0;
 }
 
-#abfbqpdvho .gt_heading {
+#htzhxakyyr .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1840,13 +1828,13 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   border-right-color: #D3D3D3;
 }
 
-#abfbqpdvho .gt_bottom_border {
+#htzhxakyyr .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#abfbqpdvho .gt_col_headings {
+#htzhxakyyr .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1861,7 +1849,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   border-right-color: #D3D3D3;
 }
 
-#abfbqpdvho .gt_col_heading {
+#htzhxakyyr .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1881,7 +1869,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   overflow-x: hidden;
 }
 
-#abfbqpdvho .gt_column_spanner_outer {
+#htzhxakyyr .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1893,15 +1881,15 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   padding-right: 4px;
 }
 
-#abfbqpdvho .gt_column_spanner_outer:first-child {
+#htzhxakyyr .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#abfbqpdvho .gt_column_spanner_outer:last-child {
+#htzhxakyyr .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#abfbqpdvho .gt_column_spanner {
+#htzhxakyyr .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1913,11 +1901,11 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   width: 100%;
 }
 
-#abfbqpdvho .gt_spanner_row {
+#htzhxakyyr .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#abfbqpdvho .gt_group_heading {
+#htzhxakyyr .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1943,7 +1931,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   text-align: left;
 }
 
-#abfbqpdvho .gt_empty_group_heading {
+#htzhxakyyr .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1958,15 +1946,15 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   vertical-align: middle;
 }
 
-#abfbqpdvho .gt_from_md > :first-child {
+#htzhxakyyr .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#abfbqpdvho .gt_from_md > :last-child {
+#htzhxakyyr .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#abfbqpdvho .gt_row {
+#htzhxakyyr .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1985,7 +1973,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   overflow-x: hidden;
 }
 
-#abfbqpdvho .gt_stub {
+#htzhxakyyr .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1998,7 +1986,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   padding-right: 5px;
 }
 
-#abfbqpdvho .gt_stub_row_group {
+#htzhxakyyr .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2012,15 +2000,15 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   vertical-align: top;
 }
 
-#abfbqpdvho .gt_row_group_first td {
+#htzhxakyyr .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#abfbqpdvho .gt_row_group_first th {
+#htzhxakyyr .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#abfbqpdvho .gt_summary_row {
+#htzhxakyyr .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2030,16 +2018,16 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   padding-right: 5px;
 }
 
-#abfbqpdvho .gt_first_summary_row {
+#htzhxakyyr .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#abfbqpdvho .gt_first_summary_row.thick {
+#htzhxakyyr .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#abfbqpdvho .gt_last_summary_row {
+#htzhxakyyr .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2049,7 +2037,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   border-bottom-color: #D3D3D3;
 }
 
-#abfbqpdvho .gt_grand_summary_row {
+#htzhxakyyr .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2059,7 +2047,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   padding-right: 5px;
 }
 
-#abfbqpdvho .gt_first_grand_summary_row {
+#htzhxakyyr .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2069,7 +2057,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   border-top-color: #D3D3D3;
 }
 
-#abfbqpdvho .gt_last_grand_summary_row_top {
+#htzhxakyyr .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2079,11 +2067,11 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   border-bottom-color: #D3D3D3;
 }
 
-#abfbqpdvho .gt_striped {
+#htzhxakyyr .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#abfbqpdvho .gt_table_body {
+#htzhxakyyr .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2092,7 +2080,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   border-bottom-color: #D3D3D3;
 }
 
-#abfbqpdvho .gt_footnotes {
+#htzhxakyyr .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2106,7 +2094,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   border-right-color: #D3D3D3;
 }
 
-#abfbqpdvho .gt_footnote {
+#htzhxakyyr .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2115,7 +2103,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   padding-right: 5px;
 }
 
-#abfbqpdvho .gt_sourcenotes {
+#htzhxakyyr .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2129,7 +2117,7 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   border-right-color: #D3D3D3;
 }
 
-#abfbqpdvho .gt_sourcenote {
+#htzhxakyyr .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2137,63 +2125,63 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
   padding-right: 5px;
 }
 
-#abfbqpdvho .gt_left {
+#htzhxakyyr .gt_left {
   text-align: left;
 }
 
-#abfbqpdvho .gt_center {
+#htzhxakyyr .gt_center {
   text-align: center;
 }
 
-#abfbqpdvho .gt_right {
+#htzhxakyyr .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#abfbqpdvho .gt_font_normal {
+#htzhxakyyr .gt_font_normal {
   font-weight: normal;
 }
 
-#abfbqpdvho .gt_font_bold {
+#htzhxakyyr .gt_font_bold {
   font-weight: bold;
 }
 
-#abfbqpdvho .gt_font_italic {
+#htzhxakyyr .gt_font_italic {
   font-style: italic;
 }
 
-#abfbqpdvho .gt_super {
+#htzhxakyyr .gt_super {
   font-size: 65%;
 }
 
-#abfbqpdvho .gt_footnote_marks {
+#htzhxakyyr .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#abfbqpdvho .gt_asterisk {
+#htzhxakyyr .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#abfbqpdvho .gt_indent_1 {
+#htzhxakyyr .gt_indent_1 {
   text-indent: 5px;
 }
 
-#abfbqpdvho .gt_indent_2 {
+#htzhxakyyr .gt_indent_2 {
   text-indent: 10px;
 }
 
-#abfbqpdvho .gt_indent_3 {
+#htzhxakyyr .gt_indent_3 {
   text-indent: 15px;
 }
 
-#abfbqpdvho .gt_indent_4 {
+#htzhxakyyr .gt_indent_4 {
   text-indent: 20px;
 }
 
-#abfbqpdvho .gt_indent_5 {
+#htzhxakyyr .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -2222,138 +2210,129 @@ Table&nbsp;2: Simulated trial data for AB duration domain - covariate balance ac
 <td class="gt_row gt_right" headers="Surgery stub_1_1 rand">0</td>
 <td class="gt_row gt_right" headers="Surgery stub_1_1 surgery">0</td>
 <td class="gt_row gt_right" headers="Surgery stub_1_1 group">-</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_1 norif">235</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_1 rif">221</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_1 total">456</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 norif">229</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 rif">232</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_1 total">461</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_2" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Surgery stub_1_2 rand">0</td>
 <td class="gt_row gt_right" headers="Surgery stub_1_2 surgery">1</td>
 <td class="gt_row gt_right" headers="Surgery stub_1_2 group">-</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_2 norif">47</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_2 rif">49</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_2 total">96</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 norif">48</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 rif">51</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_2 total">99</td>
 </tr>
 <tr class="even">
 <td id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Surgery stub_1_3 rand">0</td>
 <td class="gt_row gt_right" headers="Surgery stub_1_3 surgery">2</td>
 <td class="gt_row gt_right" headers="Surgery stub_1_3 group">-</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_3 norif">91</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_3 rif">104</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_3 total">195</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 norif">84</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 rif">98</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_3 total">182</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Surgery stub_1_4 rand">1</td>
 <td class="gt_row gt_right" headers="Surgery stub_1_4 surgery">0</td>
 <td class="gt_row gt_right" headers="Surgery stub_1_4 group">0</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_4 norif">179</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_4 rif">199</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_4 total">378</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_4 norif">198</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_4 rif">182</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_4 total">380</td>
 </tr>
 <tr class="even">
 <td id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Surgery stub_1_5 rand">1</td>
 <td class="gt_row gt_right" headers="Surgery stub_1_5 surgery">1</td>
 <td class="gt_row gt_right" headers="Surgery stub_1_5 group">1</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_5 norif">72</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_5 rif">50</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_5 total">122</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_5 norif">68</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_5 rif">56</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_5 total">124</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_6" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Surgery stub_1_6 rand">1</td>
 <td class="gt_row gt_right" headers="Surgery stub_1_6 surgery">2</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_6 group">0</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_6 norif">1</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_6 rif">-</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_6 total">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_6 group">1</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_6 norif">121</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_6 rif">142</td>
+<td class="gt_row gt_right" headers="Surgery stub_1_6 total">263</td>
 </tr>
 <tr class="even">
-<td id="stub_1_7" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_right" headers="Surgery stub_1_7 rand">1</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_7 surgery">2</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_7 group">1</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_7 norif">127</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_7 rif">136</td>
-<td class="gt_row gt_right" headers="Surgery stub_1_7 total">263</td>
-</tr>
-<tr class="odd">
 <td id="summary_stub_Surgery_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 rand">—</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 surgery">—</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 group">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 norif">752</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 rif">759</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 total">1511</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 norif">748</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 rif">761</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Surgery summary_stub_Surgery_1 total">1509</td>
 </tr>
-<tr class="even gt_group_heading_row">
+<tr class="odd gt_group_heading_row">
 <td colspan="7" id="Duration" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">Duration</td>
 </tr>
-<tr class="odd gt_row_group_first">
+<tr class="even gt_row_group_first">
+<td id="stub_1_7" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_right" headers="Duration stub_1_7 rand">0</td>
+<td class="gt_row gt_right" headers="Duration stub_1_7 surgery">0</td>
+<td class="gt_row gt_right" headers="Duration stub_1_7 group">-</td>
+<td class="gt_row gt_right" headers="Duration stub_1_7 norif">427</td>
+<td class="gt_row gt_right" headers="Duration stub_1_7 rif">414</td>
+<td class="gt_row gt_right" headers="Duration stub_1_7 total">841</td>
+</tr>
+<tr class="odd">
 <td id="stub_1_8" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_right" headers="Duration stub_1_8 rand">0</td>
-<td class="gt_row gt_right" headers="Duration stub_1_8 surgery">0</td>
-<td class="gt_row gt_right" headers="Duration stub_1_8 group">-</td>
-<td class="gt_row gt_right" headers="Duration stub_1_8 norif">414</td>
-<td class="gt_row gt_right" headers="Duration stub_1_8 rif">420</td>
-<td class="gt_row gt_right" headers="Duration stub_1_8 total">834</td>
+<td class="gt_row gt_right" headers="Duration stub_1_8 rand">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_8 surgery">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_8 group">0</td>
+<td class="gt_row gt_right" headers="Duration stub_1_8 norif">56</td>
+<td class="gt_row gt_right" headers="Duration stub_1_8 rif">52</td>
+<td class="gt_row gt_right" headers="Duration stub_1_8 total">108</td>
 </tr>
 <tr class="even">
 <td id="stub_1_9" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Duration stub_1_9 rand">1</td>
 <td class="gt_row gt_right" headers="Duration stub_1_9 surgery">1</td>
-<td class="gt_row gt_right" headers="Duration stub_1_9 group">0</td>
-<td class="gt_row gt_right" headers="Duration stub_1_9 norif">54</td>
-<td class="gt_row gt_right" headers="Duration stub_1_9 rif">54</td>
-<td class="gt_row gt_right" headers="Duration stub_1_9 total">108</td>
+<td class="gt_row gt_right" headers="Duration stub_1_9 group">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_9 norif">60</td>
+<td class="gt_row gt_right" headers="Duration stub_1_9 rif">55</td>
+<td class="gt_row gt_right" headers="Duration stub_1_9 total">115</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_10" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Duration stub_1_10 rand">1</td>
-<td class="gt_row gt_right" headers="Duration stub_1_10 surgery">1</td>
-<td class="gt_row gt_right" headers="Duration stub_1_10 group">1</td>
-<td class="gt_row gt_right" headers="Duration stub_1_10 norif">65</td>
-<td class="gt_row gt_right" headers="Duration stub_1_10 rif">45</td>
-<td class="gt_row gt_right" headers="Duration stub_1_10 total">110</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 surgery">2</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 group">0</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 norif">100</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 rif">132</td>
+<td class="gt_row gt_right" headers="Duration stub_1_10 total">232</td>
 </tr>
 <tr class="even">
 <td id="stub_1_11" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_right" headers="Duration stub_1_11 rand">1</td>
 <td class="gt_row gt_right" headers="Duration stub_1_11 surgery">2</td>
-<td class="gt_row gt_right" headers="Duration stub_1_11 group">0</td>
-<td class="gt_row gt_right" headers="Duration stub_1_11 norif">122</td>
-<td class="gt_row gt_right" headers="Duration stub_1_11 rif">112</td>
-<td class="gt_row gt_right" headers="Duration stub_1_11 total">234</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 group">1</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 norif">105</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 rif">108</td>
+<td class="gt_row gt_right" headers="Duration stub_1_11 total">213</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_12" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_right" headers="Duration stub_1_12 rand">1</td>
-<td class="gt_row gt_right" headers="Duration stub_1_12 surgery">2</td>
-<td class="gt_row gt_right" headers="Duration stub_1_12 group">1</td>
-<td class="gt_row gt_right" headers="Duration stub_1_12 norif">97</td>
-<td class="gt_row gt_right" headers="Duration stub_1_12 rif">128</td>
-<td class="gt_row gt_right" headers="Duration stub_1_12 total">225</td>
-</tr>
-<tr class="even">
 <td id="summary_stub_Duration_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 rand">—</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 surgery">—</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 group">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 norif">752</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 rif">759</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 total">1511</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 norif">748</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 rif">761</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="Duration summary_stub_Duration_1 total">1509</td>
 </tr>
 </tbody><tfoot class="gt_footnotes">
-<tr class="even">
+<tr class="odd">
 <td colspan="7" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> Only units randomised to interventions in the antibiotic choice domain reported.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td colspan="7" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>2</sup></span> Revealed indicates whether units were randomised into surgery/choice domain (0: No, 1: Yes)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td colspan="7" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>3</sup></span> Treatment indicates which treatment assigned within domain. For surgery (0: dair, 1: rev). For duration is specific to surgery type received (0: long, 1: short). Units that were not randomised within the surgery/duration domain have undefined randomised treatment status.</td>
 </tr>
 </tfoot>
@@ -2371,6 +2350,7 @@ Table&nbsp;3: Simulated trial data for AB choice domain - covariate balance acro
 </div>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

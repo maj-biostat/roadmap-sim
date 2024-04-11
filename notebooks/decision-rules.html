@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-13">
+<meta name="dcterms.date" content="2024-04-11">
 
 <title>ROADMAP - design notes and simulations - Decision rules</title>
 <style>
@@ -221,26 +221,8 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design1-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 1</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design2-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 2</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../notebooks/sim-design3-results.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Simulation results 3</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design4-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 4</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -276,6 +258,7 @@ window.Quarto = {
   <li><a href="#surgical-domain" id="toc-surgical-domain" class="nav-link active" data-scroll-target="#surgical-domain">Surgical domain</a></li>
   <li><a href="#duration-domain" id="toc-duration-domain" class="nav-link" data-scroll-target="#duration-domain">Duration domain</a>
   <ul>
+  <li><a href="#dair" id="toc-dair" class="nav-link" data-scroll-target="#dair">DAIR</a></li>
   <li><a href="#one-stage-revision" id="toc-one-stage-revision" class="nav-link" data-scroll-target="#one-stage-revision">One-stage revision</a></li>
   <li><a href="#two-stage-revision" id="toc-two-stage-revision" class="nav-link" data-scroll-target="#two-stage-revision">Two-stage revision</a></li>
   </ul></li>
@@ -299,14 +282,14 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 13, 2024</p>
+      <p class="date">April 11, 2024</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">March 10, 2024</p>
+      <p class="date-modified">April 11, 2024</p>
     </div>
   </div>
     
@@ -324,54 +307,59 @@ window.Quarto = {
 <section id="surgical-domain" class="level2">
 <h2 class="anchored" data-anchor-id="surgical-domain">Surgical domain</h2>
 <p>The surgical domain considers the effect of revision relative to dair in the late-stage infection silo.</p>
-<p>Assume <span class="math inline">\(\Delta = \beta_1 + \beta_2 \mathbb{E}[S_{R_P}]\)</span> corresponds to the average conditional log-odds ratio associated with revision. The probability that revision is superior to dair is defined as:</p>
+<p>Following the earlier <a href="../notebooks/model-spec.html#sec-model-spec">model specification</a>, let <span class="math inline">\(\Delta_R = \beta_4 \mathbb{E}[\mathbb{I}(S_{R_P} == 1 \land R == 1)] + \beta_5 \mathbb{E}[\mathbb{I}(S_{R_P} == 2 \land R == 1)]\)</span> correspond to the average conditional log-odds ratio associated with revision. The probability that revision is superior to dair is defined as:</p>
 <span class="math display">\[\begin{aligned}
-P_{\text{surgical (sup)}} = Pr(\Delta &gt; 0)
+P_{\text{surgical (sup)}} = Pr(\Delta_R &gt; 0)
 \end{aligned}\]</span>
 <p>and enrolment is stopped for superiority if <span class="math inline">\(P_{\text{surgical (sup)}} &gt; 0.99\)</span>.</p>
 <p>The probability of futility for revision being superior to dair is defined as:</p>
 <span class="math display">\[\begin{aligned}
-P_{\text{surgical (fut)}} = Pr(\Delta &gt; \log(1.2))
+P_{\text{surgical (fut)}} = Pr(\Delta_R &gt; \log(1.2))
 \end{aligned}\]</span>
-<p>and enrolment is stopped for futility (on superiority) if <span class="math inline">\(P_{\text{surgical (fut)}} &lt; 0.01\)</span>.</p>
+<p>and enrolment is stopped for futility if <span class="math inline">\(P_{\text{surgical (fut)}} &lt; 0.05\)</span>.</p>
 </section>
 <section id="duration-domain" class="level2">
 <h2 class="anchored" data-anchor-id="duration-domain">Duration domain</h2>
-<p>The duration domain considers the effect of short relative to long duration therapy conditional on revision received.</p>
+<p>The duration domain considers the effect of short relative to long duration therapy depending on the type of revision received.</p>
+<section id="dair" class="level3">
+<h3 class="anchored" data-anchor-id="dair">DAIR</h3>
+<p>No duration effects are applicable for DAIR.</p>
+</section>
 <section id="one-stage-revision" class="level3">
 <h3 class="anchored" data-anchor-id="one-stage-revision">One-stage revision</h3>
-<p>Assume <span class="math inline">\(\beta_5\)</span> corresponds to the conditional log-odds ratio associated with short duration antibiotics relative to long when one-stage revision is received. The probability that short is non-inferior to long is defined as:</p>
+<p>Let <span class="math inline">\(\beta_6\)</span> correspond to the conditional log-odds ratio associated with 6 weeks (short) duration antibiotics relative to 12 weeks (long) when one-stage revision is received. The probability that short is non-inferior to long is defined as:</p>
 <span class="math display">\[\begin{aligned}
-P_{\text{duration-1 (ni)}} = Pr(\beta_5 &gt; \log(1/1.2))
+P_{\text{duration-1 (ni)}} = Pr(\beta_6 &gt; \log(1/1.2))
 \end{aligned}\]</span>
-<p>and enrolment is stopped for non-inferiority if <span class="math inline">\(P_{\text{duration-1 (ni)}} &gt; 0.99\)</span> or <span class="math inline">\(P_{\text{duration-1 (ni)}} &lt; 0.2\)</span>, the latter being taken to imply futility (for non-inferiority).</p>
+<p>and enrolment is stopped for non-inferiority if <span class="math inline">\(P_{\text{duration-1 (ni)}} &gt; 0.99\)</span> or <span class="math inline">\(P_{\text{duration-1 (ni)}} &lt; 0.2\)</span>, the latter being taken to imply futility (with respect to being able to establish non-inferiority).</p>
 </section>
 <section id="two-stage-revision" class="level3">
 <h3 class="anchored" data-anchor-id="two-stage-revision">Two-stage revision</h3>
-<p>Assume <span class="math inline">\(\Delta = \beta_5 + \beta_6\)</span> corresponds to the conditional log-odds ratio associated with short duration antibiotics relative to long when two-stage revision is received. The probability that long duration is superior to short is defined as:</p>
+<p>Let <span class="math inline">\(\beta_8\)</span> correspond to the conditional log-odds ratio associated with 12 weeks (long) duration antibiotics relative to 7 days (short) when two-stage revision is received. The probability that long duration is superior to short is defined as:</p>
 <span class="math display">\[\begin{aligned}
-P_{\text{duration-2 (sup)}} = Pr(\Delta &lt; 0)
+P_{\text{duration-2 (sup)}} = Pr(\beta_7 &gt; 0)
 \end{aligned}\]</span>
-<p>and enrolment is stopped for superiority if <span class="math inline">\(P_{\text{duration-1 (sup)}} &gt; 0.99\)</span>.</p>
+<p>and enrolment is stopped for superiority if <span class="math inline">\(P_{\text{duration-2 (sup)}} &gt; 0.99\)</span>.</p>
 <p>The probability of futility for long duration being superior to short is defined as:</p>
 <span class="math display">\[\begin{aligned}
-P_{\text{duration-2 (fut)}} = Pr(\Delta &lt; \log(1/1.2))
+P_{\text{duration-2 (fut)}} = Pr(\beta_7 &gt; \log(1.2))
 \end{aligned}\]</span>
-<p>and enrolment is stopped for futility (on superiority) if <span class="math inline">\(P_{\text{duration-2 (fut)}} &lt; 0.01\)</span>.</p>
+<p>and enrolment is stopped for futility if <span class="math inline">\(P_{\text{duration-2 (fut)}} &lt; 0.05\)</span>.</p>
 </section>
 </section>
 <section id="choice-domain" class="level2">
 <h2 class="anchored" data-anchor-id="choice-domain">Choice domain</h2>
 <p>The choice domain considers the effect of rifampacin relative to no-rifampacin.</p>
-<p>Assume <span class="math inline">\(\beta_{8}\)</span> corresponds to the conditional log-odds ratio associated with rifampacin relative to no-rifampacin The probability that rifampacin is superior to no-rifampacin is defined as:</p>
+<p>Let <span class="math inline">\(\beta_{9}\)</span> correspond to the conditional log-odds ratio associated with rifampacin relative to no-rifampacin The probability that rifampacin is superior to no-rifampacin is defined as:</p>
 <span class="math display">\[\begin{aligned}
-P_{\text{choice (sup)}} = Pr(\beta_{8} &gt; 0)
+P_{\text{choice (sup)}} = Pr(\beta_{9} &gt; 0)
 \end{aligned}\]</span>
+<p>and enrolment is stopped for superiority if <span class="math inline">\(P_{\text{choice (sup)}} &gt; 0.99\)</span>.</p>
 <p>The probability of futility for rifampacin being superior to no-rifampacin is defined as:</p>
 <span class="math display">\[\begin{aligned}
-P_{\text{choice (fut)}} = Pr(\beta_{8} &gt; \log(1.2))
+P_{\text{choice (fut)}} = Pr(\beta_{9} &gt; \log(1.2))
 \end{aligned}\]</span>
-<p>and enrolment is stopped for futility (on superiority) if <span class="math inline">\(P_{\text{choice (fut)}} &lt; 0.01\)</span>.</p>
+<p>and enrolment is stopped for futility if <span class="math inline">\(P_{\text{choice (fut)}} &lt; 0.05\)</span>.</p>
 
 
 </section>

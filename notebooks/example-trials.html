@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-13">
+<meta name="dcterms.date" content="2024-04-11">
 
 <title>ROADMAP - design notes and simulations - Example trials</title>
 <style>
@@ -255,26 +255,8 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design1-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 1</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design2-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 2</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../notebooks/sim-design3-results.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Simulation results 3</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design4-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 4</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -328,14 +310,14 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 13, 2024</p>
+      <p class="date">April 11, 2024</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">February 28, 2024</p>
+      <p class="date-modified">April 5, 2024</p>
     </div>
   </div>
     
@@ -349,14 +331,14 @@ window.Quarto = {
 <div class="cell">
 
 </div>
-<p>Example trials are provided to give insight into the cell sizes as well as the level of uncertainty associated with the parameter estimation process. Examples are from trials at their maximum sample size with all follow up completed. Sequential variants with adaptations will be added later.</p>
+<p>Example trials are provided to give insight into typical cell sample sizes as well as the level of uncertainty associated with the parameter estimation process. Examples are from trials at their maximum sample size with all follow up completed. Sequential variants with adaptations will be added later.</p>
 <section id="null-scenario" class="level2 page-columns page-full">
 <h2 class="anchored" data-anchor-id="null-scenario">Null scenario</h2>
 <p><a href="#tbl-ex-null1" class="quarto-xref">Table&nbsp;1</a> shows a summary of the treatment sucesses based on the <span class="math inline">\(n\)</span> patients associated with each combination of design variables when no treatment effects (non-membership effects still retained) in the simulated data of 2500 patients. Given that this is a summary of a single data set, some variation from the underlying simulation parameters is to be expected.</p>
 <div class="cell page-columns page-full">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">set.seed</span>(<span class="dv">11</span>)</span>
 <span id="cb1-2"><a href="#cb1-2"></a></span>
 <span id="cb1-3"><a href="#cb1-3"></a>sim_spec <span class="ot">&lt;-</span> <span class="fu">get_sim_spec</span>()</span>
 <span id="cb1-4"><a href="#cb1-4"></a></span>
@@ -375,23 +357,23 @@ window.Quarto = {
 <figure class="quarto-float quarto-float-tbl figure page-columns page-full">
 <div aria-describedby="tbl-ex-null1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
 <div class="cell-output-display column-page">
-<div id="sskrjfqekc" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#sskrjfqekc table {
+<div id="jumqhlsnhn" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jumqhlsnhn table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#sskrjfqekc thead, #sskrjfqekc tbody, #sskrjfqekc tfoot, #sskrjfqekc tr, #sskrjfqekc td, #sskrjfqekc th {
+#jumqhlsnhn thead, #jumqhlsnhn tbody, #jumqhlsnhn tfoot, #jumqhlsnhn tr, #jumqhlsnhn td, #jumqhlsnhn th {
   border-style: none;
 }
 
-#sskrjfqekc p {
+#jumqhlsnhn p {
   margin: 0;
   padding: 0;
 }
 
-#sskrjfqekc .gt_table {
+#jumqhlsnhn .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -417,12 +399,12 @@ window.Quarto = {
   border-left-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_caption {
+#jumqhlsnhn .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#sskrjfqekc .gt_title {
+#jumqhlsnhn .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -434,7 +416,7 @@ window.Quarto = {
   border-bottom-width: 0;
 }
 
-#sskrjfqekc .gt_subtitle {
+#jumqhlsnhn .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -446,7 +428,7 @@ window.Quarto = {
   border-top-width: 0;
 }
 
-#sskrjfqekc .gt_heading {
+#jumqhlsnhn .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -458,13 +440,13 @@ window.Quarto = {
   border-right-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_bottom_border {
+#jumqhlsnhn .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_col_headings {
+#jumqhlsnhn .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -479,7 +461,7 @@ window.Quarto = {
   border-right-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_col_heading {
+#jumqhlsnhn .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -499,7 +481,7 @@ window.Quarto = {
   overflow-x: hidden;
 }
 
-#sskrjfqekc .gt_column_spanner_outer {
+#jumqhlsnhn .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -511,15 +493,15 @@ window.Quarto = {
   padding-right: 4px;
 }
 
-#sskrjfqekc .gt_column_spanner_outer:first-child {
+#jumqhlsnhn .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#sskrjfqekc .gt_column_spanner_outer:last-child {
+#jumqhlsnhn .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#sskrjfqekc .gt_column_spanner {
+#jumqhlsnhn .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -531,11 +513,11 @@ window.Quarto = {
   width: 100%;
 }
 
-#sskrjfqekc .gt_spanner_row {
+#jumqhlsnhn .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#sskrjfqekc .gt_group_heading {
+#jumqhlsnhn .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -561,7 +543,7 @@ window.Quarto = {
   text-align: left;
 }
 
-#sskrjfqekc .gt_empty_group_heading {
+#jumqhlsnhn .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -576,15 +558,15 @@ window.Quarto = {
   vertical-align: middle;
 }
 
-#sskrjfqekc .gt_from_md > :first-child {
+#jumqhlsnhn .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#sskrjfqekc .gt_from_md > :last-child {
+#jumqhlsnhn .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#sskrjfqekc .gt_row {
+#jumqhlsnhn .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -603,7 +585,7 @@ window.Quarto = {
   overflow-x: hidden;
 }
 
-#sskrjfqekc .gt_stub {
+#jumqhlsnhn .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -616,7 +598,7 @@ window.Quarto = {
   padding-right: 5px;
 }
 
-#sskrjfqekc .gt_stub_row_group {
+#jumqhlsnhn .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -630,15 +612,15 @@ window.Quarto = {
   vertical-align: top;
 }
 
-#sskrjfqekc .gt_row_group_first td {
+#jumqhlsnhn .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#sskrjfqekc .gt_row_group_first th {
+#jumqhlsnhn .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#sskrjfqekc .gt_summary_row {
+#jumqhlsnhn .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -648,16 +630,16 @@ window.Quarto = {
   padding-right: 5px;
 }
 
-#sskrjfqekc .gt_first_summary_row {
+#jumqhlsnhn .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_first_summary_row.thick {
+#jumqhlsnhn .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#sskrjfqekc .gt_last_summary_row {
+#jumqhlsnhn .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -667,7 +649,7 @@ window.Quarto = {
   border-bottom-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_grand_summary_row {
+#jumqhlsnhn .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -677,7 +659,7 @@ window.Quarto = {
   padding-right: 5px;
 }
 
-#sskrjfqekc .gt_first_grand_summary_row {
+#jumqhlsnhn .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -687,7 +669,7 @@ window.Quarto = {
   border-top-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_last_grand_summary_row_top {
+#jumqhlsnhn .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -697,11 +679,11 @@ window.Quarto = {
   border-bottom-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_striped {
+#jumqhlsnhn .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#sskrjfqekc .gt_table_body {
+#jumqhlsnhn .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -710,7 +692,7 @@ window.Quarto = {
   border-bottom-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_footnotes {
+#jumqhlsnhn .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -724,7 +706,7 @@ window.Quarto = {
   border-right-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_footnote {
+#jumqhlsnhn .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -733,7 +715,7 @@ window.Quarto = {
   padding-right: 5px;
 }
 
-#sskrjfqekc .gt_sourcenotes {
+#jumqhlsnhn .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -747,7 +729,7 @@ window.Quarto = {
   border-right-color: #D3D3D3;
 }
 
-#sskrjfqekc .gt_sourcenote {
+#jumqhlsnhn .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -755,63 +737,63 @@ window.Quarto = {
   padding-right: 5px;
 }
 
-#sskrjfqekc .gt_left {
+#jumqhlsnhn .gt_left {
   text-align: left;
 }
 
-#sskrjfqekc .gt_center {
+#jumqhlsnhn .gt_center {
   text-align: center;
 }
 
-#sskrjfqekc .gt_right {
+#jumqhlsnhn .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#sskrjfqekc .gt_font_normal {
+#jumqhlsnhn .gt_font_normal {
   font-weight: normal;
 }
 
-#sskrjfqekc .gt_font_bold {
+#jumqhlsnhn .gt_font_bold {
   font-weight: bold;
 }
 
-#sskrjfqekc .gt_font_italic {
+#jumqhlsnhn .gt_font_italic {
   font-style: italic;
 }
 
-#sskrjfqekc .gt_super {
+#jumqhlsnhn .gt_super {
   font-size: 65%;
 }
 
-#sskrjfqekc .gt_footnote_marks {
+#jumqhlsnhn .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#sskrjfqekc .gt_asterisk {
+#jumqhlsnhn .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#sskrjfqekc .gt_indent_1 {
+#jumqhlsnhn .gt_indent_1 {
   text-indent: 5px;
 }
 
-#sskrjfqekc .gt_indent_2 {
+#jumqhlsnhn .gt_indent_2 {
   text-indent: 10px;
 }
 
-#sskrjfqekc .gt_indent_3 {
+#jumqhlsnhn .gt_indent_3 {
   text-indent: 15px;
 }
 
-#sskrjfqekc .gt_indent_4 {
+#jumqhlsnhn .gt_indent_4 {
   text-indent: 20px;
 }
 
-#sskrjfqekc .gt_indent_5 {
+#jumqhlsnhn .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -852,10 +834,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="early stub_1_1 d">0</td>
 <td class="gt_row gt_center" headers="early stub_1_1 ef">0</td>
 <td class="gt_row gt_center" headers="early stub_1_1 f">0</td>
-<td class="gt_row gt_right" headers="early stub_1_1 y">155</td>
-<td class="gt_row gt_right" headers="early stub_1_1 n">237</td>
-<td class="gt_row gt_right" headers="early stub_1_1 p_mle">0.65</td>
-<td class="gt_row gt_right" headers="early stub_1_1 p">0.65</td>
+<td class="gt_row gt_right" headers="early stub_1_1 y">188</td>
+<td class="gt_row gt_right" headers="early stub_1_1 n">270</td>
+<td class="gt_row gt_right" headers="early stub_1_1 p_mle">0.70</td>
+<td class="gt_row gt_right" headers="early stub_1_1 p">0.68</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_2" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -866,10 +848,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="early stub_1_2 d">0</td>
 <td class="gt_row gt_center" headers="early stub_1_2 ef">1</td>
 <td class="gt_row gt_center" headers="early stub_1_2 f">0</td>
-<td class="gt_row gt_right" headers="early stub_1_2 y">119</td>
-<td class="gt_row gt_right" headers="early stub_1_2 n">204</td>
-<td class="gt_row gt_right" headers="early stub_1_2 p_mle">0.58</td>
-<td class="gt_row gt_right" headers="early stub_1_2 p">0.59</td>
+<td class="gt_row gt_right" headers="early stub_1_2 y">122</td>
+<td class="gt_row gt_right" headers="early stub_1_2 n">195</td>
+<td class="gt_row gt_right" headers="early stub_1_2 p_mle">0.63</td>
+<td class="gt_row gt_right" headers="early stub_1_2 p">0.63</td>
 </tr>
 <tr class="even">
 <td id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -880,10 +862,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="early stub_1_3 d">0</td>
 <td class="gt_row gt_center" headers="early stub_1_3 ef">1</td>
 <td class="gt_row gt_center" headers="early stub_1_3 f">1</td>
-<td class="gt_row gt_right" headers="early stub_1_3 y">120</td>
-<td class="gt_row gt_right" headers="early stub_1_3 n">192</td>
-<td class="gt_row gt_right" headers="early stub_1_3 p_mle">0.62</td>
-<td class="gt_row gt_right" headers="early stub_1_3 p">0.59</td>
+<td class="gt_row gt_right" headers="early stub_1_3 y">149</td>
+<td class="gt_row gt_right" headers="early stub_1_3 n">228</td>
+<td class="gt_row gt_right" headers="early stub_1_3 p_mle">0.65</td>
+<td class="gt_row gt_right" headers="early stub_1_3 p">0.63</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -894,10 +876,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="early stub_1_4 d">0</td>
 <td class="gt_row gt_center" headers="early stub_1_4 ef">0</td>
 <td class="gt_row gt_center" headers="early stub_1_4 f">0</td>
-<td class="gt_row gt_right" headers="early stub_1_4 y">8</td>
-<td class="gt_row gt_right" headers="early stub_1_4 n">12</td>
-<td class="gt_row gt_right" headers="early stub_1_4 p_mle">0.67</td>
-<td class="gt_row gt_right" headers="early stub_1_4 p">0.68</td>
+<td class="gt_row gt_right" headers="early stub_1_4 y">9</td>
+<td class="gt_row gt_right" headers="early stub_1_4 n">13</td>
+<td class="gt_row gt_right" headers="early stub_1_4 p_mle">0.69</td>
+<td class="gt_row gt_right" headers="early stub_1_4 p">0.72</td>
 </tr>
 <tr class="even">
 <td id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -908,10 +890,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="early stub_1_5 d">0</td>
 <td class="gt_row gt_center" headers="early stub_1_5 ef">1</td>
 <td class="gt_row gt_center" headers="early stub_1_5 f">0</td>
-<td class="gt_row gt_right" headers="early stub_1_5 y">5</td>
-<td class="gt_row gt_right" headers="early stub_1_5 n">5</td>
-<td class="gt_row gt_right" headers="early stub_1_5 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="early stub_1_5 p">0.63</td>
+<td class="gt_row gt_right" headers="early stub_1_5 y">8</td>
+<td class="gt_row gt_right" headers="early stub_1_5 n">13</td>
+<td class="gt_row gt_right" headers="early stub_1_5 p_mle">0.62</td>
+<td class="gt_row gt_right" headers="early stub_1_5 p">0.67</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_6" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -922,10 +904,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="early stub_1_6 d">0</td>
 <td class="gt_row gt_center" headers="early stub_1_6 ef">1</td>
 <td class="gt_row gt_center" headers="early stub_1_6 f">1</td>
-<td class="gt_row gt_right" headers="early stub_1_6 y">10</td>
-<td class="gt_row gt_right" headers="early stub_1_6 n">14</td>
-<td class="gt_row gt_right" headers="early stub_1_6 p_mle">0.71</td>
-<td class="gt_row gt_right" headers="early stub_1_6 p">0.63</td>
+<td class="gt_row gt_right" headers="early stub_1_6 y">6</td>
+<td class="gt_row gt_right" headers="early stub_1_6 n">10</td>
+<td class="gt_row gt_right" headers="early stub_1_6 p_mle">0.60</td>
+<td class="gt_row gt_right" headers="early stub_1_6 p">0.67</td>
 </tr>
 <tr class="even">
 <td id="stub_1_7" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -937,9 +919,9 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="early stub_1_7 ef">0</td>
 <td class="gt_row gt_center" headers="early stub_1_7 f">0</td>
 <td class="gt_row gt_right" headers="early stub_1_7 y">13</td>
-<td class="gt_row gt_right" headers="early stub_1_7 n">16</td>
-<td class="gt_row gt_right" headers="early stub_1_7 p_mle">0.81</td>
-<td class="gt_row gt_right" headers="early stub_1_7 p">0.68</td>
+<td class="gt_row gt_right" headers="early stub_1_7 n">18</td>
+<td class="gt_row gt_right" headers="early stub_1_7 p_mle">0.72</td>
+<td class="gt_row gt_right" headers="early stub_1_7 p">0.72</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_8" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -950,10 +932,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="early stub_1_8 d">1</td>
 <td class="gt_row gt_center" headers="early stub_1_8 ef">1</td>
 <td class="gt_row gt_center" headers="early stub_1_8 f">0</td>
-<td class="gt_row gt_right" headers="early stub_1_8 y">6</td>
-<td class="gt_row gt_right" headers="early stub_1_8 n">10</td>
-<td class="gt_row gt_right" headers="early stub_1_8 p_mle">0.60</td>
-<td class="gt_row gt_right" headers="early stub_1_8 p">0.63</td>
+<td class="gt_row gt_right" headers="early stub_1_8 y">5</td>
+<td class="gt_row gt_right" headers="early stub_1_8 n">8</td>
+<td class="gt_row gt_right" headers="early stub_1_8 p_mle">0.62</td>
+<td class="gt_row gt_right" headers="early stub_1_8 p">0.67</td>
 </tr>
 <tr class="even">
 <td id="stub_1_9" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -964,26 +946,12 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="early stub_1_9 d">1</td>
 <td class="gt_row gt_center" headers="early stub_1_9 ef">1</td>
 <td class="gt_row gt_center" headers="early stub_1_9 f">1</td>
-<td class="gt_row gt_right" headers="early stub_1_9 y">4</td>
-<td class="gt_row gt_right" headers="early stub_1_9 n">7</td>
-<td class="gt_row gt_right" headers="early stub_1_9 p_mle">0.57</td>
-<td class="gt_row gt_right" headers="early stub_1_9 p">0.63</td>
+<td class="gt_row gt_right" headers="early stub_1_9 y">7</td>
+<td class="gt_row gt_right" headers="early stub_1_9 n">10</td>
+<td class="gt_row gt_right" headers="early stub_1_9 p_mle">0.70</td>
+<td class="gt_row gt_right" headers="early stub_1_9 p">0.67</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_10" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="early stub_1_10 er">0</td>
-<td class="gt_row gt_center" headers="early stub_1_10 r">0</td>
-<td class="gt_row gt_center" headers="early stub_1_10 srp">2</td>
-<td class="gt_row gt_center" headers="early stub_1_10 ed">1</td>
-<td class="gt_row gt_center" headers="early stub_1_10 d">1</td>
-<td class="gt_row gt_center" headers="early stub_1_10 ef">0</td>
-<td class="gt_row gt_center" headers="early stub_1_10 f">0</td>
-<td class="gt_row gt_right" headers="early stub_1_10 y">1</td>
-<td class="gt_row gt_right" headers="early stub_1_10 n">1</td>
-<td class="gt_row gt_right" headers="early stub_1_10 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="early stub_1_10 p">0.68</td>
-</tr>
-<tr class="even">
 <td id="summary_stub_early_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 er">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 r">—</td>
@@ -992,15 +960,29 @@ window.Quarto = {
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 d">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 ef">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 f">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 y">441</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 n">698</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 p_mle">0.63</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 y">507</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 n">765</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 p_mle">0.66</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 p">—</td>
 </tr>
-<tr class="odd gt_group_heading_row">
+<tr class="even gt_group_heading_row">
 <td colspan="12" id="late" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">late</td>
 </tr>
-<tr class="even gt_row_group_first">
+<tr class="odd gt_row_group_first">
+<td id="stub_1_10" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_center" headers="late stub_1_10 er">0</td>
+<td class="gt_row gt_center" headers="late stub_1_10 r">0</td>
+<td class="gt_row gt_center" headers="late stub_1_10 srp">0</td>
+<td class="gt_row gt_center" headers="late stub_1_10 ed">0</td>
+<td class="gt_row gt_center" headers="late stub_1_10 d">0</td>
+<td class="gt_row gt_center" headers="late stub_1_10 ef">0</td>
+<td class="gt_row gt_center" headers="late stub_1_10 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_10 y">1</td>
+<td class="gt_row gt_right" headers="late stub_1_10 n">1</td>
+<td class="gt_row gt_right" headers="late stub_1_10 p_mle">1.00</td>
+<td class="gt_row gt_right" headers="late stub_1_10 p">0.61</td>
+</tr>
+<tr class="even">
 <td id="stub_1_11" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_11 er">0</td>
 <td class="gt_row gt_center" headers="late stub_1_11 r">0</td>
@@ -1009,10 +991,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_11 d">0</td>
 <td class="gt_row gt_center" headers="late stub_1_11 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_11 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_11 y">0</td>
-<td class="gt_row gt_right" headers="late stub_1_11 n">1</td>
-<td class="gt_row gt_right" headers="late stub_1_11 p_mle">0.00</td>
-<td class="gt_row gt_right" headers="late stub_1_11 p">0.51</td>
+<td class="gt_row gt_right" headers="late stub_1_11 y">2</td>
+<td class="gt_row gt_right" headers="late stub_1_11 n">5</td>
+<td class="gt_row gt_right" headers="late stub_1_11 p_mle">0.40</td>
+<td class="gt_row gt_right" headers="late stub_1_11 p">0.55</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_12" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1023,10 +1005,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_12 d">0</td>
 <td class="gt_row gt_center" headers="late stub_1_12 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_12 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_12 y">0</td>
+<td class="gt_row gt_right" headers="late stub_1_12 y">1</td>
 <td class="gt_row gt_right" headers="late stub_1_12 n">1</td>
-<td class="gt_row gt_right" headers="late stub_1_12 p_mle">0.00</td>
-<td class="gt_row gt_right" headers="late stub_1_12 p">0.51</td>
+<td class="gt_row gt_right" headers="late stub_1_12 p_mle">1.00</td>
+<td class="gt_row gt_right" headers="late stub_1_12 p">0.55</td>
 </tr>
 <tr class="even">
 <td id="stub_1_13" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1035,12 +1017,12 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_13 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_13 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_13 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_13 ef">0</td>
-<td class="gt_row gt_center" headers="late stub_1_13 f">0</td>
+<td class="gt_row gt_center" headers="late stub_1_13 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_13 f">1</td>
 <td class="gt_row gt_right" headers="late stub_1_13 y">2</td>
-<td class="gt_row gt_right" headers="late stub_1_13 n">2</td>
-<td class="gt_row gt_right" headers="late stub_1_13 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="late stub_1_13 p">0.61</td>
+<td class="gt_row gt_right" headers="late stub_1_13 n">3</td>
+<td class="gt_row gt_right" headers="late stub_1_13 p_mle">0.67</td>
+<td class="gt_row gt_right" headers="late stub_1_13 p">0.59</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_14" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1048,13 +1030,13 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_14 r">0</td>
 <td class="gt_row gt_center" headers="late stub_1_14 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_14 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_14 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_14 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_14 d">1</td>
+<td class="gt_row gt_center" headers="late stub_1_14 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_14 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_14 y">2</td>
-<td class="gt_row gt_right" headers="late stub_1_14 n">2</td>
-<td class="gt_row gt_right" headers="late stub_1_14 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="late stub_1_14 p">0.55</td>
+<td class="gt_row gt_right" headers="late stub_1_14 y">3</td>
+<td class="gt_row gt_right" headers="late stub_1_14 n">4</td>
+<td class="gt_row gt_right" headers="late stub_1_14 p_mle">0.75</td>
+<td class="gt_row gt_right" headers="late stub_1_14 p">0.65</td>
 </tr>
 <tr class="even">
 <td id="stub_1_15" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1068,7 +1050,7 @@ window.Quarto = {
 <td class="gt_row gt_right" headers="late stub_1_15 y">0</td>
 <td class="gt_row gt_right" headers="late stub_1_15 n">1</td>
 <td class="gt_row gt_right" headers="late stub_1_15 p_mle">0.00</td>
-<td class="gt_row gt_right" headers="late stub_1_15 p">0.55</td>
+<td class="gt_row gt_right" headers="late stub_1_15 p">0.59</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_16" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1079,10 +1061,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_16 d">1</td>
 <td class="gt_row gt_center" headers="late stub_1_16 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_16 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_16 y">1</td>
-<td class="gt_row gt_right" headers="late stub_1_16 n">1</td>
-<td class="gt_row gt_right" headers="late stub_1_16 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="late stub_1_16 p">0.55</td>
+<td class="gt_row gt_right" headers="late stub_1_16 y">0</td>
+<td class="gt_row gt_right" headers="late stub_1_16 n">2</td>
+<td class="gt_row gt_right" headers="late stub_1_16 p_mle">0.00</td>
+<td class="gt_row gt_right" headers="late stub_1_16 p">0.59</td>
 </tr>
 <tr class="even">
 <td id="stub_1_17" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1093,10 +1075,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_17 d">0</td>
 <td class="gt_row gt_center" headers="late stub_1_17 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_17 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_17 y">2</td>
-<td class="gt_row gt_right" headers="late stub_1_17 n">4</td>
-<td class="gt_row gt_right" headers="late stub_1_17 p_mle">0.50</td>
-<td class="gt_row gt_right" headers="late stub_1_17 p">0.61</td>
+<td class="gt_row gt_right" headers="late stub_1_17 y">3</td>
+<td class="gt_row gt_right" headers="late stub_1_17 n">3</td>
+<td class="gt_row gt_right" headers="late stub_1_17 p_mle">1.00</td>
+<td class="gt_row gt_right" headers="late stub_1_17 p">0.64</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_18" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1107,10 +1089,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_18 d">0</td>
 <td class="gt_row gt_center" headers="late stub_1_18 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_18 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_18 y">1</td>
+<td class="gt_row gt_right" headers="late stub_1_18 y">2</td>
 <td class="gt_row gt_right" headers="late stub_1_18 n">2</td>
-<td class="gt_row gt_right" headers="late stub_1_18 p_mle">0.50</td>
-<td class="gt_row gt_right" headers="late stub_1_18 p">0.55</td>
+<td class="gt_row gt_right" headers="late stub_1_18 p_mle">1.00</td>
+<td class="gt_row gt_right" headers="late stub_1_18 p">0.58</td>
 </tr>
 <tr class="even">
 <td id="stub_1_19" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1121,10 +1103,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_19 d">0</td>
 <td class="gt_row gt_center" headers="late stub_1_19 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_19 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_19 y">4</td>
-<td class="gt_row gt_right" headers="late stub_1_19 n">5</td>
-<td class="gt_row gt_right" headers="late stub_1_19 p_mle">0.80</td>
-<td class="gt_row gt_right" headers="late stub_1_19 p">0.55</td>
+<td class="gt_row gt_right" headers="late stub_1_19 y">0</td>
+<td class="gt_row gt_right" headers="late stub_1_19 n">3</td>
+<td class="gt_row gt_right" headers="late stub_1_19 p_mle">0.00</td>
+<td class="gt_row gt_right" headers="late stub_1_19 p">0.58</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_20" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1135,10 +1117,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_20 d">1</td>
 <td class="gt_row gt_center" headers="late stub_1_20 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_20 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_20 y">2</td>
+<td class="gt_row gt_right" headers="late stub_1_20 y">1</td>
 <td class="gt_row gt_right" headers="late stub_1_20 n">3</td>
-<td class="gt_row gt_right" headers="late stub_1_20 p_mle">0.67</td>
-<td class="gt_row gt_right" headers="late stub_1_20 p">0.61</td>
+<td class="gt_row gt_right" headers="late stub_1_20 p_mle">0.33</td>
+<td class="gt_row gt_right" headers="late stub_1_20 p">0.64</td>
 </tr>
 <tr class="even">
 <td id="stub_1_21" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1148,25 +1130,25 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_21 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_21 d">1</td>
 <td class="gt_row gt_center" headers="late stub_1_21 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_21 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_21 y">1</td>
-<td class="gt_row gt_right" headers="late stub_1_21 n">2</td>
-<td class="gt_row gt_right" headers="late stub_1_21 p_mle">0.50</td>
-<td class="gt_row gt_right" headers="late stub_1_21 p">0.55</td>
+<td class="gt_row gt_center" headers="late stub_1_21 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_21 y">3</td>
+<td class="gt_row gt_right" headers="late stub_1_21 n">4</td>
+<td class="gt_row gt_right" headers="late stub_1_21 p_mle">0.75</td>
+<td class="gt_row gt_right" headers="late stub_1_21 p">0.58</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_22" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="late stub_1_22 er">1</td>
+<td class="gt_row gt_center" headers="late stub_1_22 er">0</td>
 <td class="gt_row gt_center" headers="late stub_1_22 r">0</td>
-<td class="gt_row gt_center" headers="late stub_1_22 srp">0</td>
-<td class="gt_row gt_center" headers="late stub_1_22 ed">0</td>
-<td class="gt_row gt_center" headers="late stub_1_22 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_22 ef">0</td>
-<td class="gt_row gt_center" headers="late stub_1_22 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_22 y">152</td>
-<td class="gt_row gt_right" headers="late stub_1_22 n">253</td>
-<td class="gt_row gt_right" headers="late stub_1_22 p_mle">0.60</td>
-<td class="gt_row gt_right" headers="late stub_1_22 p">0.59</td>
+<td class="gt_row gt_center" headers="late stub_1_22 srp">2</td>
+<td class="gt_row gt_center" headers="late stub_1_22 ed">1</td>
+<td class="gt_row gt_center" headers="late stub_1_22 d">1</td>
+<td class="gt_row gt_center" headers="late stub_1_22 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_22 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_22 y">1</td>
+<td class="gt_row gt_right" headers="late stub_1_22 n">2</td>
+<td class="gt_row gt_right" headers="late stub_1_22 p_mle">0.50</td>
+<td class="gt_row gt_right" headers="late stub_1_22 p">0.58</td>
 </tr>
 <tr class="even">
 <td id="stub_1_23" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1175,12 +1157,12 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_23 srp">0</td>
 <td class="gt_row gt_center" headers="late stub_1_23 ed">0</td>
 <td class="gt_row gt_center" headers="late stub_1_23 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_23 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_23 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_23 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_23 y">99</td>
-<td class="gt_row gt_right" headers="late stub_1_23 n">179</td>
-<td class="gt_row gt_right" headers="late stub_1_23 p_mle">0.55</td>
-<td class="gt_row gt_right" headers="late stub_1_23 p">0.53</td>
+<td class="gt_row gt_right" headers="late stub_1_23 y">146</td>
+<td class="gt_row gt_right" headers="late stub_1_23 n">233</td>
+<td class="gt_row gt_right" headers="late stub_1_23 p_mle">0.63</td>
+<td class="gt_row gt_right" headers="late stub_1_23 p">0.63</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_24" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1190,39 +1172,39 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_24 ed">0</td>
 <td class="gt_row gt_center" headers="late stub_1_24 d">0</td>
 <td class="gt_row gt_center" headers="late stub_1_24 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_24 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_24 y">98</td>
-<td class="gt_row gt_right" headers="late stub_1_24 n">199</td>
-<td class="gt_row gt_right" headers="late stub_1_24 p_mle">0.49</td>
-<td class="gt_row gt_right" headers="late stub_1_24 p">0.53</td>
+<td class="gt_row gt_center" headers="late stub_1_24 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_24 y">108</td>
+<td class="gt_row gt_right" headers="late stub_1_24 n">192</td>
+<td class="gt_row gt_right" headers="late stub_1_24 p_mle">0.56</td>
+<td class="gt_row gt_right" headers="late stub_1_24 p">0.57</td>
 </tr>
 <tr class="even">
 <td id="stub_1_25" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_25 er">1</td>
 <td class="gt_row gt_center" headers="late stub_1_25 r">0</td>
-<td class="gt_row gt_center" headers="late stub_1_25 srp">1</td>
-<td class="gt_row gt_center" headers="late stub_1_25 ed">1</td>
+<td class="gt_row gt_center" headers="late stub_1_25 srp">0</td>
+<td class="gt_row gt_center" headers="late stub_1_25 ed">0</td>
 <td class="gt_row gt_center" headers="late stub_1_25 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_25 ef">0</td>
-<td class="gt_row gt_center" headers="late stub_1_25 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_25 y">1</td>
-<td class="gt_row gt_right" headers="late stub_1_25 n">1</td>
-<td class="gt_row gt_right" headers="late stub_1_25 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="late stub_1_25 p">0.63</td>
+<td class="gt_row gt_center" headers="late stub_1_25 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_25 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_25 y">99</td>
+<td class="gt_row gt_right" headers="late stub_1_25 n">172</td>
+<td class="gt_row gt_right" headers="late stub_1_25 p_mle">0.58</td>
+<td class="gt_row gt_right" headers="late stub_1_25 p">0.57</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_26" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_26 er">1</td>
-<td class="gt_row gt_center" headers="late stub_1_26 r">0</td>
-<td class="gt_row gt_center" headers="late stub_1_26 srp">2</td>
+<td class="gt_row gt_center" headers="late stub_1_26 r">1</td>
+<td class="gt_row gt_center" headers="late stub_1_26 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_26 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_26 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_26 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_26 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_26 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_26 y">0</td>
-<td class="gt_row gt_right" headers="late stub_1_26 n">1</td>
-<td class="gt_row gt_right" headers="late stub_1_26 p_mle">0.00</td>
-<td class="gt_row gt_right" headers="late stub_1_26 p">0.57</td>
+<td class="gt_row gt_right" headers="late stub_1_26 y">21</td>
+<td class="gt_row gt_right" headers="late stub_1_26 n">41</td>
+<td class="gt_row gt_right" headers="late stub_1_26 p_mle">0.51</td>
+<td class="gt_row gt_right" headers="late stub_1_26 p">0.63</td>
 </tr>
 <tr class="even">
 <td id="stub_1_27" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1231,12 +1213,12 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_27 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_27 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_27 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_27 ef">0</td>
+<td class="gt_row gt_center" headers="late stub_1_27 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_27 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_27 y">21</td>
-<td class="gt_row gt_right" headers="late stub_1_27 n">36</td>
-<td class="gt_row gt_right" headers="late stub_1_27 p_mle">0.58</td>
-<td class="gt_row gt_right" headers="late stub_1_27 p">0.63</td>
+<td class="gt_row gt_right" headers="late stub_1_27 y">15</td>
+<td class="gt_row gt_right" headers="late stub_1_27 n">28</td>
+<td class="gt_row gt_right" headers="late stub_1_27 p_mle">0.54</td>
+<td class="gt_row gt_right" headers="late stub_1_27 p">0.57</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_28" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1246,10 +1228,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_28 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_28 d">0</td>
 <td class="gt_row gt_center" headers="late stub_1_28 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_28 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_28 y">22</td>
-<td class="gt_row gt_right" headers="late stub_1_28 n">35</td>
-<td class="gt_row gt_right" headers="late stub_1_28 p_mle">0.63</td>
+<td class="gt_row gt_center" headers="late stub_1_28 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_28 y">26</td>
+<td class="gt_row gt_right" headers="late stub_1_28 n">45</td>
+<td class="gt_row gt_right" headers="late stub_1_28 p_mle">0.58</td>
 <td class="gt_row gt_right" headers="late stub_1_28 p">0.57</td>
 </tr>
 <tr class="even">
@@ -1258,13 +1240,13 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_29 r">1</td>
 <td class="gt_row gt_center" headers="late stub_1_29 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_29 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_29 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_29 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_29 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_29 y">13</td>
-<td class="gt_row gt_right" headers="late stub_1_29 n">27</td>
-<td class="gt_row gt_right" headers="late stub_1_29 p_mle">0.48</td>
-<td class="gt_row gt_right" headers="late stub_1_29 p">0.57</td>
+<td class="gt_row gt_center" headers="late stub_1_29 d">1</td>
+<td class="gt_row gt_center" headers="late stub_1_29 ef">0</td>
+<td class="gt_row gt_center" headers="late stub_1_29 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_29 y">26</td>
+<td class="gt_row gt_right" headers="late stub_1_29 n">44</td>
+<td class="gt_row gt_right" headers="late stub_1_29 p_mle">0.59</td>
+<td class="gt_row gt_right" headers="late stub_1_29 p">0.63</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_30" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1273,12 +1255,12 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_30 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_30 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_30 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_30 ef">0</td>
+<td class="gt_row gt_center" headers="late stub_1_30 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_30 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_30 y">24</td>
-<td class="gt_row gt_right" headers="late stub_1_30 n">46</td>
-<td class="gt_row gt_right" headers="late stub_1_30 p_mle">0.52</td>
-<td class="gt_row gt_right" headers="late stub_1_30 p">0.63</td>
+<td class="gt_row gt_right" headers="late stub_1_30 y">19</td>
+<td class="gt_row gt_right" headers="late stub_1_30 n">30</td>
+<td class="gt_row gt_right" headers="late stub_1_30 p_mle">0.63</td>
+<td class="gt_row gt_right" headers="late stub_1_30 p">0.57</td>
 </tr>
 <tr class="even">
 <td id="stub_1_31" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1288,25 +1270,25 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_31 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_31 d">1</td>
 <td class="gt_row gt_center" headers="late stub_1_31 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_31 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_31 y">20</td>
-<td class="gt_row gt_right" headers="late stub_1_31 n">37</td>
-<td class="gt_row gt_right" headers="late stub_1_31 p_mle">0.54</td>
+<td class="gt_row gt_center" headers="late stub_1_31 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_31 y">15</td>
+<td class="gt_row gt_right" headers="late stub_1_31 n">25</td>
+<td class="gt_row gt_right" headers="late stub_1_31 p_mle">0.60</td>
 <td class="gt_row gt_right" headers="late stub_1_31 p">0.57</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_32" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_32 er">1</td>
 <td class="gt_row gt_center" headers="late stub_1_32 r">1</td>
-<td class="gt_row gt_center" headers="late stub_1_32 srp">1</td>
+<td class="gt_row gt_center" headers="late stub_1_32 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_32 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_32 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_32 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_32 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_32 y">13</td>
-<td class="gt_row gt_right" headers="late stub_1_32 n">23</td>
-<td class="gt_row gt_right" headers="late stub_1_32 p_mle">0.57</td>
-<td class="gt_row gt_right" headers="late stub_1_32 p">0.57</td>
+<td class="gt_row gt_center" headers="late stub_1_32 d">0</td>
+<td class="gt_row gt_center" headers="late stub_1_32 ef">0</td>
+<td class="gt_row gt_center" headers="late stub_1_32 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_32 y">48</td>
+<td class="gt_row gt_right" headers="late stub_1_32 n">79</td>
+<td class="gt_row gt_right" headers="late stub_1_32 p_mle">0.61</td>
+<td class="gt_row gt_right" headers="late stub_1_32 p">0.63</td>
 </tr>
 <tr class="even">
 <td id="stub_1_33" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1315,12 +1297,12 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_33 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_33 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_33 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_33 ef">0</td>
+<td class="gt_row gt_center" headers="late stub_1_33 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_33 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_33 y">52</td>
-<td class="gt_row gt_right" headers="late stub_1_33 n">81</td>
-<td class="gt_row gt_right" headers="late stub_1_33 p_mle">0.64</td>
-<td class="gt_row gt_right" headers="late stub_1_33 p">0.63</td>
+<td class="gt_row gt_right" headers="late stub_1_33 y">34</td>
+<td class="gt_row gt_right" headers="late stub_1_33 n">62</td>
+<td class="gt_row gt_right" headers="late stub_1_33 p_mle">0.55</td>
+<td class="gt_row gt_right" headers="late stub_1_33 p">0.57</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_34" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1330,10 +1312,10 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_34 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_34 d">0</td>
 <td class="gt_row gt_center" headers="late stub_1_34 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_34 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_34 y">34</td>
-<td class="gt_row gt_right" headers="late stub_1_34 n">70</td>
-<td class="gt_row gt_right" headers="late stub_1_34 p_mle">0.49</td>
+<td class="gt_row gt_center" headers="late stub_1_34 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_34 y">33</td>
+<td class="gt_row gt_right" headers="late stub_1_34 n">56</td>
+<td class="gt_row gt_right" headers="late stub_1_34 p_mle">0.59</td>
 <td class="gt_row gt_right" headers="late stub_1_34 p">0.57</td>
 </tr>
 <tr class="even">
@@ -1342,13 +1324,13 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_35 r">1</td>
 <td class="gt_row gt_center" headers="late stub_1_35 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_35 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_35 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_35 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_35 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_35 y">35</td>
-<td class="gt_row gt_right" headers="late stub_1_35 n">64</td>
-<td class="gt_row gt_right" headers="late stub_1_35 p_mle">0.55</td>
-<td class="gt_row gt_right" headers="late stub_1_35 p">0.57</td>
+<td class="gt_row gt_center" headers="late stub_1_35 d">1</td>
+<td class="gt_row gt_center" headers="late stub_1_35 ef">0</td>
+<td class="gt_row gt_center" headers="late stub_1_35 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_35 y">54</td>
+<td class="gt_row gt_right" headers="late stub_1_35 n">78</td>
+<td class="gt_row gt_right" headers="late stub_1_35 p_mle">0.69</td>
+<td class="gt_row gt_right" headers="late stub_1_35 p">0.63</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_36" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1357,12 +1339,12 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_36 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_36 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_36 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_36 ef">0</td>
+<td class="gt_row gt_center" headers="late stub_1_36 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_36 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_36 y">55</td>
-<td class="gt_row gt_right" headers="late stub_1_36 n">94</td>
-<td class="gt_row gt_right" headers="late stub_1_36 p_mle">0.59</td>
-<td class="gt_row gt_right" headers="late stub_1_36 p">0.63</td>
+<td class="gt_row gt_right" headers="late stub_1_36 y">35</td>
+<td class="gt_row gt_right" headers="late stub_1_36 n">61</td>
+<td class="gt_row gt_right" headers="late stub_1_36 p_mle">0.57</td>
+<td class="gt_row gt_right" headers="late stub_1_36 p">0.57</td>
 </tr>
 <tr class="even">
 <td id="stub_1_37" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1372,27 +1354,13 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="late stub_1_37 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_37 d">1</td>
 <td class="gt_row gt_center" headers="late stub_1_37 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_37 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_37 y">31</td>
-<td class="gt_row gt_right" headers="late stub_1_37 n">57</td>
-<td class="gt_row gt_right" headers="late stub_1_37 p_mle">0.54</td>
+<td class="gt_row gt_center" headers="late stub_1_37 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_37 y">28</td>
+<td class="gt_row gt_right" headers="late stub_1_37 n">54</td>
+<td class="gt_row gt_right" headers="late stub_1_37 p_mle">0.52</td>
 <td class="gt_row gt_right" headers="late stub_1_37 p">0.57</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_38" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="late stub_1_38 er">1</td>
-<td class="gt_row gt_center" headers="late stub_1_38 r">1</td>
-<td class="gt_row gt_center" headers="late stub_1_38 srp">2</td>
-<td class="gt_row gt_center" headers="late stub_1_38 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_38 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_38 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_38 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_38 y">37</td>
-<td class="gt_row gt_right" headers="late stub_1_38 n">72</td>
-<td class="gt_row gt_right" headers="late stub_1_38 p_mle">0.51</td>
-<td class="gt_row gt_right" headers="late stub_1_38 p">0.57</td>
-</tr>
-<tr class="even">
 <td id="summary_stub_late_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 er">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 r">—</td>
@@ -1401,27 +1369,41 @@ window.Quarto = {
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 d">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 ef">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 f">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 y">722</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 n">1299</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 p_mle">0.56</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 y">726</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 n">1234</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 p_mle">0.59</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 p">—</td>
 </tr>
-<tr class="odd gt_group_heading_row">
+<tr class="even gt_group_heading_row">
 <td colspan="12" id="chronic" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">chronic</td>
 </tr>
-<tr class="even gt_row_group_first">
+<tr class="odd gt_row_group_first">
+<td id="stub_1_38" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 er">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 r">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 srp">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 ed">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 d">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 ef">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 f">0</td>
+<td class="gt_row gt_right" headers="chronic stub_1_38 y">23</td>
+<td class="gt_row gt_right" headers="chronic stub_1_38 n">38</td>
+<td class="gt_row gt_right" headers="chronic stub_1_38 p_mle">0.61</td>
+<td class="gt_row gt_right" headers="chronic stub_1_38 p">0.66</td>
+</tr>
+<tr class="even">
 <td id="stub_1_39" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="chronic stub_1_39 er">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_39 r">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_39 srp">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_39 ed">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_39 d">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_39 ef">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_39 ef">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_39 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_39 y">24</td>
-<td class="gt_row gt_right" headers="chronic stub_1_39 n">39</td>
-<td class="gt_row gt_right" headers="chronic stub_1_39 p_mle">0.62</td>
-<td class="gt_row gt_right" headers="chronic stub_1_39 p">0.63</td>
+<td class="gt_row gt_right" headers="chronic stub_1_39 y">23</td>
+<td class="gt_row gt_right" headers="chronic stub_1_39 n">30</td>
+<td class="gt_row gt_right" headers="chronic stub_1_39 p_mle">0.77</td>
+<td class="gt_row gt_right" headers="chronic stub_1_39 p">0.61</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_40" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1431,25 +1413,25 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="chronic stub_1_40 ed">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_40 d">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_40 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_40 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_40 y">16</td>
-<td class="gt_row gt_right" headers="chronic stub_1_40 n">30</td>
-<td class="gt_row gt_right" headers="chronic stub_1_40 p_mle">0.53</td>
-<td class="gt_row gt_right" headers="chronic stub_1_40 p">0.57</td>
+<td class="gt_row gt_center" headers="chronic stub_1_40 f">1</td>
+<td class="gt_row gt_right" headers="chronic stub_1_40 y">21</td>
+<td class="gt_row gt_right" headers="chronic stub_1_40 n">33</td>
+<td class="gt_row gt_right" headers="chronic stub_1_40 p_mle">0.64</td>
+<td class="gt_row gt_right" headers="chronic stub_1_40 p">0.61</td>
 </tr>
 <tr class="even">
 <td id="stub_1_41" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="chronic stub_1_41 er">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_41 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_41 srp">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_41 ed">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_41 srp">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_41 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_41 d">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_41 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_41 f">1</td>
-<td class="gt_row gt_right" headers="chronic stub_1_41 y">19</td>
-<td class="gt_row gt_right" headers="chronic stub_1_41 n">28</td>
-<td class="gt_row gt_right" headers="chronic stub_1_41 p_mle">0.68</td>
-<td class="gt_row gt_right" headers="chronic stub_1_41 p">0.57</td>
+<td class="gt_row gt_center" headers="chronic stub_1_41 ef">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_41 f">0</td>
+<td class="gt_row gt_right" headers="chronic stub_1_41 y">12</td>
+<td class="gt_row gt_right" headers="chronic stub_1_41 n">17</td>
+<td class="gt_row gt_right" headers="chronic stub_1_41 p_mle">0.71</td>
+<td class="gt_row gt_right" headers="chronic stub_1_41 p">0.71</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_42" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1458,12 +1440,12 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="chronic stub_1_42 srp">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_42 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_42 d">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_42 ef">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_42 ef">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_42 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_42 y">21</td>
-<td class="gt_row gt_right" headers="chronic stub_1_42 n">26</td>
-<td class="gt_row gt_right" headers="chronic stub_1_42 p_mle">0.81</td>
-<td class="gt_row gt_right" headers="chronic stub_1_42 p">0.66</td>
+<td class="gt_row gt_right" headers="chronic stub_1_42 y">14</td>
+<td class="gt_row gt_right" headers="chronic stub_1_42 n">19</td>
+<td class="gt_row gt_right" headers="chronic stub_1_42 p_mle">0.74</td>
+<td class="gt_row gt_right" headers="chronic stub_1_42 p">0.65</td>
 </tr>
 <tr class="even">
 <td id="stub_1_43" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1473,11 +1455,11 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="chronic stub_1_43 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_43 d">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_43 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_43 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_43 y">8</td>
-<td class="gt_row gt_right" headers="chronic stub_1_43 n">12</td>
-<td class="gt_row gt_right" headers="chronic stub_1_43 p_mle">0.67</td>
-<td class="gt_row gt_right" headers="chronic stub_1_43 p">0.61</td>
+<td class="gt_row gt_center" headers="chronic stub_1_43 f">1</td>
+<td class="gt_row gt_right" headers="chronic stub_1_43 y">13</td>
+<td class="gt_row gt_right" headers="chronic stub_1_43 n">17</td>
+<td class="gt_row gt_right" headers="chronic stub_1_43 p_mle">0.76</td>
+<td class="gt_row gt_right" headers="chronic stub_1_43 p">0.65</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_44" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1485,13 +1467,13 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="chronic stub_1_44 r">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_44 srp">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_44 ed">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_44 d">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_44 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_44 f">1</td>
-<td class="gt_row gt_right" headers="chronic stub_1_44 y">11</td>
-<td class="gt_row gt_right" headers="chronic stub_1_44 n">13</td>
-<td class="gt_row gt_right" headers="chronic stub_1_44 p_mle">0.85</td>
-<td class="gt_row gt_right" headers="chronic stub_1_44 p">0.61</td>
+<td class="gt_row gt_center" headers="chronic stub_1_44 d">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_44 ef">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_44 f">0</td>
+<td class="gt_row gt_right" headers="chronic stub_1_44 y">12</td>
+<td class="gt_row gt_right" headers="chronic stub_1_44 n">20</td>
+<td class="gt_row gt_right" headers="chronic stub_1_44 p_mle">0.60</td>
+<td class="gt_row gt_right" headers="chronic stub_1_44 p">0.71</td>
 </tr>
 <tr class="even">
 <td id="stub_1_45" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1500,12 +1482,12 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="chronic stub_1_45 srp">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_45 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_45 d">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_45 ef">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_45 ef">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_45 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_45 y">7</td>
-<td class="gt_row gt_right" headers="chronic stub_1_45 n">10</td>
-<td class="gt_row gt_right" headers="chronic stub_1_45 p_mle">0.70</td>
-<td class="gt_row gt_right" headers="chronic stub_1_45 p">0.66</td>
+<td class="gt_row gt_right" headers="chronic stub_1_45 y">9</td>
+<td class="gt_row gt_right" headers="chronic stub_1_45 n">17</td>
+<td class="gt_row gt_right" headers="chronic stub_1_45 p_mle">0.53</td>
+<td class="gt_row gt_right" headers="chronic stub_1_45 p">0.65</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_46" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1515,25 +1497,25 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="chronic stub_1_46 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_46 d">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_46 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_46 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_46 y">9</td>
-<td class="gt_row gt_right" headers="chronic stub_1_46 n">17</td>
-<td class="gt_row gt_right" headers="chronic stub_1_46 p_mle">0.53</td>
-<td class="gt_row gt_right" headers="chronic stub_1_46 p">0.61</td>
+<td class="gt_row gt_center" headers="chronic stub_1_46 f">1</td>
+<td class="gt_row gt_right" headers="chronic stub_1_46 y">5</td>
+<td class="gt_row gt_right" headers="chronic stub_1_46 n">12</td>
+<td class="gt_row gt_right" headers="chronic stub_1_46 p_mle">0.42</td>
+<td class="gt_row gt_right" headers="chronic stub_1_46 p">0.65</td>
 </tr>
 <tr class="even">
 <td id="stub_1_47" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="chronic stub_1_47 er">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_47 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_47 srp">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_47 srp">2</td>
 <td class="gt_row gt_center" headers="chronic stub_1_47 ed">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_47 d">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_47 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_47 f">1</td>
-<td class="gt_row gt_right" headers="chronic stub_1_47 y">10</td>
-<td class="gt_row gt_right" headers="chronic stub_1_47 n">14</td>
-<td class="gt_row gt_right" headers="chronic stub_1_47 p_mle">0.71</td>
-<td class="gt_row gt_right" headers="chronic stub_1_47 p">0.61</td>
+<td class="gt_row gt_center" headers="chronic stub_1_47 d">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_47 ef">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_47 f">0</td>
+<td class="gt_row gt_right" headers="chronic stub_1_47 y">48</td>
+<td class="gt_row gt_right" headers="chronic stub_1_47 n">60</td>
+<td class="gt_row gt_right" headers="chronic stub_1_47 p_mle">0.80</td>
+<td class="gt_row gt_right" headers="chronic stub_1_47 p">0.70</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_48" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1542,12 +1524,12 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="chronic stub_1_48 srp">2</td>
 <td class="gt_row gt_center" headers="chronic stub_1_48 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_48 d">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_48 ef">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_48 ef">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_48 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_48 y">52</td>
-<td class="gt_row gt_right" headers="chronic stub_1_48 n">71</td>
-<td class="gt_row gt_right" headers="chronic stub_1_48 p_mle">0.73</td>
-<td class="gt_row gt_right" headers="chronic stub_1_48 p">0.66</td>
+<td class="gt_row gt_right" headers="chronic stub_1_48 y">27</td>
+<td class="gt_row gt_right" headers="chronic stub_1_48 n">47</td>
+<td class="gt_row gt_right" headers="chronic stub_1_48 p_mle">0.57</td>
+<td class="gt_row gt_right" headers="chronic stub_1_48 p">0.64</td>
 </tr>
 <tr class="even">
 <td id="stub_1_49" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1557,11 +1539,11 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="chronic stub_1_49 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_49 d">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_49 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_49 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_49 y">22</td>
-<td class="gt_row gt_right" headers="chronic stub_1_49 n">49</td>
-<td class="gt_row gt_right" headers="chronic stub_1_49 p_mle">0.45</td>
-<td class="gt_row gt_right" headers="chronic stub_1_49 p">0.61</td>
+<td class="gt_row gt_center" headers="chronic stub_1_49 f">1</td>
+<td class="gt_row gt_right" headers="chronic stub_1_49 y">24</td>
+<td class="gt_row gt_right" headers="chronic stub_1_49 n">33</td>
+<td class="gt_row gt_right" headers="chronic stub_1_49 p_mle">0.73</td>
+<td class="gt_row gt_right" headers="chronic stub_1_49 p">0.64</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_50" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1569,13 +1551,13 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="chronic stub_1_50 r">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_50 srp">2</td>
 <td class="gt_row gt_center" headers="chronic stub_1_50 ed">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_50 d">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_50 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_50 f">1</td>
-<td class="gt_row gt_right" headers="chronic stub_1_50 y">23</td>
-<td class="gt_row gt_right" headers="chronic stub_1_50 n">43</td>
-<td class="gt_row gt_right" headers="chronic stub_1_50 p_mle">0.53</td>
-<td class="gt_row gt_right" headers="chronic stub_1_50 p">0.61</td>
+<td class="gt_row gt_center" headers="chronic stub_1_50 d">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_50 ef">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_50 f">0</td>
+<td class="gt_row gt_right" headers="chronic stub_1_50 y">41</td>
+<td class="gt_row gt_right" headers="chronic stub_1_50 n">56</td>
+<td class="gt_row gt_right" headers="chronic stub_1_50 p_mle">0.73</td>
+<td class="gt_row gt_right" headers="chronic stub_1_50 p">0.70</td>
 </tr>
 <tr class="even">
 <td id="stub_1_51" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1584,12 +1566,12 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="chronic stub_1_51 srp">2</td>
 <td class="gt_row gt_center" headers="chronic stub_1_51 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_51 d">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_51 ef">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_51 ef">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_51 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_51 y">38</td>
-<td class="gt_row gt_right" headers="chronic stub_1_51 n">57</td>
-<td class="gt_row gt_right" headers="chronic stub_1_51 p_mle">0.67</td>
-<td class="gt_row gt_right" headers="chronic stub_1_51 p">0.66</td>
+<td class="gt_row gt_right" headers="chronic stub_1_51 y">31</td>
+<td class="gt_row gt_right" headers="chronic stub_1_51 n">44</td>
+<td class="gt_row gt_right" headers="chronic stub_1_51 p_mle">0.70</td>
+<td class="gt_row gt_right" headers="chronic stub_1_51 p">0.64</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_52" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -1599,27 +1581,13 @@ window.Quarto = {
 <td class="gt_row gt_center" headers="chronic stub_1_52 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_52 d">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_52 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_52 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_52 y">21</td>
-<td class="gt_row gt_right" headers="chronic stub_1_52 n">40</td>
+<td class="gt_row gt_center" headers="chronic stub_1_52 f">1</td>
+<td class="gt_row gt_right" headers="chronic stub_1_52 y">31</td>
+<td class="gt_row gt_right" headers="chronic stub_1_52 n">58</td>
 <td class="gt_row gt_right" headers="chronic stub_1_52 p_mle">0.53</td>
-<td class="gt_row gt_right" headers="chronic stub_1_52 p">0.61</td>
+<td class="gt_row gt_right" headers="chronic stub_1_52 p">0.64</td>
 </tr>
 <tr class="even">
-<td id="stub_1_53" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 er">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 srp">2</td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 ed">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 d">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 f">1</td>
-<td class="gt_row gt_right" headers="chronic stub_1_53 y">29</td>
-<td class="gt_row gt_right" headers="chronic stub_1_53 n">54</td>
-<td class="gt_row gt_right" headers="chronic stub_1_53 p_mle">0.54</td>
-<td class="gt_row gt_right" headers="chronic stub_1_53 p">0.61</td>
-</tr>
-<tr class="odd">
 <td id="summary_stub_chronic_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 er">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 r">—</td>
@@ -1628,12 +1596,12 @@ window.Quarto = {
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 d">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 ef">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 f">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 y">310</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 n">503</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 p_mle">0.62</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 y">334</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 n">501</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 p_mle">0.67</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 p">—</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td id="grand_summary_stub_1" class="gt_row gt_left gt_stub gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">total</td>
 <td class="gt_row gt_center gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 er">—</td>
 <td class="gt_row gt_center gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 r">—</td>
@@ -1642,13 +1610,13 @@ window.Quarto = {
 <td class="gt_row gt_center gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 d">—</td>
 <td class="gt_row gt_center gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 ef">—</td>
 <td class="gt_row gt_center gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 f">—</td>
-<td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 y">1473</td>
+<td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 y">1567</td>
 <td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 n">2500</td>
-<td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 p_mle">0.59</td>
+<td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 p_mle">0.63</td>
 <td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 p">—</td>
 </tr>
 </tbody><tfoot class="gt_footnotes">
-<tr class="even">
+<tr class="odd">
 <td colspan="12" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> Transformed from the log-odds of response as used in the linear predictor to simulate data.</td>
 </tr>
 </tfoot>
@@ -1675,19 +1643,19 @@ Table&nbsp;1: Summary of simulated trial data when no treatment effects present
 <span id="cb2-5"><a href="#cb2-5"></a>m2 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">"stan/model-sim-04.stan"</span>)</span>
 <span id="cb2-6"><a href="#cb2-6"></a></span>
 <span id="cb2-7"><a href="#cb2-7"></a>f_null_1 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb2-8"><a href="#cb2-8"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb2-8"><a href="#cb2-8"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">10000</span>,</span>
 <span id="cb2-9"><a href="#cb2-9"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
 <span id="cb2-10"><a href="#cb2-10"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 1 finished in 1.6 seconds.
-Chain 2 finished in 1.8 seconds.
+Chain 2 finished in 4.5 seconds.
+Chain 1 finished in 4.9 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 1.7 seconds.
-Total execution time: 2.0 seconds.</code></pre>
+Mean chain execution time: 4.7 seconds.
+Total execution time: 5.0 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -1708,19 +1676,19 @@ Total execution time: 2.0 seconds.</code></pre>
 <span id="cb4-15"><a href="#cb4-15"></a>ld<span class="sc">$</span>pri_b_sd <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">10</span>, <span class="fu">length</span>(ld<span class="sc">$</span>pri_b_sd))</span>
 <span id="cb4-16"><a href="#cb4-16"></a></span>
 <span id="cb4-17"><a href="#cb4-17"></a>f_null_2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb4-18"><a href="#cb4-18"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb4-18"><a href="#cb4-18"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">10000</span>,</span>
 <span id="cb4-19"><a href="#cb4-19"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
 <span id="cb4-20"><a href="#cb4-20"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 2 finished in 1.8 seconds.
-Chain 1 finished in 1.9 seconds.
+Chain 2 finished in 5.5 seconds.
+Chain 1 finished in 5.9 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 1.8 seconds.
-Total execution time: 2.0 seconds.</code></pre>
+Mean chain execution time: 5.7 seconds.
+Total execution time: 6.0 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -1749,7 +1717,7 @@ Total execution time: 2.0 seconds.</code></pre>
 <span id="cb7-8"><a href="#cb7-8"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> name_tru, <span class="at">y =</span> mu, <span class="at">col =</span> prior)) <span class="sc">+</span></span>
 <span id="cb7-9"><a href="#cb7-9"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb7-10"><a href="#cb7-10"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
-<span id="cb7-11"><a href="#cb7-11"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">"Prior sd on log-OR domain trt effects"</span>) <span class="sc">+</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">"Prior sd on log-OR"</span>) <span class="sc">+</span></span>
 <span id="cb7-12"><a href="#cb7-12"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> name_tru, <span class="at">y =</span> mu), <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
 <span id="cb7-13"><a href="#cb7-13"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> q_025, <span class="at">ymax =</span> q_975), <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
 <span id="cb7-14"><a href="#cb7-14"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> name_tru, <span class="at">y =</span> tru), <span class="at">col =</span> <span class="dv">1</span>, <span class="at">pch =</span> <span class="dv">2</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -1790,23 +1758,23 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <figure class="quarto-float quarto-float-tbl figure page-columns page-full">
 <div aria-describedby="tbl-ex-alleff-1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca" class="page-columns page-full">
 <div class="cell-output-display column-page">
-<div id="vitpzwwjhq" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
-<style>#vitpzwwjhq table {
+<div id="pbdhozpydd" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#pbdhozpydd table {
   font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-#vitpzwwjhq thead, #vitpzwwjhq tbody, #vitpzwwjhq tfoot, #vitpzwwjhq tr, #vitpzwwjhq td, #vitpzwwjhq th {
+#pbdhozpydd thead, #pbdhozpydd tbody, #pbdhozpydd tfoot, #pbdhozpydd tr, #pbdhozpydd td, #pbdhozpydd th {
   border-style: none;
 }
 
-#vitpzwwjhq p {
+#pbdhozpydd p {
   margin: 0;
   padding: 0;
 }
 
-#vitpzwwjhq .gt_table {
+#pbdhozpydd .gt_table {
   display: table;
   border-collapse: collapse;
   line-height: normal;
@@ -1832,12 +1800,12 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   border-left-color: #D3D3D3;
 }
 
-#vitpzwwjhq .gt_caption {
+#pbdhozpydd .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#vitpzwwjhq .gt_title {
+#pbdhozpydd .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -1849,7 +1817,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   border-bottom-width: 0;
 }
 
-#vitpzwwjhq .gt_subtitle {
+#pbdhozpydd .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -1861,7 +1829,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   border-top-width: 0;
 }
 
-#vitpzwwjhq .gt_heading {
+#pbdhozpydd .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -1873,13 +1841,13 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   border-right-color: #D3D3D3;
 }
 
-#vitpzwwjhq .gt_bottom_border {
+#pbdhozpydd .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#vitpzwwjhq .gt_col_headings {
+#pbdhozpydd .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -1894,7 +1862,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   border-right-color: #D3D3D3;
 }
 
-#vitpzwwjhq .gt_col_heading {
+#pbdhozpydd .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1914,7 +1882,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   overflow-x: hidden;
 }
 
-#vitpzwwjhq .gt_column_spanner_outer {
+#pbdhozpydd .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -1926,15 +1894,15 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   padding-right: 4px;
 }
 
-#vitpzwwjhq .gt_column_spanner_outer:first-child {
+#pbdhozpydd .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#vitpzwwjhq .gt_column_spanner_outer:last-child {
+#pbdhozpydd .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#vitpzwwjhq .gt_column_spanner {
+#pbdhozpydd .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -1946,11 +1914,11 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   width: 100%;
 }
 
-#vitpzwwjhq .gt_spanner_row {
+#pbdhozpydd .gt_spanner_row {
   border-bottom-style: hidden;
 }
 
-#vitpzwwjhq .gt_group_heading {
+#pbdhozpydd .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -1976,7 +1944,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   text-align: left;
 }
 
-#vitpzwwjhq .gt_empty_group_heading {
+#pbdhozpydd .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -1991,15 +1959,15 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   vertical-align: middle;
 }
 
-#vitpzwwjhq .gt_from_md > :first-child {
+#pbdhozpydd .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#vitpzwwjhq .gt_from_md > :last-child {
+#pbdhozpydd .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#vitpzwwjhq .gt_row {
+#pbdhozpydd .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2018,7 +1986,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   overflow-x: hidden;
 }
 
-#vitpzwwjhq .gt_stub {
+#pbdhozpydd .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2031,7 +1999,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   padding-right: 5px;
 }
 
-#vitpzwwjhq .gt_stub_row_group {
+#pbdhozpydd .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -2045,15 +2013,15 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   vertical-align: top;
 }
 
-#vitpzwwjhq .gt_row_group_first td {
+#pbdhozpydd .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#vitpzwwjhq .gt_row_group_first th {
+#pbdhozpydd .gt_row_group_first th {
   border-top-width: 2px;
 }
 
-#vitpzwwjhq .gt_summary_row {
+#pbdhozpydd .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2063,16 +2031,16 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   padding-right: 5px;
 }
 
-#vitpzwwjhq .gt_first_summary_row {
+#pbdhozpydd .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#vitpzwwjhq .gt_first_summary_row.thick {
+#pbdhozpydd .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#vitpzwwjhq .gt_last_summary_row {
+#pbdhozpydd .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2082,7 +2050,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   border-bottom-color: #D3D3D3;
 }
 
-#vitpzwwjhq .gt_grand_summary_row {
+#pbdhozpydd .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -2092,7 +2060,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   padding-right: 5px;
 }
 
-#vitpzwwjhq .gt_first_grand_summary_row {
+#pbdhozpydd .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2102,7 +2070,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   border-top-color: #D3D3D3;
 }
 
-#vitpzwwjhq .gt_last_grand_summary_row_top {
+#pbdhozpydd .gt_last_grand_summary_row_top {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -2112,11 +2080,11 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   border-bottom-color: #D3D3D3;
 }
 
-#vitpzwwjhq .gt_striped {
+#pbdhozpydd .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#vitpzwwjhq .gt_table_body {
+#pbdhozpydd .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -2125,7 +2093,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   border-bottom-color: #D3D3D3;
 }
 
-#vitpzwwjhq .gt_footnotes {
+#pbdhozpydd .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2139,7 +2107,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   border-right-color: #D3D3D3;
 }
 
-#vitpzwwjhq .gt_footnote {
+#pbdhozpydd .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-top: 4px;
@@ -2148,7 +2116,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   padding-right: 5px;
 }
 
-#vitpzwwjhq .gt_sourcenotes {
+#pbdhozpydd .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -2162,7 +2130,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   border-right-color: #D3D3D3;
 }
 
-#vitpzwwjhq .gt_sourcenote {
+#pbdhozpydd .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -2170,63 +2138,63 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
   padding-right: 5px;
 }
 
-#vitpzwwjhq .gt_left {
+#pbdhozpydd .gt_left {
   text-align: left;
 }
 
-#vitpzwwjhq .gt_center {
+#pbdhozpydd .gt_center {
   text-align: center;
 }
 
-#vitpzwwjhq .gt_right {
+#pbdhozpydd .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#vitpzwwjhq .gt_font_normal {
+#pbdhozpydd .gt_font_normal {
   font-weight: normal;
 }
 
-#vitpzwwjhq .gt_font_bold {
+#pbdhozpydd .gt_font_bold {
   font-weight: bold;
 }
 
-#vitpzwwjhq .gt_font_italic {
+#pbdhozpydd .gt_font_italic {
   font-style: italic;
 }
 
-#vitpzwwjhq .gt_super {
+#pbdhozpydd .gt_super {
   font-size: 65%;
 }
 
-#vitpzwwjhq .gt_footnote_marks {
+#pbdhozpydd .gt_footnote_marks {
   font-size: 75%;
   vertical-align: 0.4em;
   position: initial;
 }
 
-#vitpzwwjhq .gt_asterisk {
+#pbdhozpydd .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#vitpzwwjhq .gt_indent_1 {
+#pbdhozpydd .gt_indent_1 {
   text-indent: 5px;
 }
 
-#vitpzwwjhq .gt_indent_2 {
+#pbdhozpydd .gt_indent_2 {
   text-indent: 10px;
 }
 
-#vitpzwwjhq .gt_indent_3 {
+#pbdhozpydd .gt_indent_3 {
   text-indent: 15px;
 }
 
-#vitpzwwjhq .gt_indent_4 {
+#pbdhozpydd .gt_indent_4 {
   text-indent: 20px;
 }
 
-#vitpzwwjhq .gt_indent_5 {
+#pbdhozpydd .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
@@ -2267,10 +2235,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="early stub_1_1 d">0</td>
 <td class="gt_row gt_center" headers="early stub_1_1 ef">0</td>
 <td class="gt_row gt_center" headers="early stub_1_1 f">0</td>
-<td class="gt_row gt_right" headers="early stub_1_1 y">151</td>
-<td class="gt_row gt_right" headers="early stub_1_1 n">224</td>
-<td class="gt_row gt_right" headers="early stub_1_1 p_mle">0.67</td>
-<td class="gt_row gt_right" headers="early stub_1_1 p">0.65</td>
+<td class="gt_row gt_right" headers="early stub_1_1 y">166</td>
+<td class="gt_row gt_right" headers="early stub_1_1 n">245</td>
+<td class="gt_row gt_right" headers="early stub_1_1 p_mle">0.68</td>
+<td class="gt_row gt_right" headers="early stub_1_1 p">0.68</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_2" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2281,10 +2249,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="early stub_1_2 d">0</td>
 <td class="gt_row gt_center" headers="early stub_1_2 ef">1</td>
 <td class="gt_row gt_center" headers="early stub_1_2 f">0</td>
-<td class="gt_row gt_right" headers="early stub_1_2 y">121</td>
-<td class="gt_row gt_right" headers="early stub_1_2 n">190</td>
-<td class="gt_row gt_right" headers="early stub_1_2 p_mle">0.64</td>
-<td class="gt_row gt_right" headers="early stub_1_2 p">0.59</td>
+<td class="gt_row gt_right" headers="early stub_1_2 y">112</td>
+<td class="gt_row gt_right" headers="early stub_1_2 n">172</td>
+<td class="gt_row gt_right" headers="early stub_1_2 p_mle">0.65</td>
+<td class="gt_row gt_right" headers="early stub_1_2 p">0.63</td>
 </tr>
 <tr class="even">
 <td id="stub_1_3" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2295,10 +2263,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="early stub_1_3 d">0</td>
 <td class="gt_row gt_center" headers="early stub_1_3 ef">1</td>
 <td class="gt_row gt_center" headers="early stub_1_3 f">1</td>
-<td class="gt_row gt_right" headers="early stub_1_3 y">168</td>
-<td class="gt_row gt_right" headers="early stub_1_3 n">209</td>
-<td class="gt_row gt_right" headers="early stub_1_3 p_mle">0.80</td>
-<td class="gt_row gt_right" headers="early stub_1_3 p">0.74</td>
+<td class="gt_row gt_right" headers="early stub_1_3 y">156</td>
+<td class="gt_row gt_right" headers="early stub_1_3 n">207</td>
+<td class="gt_row gt_right" headers="early stub_1_3 p_mle">0.75</td>
+<td class="gt_row gt_right" headers="early stub_1_3 p">0.77</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_4" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2309,10 +2277,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="early stub_1_4 d">0</td>
 <td class="gt_row gt_center" headers="early stub_1_4 ef">0</td>
 <td class="gt_row gt_center" headers="early stub_1_4 f">0</td>
-<td class="gt_row gt_right" headers="early stub_1_4 y">11</td>
-<td class="gt_row gt_right" headers="early stub_1_4 n">17</td>
-<td class="gt_row gt_right" headers="early stub_1_4 p_mle">0.65</td>
-<td class="gt_row gt_right" headers="early stub_1_4 p">0.68</td>
+<td class="gt_row gt_right" headers="early stub_1_4 y">17</td>
+<td class="gt_row gt_right" headers="early stub_1_4 n">23</td>
+<td class="gt_row gt_right" headers="early stub_1_4 p_mle">0.74</td>
+<td class="gt_row gt_right" headers="early stub_1_4 p">0.72</td>
 </tr>
 <tr class="even">
 <td id="stub_1_5" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2323,10 +2291,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="early stub_1_5 d">0</td>
 <td class="gt_row gt_center" headers="early stub_1_5 ef">1</td>
 <td class="gt_row gt_center" headers="early stub_1_5 f">0</td>
-<td class="gt_row gt_right" headers="early stub_1_5 y">2</td>
-<td class="gt_row gt_right" headers="early stub_1_5 n">5</td>
-<td class="gt_row gt_right" headers="early stub_1_5 p_mle">0.40</td>
-<td class="gt_row gt_right" headers="early stub_1_5 p">0.63</td>
+<td class="gt_row gt_right" headers="early stub_1_5 y">6</td>
+<td class="gt_row gt_right" headers="early stub_1_5 n">7</td>
+<td class="gt_row gt_right" headers="early stub_1_5 p_mle">0.86</td>
+<td class="gt_row gt_right" headers="early stub_1_5 p">0.67</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_6" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2337,10 +2305,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="early stub_1_6 d">0</td>
 <td class="gt_row gt_center" headers="early stub_1_6 ef">1</td>
 <td class="gt_row gt_center" headers="early stub_1_6 f">1</td>
-<td class="gt_row gt_right" headers="early stub_1_6 y">17</td>
-<td class="gt_row gt_right" headers="early stub_1_6 n">21</td>
-<td class="gt_row gt_right" headers="early stub_1_6 p_mle">0.81</td>
-<td class="gt_row gt_right" headers="early stub_1_6 p">0.77</td>
+<td class="gt_row gt_right" headers="early stub_1_6 y">10</td>
+<td class="gt_row gt_right" headers="early stub_1_6 n">12</td>
+<td class="gt_row gt_right" headers="early stub_1_6 p_mle">0.83</td>
+<td class="gt_row gt_right" headers="early stub_1_6 p">0.80</td>
 </tr>
 <tr class="even">
 <td id="stub_1_7" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2351,10 +2319,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="early stub_1_7 d">1</td>
 <td class="gt_row gt_center" headers="early stub_1_7 ef">0</td>
 <td class="gt_row gt_center" headers="early stub_1_7 f">0</td>
-<td class="gt_row gt_right" headers="early stub_1_7 y">12</td>
-<td class="gt_row gt_right" headers="early stub_1_7 n">14</td>
-<td class="gt_row gt_right" headers="early stub_1_7 p_mle">0.86</td>
-<td class="gt_row gt_right" headers="early stub_1_7 p">0.81</td>
+<td class="gt_row gt_right" headers="early stub_1_7 y">10</td>
+<td class="gt_row gt_right" headers="early stub_1_7 n">13</td>
+<td class="gt_row gt_right" headers="early stub_1_7 p_mle">0.77</td>
+<td class="gt_row gt_right" headers="early stub_1_7 p">0.84</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_8" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2365,10 +2333,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="early stub_1_8 d">1</td>
 <td class="gt_row gt_center" headers="early stub_1_8 ef">1</td>
 <td class="gt_row gt_center" headers="early stub_1_8 f">0</td>
-<td class="gt_row gt_right" headers="early stub_1_8 y">8</td>
-<td class="gt_row gt_right" headers="early stub_1_8 n">10</td>
-<td class="gt_row gt_right" headers="early stub_1_8 p_mle">0.80</td>
-<td class="gt_row gt_right" headers="early stub_1_8 p">0.77</td>
+<td class="gt_row gt_right" headers="early stub_1_8 y">6</td>
+<td class="gt_row gt_right" headers="early stub_1_8 n">6</td>
+<td class="gt_row gt_right" headers="early stub_1_8 p_mle">1.00</td>
+<td class="gt_row gt_right" headers="early stub_1_8 p">0.80</td>
 </tr>
 <tr class="even">
 <td id="stub_1_9" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2379,10 +2347,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="early stub_1_9 d">1</td>
 <td class="gt_row gt_center" headers="early stub_1_9 ef">1</td>
 <td class="gt_row gt_center" headers="early stub_1_9 f">1</td>
-<td class="gt_row gt_right" headers="early stub_1_9 y">7</td>
-<td class="gt_row gt_right" headers="early stub_1_9 n">9</td>
-<td class="gt_row gt_right" headers="early stub_1_9 p_mle">0.78</td>
-<td class="gt_row gt_right" headers="early stub_1_9 p">0.87</td>
+<td class="gt_row gt_right" headers="early stub_1_9 y">13</td>
+<td class="gt_row gt_right" headers="early stub_1_9 n">14</td>
+<td class="gt_row gt_right" headers="early stub_1_9 p_mle">0.93</td>
+<td class="gt_row gt_right" headers="early stub_1_9 p">0.89</td>
 </tr>
 <tr class="odd">
 <td id="summary_stub_early_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
@@ -2393,7 +2361,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 d">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 ef">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 f">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 y">497</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 y">496</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 n">699</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 p_mle">0.71</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="early summary_stub_early_1 p">—</td>
@@ -2413,7 +2381,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_right" headers="late stub_1_10 y">1</td>
 <td class="gt_row gt_right" headers="late stub_1_10 n">1</td>
 <td class="gt_row gt_right" headers="late stub_1_10 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="late stub_1_10 p">0.57</td>
+<td class="gt_row gt_right" headers="late stub_1_10 p">0.61</td>
 </tr>
 <tr class="even">
 <td id="stub_1_11" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2427,7 +2395,7 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_right" headers="late stub_1_11 y">0</td>
 <td class="gt_row gt_right" headers="late stub_1_11 n">1</td>
 <td class="gt_row gt_right" headers="late stub_1_11 p_mle">0.00</td>
-<td class="gt_row gt_right" headers="late stub_1_11 p">0.51</td>
+<td class="gt_row gt_right" headers="late stub_1_11 p">0.55</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_12" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2438,10 +2406,10 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_12 d">0</td>
 <td class="gt_row gt_center" headers="late stub_1_12 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_12 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_12 y">2</td>
-<td class="gt_row gt_right" headers="late stub_1_12 n">3</td>
-<td class="gt_row gt_right" headers="late stub_1_12 p_mle">0.67</td>
-<td class="gt_row gt_right" headers="late stub_1_12 p">0.67</td>
+<td class="gt_row gt_right" headers="late stub_1_12 y">3</td>
+<td class="gt_row gt_right" headers="late stub_1_12 n">4</td>
+<td class="gt_row gt_right" headers="late stub_1_12 p_mle">0.75</td>
+<td class="gt_row gt_right" headers="late stub_1_12 p">0.71</td>
 </tr>
 <tr class="even">
 <td id="stub_1_13" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2450,12 +2418,12 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_13 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_13 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_13 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_13 ef">0</td>
-<td class="gt_row gt_center" headers="late stub_1_13 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_13 y">3</td>
-<td class="gt_row gt_right" headers="late stub_1_13 n">3</td>
-<td class="gt_row gt_right" headers="late stub_1_13 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="late stub_1_13 p">0.61</td>
+<td class="gt_row gt_center" headers="late stub_1_13 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_13 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_13 y">1</td>
+<td class="gt_row gt_right" headers="late stub_1_13 n">2</td>
+<td class="gt_row gt_right" headers="late stub_1_13 p_mle">0.50</td>
+<td class="gt_row gt_right" headers="late stub_1_13 p">0.75</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_14" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2463,13 +2431,13 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_14 r">0</td>
 <td class="gt_row gt_center" headers="late stub_1_14 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_14 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_14 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_14 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_14 d">1</td>
+<td class="gt_row gt_center" headers="late stub_1_14 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_14 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_14 y">1</td>
-<td class="gt_row gt_right" headers="late stub_1_14 n">1</td>
+<td class="gt_row gt_right" headers="late stub_1_14 y">2</td>
+<td class="gt_row gt_right" headers="late stub_1_14 n">2</td>
 <td class="gt_row gt_right" headers="late stub_1_14 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="late stub_1_14 p">0.55</td>
+<td class="gt_row gt_right" headers="late stub_1_14 p">0.79</td>
 </tr>
 <tr class="even">
 <td id="stub_1_15" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2477,13 +2445,13 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_15 r">0</td>
 <td class="gt_row gt_center" headers="late stub_1_15 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_15 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_15 d">0</td>
+<td class="gt_row gt_center" headers="late stub_1_15 d">1</td>
 <td class="gt_row gt_center" headers="late stub_1_15 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_15 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_15 y">0</td>
+<td class="gt_row gt_center" headers="late stub_1_15 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_15 y">1</td>
 <td class="gt_row gt_right" headers="late stub_1_15 n">1</td>
-<td class="gt_row gt_right" headers="late stub_1_15 p_mle">0.00</td>
-<td class="gt_row gt_right" headers="late stub_1_15 p">0.71</td>
+<td class="gt_row gt_right" headers="late stub_1_15 p_mle">1.00</td>
+<td class="gt_row gt_right" headers="late stub_1_15 p">0.75</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_16" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2492,40 +2460,40 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_16 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_16 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_16 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_16 ef">0</td>
-<td class="gt_row gt_center" headers="late stub_1_16 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_16 y">1</td>
-<td class="gt_row gt_right" headers="late stub_1_16 n">2</td>
-<td class="gt_row gt_right" headers="late stub_1_16 p_mle">0.50</td>
-<td class="gt_row gt_right" headers="late stub_1_16 p">0.75</td>
+<td class="gt_row gt_center" headers="late stub_1_16 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_16 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_16 y">3</td>
+<td class="gt_row gt_right" headers="late stub_1_16 n">3</td>
+<td class="gt_row gt_right" headers="late stub_1_16 p_mle">1.00</td>
+<td class="gt_row gt_right" headers="late stub_1_16 p">0.85</td>
 </tr>
 <tr class="even">
 <td id="stub_1_17" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_17 er">0</td>
 <td class="gt_row gt_center" headers="late stub_1_17 r">0</td>
-<td class="gt_row gt_center" headers="late stub_1_17 srp">1</td>
+<td class="gt_row gt_center" headers="late stub_1_17 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_17 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_17 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_17 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_17 d">0</td>
+<td class="gt_row gt_center" headers="late stub_1_17 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_17 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_17 y">1</td>
-<td class="gt_row gt_right" headers="late stub_1_17 n">2</td>
-<td class="gt_row gt_right" headers="late stub_1_17 p_mle">0.50</td>
-<td class="gt_row gt_right" headers="late stub_1_17 p">0.71</td>
+<td class="gt_row gt_right" headers="late stub_1_17 y">5</td>
+<td class="gt_row gt_right" headers="late stub_1_17 n">7</td>
+<td class="gt_row gt_right" headers="late stub_1_17 p_mle">0.71</td>
+<td class="gt_row gt_right" headers="late stub_1_17 p">0.64</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_18" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_18 er">0</td>
 <td class="gt_row gt_center" headers="late stub_1_18 r">0</td>
-<td class="gt_row gt_center" headers="late stub_1_18 srp">1</td>
+<td class="gt_row gt_center" headers="late stub_1_18 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_18 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_18 d">1</td>
+<td class="gt_row gt_center" headers="late stub_1_18 d">0</td>
 <td class="gt_row gt_center" headers="late stub_1_18 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_18 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_18 y">2</td>
-<td class="gt_row gt_right" headers="late stub_1_18 n">3</td>
-<td class="gt_row gt_right" headers="late stub_1_18 p_mle">0.67</td>
-<td class="gt_row gt_right" headers="late stub_1_18 p">0.83</td>
+<td class="gt_row gt_center" headers="late stub_1_18 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_18 y">0</td>
+<td class="gt_row gt_right" headers="late stub_1_18 n">2</td>
+<td class="gt_row gt_right" headers="late stub_1_18 p_mle">0.00</td>
+<td class="gt_row gt_right" headers="late stub_1_18 p">0.58</td>
 </tr>
 <tr class="even">
 <td id="stub_1_19" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2534,12 +2502,12 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_19 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_19 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_19 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_19 ef">0</td>
-<td class="gt_row gt_center" headers="late stub_1_19 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_19 y">1</td>
-<td class="gt_row gt_right" headers="late stub_1_19 n">1</td>
+<td class="gt_row gt_center" headers="late stub_1_19 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_19 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_19 y">3</td>
+<td class="gt_row gt_right" headers="late stub_1_19 n">3</td>
 <td class="gt_row gt_right" headers="late stub_1_19 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="late stub_1_19 p">0.61</td>
+<td class="gt_row gt_right" headers="late stub_1_19 p">0.74</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_20" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2547,13 +2515,13 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_20 r">0</td>
 <td class="gt_row gt_center" headers="late stub_1_20 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_20 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_20 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_20 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_20 d">1</td>
+<td class="gt_row gt_center" headers="late stub_1_20 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_20 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_20 y">0</td>
+<td class="gt_row gt_right" headers="late stub_1_20 y">2</td>
 <td class="gt_row gt_right" headers="late stub_1_20 n">2</td>
-<td class="gt_row gt_right" headers="late stub_1_20 p_mle">0.00</td>
-<td class="gt_row gt_right" headers="late stub_1_20 p">0.55</td>
+<td class="gt_row gt_right" headers="late stub_1_20 p_mle">1.00</td>
+<td class="gt_row gt_right" headers="late stub_1_20 p">0.78</td>
 </tr>
 <tr class="even">
 <td id="stub_1_21" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2561,13 +2529,13 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_21 r">0</td>
 <td class="gt_row gt_center" headers="late stub_1_21 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_21 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_21 d">0</td>
+<td class="gt_row gt_center" headers="late stub_1_21 d">1</td>
 <td class="gt_row gt_center" headers="late stub_1_21 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_21 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_21 y">0</td>
-<td class="gt_row gt_right" headers="late stub_1_21 n">2</td>
-<td class="gt_row gt_right" headers="late stub_1_21 p_mle">0.00</td>
-<td class="gt_row gt_right" headers="late stub_1_21 p">0.71</td>
+<td class="gt_row gt_center" headers="late stub_1_21 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_21 y">4</td>
+<td class="gt_row gt_right" headers="late stub_1_21 n">5</td>
+<td class="gt_row gt_right" headers="late stub_1_21 p_mle">0.80</td>
+<td class="gt_row gt_right" headers="late stub_1_21 p">0.74</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_22" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2576,40 +2544,40 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_22 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_22 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_22 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_22 ef">0</td>
-<td class="gt_row gt_center" headers="late stub_1_22 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_22 y">5</td>
-<td class="gt_row gt_right" headers="late stub_1_22 n">8</td>
-<td class="gt_row gt_right" headers="late stub_1_22 p_mle">0.62</td>
-<td class="gt_row gt_right" headers="late stub_1_22 p">0.75</td>
+<td class="gt_row gt_center" headers="late stub_1_22 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_22 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_22 y">1</td>
+<td class="gt_row gt_right" headers="late stub_1_22 n">1</td>
+<td class="gt_row gt_right" headers="late stub_1_22 p_mle">1.00</td>
+<td class="gt_row gt_right" headers="late stub_1_22 p">0.85</td>
 </tr>
 <tr class="even">
 <td id="stub_1_23" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="late stub_1_23 er">0</td>
+<td class="gt_row gt_center" headers="late stub_1_23 er">1</td>
 <td class="gt_row gt_center" headers="late stub_1_23 r">0</td>
-<td class="gt_row gt_center" headers="late stub_1_23 srp">2</td>
-<td class="gt_row gt_center" headers="late stub_1_23 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_23 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_23 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_23 srp">0</td>
+<td class="gt_row gt_center" headers="late stub_1_23 ed">0</td>
+<td class="gt_row gt_center" headers="late stub_1_23 d">0</td>
+<td class="gt_row gt_center" headers="late stub_1_23 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_23 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_23 y">1</td>
-<td class="gt_row gt_right" headers="late stub_1_23 n">1</td>
-<td class="gt_row gt_right" headers="late stub_1_23 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="late stub_1_23 p">0.71</td>
+<td class="gt_row gt_right" headers="late stub_1_23 y">156</td>
+<td class="gt_row gt_right" headers="late stub_1_23 n">245</td>
+<td class="gt_row gt_right" headers="late stub_1_23 p_mle">0.64</td>
+<td class="gt_row gt_right" headers="late stub_1_23 p">0.63</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_24" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="late stub_1_24 er">0</td>
+<td class="gt_row gt_center" headers="late stub_1_24 er">1</td>
 <td class="gt_row gt_center" headers="late stub_1_24 r">0</td>
-<td class="gt_row gt_center" headers="late stub_1_24 srp">2</td>
-<td class="gt_row gt_center" headers="late stub_1_24 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_24 d">1</td>
+<td class="gt_row gt_center" headers="late stub_1_24 srp">0</td>
+<td class="gt_row gt_center" headers="late stub_1_24 ed">0</td>
+<td class="gt_row gt_center" headers="late stub_1_24 d">0</td>
 <td class="gt_row gt_center" headers="late stub_1_24 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_24 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_24 y">1</td>
-<td class="gt_row gt_right" headers="late stub_1_24 n">3</td>
-<td class="gt_row gt_right" headers="late stub_1_24 p_mle">0.33</td>
-<td class="gt_row gt_right" headers="late stub_1_24 p">0.83</td>
+<td class="gt_row gt_center" headers="late stub_1_24 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_24 y">111</td>
+<td class="gt_row gt_right" headers="late stub_1_24 n">192</td>
+<td class="gt_row gt_right" headers="late stub_1_24 p_mle">0.58</td>
+<td class="gt_row gt_right" headers="late stub_1_24 p">0.57</td>
 </tr>
 <tr class="even">
 <td id="stub_1_25" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2618,82 +2586,82 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_25 srp">0</td>
 <td class="gt_row gt_center" headers="late stub_1_25 ed">0</td>
 <td class="gt_row gt_center" headers="late stub_1_25 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_25 ef">0</td>
-<td class="gt_row gt_center" headers="late stub_1_25 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_25 y">145</td>
-<td class="gt_row gt_right" headers="late stub_1_25 n">275</td>
-<td class="gt_row gt_right" headers="late stub_1_25 p_mle">0.53</td>
-<td class="gt_row gt_right" headers="late stub_1_25 p">0.59</td>
+<td class="gt_row gt_center" headers="late stub_1_25 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_25 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_25 y">133</td>
+<td class="gt_row gt_right" headers="late stub_1_25 n">181</td>
+<td class="gt_row gt_right" headers="late stub_1_25 p_mle">0.73</td>
+<td class="gt_row gt_right" headers="late stub_1_25 p">0.73</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_26" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_26 er">1</td>
-<td class="gt_row gt_center" headers="late stub_1_26 r">0</td>
-<td class="gt_row gt_center" headers="late stub_1_26 srp">0</td>
-<td class="gt_row gt_center" headers="late stub_1_26 ed">0</td>
+<td class="gt_row gt_center" headers="late stub_1_26 r">1</td>
+<td class="gt_row gt_center" headers="late stub_1_26 srp">1</td>
+<td class="gt_row gt_center" headers="late stub_1_26 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_26 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_26 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_26 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_26 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_26 y">95</td>
-<td class="gt_row gt_right" headers="late stub_1_26 n">178</td>
-<td class="gt_row gt_right" headers="late stub_1_26 p_mle">0.53</td>
-<td class="gt_row gt_right" headers="late stub_1_26 p">0.53</td>
+<td class="gt_row gt_right" headers="late stub_1_26 y">25</td>
+<td class="gt_row gt_right" headers="late stub_1_26 n">30</td>
+<td class="gt_row gt_right" headers="late stub_1_26 p_mle">0.83</td>
+<td class="gt_row gt_right" headers="late stub_1_26 p">0.77</td>
 </tr>
 <tr class="even">
 <td id="stub_1_27" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_27 er">1</td>
-<td class="gt_row gt_center" headers="late stub_1_27 r">0</td>
-<td class="gt_row gt_center" headers="late stub_1_27 srp">0</td>
-<td class="gt_row gt_center" headers="late stub_1_27 ed">0</td>
+<td class="gt_row gt_center" headers="late stub_1_27 r">1</td>
+<td class="gt_row gt_center" headers="late stub_1_27 srp">1</td>
+<td class="gt_row gt_center" headers="late stub_1_27 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_27 d">0</td>
 <td class="gt_row gt_center" headers="late stub_1_27 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_27 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_27 y">100</td>
-<td class="gt_row gt_right" headers="late stub_1_27 n">161</td>
-<td class="gt_row gt_right" headers="late stub_1_27 p_mle">0.62</td>
-<td class="gt_row gt_right" headers="late stub_1_27 p">0.70</td>
+<td class="gt_row gt_center" headers="late stub_1_27 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_27 y">18</td>
+<td class="gt_row gt_right" headers="late stub_1_27 n">31</td>
+<td class="gt_row gt_right" headers="late stub_1_27 p_mle">0.58</td>
+<td class="gt_row gt_right" headers="late stub_1_27 p">0.73</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_28" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_28 er">1</td>
-<td class="gt_row gt_center" headers="late stub_1_28 r">0</td>
-<td class="gt_row gt_center" headers="late stub_1_28 srp">2</td>
+<td class="gt_row gt_center" headers="late stub_1_28 r">1</td>
+<td class="gt_row gt_center" headers="late stub_1_28 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_28 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_28 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_28 ef">0</td>
-<td class="gt_row gt_center" headers="late stub_1_28 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_28 y">1</td>
-<td class="gt_row gt_right" headers="late stub_1_28 n">1</td>
-<td class="gt_row gt_right" headers="late stub_1_28 p_mle">1.00</td>
-<td class="gt_row gt_right" headers="late stub_1_28 p">0.63</td>
+<td class="gt_row gt_center" headers="late stub_1_28 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_28 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_28 y">30</td>
+<td class="gt_row gt_right" headers="late stub_1_28 n">35</td>
+<td class="gt_row gt_right" headers="late stub_1_28 p_mle">0.86</td>
+<td class="gt_row gt_right" headers="late stub_1_28 p">0.84</td>
 </tr>
 <tr class="even">
 <td id="stub_1_29" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_29 er">1</td>
-<td class="gt_row gt_center" headers="late stub_1_29 r">0</td>
-<td class="gt_row gt_center" headers="late stub_1_29 srp">2</td>
+<td class="gt_row gt_center" headers="late stub_1_29 r">1</td>
+<td class="gt_row gt_center" headers="late stub_1_29 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_29 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_29 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_29 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_29 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_29 y">1</td>
-<td class="gt_row gt_right" headers="late stub_1_29 n">2</td>
-<td class="gt_row gt_right" headers="late stub_1_29 p_mle">0.50</td>
-<td class="gt_row gt_right" headers="late stub_1_29 p">0.73</td>
+<td class="gt_row gt_center" headers="late stub_1_29 d">1</td>
+<td class="gt_row gt_center" headers="late stub_1_29 ef">0</td>
+<td class="gt_row gt_center" headers="late stub_1_29 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_29 y">26</td>
+<td class="gt_row gt_right" headers="late stub_1_29 n">30</td>
+<td class="gt_row gt_right" headers="late stub_1_29 p_mle">0.87</td>
+<td class="gt_row gt_right" headers="late stub_1_29 p">0.87</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_30" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_30 er">1</td>
-<td class="gt_row gt_center" headers="late stub_1_30 r">0</td>
-<td class="gt_row gt_center" headers="late stub_1_30 srp">2</td>
+<td class="gt_row gt_center" headers="late stub_1_30 r">1</td>
+<td class="gt_row gt_center" headers="late stub_1_30 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_30 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_30 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_30 ef">0</td>
+<td class="gt_row gt_center" headers="late stub_1_30 ef">1</td>
 <td class="gt_row gt_center" headers="late stub_1_30 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_30 y">0</td>
-<td class="gt_row gt_right" headers="late stub_1_30 n">1</td>
-<td class="gt_row gt_right" headers="late stub_1_30 p_mle">0.00</td>
-<td class="gt_row gt_right" headers="late stub_1_30 p">0.77</td>
+<td class="gt_row gt_right" headers="late stub_1_30 y">28</td>
+<td class="gt_row gt_right" headers="late stub_1_30 n">32</td>
+<td class="gt_row gt_right" headers="late stub_1_30 p_mle">0.88</td>
+<td class="gt_row gt_right" headers="late stub_1_30 p">0.84</td>
 </tr>
 <tr class="even">
 <td id="stub_1_31" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2701,83 +2669,83 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_31 r">1</td>
 <td class="gt_row gt_center" headers="late stub_1_31 srp">1</td>
 <td class="gt_row gt_center" headers="late stub_1_31 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_31 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_31 ef">0</td>
-<td class="gt_row gt_center" headers="late stub_1_31 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_31 y">36</td>
-<td class="gt_row gt_right" headers="late stub_1_31 n">43</td>
-<td class="gt_row gt_right" headers="late stub_1_31 p_mle">0.84</td>
-<td class="gt_row gt_right" headers="late stub_1_31 p">0.77</td>
+<td class="gt_row gt_center" headers="late stub_1_31 d">1</td>
+<td class="gt_row gt_center" headers="late stub_1_31 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_31 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_31 y">23</td>
+<td class="gt_row gt_right" headers="late stub_1_31 n">30</td>
+<td class="gt_row gt_right" headers="late stub_1_31 p_mle">0.77</td>
+<td class="gt_row gt_right" headers="late stub_1_31 p">0.91</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_32" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_32 er">1</td>
 <td class="gt_row gt_center" headers="late stub_1_32 r">1</td>
-<td class="gt_row gt_center" headers="late stub_1_32 srp">1</td>
+<td class="gt_row gt_center" headers="late stub_1_32 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_32 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_32 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_32 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_32 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_32 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_32 y">19</td>
-<td class="gt_row gt_right" headers="late stub_1_32 n">28</td>
-<td class="gt_row gt_right" headers="late stub_1_32 p_mle">0.68</td>
-<td class="gt_row gt_right" headers="late stub_1_32 p">0.73</td>
+<td class="gt_row gt_right" headers="late stub_1_32 y">53</td>
+<td class="gt_row gt_right" headers="late stub_1_32 n">68</td>
+<td class="gt_row gt_right" headers="late stub_1_32 p_mle">0.78</td>
+<td class="gt_row gt_right" headers="late stub_1_32 p">0.77</td>
 </tr>
 <tr class="even">
 <td id="stub_1_33" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_33 er">1</td>
 <td class="gt_row gt_center" headers="late stub_1_33 r">1</td>
-<td class="gt_row gt_center" headers="late stub_1_33 srp">1</td>
+<td class="gt_row gt_center" headers="late stub_1_33 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_33 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_33 d">0</td>
 <td class="gt_row gt_center" headers="late stub_1_33 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_33 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_33 y">22</td>
-<td class="gt_row gt_right" headers="late stub_1_33 n">24</td>
-<td class="gt_row gt_right" headers="late stub_1_33 p_mle">0.92</td>
-<td class="gt_row gt_right" headers="late stub_1_33 p">0.84</td>
+<td class="gt_row gt_center" headers="late stub_1_33 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_33 y">43</td>
+<td class="gt_row gt_right" headers="late stub_1_33 n">61</td>
+<td class="gt_row gt_right" headers="late stub_1_33 p_mle">0.70</td>
+<td class="gt_row gt_right" headers="late stub_1_33 p">0.73</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_34" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_34 er">1</td>
 <td class="gt_row gt_center" headers="late stub_1_34 r">1</td>
-<td class="gt_row gt_center" headers="late stub_1_34 srp">1</td>
+<td class="gt_row gt_center" headers="late stub_1_34 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_34 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_34 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_34 ef">0</td>
-<td class="gt_row gt_center" headers="late stub_1_34 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_34 y">44</td>
-<td class="gt_row gt_right" headers="late stub_1_34 n">50</td>
-<td class="gt_row gt_right" headers="late stub_1_34 p_mle">0.88</td>
-<td class="gt_row gt_right" headers="late stub_1_34 p">0.87</td>
+<td class="gt_row gt_center" headers="late stub_1_34 d">0</td>
+<td class="gt_row gt_center" headers="late stub_1_34 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_34 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_34 y">50</td>
+<td class="gt_row gt_right" headers="late stub_1_34 n">58</td>
+<td class="gt_row gt_right" headers="late stub_1_34 p_mle">0.86</td>
+<td class="gt_row gt_right" headers="late stub_1_34 p">0.84</td>
 </tr>
 <tr class="even">
 <td id="stub_1_35" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_35 er">1</td>
 <td class="gt_row gt_center" headers="late stub_1_35 r">1</td>
-<td class="gt_row gt_center" headers="late stub_1_35 srp">1</td>
+<td class="gt_row gt_center" headers="late stub_1_35 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_35 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_35 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_35 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_35 ef">0</td>
 <td class="gt_row gt_center" headers="late stub_1_35 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_35 y">14</td>
-<td class="gt_row gt_right" headers="late stub_1_35 n">18</td>
-<td class="gt_row gt_right" headers="late stub_1_35 p_mle">0.78</td>
-<td class="gt_row gt_right" headers="late stub_1_35 p">0.84</td>
+<td class="gt_row gt_right" headers="late stub_1_35 y">81</td>
+<td class="gt_row gt_right" headers="late stub_1_35 n">92</td>
+<td class="gt_row gt_right" headers="late stub_1_35 p_mle">0.88</td>
+<td class="gt_row gt_right" headers="late stub_1_35 p">0.87</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_36" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="late stub_1_36 er">1</td>
 <td class="gt_row gt_center" headers="late stub_1_36 r">1</td>
-<td class="gt_row gt_center" headers="late stub_1_36 srp">1</td>
+<td class="gt_row gt_center" headers="late stub_1_36 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_36 ed">1</td>
 <td class="gt_row gt_center" headers="late stub_1_36 d">1</td>
 <td class="gt_row gt_center" headers="late stub_1_36 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_36 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_36 y">26</td>
-<td class="gt_row gt_right" headers="late stub_1_36 n">29</td>
-<td class="gt_row gt_right" headers="late stub_1_36 p_mle">0.90</td>
-<td class="gt_row gt_right" headers="late stub_1_36 p">0.91</td>
+<td class="gt_row gt_center" headers="late stub_1_36 f">0</td>
+<td class="gt_row gt_right" headers="late stub_1_36 y">58</td>
+<td class="gt_row gt_right" headers="late stub_1_36 n">67</td>
+<td class="gt_row gt_right" headers="late stub_1_36 p_mle">0.87</td>
+<td class="gt_row gt_right" headers="late stub_1_36 p">0.84</td>
 </tr>
 <tr class="even">
 <td id="stub_1_37" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2785,85 +2753,15 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="late stub_1_37 r">1</td>
 <td class="gt_row gt_center" headers="late stub_1_37 srp">2</td>
 <td class="gt_row gt_center" headers="late stub_1_37 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_37 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_37 ef">0</td>
-<td class="gt_row gt_center" headers="late stub_1_37 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_37 y">73</td>
-<td class="gt_row gt_right" headers="late stub_1_37 n">83</td>
-<td class="gt_row gt_right" headers="late stub_1_37 p_mle">0.88</td>
-<td class="gt_row gt_right" headers="late stub_1_37 p">0.87</td>
+<td class="gt_row gt_center" headers="late stub_1_37 d">1</td>
+<td class="gt_row gt_center" headers="late stub_1_37 ef">1</td>
+<td class="gt_row gt_center" headers="late stub_1_37 f">1</td>
+<td class="gt_row gt_right" headers="late stub_1_37 y">60</td>
+<td class="gt_row gt_right" headers="late stub_1_37 n">67</td>
+<td class="gt_row gt_right" headers="late stub_1_37 p_mle">0.90</td>
+<td class="gt_row gt_right" headers="late stub_1_37 p">0.91</td>
 </tr>
 <tr class="odd">
-<td id="stub_1_38" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="late stub_1_38 er">1</td>
-<td class="gt_row gt_center" headers="late stub_1_38 r">1</td>
-<td class="gt_row gt_center" headers="late stub_1_38 srp">2</td>
-<td class="gt_row gt_center" headers="late stub_1_38 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_38 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_38 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_38 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_38 y">47</td>
-<td class="gt_row gt_right" headers="late stub_1_38 n">56</td>
-<td class="gt_row gt_right" headers="late stub_1_38 p_mle">0.84</td>
-<td class="gt_row gt_right" headers="late stub_1_38 p">0.84</td>
-</tr>
-<tr class="even">
-<td id="stub_1_39" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="late stub_1_39 er">1</td>
-<td class="gt_row gt_center" headers="late stub_1_39 r">1</td>
-<td class="gt_row gt_center" headers="late stub_1_39 srp">2</td>
-<td class="gt_row gt_center" headers="late stub_1_39 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_39 d">0</td>
-<td class="gt_row gt_center" headers="late stub_1_39 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_39 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_39 y">57</td>
-<td class="gt_row gt_right" headers="late stub_1_39 n">68</td>
-<td class="gt_row gt_right" headers="late stub_1_39 p_mle">0.84</td>
-<td class="gt_row gt_right" headers="late stub_1_39 p">0.91</td>
-</tr>
-<tr class="odd">
-<td id="stub_1_40" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="late stub_1_40 er">1</td>
-<td class="gt_row gt_center" headers="late stub_1_40 r">1</td>
-<td class="gt_row gt_center" headers="late stub_1_40 srp">2</td>
-<td class="gt_row gt_center" headers="late stub_1_40 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_40 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_40 ef">0</td>
-<td class="gt_row gt_center" headers="late stub_1_40 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_40 y">80</td>
-<td class="gt_row gt_right" headers="late stub_1_40 n">89</td>
-<td class="gt_row gt_right" headers="late stub_1_40 p_mle">0.90</td>
-<td class="gt_row gt_right" headers="late stub_1_40 p">0.93</td>
-</tr>
-<tr class="even">
-<td id="stub_1_41" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="late stub_1_41 er">1</td>
-<td class="gt_row gt_center" headers="late stub_1_41 r">1</td>
-<td class="gt_row gt_center" headers="late stub_1_41 srp">2</td>
-<td class="gt_row gt_center" headers="late stub_1_41 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_41 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_41 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_41 f">0</td>
-<td class="gt_row gt_right" headers="late stub_1_41 y">53</td>
-<td class="gt_row gt_right" headers="late stub_1_41 n">56</td>
-<td class="gt_row gt_right" headers="late stub_1_41 p_mle">0.95</td>
-<td class="gt_row gt_right" headers="late stub_1_41 p">0.91</td>
-</tr>
-<tr class="odd">
-<td id="stub_1_42" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="late stub_1_42 er">1</td>
-<td class="gt_row gt_center" headers="late stub_1_42 r">1</td>
-<td class="gt_row gt_center" headers="late stub_1_42 srp">2</td>
-<td class="gt_row gt_center" headers="late stub_1_42 ed">1</td>
-<td class="gt_row gt_center" headers="late stub_1_42 d">1</td>
-<td class="gt_row gt_center" headers="late stub_1_42 ef">1</td>
-<td class="gt_row gt_center" headers="late stub_1_42 f">1</td>
-<td class="gt_row gt_right" headers="late stub_1_42 y">51</td>
-<td class="gt_row gt_right" headers="late stub_1_42 n">57</td>
-<td class="gt_row gt_right" headers="late stub_1_42 p_mle">0.89</td>
-<td class="gt_row gt_right" headers="late stub_1_42 p">0.95</td>
-</tr>
-<tr class="even">
 <td id="summary_stub_late_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 er">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 r">—</td>
@@ -2872,55 +2770,125 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 d">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 ef">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 f">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 y">883</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 y">921</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 n">1253</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 p_mle">0.70</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 p_mle">0.74</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="late summary_stub_late_1 p">—</td>
 </tr>
-<tr class="odd gt_group_heading_row">
+<tr class="even gt_group_heading_row">
 <td colspan="12" id="chronic" class="gt_group_heading" data-quarto-table-cell-role="th" scope="colgroup">chronic</td>
 </tr>
-<tr class="even gt_row_group_first">
+<tr class="odd gt_row_group_first">
+<td id="stub_1_38" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 er">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 r">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 srp">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 ed">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 d">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 ef">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_38 f">0</td>
+<td class="gt_row gt_right" headers="chronic stub_1_38 y">25</td>
+<td class="gt_row gt_right" headers="chronic stub_1_38 n">37</td>
+<td class="gt_row gt_right" headers="chronic stub_1_38 p_mle">0.68</td>
+<td class="gt_row gt_right" headers="chronic stub_1_38 p">0.66</td>
+</tr>
+<tr class="even">
+<td id="stub_1_39" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_center" headers="chronic stub_1_39 er">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_39 r">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_39 srp">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_39 ed">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_39 d">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_39 ef">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_39 f">0</td>
+<td class="gt_row gt_right" headers="chronic stub_1_39 y">20</td>
+<td class="gt_row gt_right" headers="chronic stub_1_39 n">34</td>
+<td class="gt_row gt_right" headers="chronic stub_1_39 p_mle">0.59</td>
+<td class="gt_row gt_right" headers="chronic stub_1_39 p">0.61</td>
+</tr>
+<tr class="odd">
+<td id="stub_1_40" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_center" headers="chronic stub_1_40 er">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_40 r">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_40 srp">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_40 ed">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_40 d">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_40 ef">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_40 f">1</td>
+<td class="gt_row gt_right" headers="chronic stub_1_40 y">29</td>
+<td class="gt_row gt_right" headers="chronic stub_1_40 n">43</td>
+<td class="gt_row gt_right" headers="chronic stub_1_40 p_mle">0.67</td>
+<td class="gt_row gt_right" headers="chronic stub_1_40 p">0.75</td>
+</tr>
+<tr class="even">
+<td id="stub_1_41" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_center" headers="chronic stub_1_41 er">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_41 r">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_41 srp">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_41 ed">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_41 d">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_41 ef">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_41 f">0</td>
+<td class="gt_row gt_right" headers="chronic stub_1_41 y">11</td>
+<td class="gt_row gt_right" headers="chronic stub_1_41 n">22</td>
+<td class="gt_row gt_right" headers="chronic stub_1_41 p_mle">0.50</td>
+<td class="gt_row gt_right" headers="chronic stub_1_41 p">0.71</td>
+</tr>
+<tr class="odd">
+<td id="stub_1_42" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
+<td class="gt_row gt_center" headers="chronic stub_1_42 er">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_42 r">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_42 srp">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_42 ed">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_42 d">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_42 ef">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_42 f">0</td>
+<td class="gt_row gt_right" headers="chronic stub_1_42 y">9</td>
+<td class="gt_row gt_right" headers="chronic stub_1_42 n">12</td>
+<td class="gt_row gt_right" headers="chronic stub_1_42 p_mle">0.75</td>
+<td class="gt_row gt_right" headers="chronic stub_1_42 p">0.65</td>
+</tr>
+<tr class="even">
 <td id="stub_1_43" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="chronic stub_1_43 er">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_43 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_43 srp">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_43 ed">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_43 srp">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_43 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_43 d">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_43 ef">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_43 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_43 y">27</td>
-<td class="gt_row gt_right" headers="chronic stub_1_43 n">40</td>
-<td class="gt_row gt_right" headers="chronic stub_1_43 p_mle">0.68</td>
-<td class="gt_row gt_right" headers="chronic stub_1_43 p">0.63</td>
+<td class="gt_row gt_center" headers="chronic stub_1_43 ef">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_43 f">1</td>
+<td class="gt_row gt_right" headers="chronic stub_1_43 y">14</td>
+<td class="gt_row gt_right" headers="chronic stub_1_43 n">18</td>
+<td class="gt_row gt_right" headers="chronic stub_1_43 p_mle">0.78</td>
+<td class="gt_row gt_right" headers="chronic stub_1_43 p">0.79</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_44" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="chronic stub_1_44 er">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_44 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_44 srp">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_44 ed">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_44 d">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_44 ef">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_44 srp">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_44 ed">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_44 d">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_44 ef">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_44 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_44 y">19</td>
-<td class="gt_row gt_right" headers="chronic stub_1_44 n">38</td>
-<td class="gt_row gt_right" headers="chronic stub_1_44 p_mle">0.50</td>
-<td class="gt_row gt_right" headers="chronic stub_1_44 p">0.57</td>
+<td class="gt_row gt_right" headers="chronic stub_1_44 y">20</td>
+<td class="gt_row gt_right" headers="chronic stub_1_44 n">21</td>
+<td class="gt_row gt_right" headers="chronic stub_1_44 p_mle">0.95</td>
+<td class="gt_row gt_right" headers="chronic stub_1_44 p">0.83</td>
 </tr>
 <tr class="even">
 <td id="stub_1_45" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="chronic stub_1_45 er">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_45 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_45 srp">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_45 ed">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_45 d">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_45 srp">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_45 ed">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_45 d">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_45 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_45 f">1</td>
-<td class="gt_row gt_right" headers="chronic stub_1_45 y">21</td>
+<td class="gt_row gt_center" headers="chronic stub_1_45 f">0</td>
+<td class="gt_row gt_right" headers="chronic stub_1_45 y">24</td>
 <td class="gt_row gt_right" headers="chronic stub_1_45 n">29</td>
-<td class="gt_row gt_right" headers="chronic stub_1_45 p_mle">0.72</td>
-<td class="gt_row gt_right" headers="chronic stub_1_45 p">0.73</td>
+<td class="gt_row gt_right" headers="chronic stub_1_45 p_mle">0.83</td>
+<td class="gt_row gt_right" headers="chronic stub_1_45 p">0.79</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_46" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -2928,83 +2896,83 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="chronic stub_1_46 r">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_46 srp">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_46 ed">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_46 d">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_46 ef">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_46 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_46 y">16</td>
-<td class="gt_row gt_right" headers="chronic stub_1_46 n">19</td>
-<td class="gt_row gt_right" headers="chronic stub_1_46 p_mle">0.84</td>
-<td class="gt_row gt_right" headers="chronic stub_1_46 p">0.66</td>
+<td class="gt_row gt_center" headers="chronic stub_1_46 d">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_46 ef">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_46 f">1</td>
+<td class="gt_row gt_right" headers="chronic stub_1_46 y">18</td>
+<td class="gt_row gt_right" headers="chronic stub_1_46 n">20</td>
+<td class="gt_row gt_right" headers="chronic stub_1_46 p_mle">0.90</td>
+<td class="gt_row gt_right" headers="chronic stub_1_46 p">0.88</td>
 </tr>
 <tr class="even">
 <td id="stub_1_47" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="chronic stub_1_47 er">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_47 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_47 srp">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_47 srp">2</td>
 <td class="gt_row gt_center" headers="chronic stub_1_47 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_47 d">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_47 ef">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_47 ef">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_47 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_47 y">10</td>
-<td class="gt_row gt_right" headers="chronic stub_1_47 n">13</td>
-<td class="gt_row gt_right" headers="chronic stub_1_47 p_mle">0.77</td>
-<td class="gt_row gt_right" headers="chronic stub_1_47 p">0.61</td>
+<td class="gt_row gt_right" headers="chronic stub_1_47 y">52</td>
+<td class="gt_row gt_right" headers="chronic stub_1_47 n">69</td>
+<td class="gt_row gt_right" headers="chronic stub_1_47 p_mle">0.75</td>
+<td class="gt_row gt_right" headers="chronic stub_1_47 p">0.70</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_48" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="chronic stub_1_48 er">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_48 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_48 srp">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_48 srp">2</td>
 <td class="gt_row gt_center" headers="chronic stub_1_48 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_48 d">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_48 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_48 f">1</td>
-<td class="gt_row gt_right" headers="chronic stub_1_48 y">13</td>
-<td class="gt_row gt_right" headers="chronic stub_1_48 n">19</td>
-<td class="gt_row gt_right" headers="chronic stub_1_48 p_mle">0.68</td>
-<td class="gt_row gt_right" headers="chronic stub_1_48 p">0.75</td>
+<td class="gt_row gt_center" headers="chronic stub_1_48 f">0</td>
+<td class="gt_row gt_right" headers="chronic stub_1_48 y">30</td>
+<td class="gt_row gt_right" headers="chronic stub_1_48 n">45</td>
+<td class="gt_row gt_right" headers="chronic stub_1_48 p_mle">0.67</td>
+<td class="gt_row gt_right" headers="chronic stub_1_48 p">0.64</td>
 </tr>
 <tr class="even">
 <td id="stub_1_49" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="chronic stub_1_49 er">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_49 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_49 srp">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_49 srp">2</td>
 <td class="gt_row gt_center" headers="chronic stub_1_49 ed">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_49 d">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_49 ef">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_49 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_49 y">21</td>
-<td class="gt_row gt_right" headers="chronic stub_1_49 n">24</td>
-<td class="gt_row gt_right" headers="chronic stub_1_49 p_mle">0.88</td>
-<td class="gt_row gt_right" headers="chronic stub_1_49 p">0.80</td>
+<td class="gt_row gt_center" headers="chronic stub_1_49 d">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_49 ef">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_49 f">1</td>
+<td class="gt_row gt_right" headers="chronic stub_1_49 y">35</td>
+<td class="gt_row gt_right" headers="chronic stub_1_49 n">55</td>
+<td class="gt_row gt_right" headers="chronic stub_1_49 p_mle">0.64</td>
+<td class="gt_row gt_right" headers="chronic stub_1_49 p">0.78</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_50" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="chronic stub_1_50 er">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_50 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_50 srp">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_50 srp">2</td>
 <td class="gt_row gt_center" headers="chronic stub_1_50 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_50 d">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_50 ef">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_50 ef">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_50 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_50 y">15</td>
-<td class="gt_row gt_right" headers="chronic stub_1_50 n">17</td>
-<td class="gt_row gt_right" headers="chronic stub_1_50 p_mle">0.88</td>
-<td class="gt_row gt_right" headers="chronic stub_1_50 p">0.75</td>
+<td class="gt_row gt_right" headers="chronic stub_1_50 y">43</td>
+<td class="gt_row gt_right" headers="chronic stub_1_50 n">57</td>
+<td class="gt_row gt_right" headers="chronic stub_1_50 p_mle">0.75</td>
+<td class="gt_row gt_right" headers="chronic stub_1_50 p">0.82</td>
 </tr>
 <tr class="even">
 <td id="stub_1_51" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
 <td class="gt_row gt_center" headers="chronic stub_1_51 er">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_51 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_51 srp">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_51 srp">2</td>
 <td class="gt_row gt_center" headers="chronic stub_1_51 ed">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_51 d">1</td>
 <td class="gt_row gt_center" headers="chronic stub_1_51 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_51 f">1</td>
-<td class="gt_row gt_right" headers="chronic stub_1_51 y">20</td>
-<td class="gt_row gt_right" headers="chronic stub_1_51 n">23</td>
-<td class="gt_row gt_right" headers="chronic stub_1_51 p_mle">0.87</td>
-<td class="gt_row gt_right" headers="chronic stub_1_51 p">0.86</td>
+<td class="gt_row gt_center" headers="chronic stub_1_51 f">0</td>
+<td class="gt_row gt_right" headers="chronic stub_1_51 y">26</td>
+<td class="gt_row gt_right" headers="chronic stub_1_51 n">36</td>
+<td class="gt_row gt_right" headers="chronic stub_1_51 p_mle">0.72</td>
+<td class="gt_row gt_right" headers="chronic stub_1_51 p">0.78</td>
 </tr>
 <tr class="odd">
 <td id="stub_1_52" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
@@ -3012,85 +2980,15 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center" headers="chronic stub_1_52 r">0</td>
 <td class="gt_row gt_center" headers="chronic stub_1_52 srp">2</td>
 <td class="gt_row gt_center" headers="chronic stub_1_52 ed">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_52 d">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_52 ef">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_52 f">0</td>
+<td class="gt_row gt_center" headers="chronic stub_1_52 d">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_52 ef">1</td>
+<td class="gt_row gt_center" headers="chronic stub_1_52 f">1</td>
 <td class="gt_row gt_right" headers="chronic stub_1_52 y">43</td>
-<td class="gt_row gt_right" headers="chronic stub_1_52 n">62</td>
-<td class="gt_row gt_right" headers="chronic stub_1_52 p_mle">0.69</td>
-<td class="gt_row gt_right" headers="chronic stub_1_52 p">0.66</td>
+<td class="gt_row gt_right" headers="chronic stub_1_52 n">50</td>
+<td class="gt_row gt_right" headers="chronic stub_1_52 p_mle">0.86</td>
+<td class="gt_row gt_right" headers="chronic stub_1_52 p">0.88</td>
 </tr>
 <tr class="even">
-<td id="stub_1_53" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 er">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 srp">2</td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 ed">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 d">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_53 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_53 y">31</td>
-<td class="gt_row gt_right" headers="chronic stub_1_53 n">58</td>
-<td class="gt_row gt_right" headers="chronic stub_1_53 p_mle">0.53</td>
-<td class="gt_row gt_right" headers="chronic stub_1_53 p">0.61</td>
-</tr>
-<tr class="odd">
-<td id="stub_1_54" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="chronic stub_1_54 er">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_54 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_54 srp">2</td>
-<td class="gt_row gt_center" headers="chronic stub_1_54 ed">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_54 d">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_54 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_54 f">1</td>
-<td class="gt_row gt_right" headers="chronic stub_1_54 y">41</td>
-<td class="gt_row gt_right" headers="chronic stub_1_54 n">52</td>
-<td class="gt_row gt_right" headers="chronic stub_1_54 p_mle">0.79</td>
-<td class="gt_row gt_right" headers="chronic stub_1_54 p">0.75</td>
-</tr>
-<tr class="even">
-<td id="stub_1_55" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="chronic stub_1_55 er">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_55 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_55 srp">2</td>
-<td class="gt_row gt_center" headers="chronic stub_1_55 ed">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_55 d">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_55 ef">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_55 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_55 y">48</td>
-<td class="gt_row gt_right" headers="chronic stub_1_55 n">59</td>
-<td class="gt_row gt_right" headers="chronic stub_1_55 p_mle">0.81</td>
-<td class="gt_row gt_right" headers="chronic stub_1_55 p">0.80</td>
-</tr>
-<tr class="odd">
-<td id="stub_1_56" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="chronic stub_1_56 er">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_56 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_56 srp">2</td>
-<td class="gt_row gt_center" headers="chronic stub_1_56 ed">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_56 d">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_56 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_56 f">0</td>
-<td class="gt_row gt_right" headers="chronic stub_1_56 y">46</td>
-<td class="gt_row gt_right" headers="chronic stub_1_56 n">59</td>
-<td class="gt_row gt_right" headers="chronic stub_1_56 p_mle">0.78</td>
-<td class="gt_row gt_right" headers="chronic stub_1_56 p">0.75</td>
-</tr>
-<tr class="even">
-<td id="stub_1_57" class="gt_row gt_left gt_stub" data-quarto-table-cell-role="th" scope="row"></td>
-<td class="gt_row gt_center" headers="chronic stub_1_57 er">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_57 r">0</td>
-<td class="gt_row gt_center" headers="chronic stub_1_57 srp">2</td>
-<td class="gt_row gt_center" headers="chronic stub_1_57 ed">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_57 d">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_57 ef">1</td>
-<td class="gt_row gt_center" headers="chronic stub_1_57 f">1</td>
-<td class="gt_row gt_right" headers="chronic stub_1_57 y">33</td>
-<td class="gt_row gt_right" headers="chronic stub_1_57 n">36</td>
-<td class="gt_row gt_right" headers="chronic stub_1_57 p_mle">0.92</td>
-<td class="gt_row gt_right" headers="chronic stub_1_57 p">0.86</td>
-</tr>
-<tr class="odd">
 <td id="summary_stub_chronic_1" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">subtotal</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 er">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 r">—</td>
@@ -3099,12 +2997,12 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 d">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 ef">—</td>
 <td class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 f">—</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 y">404</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 y">399</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 n">548</td>
-<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 p_mle">0.74</td>
+<td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 p_mle">0.73</td>
 <td class="gt_row gt_right gt_summary_row gt_first_summary_row thick gt_last_summary_row" headers="chronic summary_stub_chronic_1 p">—</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td id="grand_summary_stub_1" class="gt_row gt_left gt_stub gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" data-quarto-table-cell-role="th" scope="row">total</td>
 <td class="gt_row gt_center gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 er">—</td>
 <td class="gt_row gt_center gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 r">—</td>
@@ -3113,13 +3011,13 @@ Figure&nbsp;1: Posterior median and 95% CI for baseline log-odds of treatment su
 <td class="gt_row gt_center gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 d">—</td>
 <td class="gt_row gt_center gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 ef">—</td>
 <td class="gt_row gt_center gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 f">—</td>
-<td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 y">1784</td>
+<td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 y">1816</td>
 <td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 n">2500</td>
-<td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 p_mle">0.71</td>
+<td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 p_mle">0.73</td>
 <td class="gt_row gt_right gt_grand_summary_row gt_first_grand_summary_row gt_last_summary_row" headers="grand_summary_stub_1 p">—</td>
 </tr>
 </tbody><tfoot class="gt_footnotes">
-<tr class="even">
+<tr class="odd">
 <td colspan="12" class="gt_footnote"><span class="gt_footnote_marks" style="white-space:nowrap;font-style:italic;font-weight:normal;"><sup>1</sup></span> Transformed from the log-odds of response as used in the linear predictor to simulate data.</td>
 </tr>
 </tfoot>
@@ -3145,19 +3043,19 @@ Table&nbsp;2: Summary of simulated trial data when all domains associated with p
 <span id="cb9-5"><a href="#cb9-5"></a>m2 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">"stan/model-sim-04.stan"</span>)</span>
 <span id="cb9-6"><a href="#cb9-6"></a></span>
 <span id="cb9-7"><a href="#cb9-7"></a>f_alleff_1 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb9-8"><a href="#cb9-8"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb9-8"><a href="#cb9-8"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">10000</span>,</span>
 <span id="cb9-9"><a href="#cb9-9"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
 <span id="cb9-10"><a href="#cb9-10"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 2 finished in 1.5 seconds.
-Chain 1 finished in 1.7 seconds.
+Chain 2 finished in 4.9 seconds.
+Chain 1 finished in 5.1 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 1.6 seconds.
-Total execution time: 1.7 seconds.</code></pre>
+Mean chain execution time: 5.0 seconds.
+Total execution time: 5.2 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -3178,19 +3076,19 @@ Total execution time: 1.7 seconds.</code></pre>
 <span id="cb11-15"><a href="#cb11-15"></a>ld<span class="sc">$</span>pri_b_sd <span class="ot">&lt;-</span> <span class="fu">rep</span>(<span class="dv">10</span>, <span class="fu">length</span>(ld<span class="sc">$</span>pri_b_sd))</span>
 <span id="cb11-16"><a href="#cb11-16"></a></span>
 <span id="cb11-17"><a href="#cb11-17"></a>f_alleff_2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb11-18"><a href="#cb11-18"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb11-18"><a href="#cb11-18"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">10000</span>,</span>
 <span id="cb11-19"><a href="#cb11-19"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
 <span id="cb11-20"><a href="#cb11-20"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 1 finished in 1.6 seconds.
-Chain 2 finished in 1.7 seconds.
+Chain 1 finished in 5.9 seconds.
+Chain 2 finished in 6.4 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 1.7 seconds.
-Total execution time: 1.8 seconds.</code></pre>
+Mean chain execution time: 6.2 seconds.
+Total execution time: 6.4 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
@@ -3219,7 +3117,7 @@ Total execution time: 1.8 seconds.</code></pre>
 <span id="cb14-8"><a href="#cb14-8"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> name_tru, <span class="at">y =</span> mu, <span class="at">col =</span> prior)) <span class="sc">+</span></span>
 <span id="cb14-9"><a href="#cb14-9"></a>  <span class="fu">scale_x_discrete</span>(<span class="st">""</span>) <span class="sc">+</span></span>
 <span id="cb14-10"><a href="#cb14-10"></a>  <span class="fu">scale_y_continuous</span>(<span class="st">"log-OR"</span>) <span class="sc">+</span> </span>
-<span id="cb14-11"><a href="#cb14-11"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">"Prior sd on log-OR domain trt effects"</span>) <span class="sc">+</span></span>
+<span id="cb14-11"><a href="#cb14-11"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">"Prior sd on log-OR"</span>) <span class="sc">+</span></span>
 <span id="cb14-12"><a href="#cb14-12"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> name_tru, <span class="at">y =</span> mu), <span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
 <span id="cb14-13"><a href="#cb14-13"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> q_025, <span class="at">ymax =</span> q_975), <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.4</span>)) <span class="sc">+</span></span>
 <span id="cb14-14"><a href="#cb14-14"></a>  <span class="fu">geom_point</span>(<span class="at">data =</span> d_fig, <span class="fu">aes</span>(<span class="at">x =</span> name_tru, <span class="at">y =</span> tru), <span class="at">col =</span> <span class="dv">1</span>, <span class="at">pch =</span> <span class="dv">2</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>

@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-13">
+<meta name="dcterms.date" content="2024-04-11">
 
 <title>ROADMAP - design notes and simulations - Simulation setup</title>
 <style>
@@ -226,26 +226,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design1-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 1</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design2-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 2</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../notebooks/sim-design3-results.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Simulation results 3</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design4-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 4</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -283,7 +265,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#domain-non-membership-effects" id="toc-domain-non-membership-effects" class="nav-link" data-scroll-target="#domain-non-membership-effects">Domain non-membership effects</a></li>
   <li><a href="#missingness" id="toc-missingness" class="nav-link" data-scroll-target="#missingness">Missingness</a></li>
   <li><a href="#non-differential-follow-up" id="toc-non-differential-follow-up" class="nav-link" data-scroll-target="#non-differential-follow-up">Non-differential follow-up</a></li>
-  <li><a href="#simulation-scenarios" id="toc-simulation-scenarios" class="nav-link" data-scroll-target="#simulation-scenarios">Simulation scenarios</a></li>
   </ul>
 </nav>
     </div>
@@ -303,14 +284,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 13, 2024</p>
+      <p class="date">April 11, 2024</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">February 21, 2024</p>
+      <p class="date-modified">April 11, 2024</p>
     </div>
   </div>
     
@@ -324,6 +305,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 
 </div>
+<p>Various aspects of the initial conditions for the simulations are described.</p>
 <section id="baseline-response" class="level2">
 <h2 class="anchored" data-anchor-id="baseline-response">Baseline response</h2>
 <p>The baseline probability/log-odds of treatment success is assumed to vary by silo and site of infection as detailed below.</p>
@@ -405,7 +387,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div id="fig-accrual1" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
 <figure class="quarto-float quarto-float-fig figure page-columns page-full">
 <div aria-describedby="fig-accrual1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
-<img src="simulation-pars_files/figure-html/fig-accrual1-1.png" class="img-fluid figure-img" width="1800">
+<img src="simulation-pars_files/figure-html/fig-accrual1-1.png" class="img-fluid figure-img" style="width:70.0%">
 </div>
 <figcaption class="quarto-float-caption-margin quarto-float-caption quarto-float-fig margin-caption" id="fig-accrual1-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
 Figure&nbsp;1: Expected accrual
@@ -429,16 +411,6 @@ Figure&nbsp;1: Expected accrual
 <section id="non-differential-follow-up" class="level2">
 <h2 class="anchored" data-anchor-id="non-differential-follow-up">Non-differential follow-up</h2>
 <p>To avoid artifacts associated with non-differential follow-up (e.g.&nbsp;early vs late deaths), participants will be included in the analyses only when they reach the primary endpoints (12 months) irrespective of whether they experienced treatment failure before that time.</p>
-</section>
-<section id="simulation-scenarios" class="level2">
-<h2 class="anchored" data-anchor-id="simulation-scenarios">Simulation scenarios</h2>
-<p>We consider a range of simulation settings:</p>
-<ul>
-<li>Null scenario - no effect of any randomised treatment in any cell (OR = 1) for all domains and silos</li>
-<li>All effective - all randomised treatments in all cells effective (OR = 1.5) for all domains and silos</li>
-<li>Single effective - single cell effective (OR = 1.5) for single domain and silo</li>
-<li>Single harmful - single cell harmful (OR = 1/1.5) for single domain and silo</li>
-</ul>
 
 
 </section>

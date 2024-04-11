@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-13">
+<meta name="dcterms.date" content="2024-04-11">
 
 <title>ROADMAP - design notes and simulations - Model implementation</title>
 <style>
@@ -255,26 +255,8 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design1-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 1</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design2-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 2</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../notebooks/sim-design3-results.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Simulation results 3</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design4-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 4</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -328,14 +310,14 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 13, 2024</p>
+      <p class="date">April 11, 2024</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">February 27, 2024</p>
+      <p class="date-modified">April 11, 2024</p>
     </div>
   </div>
     
@@ -352,17 +334,17 @@ window.Quarto = {
 <p>The model used for the simulations translates the binary outcome into a binomial outcome by aggregating over the unique groups. For example with the linear predictor:</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="co"># data generation process</span></span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">formals</span>(get_trial_data)<span class="sc">$</span>g</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">formals</span>(roadmap.data<span class="sc">::</span>get_trial_data)<span class="sc">$</span>g</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>function(d, sim_spec) {
     a0 &lt;- sim_spec$a0
     m &lt;- sim_spec$m
     b &lt;- sim_spec$b
-    eta &lt;- a0 + m["l1"] * d$l1 + m["l2"] * d$l2 + b["erx"] * 
-        d$erx + (b["r1"] * d$r + b["r2"] * d$r * d$srp2) * d$er + 
-        b["edx"] * d$edx + (b["r1d"] * d$rp * d$d * d$srp1 + 
-        b["r2d"] * d$rp * d$d * d$srp2) * d$ed + b["efx"] * d$efx + 
-        b["f"] * d$f * d$ef
+    eta &lt;- a0 + m["l1"] * d$l1 + m["l2"] * d$l2 + (b["erx-r0"] * 
+        d$srp0 + b["erx-r1"] * d$srp1 + b["erx-r2"] * d$srp2) * 
+        d$erx + (b["r1"] * d$srp1 + b["r2"] * d$srp2) * d$r * 
+        d$er + (b["r1d"] * d$d * d$srp1 + b["r2d"] * d$d * d$srp2) * 
+        d$ed + b["efx"] * d$efx + b["f"] * d$f * d$ef
     eta
 }</code></pre>
 </div>
@@ -371,68 +353,69 @@ window.Quarto = {
 <div class="cell">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># simulate data</span></span>
 <span id="cb3-2"><a href="#cb3-2"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb3-3"><a href="#cb3-3"></a>sim_spec <span class="ot">&lt;-</span> <span class="fu">get_sim_spec</span>()</span>
+<span id="cb3-3"><a href="#cb3-3"></a>sim_spec <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_sim_spec</span>()</span>
 <span id="cb3-4"><a href="#cb3-4"></a></span>
 <span id="cb3-5"><a href="#cb3-5"></a><span class="fu">unlist</span>(sim_spec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         a0        m.l1        m.l2       b.erx        b.r1        b.r2 
- 0.61903921 -0.33718806 -0.08682239 -0.10000000  0.20000000  0.09000000 
-      b.edx       b.r1d       b.r2d       b.efx         b.f 
--0.15000000  0.30000000  0.10000000  0.25000000  0.15000000 </code></pre>
+<pre><code>         a0        m.l1        m.l2    b.erx-r0    b.erx-r1    b.erx-r2 
+ 0.61903921 -0.33718806 -0.08682239 -0.10000000  0.10000000  0.05000000 
+       b.r1        b.r2       b.r1d       b.r2d       b.efx         b.f 
+ 0.20000000  0.09000000  0.30000000  0.10000000  0.25000000  0.15000000 </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>ll <span class="ot">&lt;-</span> <span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="dv">2500</span>, <span class="at">sim_spec =</span> sim_spec)</span>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>ll <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="dv">2500</span>, <span class="at">sim_spec =</span> sim_spec)</span>
 <span id="cb5-2"><a href="#cb5-2"></a>d <span class="ot">&lt;-</span> <span class="fu">copy</span>(ll<span class="sc">$</span>d)</span>
-<span id="cb5-3"><a href="#cb5-3"></a><span class="fu">head</span>(d[, .(<span class="at">y =</span> <span class="fu">sum</span>(y), <span class="at">n =</span> .N), <span class="at">keyby =</span> .(l, er, ed, ef, r, rp, srp2, d, f)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="fu">head</span>(d[, .(<span class="at">y =</span> <span class="fu">sum</span>(y), <span class="at">n =</span> .N), <span class="at">keyby =</span> .(l, er, ed, ef, r, srp0, srp1, srp2, d, f)])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>   l er ed ef r rp srp2 d f   y   n
-1: 0  0  0  0 0  0    0 0 0 155 237
-2: 0  0  0  1 0  0    0 0 0 119 204
-3: 0  0  0  1 0  0    0 0 1 126 192
-4: 0  0  1  0 0  1    0 0 0   8  12
-5: 0  0  1  0 0  1    0 1 0  14  16
-6: 0  0  1  0 0  1    1 1 0   1   1</code></pre>
+<pre><code>   l er ed ef r srp0 srp1 srp2 d f   y   n
+1: 0  0  0  0 0    1    0    0 0 0 167 247
+2: 0  0  0  1 0    1    0    0 0 0 112 193
+3: 0  0  0  1 0    1    0    0 0 1 116 197
+4: 0  0  1  0 0    0    1    0 0 0  12  15
+5: 0  0  1  0 0    0    1    0 1 0  11  12
+6: 0  0  1  1 0    0    1    0 0 0   5   7</code></pre>
 </div>
 </div>
+<p>The columns correspond to:</p>
+<ul>
+<li>l: strata 0 early, 1 late, 2 chronic</li>
+<li>er: revealed indicator surgery</li>
+<li>ed: revealed indicator duration</li>
+<li>ef: revealed indicator choice</li>
+<li>r: randomisation for surgery domain, dair vs rev</li>
+<li>srp0: indicator for dair performed</li>
+<li>srp1: indicator for one-stage performed</li>
+<li>srp2: indicator for two-stage performed</li>
+<li>d: indicator for duration (see below)</li>
+<li>f: indicator for choice (0 no-rif, 1 rif)</li>
+<li>y: number of treatment success</li>
+<li>n: number of patients</li>
+</ul>
+<!-- + rp: indicator of surgical approach that was performed (0 dair, 1 rev) -->
+<p>Duration domain depends on what surgery was received, NOT what was originally planned/assigned. For one-stage 12-weeks is reference group (indicated by 0) vs 6 weeks. For two-stage 7 days is reference group (indicated by 0) vs 12 weeks (1).</p>
+<p>Within early, late and chronic stage infection, the percentage (by silo, <code>l</code>) receiving each surgery type (<code>srp</code>) as a randomised or non-randomised treatment (<code>er</code>) are:</p>
 <div class="cell">
 <details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>ll <span class="ot">&lt;-</span> <span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="fl">1e7</span>, <span class="at">sim_spec =</span> sim_spec)</span>
-<span id="cb7-2"><a href="#cb7-2"></a><span class="fu">head</span>(ll<span class="sc">$</span>d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<summary>Percent receiving each surgery type within silo</summary>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>ll <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="fl">1e6</span>, <span class="at">sim_spec =</span> sim_spec)</span>
+<span id="cb7-2"><a href="#cb7-2"></a>d_tbl <span class="ot">&lt;-</span> ll<span class="sc">$</span>d[, .(<span class="at">n =</span> .N), keyby <span class="ot">=</span> .(l, er, srp)]</span>
+<span id="cb7-3"><a href="#cb7-3"></a>d_tbl[, N_l <span class="sc">:</span><span class="er">=</span> <span class="fu">sum</span>(n), keyby <span class="ot">=</span> l]</span>
+<span id="cb7-4"><a href="#cb7-4"></a>d_tbl[, pct <span class="sc">:</span><span class="er">=</span> <span class="dv">100</span> <span class="sc">*</span> n <span class="sc">/</span> N_l]</span>
+<span id="cb7-5"><a href="#cb7-5"></a>d_tbl[, N_l <span class="sc">:</span><span class="er">=</span> <span class="cn">NULL</span>]</span>
+<span id="cb7-6"><a href="#cb7-6"></a>d_tbl</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>   id l l1 l2 j er ed ef erx edx efx r sr sra ra ic rp srp srp1 srp2 d f
-1:  1 0  0  0 0  0  0  1   1   1   0 0  0   0  0  0  0   0    0    0 0 0
-2:  2 1  1  0 1  1  0  1   0   1   0 0  2   1  0  0  0   0    0    0 0 1
-3:  3 1  1  0 0  1  0  0   0   1   1 0  0   0  0  0  0   0    0    0 0 0
-4:  4 1  1  0 1  1  0  0   0   1   1 0  1   0  0  0  0   0    0    0 0 0
-5:  5 1  1  0 0  1  0  0   0   1   1 0  2   1  0  0  0   0    0    0 0 0
-6:  6 2  0  1 0  0  1  1   1   0   0 0  2   1  2  0  1   2    0    1 1 1
-         t0     eta_y       p_y y
-1:  0.00000 0.3690392 0.5912268 1
-2: 13.41503 0.2818512 0.5700000 1
-3: 17.16844 0.3818512 0.5943195 1
-4: 21.73672 0.3818512 0.5943195 1
-5: 23.64285 0.3818512 0.5943195 1
-6: 26.19906 0.6822168 0.6642333 1</code></pre>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>ll<span class="sc">$</span>d[er <span class="sc">==</span> <span class="dv">1</span>, .N, keyby <span class="ot">=</span> srp][, .(<span class="at">p =</span> N<span class="sc">/</span><span class="fu">nrow</span>(ll<span class="sc">$</span>d[er <span class="sc">==</span> <span class="dv">1</span>]))]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>           p
-1: 0.4978562
-2: 0.1506249
-3: 0.3515189</code></pre>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>ll<span class="sc">$</span>d[er <span class="sc">==</span> <span class="dv">1</span>, .N, keyby <span class="ot">=</span> srp2][, .(<span class="at">p =</span> N<span class="sc">/</span><span class="fu">nrow</span>(ll<span class="sc">$</span>d[er <span class="sc">==</span> <span class="dv">1</span>]))]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>           p
-1: 0.6484811
-2: 0.3515189</code></pre>
+<pre><code>    l er srp      n        pct
+ 1: 0  0   0 270730 90.0593121
+ 2: 0  0   1  29883  9.9406879
+ 3: 1  0   0   2028  0.4059987
+ 4: 1  0   1   2332  0.4668585
+ 5: 1  0   2   5717  1.1445239
+ 6: 1  1   0 244552 48.9584772
+ 7: 1  1   1  73803 14.7751092
+ 8: 1  1   2 171077 34.2490325
+ 9: 2  0   0  39954 19.9891934
+10: 2  0   1  40146 20.0852520
+11: 2  0   2 119778 59.9255546</code></pre>
 </div>
 </div>
 <section id="stan-implementation" class="level2">
@@ -440,216 +423,163 @@ window.Quarto = {
 <p>The model spec can be translated into stan, albeit using a different likelihood spec:</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
-<div class="sourceCode" id="cb13"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb13-1"><a href="#cb13-1"></a></span>
-<span id="cb13-2"><a href="#cb13-2"></a></span>
-<span id="cb13-3"><a href="#cb13-3"></a><span class="kw">data</span> {</span>
-<span id="cb13-4"><a href="#cb13-4"></a>  <span class="dt">int</span> N;</span>
-<span id="cb13-5"><a href="#cb13-5"></a>  <span class="dt">array</span>[N] <span class="dt">int</span> y;</span>
-<span id="cb13-6"><a href="#cb13-6"></a>  <span class="dt">array</span>[N] <span class="dt">int</span> n;</span>
-<span id="cb13-7"><a href="#cb13-7"></a>  <span class="co">// variation due to silo/joint</span></span>
-<span id="cb13-8"><a href="#cb13-8"></a>  <span class="dt">vector</span>[N] l1;</span>
-<span id="cb13-9"><a href="#cb13-9"></a>  <span class="dt">vector</span>[N] l2;</span>
-<span id="cb13-10"><a href="#cb13-10"></a>  <span class="co">// reveal</span></span>
-<span id="cb13-11"><a href="#cb13-11"></a>  <span class="dt">vector</span>[N] er;</span>
-<span id="cb13-12"><a href="#cb13-12"></a>  <span class="dt">vector</span>[N] ed;</span>
-<span id="cb13-13"><a href="#cb13-13"></a>  <span class="dt">vector</span>[N] ef;</span>
-<span id="cb13-14"><a href="#cb13-14"></a>  <span class="co">// surgery</span></span>
-<span id="cb13-15"><a href="#cb13-15"></a>  <span class="dt">vector</span>[N] r;</span>
-<span id="cb13-16"><a href="#cb13-16"></a>  <span class="co">// duration</span></span>
-<span id="cb13-17"><a href="#cb13-17"></a>  <span class="dt">vector</span>[N] d;</span>
-<span id="cb13-18"><a href="#cb13-18"></a>  <span class="dt">vector</span>[N] rp; <span class="co">// revision was recvd</span></span>
-<span id="cb13-19"><a href="#cb13-19"></a>  <span class="dt">vector</span>[N] srp1; <span class="co">// one-stage revision recvd</span></span>
-<span id="cb13-20"><a href="#cb13-20"></a>  <span class="dt">vector</span>[N] srp2; <span class="co">// two-stage revision recvd</span></span>
-<span id="cb13-21"><a href="#cb13-21"></a>  <span class="co">// choice</span></span>
-<span id="cb13-22"><a href="#cb13-22"></a>  <span class="dt">vector</span>[N] f;</span>
-<span id="cb13-23"><a href="#cb13-23"></a>  </span>
-<span id="cb13-24"><a href="#cb13-24"></a>  <span class="dt">vector</span>[<span class="dv">2</span>] pri_m_sd;</span>
-<span id="cb13-25"><a href="#cb13-25"></a>  <span class="dt">vector</span>[<span class="dv">8</span>] pri_b_sd;</span>
-<span id="cb13-26"><a href="#cb13-26"></a>  <span class="dt">int</span> prior_only;</span>
-<span id="cb13-27"><a href="#cb13-27"></a>}</span>
-<span id="cb13-28"><a href="#cb13-28"></a><span class="kw">transformed data</span>{</span>
-<span id="cb13-29"><a href="#cb13-29"></a>  <span class="dt">vector</span>[N] er_r;</span>
-<span id="cb13-30"><a href="#cb13-30"></a>  <span class="dt">vector</span>[N] er_r_srp2;</span>
-<span id="cb13-31"><a href="#cb13-31"></a>  <span class="dt">vector</span>[N] ed_rp_d_srp1;</span>
-<span id="cb13-32"><a href="#cb13-32"></a>  <span class="dt">vector</span>[N] ed_rp_d_srp2;</span>
-<span id="cb13-33"><a href="#cb13-33"></a>  <span class="dt">vector</span>[N] ef_f;</span>
-<span id="cb13-34"><a href="#cb13-34"></a>  </span>
-<span id="cb13-35"><a href="#cb13-35"></a>  er_r = er .* r;</span>
-<span id="cb13-36"><a href="#cb13-36"></a>  </span>
-<span id="cb13-37"><a href="#cb13-37"></a>  er_r_srp2 = er_r .* srp2;</span>
-<span id="cb13-38"><a href="#cb13-38"></a></span>
-<span id="cb13-39"><a href="#cb13-39"></a>  ed_rp_d_srp1 = ed .* rp .* d .* srp1;</span>
-<span id="cb13-40"><a href="#cb13-40"></a>  ed_rp_d_srp2 = ed .* rp .* d .* srp2;</span>
-<span id="cb13-41"><a href="#cb13-41"></a></span>
-<span id="cb13-42"><a href="#cb13-42"></a>  ef_f = ef .* f;</span>
-<span id="cb13-43"><a href="#cb13-43"></a>}</span>
-<span id="cb13-44"><a href="#cb13-44"></a><span class="kw">parameters</span> {</span>
-<span id="cb13-45"><a href="#cb13-45"></a>  <span class="dt">real</span> a0;</span>
-<span id="cb13-46"><a href="#cb13-46"></a>  <span class="dt">vector</span>[<span class="dv">2</span>] m;</span>
-<span id="cb13-47"><a href="#cb13-47"></a>  <span class="dt">vector</span>[<span class="dv">8</span>] b;</span>
-<span id="cb13-48"><a href="#cb13-48"></a>}</span>
-<span id="cb13-49"><a href="#cb13-49"></a><span class="kw">transformed parameters</span>{</span>
-<span id="cb13-50"><a href="#cb13-50"></a>  <span class="dt">vector</span>[N] eta;</span>
-<span id="cb13-51"><a href="#cb13-51"></a> </span>
-<span id="cb13-52"><a href="#cb13-52"></a>  eta = a0 + </span>
-<span id="cb13-53"><a href="#cb13-53"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +  </span>
-<span id="cb13-54"><a href="#cb13-54"></a>      b[<span class="dv">1</span>] * (<span class="dv">1</span> - er) + (b[<span class="dv">2</span>]*er_r + b[<span class="dv">3</span>]*er_r_srp2) +</span>
-<span id="cb13-55"><a href="#cb13-55"></a>      b[<span class="dv">4</span>] * (<span class="dv">1</span> - ed) + (b[<span class="dv">5</span>]*ed_rp_d_srp1 + b[<span class="dv">6</span>]*ed_rp_d_srp2)  + </span>
-<span id="cb13-56"><a href="#cb13-56"></a>      b[<span class="dv">7</span>] * (<span class="dv">1</span> - ef) + (b[<span class="dv">8</span>]*ef_f);</span>
-<span id="cb13-57"><a href="#cb13-57"></a>      </span>
-<span id="cb13-58"><a href="#cb13-58"></a>}</span>
-<span id="cb13-59"><a href="#cb13-59"></a><span class="kw">model</span>{</span>
-<span id="cb13-60"><a href="#cb13-60"></a>  <span class="kw">target +=</span> normal_lpdf(a0 | <span class="dv">0</span>, <span class="fl">1.5</span>);</span>
-<span id="cb13-61"><a href="#cb13-61"></a>  <span class="kw">target +=</span> normal_lpdf(m | <span class="dv">0</span>, pri_m_sd);</span>
-<span id="cb13-62"><a href="#cb13-62"></a>  <span class="kw">target +=</span> normal_lpdf(b | <span class="dv">0</span>, pri_b_sd);</span>
-<span id="cb13-63"><a href="#cb13-63"></a>  </span>
-<span id="cb13-64"><a href="#cb13-64"></a>  <span class="co">// likelihood chunks pertaining to each silo</span></span>
-<span id="cb13-65"><a href="#cb13-65"></a>  <span class="cf">if</span>(!prior_only){</span>
-<span id="cb13-66"><a href="#cb13-66"></a>    <span class="kw">target +=</span> binomial_logit_lpmf(y | n, eta) ;      </span>
-<span id="cb13-67"><a href="#cb13-67"></a>  }</span>
-<span id="cb13-68"><a href="#cb13-68"></a>  </span>
-<span id="cb13-69"><a href="#cb13-69"></a>  </span>
-<span id="cb13-70"><a href="#cb13-70"></a>}</span>
-<span id="cb13-71"><a href="#cb13-71"></a><span class="kw">generated quantities</span>{</span>
-<span id="cb13-72"><a href="#cb13-72"></a></span>
-<span id="cb13-73"><a href="#cb13-73"></a>  <span class="dt">vector</span>[N] eta_r_0;</span>
-<span id="cb13-74"><a href="#cb13-74"></a>  <span class="dt">vector</span>[N] eta_r_1;</span>
-<span id="cb13-75"><a href="#cb13-75"></a>  <span class="dt">vector</span>[N] eta_d_0;</span>
-<span id="cb13-76"><a href="#cb13-76"></a>  <span class="dt">vector</span>[N] eta_d_1;</span>
-<span id="cb13-77"><a href="#cb13-77"></a>  <span class="dt">vector</span>[N] eta_f_0;</span>
-<span id="cb13-78"><a href="#cb13-78"></a>  <span class="dt">vector</span>[N] eta_f_1;</span>
-<span id="cb13-79"><a href="#cb13-79"></a></span>
-<span id="cb13-80"><a href="#cb13-80"></a>  {</span>
-<span id="cb13-81"><a href="#cb13-81"></a> </span>
-<span id="cb13-82"><a href="#cb13-82"></a>    <span class="co">// r = 0</span></span>
-<span id="cb13-83"><a href="#cb13-83"></a>    eta_r_0   =  a0 +</span>
-<span id="cb13-84"><a href="#cb13-84"></a>      m[<span class="dv">1</span>]*l1   + m[<span class="dv">2</span>]*l2 +</span>
-<span id="cb13-85"><a href="#cb13-85"></a>      b[<span class="dv">1</span>] * (<span class="dv">1</span> - er  ) + </span>
-<span id="cb13-86"><a href="#cb13-86"></a>      b[<span class="dv">4</span>] * (<span class="dv">1</span> - ed  ) + (b[<span class="dv">5</span>]*ed_rp_d_srp1   + b[<span class="dv">6</span>]*ed_rp_d_srp2)   +</span>
-<span id="cb13-87"><a href="#cb13-87"></a>      b[<span class="dv">7</span>] * (<span class="dv">1</span> - ef  ) + (b[<span class="dv">8</span>]*ef_f)  ;</span>
-<span id="cb13-88"><a href="#cb13-88"></a>      </span>
-<span id="cb13-89"><a href="#cb13-89"></a>    eta_r_1   =  a0 +</span>
-<span id="cb13-90"><a href="#cb13-90"></a>      m[<span class="dv">1</span>]*l1   + m[<span class="dv">2</span>]*l2 +</span>
-<span id="cb13-91"><a href="#cb13-91"></a>      <span class="co">// note the use of er here and not er_r</span></span>
-<span id="cb13-92"><a href="#cb13-92"></a>      b[<span class="dv">1</span>] * (<span class="dv">1</span> - er  ) + (b[<span class="dv">2</span>]*er + b[<span class="dv">3</span>]*er .* srp2) +</span>
-<span id="cb13-93"><a href="#cb13-93"></a>      b[<span class="dv">4</span>] * (<span class="dv">1</span> - ed  ) + (b[<span class="dv">5</span>]*ed_rp_d_srp1   + b[<span class="dv">6</span>]*ed_rp_d_srp2)   +</span>
-<span id="cb13-94"><a href="#cb13-94"></a>      b[<span class="dv">7</span>] * (<span class="dv">1</span> - ef  ) + (b[<span class="dv">8</span>]*ef_f);</span>
-<span id="cb13-95"><a href="#cb13-95"></a></span>
-<span id="cb13-96"><a href="#cb13-96"></a>    <span class="co">// d</span></span>
-<span id="cb13-97"><a href="#cb13-97"></a>    eta_d_0   =  a0 + </span>
-<span id="cb13-98"><a href="#cb13-98"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +  </span>
-<span id="cb13-99"><a href="#cb13-99"></a>      b[<span class="dv">1</span>] * (<span class="dv">1</span> - er) + (b[<span class="dv">2</span>]*er_r + b[<span class="dv">3</span>]*er_r_srp2) +</span>
-<span id="cb13-100"><a href="#cb13-100"></a>      b[<span class="dv">4</span>] * (<span class="dv">1</span> - ed) + </span>
-<span id="cb13-101"><a href="#cb13-101"></a>      b[<span class="dv">7</span>] * (<span class="dv">1</span> - ef) + (b[<span class="dv">8</span>]*ef_f);</span>
-<span id="cb13-102"><a href="#cb13-102"></a></span>
-<span id="cb13-103"><a href="#cb13-103"></a>    eta_d_1   =  a0 + </span>
-<span id="cb13-104"><a href="#cb13-104"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +  </span>
-<span id="cb13-105"><a href="#cb13-105"></a>      b[<span class="dv">1</span>] * (<span class="dv">1</span> - er) + (b[<span class="dv">2</span>]*er_r + b[<span class="dv">3</span>]*er_r_srp2) +</span>
-<span id="cb13-106"><a href="#cb13-106"></a>      <span class="co">// note the use of ed and rp here and not ed_rp_d_srp1</span></span>
-<span id="cb13-107"><a href="#cb13-107"></a>      b[<span class="dv">4</span>] * (<span class="dv">1</span> - ed) + (b[<span class="dv">5</span>]*ed .* rp .* (<span class="dv">1</span>-srp2) + b[<span class="dv">6</span>]*ed .* rp .* srp2)  + </span>
-<span id="cb13-108"><a href="#cb13-108"></a>      b[<span class="dv">7</span>] * (<span class="dv">1</span> - ef) + (b[<span class="dv">8</span>]*ef_f);</span>
-<span id="cb13-109"><a href="#cb13-109"></a></span>
-<span id="cb13-110"><a href="#cb13-110"></a>    <span class="co">// f</span></span>
-<span id="cb13-111"><a href="#cb13-111"></a>    eta_f_0   =  a0 +</span>
-<span id="cb13-112"><a href="#cb13-112"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +</span>
-<span id="cb13-113"><a href="#cb13-113"></a>      b[<span class="dv">1</span>] * (<span class="dv">1</span> - er) + (b[<span class="dv">2</span>]*er_r + b[<span class="dv">3</span>]*er_r_srp2) +</span>
-<span id="cb13-114"><a href="#cb13-114"></a>      b[<span class="dv">4</span>] * (<span class="dv">1</span> - ed) + (b[<span class="dv">5</span>]*ed_rp_d_srp1 + b[<span class="dv">6</span>]*ed_rp_d_srp2)  +</span>
-<span id="cb13-115"><a href="#cb13-115"></a>      b[<span class="dv">7</span>] * (<span class="dv">1</span> - ef)  ;</span>
-<span id="cb13-116"><a href="#cb13-116"></a></span>
-<span id="cb13-117"><a href="#cb13-117"></a>    eta_f_1   =  a0 +</span>
-<span id="cb13-118"><a href="#cb13-118"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +</span>
-<span id="cb13-119"><a href="#cb13-119"></a>      b[<span class="dv">1</span>] * (<span class="dv">1</span> - er) + (b[<span class="dv">2</span>]*er_r + b[<span class="dv">3</span>]*er_r_srp2) +</span>
-<span id="cb13-120"><a href="#cb13-120"></a>      b[<span class="dv">4</span>] * (<span class="dv">1</span> - ed) + (b[<span class="dv">5</span>]*ed_rp_d_srp1 + b[<span class="dv">6</span>]*ed_rp_d_srp2)  +</span>
-<span id="cb13-121"><a href="#cb13-121"></a>      <span class="co">// note the use of ef here and not ef_f</span></span>
-<span id="cb13-122"><a href="#cb13-122"></a>      b[<span class="dv">7</span>] * (<span class="dv">1</span> - ef) + (b[<span class="dv">8</span>]*ef);</span>
-<span id="cb13-123"><a href="#cb13-123"></a>      </span>
-<span id="cb13-124"><a href="#cb13-124"></a>    <span class="co">// b_r = sum( (eta_r1 - eta_r0) .* to_vector(n)  ) / sum(n);</span></span>
-<span id="cb13-125"><a href="#cb13-125"></a>    </span>
-<span id="cb13-126"><a href="#cb13-126"></a>  }</span>
-<span id="cb13-127"><a href="#cb13-127"></a>  </span>
-<span id="cb13-128"><a href="#cb13-128"></a>  </span>
-<span id="cb13-129"><a href="#cb13-129"></a>  </span>
-<span id="cb13-130"><a href="#cb13-130"></a>  </span>
-<span id="cb13-131"><a href="#cb13-131"></a></span>
-<span id="cb13-132"><a href="#cb13-132"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode numberSource stan number-lines code-with-copy"><code class="sourceCode stan"><span id="cb9-1"><a href="#cb9-1"></a></span>
+<span id="cb9-2"><a href="#cb9-2"></a></span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="kw">data</span> {</span>
+<span id="cb9-4"><a href="#cb9-4"></a>  <span class="dt">int</span> N;</span>
+<span id="cb9-5"><a href="#cb9-5"></a>  <span class="dt">array</span>[N] <span class="dt">int</span> y;</span>
+<span id="cb9-6"><a href="#cb9-6"></a>  <span class="dt">array</span>[N] <span class="dt">int</span> n;</span>
+<span id="cb9-7"><a href="#cb9-7"></a>  <span class="co">// variation due to silo/joint</span></span>
+<span id="cb9-8"><a href="#cb9-8"></a>  <span class="dt">vector</span>[N] l1;</span>
+<span id="cb9-9"><a href="#cb9-9"></a>  <span class="dt">vector</span>[N] l2;</span>
+<span id="cb9-10"><a href="#cb9-10"></a>  <span class="co">// reveal</span></span>
+<span id="cb9-11"><a href="#cb9-11"></a>  <span class="dt">vector</span>[N] er;</span>
+<span id="cb9-12"><a href="#cb9-12"></a>  <span class="dt">vector</span>[N] ed;</span>
+<span id="cb9-13"><a href="#cb9-13"></a>  <span class="dt">vector</span>[N] ef;</span>
+<span id="cb9-14"><a href="#cb9-14"></a>  <span class="co">// surgery</span></span>
+<span id="cb9-15"><a href="#cb9-15"></a>  <span class="dt">vector</span>[N] r;</span>
+<span id="cb9-16"><a href="#cb9-16"></a>  <span class="co">// duration</span></span>
+<span id="cb9-17"><a href="#cb9-17"></a>  <span class="dt">vector</span>[N] d;</span>
+<span id="cb9-18"><a href="#cb9-18"></a>  <span class="co">// vector[N] rp; // revision was recvd</span></span>
+<span id="cb9-19"><a href="#cb9-19"></a>  <span class="dt">vector</span>[N] srp0; <span class="co">// dair recvd</span></span>
+<span id="cb9-20"><a href="#cb9-20"></a>  <span class="dt">vector</span>[N] srp1; <span class="co">// one-stage revision recvd</span></span>
+<span id="cb9-21"><a href="#cb9-21"></a>  <span class="dt">vector</span>[N] srp2; <span class="co">// two-stage revision recvd</span></span>
+<span id="cb9-22"><a href="#cb9-22"></a>  <span class="co">// choice</span></span>
+<span id="cb9-23"><a href="#cb9-23"></a>  <span class="dt">vector</span>[N] f;</span>
+<span id="cb9-24"><a href="#cb9-24"></a>  </span>
+<span id="cb9-25"><a href="#cb9-25"></a>  <span class="dt">vector</span>[<span class="dv">2</span>] pri_m_sd;</span>
+<span id="cb9-26"><a href="#cb9-26"></a>  <span class="dt">vector</span>[<span class="dv">9</span>] pri_b_sd;</span>
+<span id="cb9-27"><a href="#cb9-27"></a>  <span class="dt">int</span> prior_only;</span>
+<span id="cb9-28"><a href="#cb9-28"></a>}</span>
+<span id="cb9-29"><a href="#cb9-29"></a><span class="kw">transformed data</span>{</span>
+<span id="cb9-30"><a href="#cb9-30"></a>  <span class="dt">vector</span>[N] erx_srp0;</span>
+<span id="cb9-31"><a href="#cb9-31"></a>  <span class="dt">vector</span>[N] erx_srp1;</span>
+<span id="cb9-32"><a href="#cb9-32"></a>  <span class="dt">vector</span>[N] erx_srp2;</span>
+<span id="cb9-33"><a href="#cb9-33"></a>  <span class="dt">vector</span>[N] er_r;</span>
+<span id="cb9-34"><a href="#cb9-34"></a>  <span class="dt">vector</span>[N] er_r_srp1;</span>
+<span id="cb9-35"><a href="#cb9-35"></a>  <span class="dt">vector</span>[N] er_r_srp2;</span>
+<span id="cb9-36"><a href="#cb9-36"></a>  <span class="dt">vector</span>[N] ed_d_srp1;</span>
+<span id="cb9-37"><a href="#cb9-37"></a>  <span class="dt">vector</span>[N] ed_d_srp2;</span>
+<span id="cb9-38"><a href="#cb9-38"></a>  <span class="dt">vector</span>[N] ef_f;</span>
+<span id="cb9-39"><a href="#cb9-39"></a>  </span>
+<span id="cb9-40"><a href="#cb9-40"></a>  erx_srp0 = (<span class="dv">1</span>-er) .* srp0;</span>
+<span id="cb9-41"><a href="#cb9-41"></a>  erx_srp1 = (<span class="dv">1</span>-er) .* srp1;</span>
+<span id="cb9-42"><a href="#cb9-42"></a>  erx_srp2 = (<span class="dv">1</span>-er) .* srp2;</span>
+<span id="cb9-43"><a href="#cb9-43"></a>  </span>
+<span id="cb9-44"><a href="#cb9-44"></a>  er_r = er .* r;</span>
+<span id="cb9-45"><a href="#cb9-45"></a>  </span>
+<span id="cb9-46"><a href="#cb9-46"></a>  er_r_srp1 = er_r .* srp1;</span>
+<span id="cb9-47"><a href="#cb9-47"></a>  er_r_srp2 = er_r .* srp2;</span>
+<span id="cb9-48"><a href="#cb9-48"></a></span>
+<span id="cb9-49"><a href="#cb9-49"></a><span class="co">// you can remove rp srp1 indicates one-stage happened, srp2 indicates two stage</span></span>
+<span id="cb9-50"><a href="#cb9-50"></a><span class="co">// the rp becomes redundant.</span></span>
+<span id="cb9-51"><a href="#cb9-51"></a>  ed_d_srp1 = ed .* d .* srp1;</span>
+<span id="cb9-52"><a href="#cb9-52"></a>  ed_d_srp2 = ed .* d .* srp2;</span>
+<span id="cb9-53"><a href="#cb9-53"></a></span>
+<span id="cb9-54"><a href="#cb9-54"></a>  ef_f = ef .* f;</span>
+<span id="cb9-55"><a href="#cb9-55"></a>}</span>
+<span id="cb9-56"><a href="#cb9-56"></a><span class="kw">parameters</span> {</span>
+<span id="cb9-57"><a href="#cb9-57"></a>  <span class="dt">real</span> a0;</span>
+<span id="cb9-58"><a href="#cb9-58"></a>  <span class="dt">vector</span>[<span class="dv">2</span>] m;</span>
+<span id="cb9-59"><a href="#cb9-59"></a>  <span class="dt">vector</span>[<span class="dv">9</span>] b;</span>
+<span id="cb9-60"><a href="#cb9-60"></a>}</span>
+<span id="cb9-61"><a href="#cb9-61"></a><span class="kw">transformed parameters</span>{</span>
+<span id="cb9-62"><a href="#cb9-62"></a>  <span class="dt">vector</span>[N] eta;</span>
+<span id="cb9-63"><a href="#cb9-63"></a> </span>
+<span id="cb9-64"><a href="#cb9-64"></a>  eta = a0 + </span>
+<span id="cb9-65"><a href="#cb9-65"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +  </span>
+<span id="cb9-66"><a href="#cb9-66"></a>      (b[<span class="dv">1</span>]*erx_srp0 + b[<span class="dv">2</span>]*erx_srp1 + b[<span class="dv">3</span>]*erx_srp2)  +</span>
+<span id="cb9-67"><a href="#cb9-67"></a>      (b[<span class="dv">4</span>]*er_r_srp1 + b[<span class="dv">5</span>]*er_r_srp2) +</span>
+<span id="cb9-68"><a href="#cb9-68"></a>      <span class="co">// b[6] * (1 - ed) + </span></span>
+<span id="cb9-69"><a href="#cb9-69"></a>      (b[<span class="dv">6</span>]*ed_d_srp1 + b[<span class="dv">7</span>]*ed_d_srp2)  + </span>
+<span id="cb9-70"><a href="#cb9-70"></a>      b[<span class="dv">8</span>] * (<span class="dv">1</span> - ef) + (b[<span class="dv">9</span>]*ef_f);</span>
+<span id="cb9-71"><a href="#cb9-71"></a>      </span>
+<span id="cb9-72"><a href="#cb9-72"></a>}</span>
+<span id="cb9-73"><a href="#cb9-73"></a><span class="kw">model</span>{</span>
+<span id="cb9-74"><a href="#cb9-74"></a>  <span class="kw">target +=</span> normal_lpdf(a0 | <span class="dv">0</span>, <span class="fl">1.5</span>);</span>
+<span id="cb9-75"><a href="#cb9-75"></a>  <span class="kw">target +=</span> normal_lpdf(m | <span class="dv">0</span>, pri_m_sd);</span>
+<span id="cb9-76"><a href="#cb9-76"></a>  <span class="kw">target +=</span> normal_lpdf(b | <span class="dv">0</span>, pri_b_sd);</span>
+<span id="cb9-77"><a href="#cb9-77"></a>  </span>
+<span id="cb9-78"><a href="#cb9-78"></a>  <span class="co">// likelihood chunks pertaining to each silo</span></span>
+<span id="cb9-79"><a href="#cb9-79"></a>  <span class="cf">if</span>(!prior_only){</span>
+<span id="cb9-80"><a href="#cb9-80"></a>    <span class="kw">target +=</span> binomial_logit_lpmf(y | n, eta) ;      </span>
+<span id="cb9-81"><a href="#cb9-81"></a>  }</span>
+<span id="cb9-82"><a href="#cb9-82"></a>  </span>
+<span id="cb9-83"><a href="#cb9-83"></a>  </span>
+<span id="cb9-84"><a href="#cb9-84"></a>}</span>
+<span id="cb9-85"><a href="#cb9-85"></a><span class="kw">generated quantities</span>{</span>
+<span id="cb9-86"><a href="#cb9-86"></a></span>
+<span id="cb9-87"><a href="#cb9-87"></a>  <span class="dt">vector</span>[N] eta_r_0;</span>
+<span id="cb9-88"><a href="#cb9-88"></a>  <span class="dt">vector</span>[N] eta_r_1;</span>
+<span id="cb9-89"><a href="#cb9-89"></a>  <span class="dt">vector</span>[N] eta_d_0;</span>
+<span id="cb9-90"><a href="#cb9-90"></a>  <span class="dt">vector</span>[N] eta_d_1;</span>
+<span id="cb9-91"><a href="#cb9-91"></a>  <span class="dt">vector</span>[N] eta_f_0;</span>
+<span id="cb9-92"><a href="#cb9-92"></a>  <span class="dt">vector</span>[N] eta_f_1;</span>
+<span id="cb9-93"><a href="#cb9-93"></a></span>
+<span id="cb9-94"><a href="#cb9-94"></a>  {</span>
+<span id="cb9-95"><a href="#cb9-95"></a></span>
+<span id="cb9-96"><a href="#cb9-96"></a>    <span class="co">// predictions on log-odds scale setting all participants to the level</span></span>
+<span id="cb9-97"><a href="#cb9-97"></a>    <span class="co">// of interest, e.g. assume all have r = 0</span></span>
+<span id="cb9-98"><a href="#cb9-98"></a>    eta_r_0   =  a0 +</span>
+<span id="cb9-99"><a href="#cb9-99"></a>      m[<span class="dv">1</span>]*l1   + m[<span class="dv">2</span>]*l2 +</span>
+<span id="cb9-100"><a href="#cb9-100"></a>      (b[<span class="dv">1</span>] * erx_srp0 + b[<span class="dv">2</span>] * erx_srp1 + b[<span class="dv">3</span>] * erx_srp2) +</span>
+<span id="cb9-101"><a href="#cb9-101"></a>      <span class="co">// b[6] * (1 - ed  ) + </span></span>
+<span id="cb9-102"><a href="#cb9-102"></a>      (b[<span class="dv">6</span>]*ed_d_srp1   + b[<span class="dv">7</span>]*ed_d_srp2)   +</span>
+<span id="cb9-103"><a href="#cb9-103"></a>      b[<span class="dv">8</span>] * (<span class="dv">1</span> - ef  ) + (b[<span class="dv">9</span>]*ef_f)  ;</span>
+<span id="cb9-104"><a href="#cb9-104"></a>    <span class="co">// r = 1</span></span>
+<span id="cb9-105"><a href="#cb9-105"></a>    <span class="co">// (only those revealed to surgery domain contribute due to the er term)</span></span>
+<span id="cb9-106"><a href="#cb9-106"></a>    eta_r_1   =  a0 +</span>
+<span id="cb9-107"><a href="#cb9-107"></a>      m[<span class="dv">1</span>]*l1   + m[<span class="dv">2</span>]*l2 +</span>
+<span id="cb9-108"><a href="#cb9-108"></a>      <span class="co">// note the use of er here and not er_r, i.e. the r is set to 1 for</span></span>
+<span id="cb9-109"><a href="#cb9-109"></a>      <span class="co">// everyone</span></span>
+<span id="cb9-110"><a href="#cb9-110"></a>      (b[<span class="dv">1</span>] * erx_srp0 + b[<span class="dv">2</span>] * erx_srp1 + b[<span class="dv">3</span>] * erx_srp2) +</span>
+<span id="cb9-111"><a href="#cb9-111"></a>      (b[<span class="dv">4</span>]*er .* srp1 + b[<span class="dv">5</span>]*er .* srp2) +</span>
+<span id="cb9-112"><a href="#cb9-112"></a>      <span class="co">// b[6] * (1 - ed  ) + </span></span>
+<span id="cb9-113"><a href="#cb9-113"></a>      (b[<span class="dv">6</span>]*ed_d_srp1   + b[<span class="dv">7</span>]*ed_d_srp2)   +</span>
+<span id="cb9-114"><a href="#cb9-114"></a>      b[<span class="dv">8</span>] * (<span class="dv">1</span> - ef  ) + (b[<span class="dv">9</span>]*ef_f);</span>
+<span id="cb9-115"><a href="#cb9-115"></a></span>
+<span id="cb9-116"><a href="#cb9-116"></a>    <span class="co">// duration, d = 0</span></span>
+<span id="cb9-117"><a href="#cb9-117"></a>    eta_d_0   =  a0 +</span>
+<span id="cb9-118"><a href="#cb9-118"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +</span>
+<span id="cb9-119"><a href="#cb9-119"></a>      (b[<span class="dv">1</span>] * erx_srp0 + b[<span class="dv">2</span>] * erx_srp1 + b[<span class="dv">3</span>] * erx_srp2) +</span>
+<span id="cb9-120"><a href="#cb9-120"></a>      (b[<span class="dv">4</span>]*er_r_srp1 + b[<span class="dv">5</span>]*er_r_srp2) +</span>
+<span id="cb9-121"><a href="#cb9-121"></a>      <span class="co">// b[6] * (1 - ed) +</span></span>
+<span id="cb9-122"><a href="#cb9-122"></a>      b[<span class="dv">8</span>] * (<span class="dv">1</span> - ef) + (b[<span class="dv">9</span>]*ef_f);</span>
+<span id="cb9-123"><a href="#cb9-123"></a>    <span class="co">// d = 1</span></span>
+<span id="cb9-124"><a href="#cb9-124"></a>    eta_d_1   =  a0 +</span>
+<span id="cb9-125"><a href="#cb9-125"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +</span>
+<span id="cb9-126"><a href="#cb9-126"></a>      (b[<span class="dv">1</span>] * erx_srp0 + b[<span class="dv">2</span>] * erx_srp1 + b[<span class="dv">3</span>] * erx_srp2) +</span>
+<span id="cb9-127"><a href="#cb9-127"></a>      (b[<span class="dv">4</span>]*er_r_srp1 + b[<span class="dv">5</span>]*er_r_srp2) +</span>
+<span id="cb9-128"><a href="#cb9-128"></a>      <span class="co">// note the use of ed and rp here and not ed_rp_d_srp1, i.e. the d is</span></span>
+<span id="cb9-129"><a href="#cb9-129"></a>      <span class="co">// set to 1 for everyone</span></span>
+<span id="cb9-130"><a href="#cb9-130"></a>      <span class="co">// b[6] * (1 - ed) + </span></span>
+<span id="cb9-131"><a href="#cb9-131"></a>      (b[<span class="dv">6</span>]*ed .* srp1 + b[<span class="dv">7</span>]*ed .* srp2)  +</span>
+<span id="cb9-132"><a href="#cb9-132"></a>      b[<span class="dv">8</span>] * (<span class="dv">1</span> - ef) + (b[<span class="dv">9</span>]*ef_f);</span>
+<span id="cb9-133"><a href="#cb9-133"></a></span>
+<span id="cb9-134"><a href="#cb9-134"></a>    <span class="co">// choice, f = 0</span></span>
+<span id="cb9-135"><a href="#cb9-135"></a>    eta_f_0   =  a0 +</span>
+<span id="cb9-136"><a href="#cb9-136"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +</span>
+<span id="cb9-137"><a href="#cb9-137"></a>      (b[<span class="dv">1</span>] * erx_srp0 + b[<span class="dv">2</span>] * erx_srp1 + b[<span class="dv">3</span>] * erx_srp2) +</span>
+<span id="cb9-138"><a href="#cb9-138"></a>      (b[<span class="dv">4</span>]*er_r_srp1 + b[<span class="dv">5</span>]*er_r_srp2) +</span>
+<span id="cb9-139"><a href="#cb9-139"></a>      <span class="co">// b[6] * (1 - ed) + </span></span>
+<span id="cb9-140"><a href="#cb9-140"></a>      (b[<span class="dv">6</span>]*ed_d_srp1 + b[<span class="dv">7</span>]*ed_d_srp2)  +</span>
+<span id="cb9-141"><a href="#cb9-141"></a>      b[<span class="dv">8</span>] * (<span class="dv">1</span> - ef)  ;</span>
+<span id="cb9-142"><a href="#cb9-142"></a>    <span class="co">// f = 1</span></span>
+<span id="cb9-143"><a href="#cb9-143"></a>    eta_f_1   =  a0 +</span>
+<span id="cb9-144"><a href="#cb9-144"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +</span>
+<span id="cb9-145"><a href="#cb9-145"></a>      (b[<span class="dv">1</span>] * erx_srp0 + b[<span class="dv">2</span>] * erx_srp1 + b[<span class="dv">3</span>] * erx_srp2) +</span>
+<span id="cb9-146"><a href="#cb9-146"></a>      (b[<span class="dv">4</span>]*er_r_srp1 + b[<span class="dv">5</span>]*er_r_srp2) +</span>
+<span id="cb9-147"><a href="#cb9-147"></a>      <span class="co">// b[6] * (1 - ed) + </span></span>
+<span id="cb9-148"><a href="#cb9-148"></a>      (b[<span class="dv">6</span>]*ed_d_srp1 + b[<span class="dv">7</span>]*ed_d_srp2)  +</span>
+<span id="cb9-149"><a href="#cb9-149"></a>      <span class="co">// note the use of ef here and not ef_f</span></span>
+<span id="cb9-150"><a href="#cb9-150"></a>      b[<span class="dv">8</span>] * (<span class="dv">1</span> - ef) + (b[<span class="dv">9</span>]*ef);</span>
+<span id="cb9-151"><a href="#cb9-151"></a></span>
+<span id="cb9-152"><a href="#cb9-152"></a>  }</span>
+<span id="cb9-153"><a href="#cb9-153"></a></span>
+<span id="cb9-154"><a href="#cb9-154"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </div>
-<p>To establish consistency, I create data with a million patients (orders of magnitude more than we will have available) and fit the model in an attempt to recover the simulation parameters. If this cannot be done with a million records, it cannot be done with 2500. I fit the stan model and extract and summarise the posterior.</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>m4 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">"stan/model-sim-04.stan"</span>)</span>
-<span id="cb14-2"><a href="#cb14-2"></a></span>
-<span id="cb14-3"><a href="#cb14-3"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb14-4"><a href="#cb14-4"></a></span>
-<span id="cb14-5"><a href="#cb14-5"></a>ll <span class="ot">&lt;-</span> <span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="fl">1e6</span>, <span class="at">sim_spec =</span> sim_spec)</span>
-<span id="cb14-6"><a href="#cb14-6"></a></span>
-<span id="cb14-7"><a href="#cb14-7"></a>lsd <span class="ot">&lt;-</span> <span class="fu">get_stan_data</span>(ll<span class="sc">$</span>d)</span>
-<span id="cb14-8"><a href="#cb14-8"></a></span>
-<span id="cb14-9"><a href="#cb14-9"></a>d <span class="ot">&lt;-</span> <span class="fu">copy</span>(ll<span class="sc">$</span>d)</span>
-<span id="cb14-10"><a href="#cb14-10"></a></span>
-<span id="cb14-11"><a href="#cb14-11"></a><span class="co"># d[, .(.N), keyby = srp][, .(pr_srp = N/nrow(d))]</span></span>
-<span id="cb14-12"><a href="#cb14-12"></a></span>
-<span id="cb14-13"><a href="#cb14-13"></a>d_s <span class="ot">&lt;-</span> <span class="fu">copy</span>(lsd<span class="sc">$</span>d_s)</span>
-<span id="cb14-14"><a href="#cb14-14"></a>ld <span class="ot">&lt;-</span> lsd<span class="sc">$</span>ld</span>
-<span id="cb14-15"><a href="#cb14-15"></a></span>
-<span id="cb14-16"><a href="#cb14-16"></a>f1 <span class="ot">&lt;-</span> m4<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb14-17"><a href="#cb14-17"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
-<span id="cb14-18"><a href="#cb14-18"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F, </span>
-<span id="cb14-19"><a href="#cb14-19"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Running MCMC with 2 parallel chains...
-
-Chain 1 finished in 2.4 seconds.
-Chain 2 finished in 2.5 seconds.
-
-Both chains finished successfully.
-Mean chain execution time: 2.5 seconds.
-Total execution time: 2.6 seconds.</code></pre>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="co"># frequentist version</span></span>
-<span id="cb16-2"><a href="#cb16-2"></a>f2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> l1 <span class="sc">+</span> l2 <span class="sc">+</span></span>
-<span id="cb16-3"><a href="#cb16-3"></a>              erx <span class="sc">+</span> er<span class="sc">:</span>r <span class="sc">+</span> er<span class="sc">:</span>r<span class="sc">:</span>srp2 <span class="sc">+</span></span>
-<span id="cb16-4"><a href="#cb16-4"></a>              edx <span class="sc">+</span> ed<span class="sc">:</span>rp<span class="sc">:</span>d <span class="sc">+</span> ed<span class="sc">:</span>d<span class="sc">:</span>rp<span class="sc">:</span>srp2 <span class="sc">+</span></span>
-<span id="cb16-5"><a href="#cb16-5"></a>              efx <span class="sc">+</span> ef<span class="sc">:</span>f, </span>
-<span id="cb16-6"><a href="#cb16-6"></a>            <span class="at">data =</span> d, <span class="at">family =</span> <span class="fu">binomial</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<p>Raw parameter estimates align reasonably well to the simulation parameters used in the linear predictor:</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>post1 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="fu">c</span>(<span class="st">"a0"</span>, <span class="st">"m"</span>, <span class="st">"b"</span>)), <span class="at">format =</span> <span class="st">"matrix"</span>))</span>
-<span id="cb17-2"><a href="#cb17-2"></a>cf <span class="ot">&lt;-</span> <span class="fu">coef</span>(f2)</span>
-<span id="cb17-3"><a href="#cb17-3"></a></span>
-<span id="cb17-4"><a href="#cb17-4"></a><span class="fu">round</span>(<span class="fu">rbind</span>(</span>
-<span id="cb17-5"><a href="#cb17-5"></a>  <span class="st">"Simulation parameters"</span> <span class="ot">=</span> <span class="fu">c</span>(sim_spec<span class="sc">$</span>a0, sim_spec<span class="sc">$</span>m, sim_spec<span class="sc">$</span>b),</span>
-<span id="cb17-6"><a href="#cb17-6"></a>  <span class="st">"Posterior means"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(post1),</span>
-<span id="cb17-7"><a href="#cb17-7"></a>  <span class="st">"Max likelihood"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
-<span id="cb17-8"><a href="#cb17-8"></a>    cf[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>], </span>
-<span id="cb17-9"><a href="#cb17-9"></a>    cf[<span class="st">"erx"</span>], cf[<span class="st">"er:r"</span>], cf[<span class="st">"er:r:srp2"</span>] , </span>
-<span id="cb17-10"><a href="#cb17-10"></a>    cf[<span class="st">"edx"</span>], cf[<span class="st">"ed:rp:d"</span>], cf[<span class="st">"srp2:ed:rp:d"</span>],</span>
-<span id="cb17-11"><a href="#cb17-11"></a>    cf[<span class="st">"efx"</span>], cf[<span class="st">"ef:f"</span>]</span>
-<span id="cb17-12"><a href="#cb17-12"></a>  )</span>
-<span id="cb17-13"><a href="#cb17-13"></a>), <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>                                  l1      l2     erx     r1     r2     edx
-Simulation parameters 0.6190 -0.3372 -0.0868 -0.1000 0.2000 0.0900 -0.1500
-Posterior means       0.6148 -0.3393 -0.0868 -0.1097 0.2097 0.0874 -0.1422
-Max likelihood        0.6155 -0.3397 -0.0869 -0.1101 0.2095 0.0872 -0.1423
-                         r1d     r2d    efx      f
-Simulation parameters 0.3000  0.1000 0.2500 0.1500
-Posterior means       0.2927  0.1008 0.2550 0.1454
-Max likelihood        0.2929 -0.1921 0.2551 0.1454</code></pre>
-</div>
-</div>
-</section>
-<section id="estimation---g-computation" class="level2">
-<h2 class="anchored" data-anchor-id="estimation---g-computation">Estimation - G-computation</h2>
+<p>The model is fitted to a large dataset and the posterior summarised to determine if the parameter estimates approximate the known values.</p>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -662,236 +592,252 @@ Note
 </div>
 <div id="callout-1" class="callout-1-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>Calculations based on Bayesian model are complicated by virtue of use of binomial instead of bernoulli likelihood. The way to deal with this is to weight the log-odds contributions by the number of trials associated with each unique combination.</p>
+<p>There are some terms in the model that under ‘ideal’ situation, i.e.&nbsp;where all patients are revealed as initially intended, that may cause estimation problems. These issues can manifest as sluggish MCMC or weird <code>NA</code> terms appearing in the regression results. In general an <code>NA</code> in the regression results from <code>lm</code> means that the coefficient is not estimable. This can happen due to exact collinearity, e.g.&nbsp;when Q3 = a Q1 + b Q2 + c for some a, b and c, but, it can also happen due to not having enough observations to estimate the relevant parameters (e.g.&nbsp;if p &gt;&gt; n). If you predictors are categorical and you’re adding interaction terms, an <code>NA</code> can also mean that there are no observations with that combination of levels of the factors.</p>
 </div>
 </div>
 </div>
-<p>Predictions on log-odds scale:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>eta_r_0 <span class="ot">&lt;-</span> f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"eta_r_0"</span>), <span class="at">format =</span> <span class="st">"matrix"</span>)</span>
-<span id="cb19-2"><a href="#cb19-2"></a>eta_r_1 <span class="ot">&lt;-</span> f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"eta_r_1"</span>), <span class="at">format =</span> <span class="st">"matrix"</span>)</span>
-<span id="cb19-3"><a href="#cb19-3"></a>eta_d_0 <span class="ot">&lt;-</span> f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"eta_d_0"</span>), <span class="at">format =</span> <span class="st">"matrix"</span>)</span>
-<span id="cb19-4"><a href="#cb19-4"></a>eta_d_1 <span class="ot">&lt;-</span> f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"eta_d_1"</span>), <span class="at">format =</span> <span class="st">"matrix"</span>)</span>
-<span id="cb19-5"><a href="#cb19-5"></a>eta_f_0 <span class="ot">&lt;-</span> f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"eta_f_0"</span>), <span class="at">format =</span> <span class="st">"matrix"</span>)</span>
-<span id="cb19-6"><a href="#cb19-6"></a>eta_f_1 <span class="ot">&lt;-</span> f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"eta_f_1"</span>), <span class="at">format =</span> <span class="st">"matrix"</span>)</span>
-<span id="cb19-7"><a href="#cb19-7"></a></span>
-<span id="cb19-8"><a href="#cb19-8"></a><span class="co"># compare direct prediction</span></span>
-<span id="cb19-9"><a href="#cb19-9"></a>d_new <span class="ot">&lt;-</span> <span class="fu">copy</span>(d_s)</span>
-<span id="cb19-10"><a href="#cb19-10"></a>hi <span class="ot">&lt;-</span> d_new[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">d =</span> <span class="dv">1</span>, <span class="at">erx =</span> <span class="dv">1</span><span class="sc">-</span>er, <span class="at">edx =</span> <span class="dv">1</span><span class="sc">-</span>ed, <span class="at">efx =</span> <span class="dv">1</span><span class="sc">-</span>ef)]</span>
-<span id="cb19-11"><a href="#cb19-11"></a>d_new <span class="ot">&lt;-</span> <span class="fu">copy</span>(d_s)</span>
-<span id="cb19-12"><a href="#cb19-12"></a>lo <span class="ot">&lt;-</span> d_new[, <span class="st">`</span><span class="at">:=</span><span class="st">`</span>(<span class="at">d =</span> <span class="dv">0</span>, <span class="at">erx =</span> <span class="dv">1</span><span class="sc">-</span>er, <span class="at">edx =</span> <span class="dv">1</span><span class="sc">-</span>ed, <span class="at">efx =</span> <span class="dv">1</span><span class="sc">-</span>ef)]</span>
-<span id="cb19-13"><a href="#cb19-13"></a></span>
-<span id="cb19-14"><a href="#cb19-14"></a><span class="fu">rbind</span>(</span>
-<span id="cb19-15"><a href="#cb19-15"></a>  <span class="st">"MLE prediction (d = 0)"</span> <span class="ot">=</span> <span class="fu">predict</span>(f2, <span class="at">newdata =</span> lo[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]),</span>
-<span id="cb19-16"><a href="#cb19-16"></a>  <span class="st">"Bayesian predictions (d = 0)"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(eta_d_0)[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>],</span>
-<span id="cb19-17"><a href="#cb19-17"></a>  <span class="st">"MLE prediction (d = 1)"</span> <span class="ot">=</span> <span class="fu">predict</span>(f2, <span class="at">newdata =</span> hi[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]),</span>
-<span id="cb19-18"><a href="#cb19-18"></a>  <span class="st">"Bayesian predictions (d = 1)"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(eta_d_1)[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span>
-<span id="cb19-19"><a href="#cb19-19"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>m4 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">"stan/model-sim-04.stan"</span>)</span>
+<span id="cb10-2"><a href="#cb10-2"></a></span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb10-4"><a href="#cb10-4"></a></span>
+<span id="cb10-5"><a href="#cb10-5"></a>sim_spec <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_sim_spec</span>()</span>
+<span id="cb10-6"><a href="#cb10-6"></a>sim_spec<span class="sc">$</span>a0  <span class="ot">&lt;-</span> <span class="fu">qlogis</span>(<span class="fl">0.65</span>)</span>
+<span id="cb10-7"><a href="#cb10-7"></a>sim_spec<span class="sc">$</span>m[<span class="st">"l1"</span>] <span class="ot">&lt;-</span> <span class="fl">0.57</span></span>
+<span id="cb10-8"><a href="#cb10-8"></a>sim_spec<span class="sc">$</span>m[<span class="st">"l2"</span>] <span class="ot">&lt;-</span> <span class="fl">0.64</span></span>
+<span id="cb10-9"><a href="#cb10-9"></a>sim_spec<span class="sc">$</span>b[<span class="st">"erx-r0"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.1</span></span>
+<span id="cb10-10"><a href="#cb10-10"></a>sim_spec<span class="sc">$</span>b[<span class="st">"erx-r1"</span>] <span class="ot">&lt;-</span> <span class="fl">0.1</span></span>
+<span id="cb10-11"><a href="#cb10-11"></a>sim_spec<span class="sc">$</span>b[<span class="st">"erx-r2"</span>] <span class="ot">&lt;-</span> <span class="fl">0.05</span></span>
+<span id="cb10-12"><a href="#cb10-12"></a>sim_spec<span class="sc">$</span>b[<span class="st">"r1"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
+<span id="cb10-13"><a href="#cb10-13"></a>sim_spec<span class="sc">$</span>b[<span class="st">"r2"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
+<span id="cb10-14"><a href="#cb10-14"></a>sim_spec<span class="sc">$</span>b[<span class="st">"r1d"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
+<span id="cb10-15"><a href="#cb10-15"></a>sim_spec<span class="sc">$</span>b[<span class="st">"r2d"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
+<span id="cb10-16"><a href="#cb10-16"></a>sim_spec<span class="sc">$</span>b[<span class="st">"efx"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.2</span></span>
+<span id="cb10-17"><a href="#cb10-17"></a>sim_spec<span class="sc">$</span>b[<span class="st">"f"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
+<span id="cb10-18"><a href="#cb10-18"></a></span>
+<span id="cb10-19"><a href="#cb10-19"></a></span>
+<span id="cb10-20"><a href="#cb10-20"></a>ll <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="fl">2e6</span>, <span class="at">sim_spec =</span> sim_spec)</span>
+<span id="cb10-21"><a href="#cb10-21"></a>lsd <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_stan_data</span>(ll<span class="sc">$</span>d)</span>
+<span id="cb10-22"><a href="#cb10-22"></a></span>
+<span id="cb10-23"><a href="#cb10-23"></a>d <span class="ot">&lt;-</span> <span class="fu">copy</span>(ll<span class="sc">$</span>d)</span>
+<span id="cb10-24"><a href="#cb10-24"></a>d_s <span class="ot">&lt;-</span> <span class="fu">copy</span>(lsd<span class="sc">$</span>d_s)</span>
+<span id="cb10-25"><a href="#cb10-25"></a>ld <span class="ot">&lt;-</span> lsd<span class="sc">$</span>ld</span>
+<span id="cb10-26"><a href="#cb10-26"></a></span>
+<span id="cb10-27"><a href="#cb10-27"></a>f1 <span class="ot">&lt;-</span> m4<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb10-28"><a href="#cb10-28"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb10-29"><a href="#cb10-29"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb10-30"><a href="#cb10-30"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 <div class="cell-output cell-output-stdout">
-<pre><code>                                     1         2         3         4         5
-MLE prediction (d = 0)       0.6181041 0.3630082 0.5084204 0.7604433 0.7604433
-Bayesian predictions (d = 0) 0.6180263 0.3629844 0.5083457 0.7601806 0.7601806
-MLE prediction (d = 1)       0.6181041 0.3630082 0.5084204 1.0533202 1.0533202
-Bayesian predictions (d = 1) 0.6180263 0.3629844 0.5083457 1.0528841 1.0528841
-                                     6         7         8         9        10
-MLE prediction (d = 0)       0.7604433 0.7604433 0.5053474 0.6507596 0.5053474
-Bayesian predictions (d = 0) 0.7601806 0.7601806 0.5051386 0.6505000 0.5051386
-MLE prediction (d = 1)       0.8612165 0.8612165 0.7982243 0.9436365 0.7982243
-Bayesian predictions (d = 1) 0.8610072 0.8610072 0.7978421 0.9432034 0.7978421</code></pre>
+<pre><code>Running MCMC with 2 parallel chains...
+
+Chain 1 finished in 1.5 seconds.
+Chain 2 finished in 1.5 seconds.
+
+Both chains finished successfully.
+Mean chain execution time: 1.5 seconds.
+Total execution time: 1.6 seconds.</code></pre>
 </div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="co"># See note above. edx is dropped from the model as it is collinear with</span></span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="co"># srp1 and srp2 and leads to an estimation issue.</span></span>
+<span id="cb12-3"><a href="#cb12-3"></a></span>
+<span id="cb12-4"><a href="#cb12-4"></a>f2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> l1 <span class="sc">+</span> l2 <span class="sc">+</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>            erx<span class="sc">:</span>srp0 <span class="sc">+</span> erx<span class="sc">:</span>srp1 <span class="sc">+</span> erx<span class="sc">:</span>srp2 <span class="sc">+</span></span>
+<span id="cb12-6"><a href="#cb12-6"></a>            er<span class="sc">:</span>r<span class="sc">:</span>srp1 <span class="sc">+</span> er<span class="sc">:</span>r<span class="sc">:</span>srp2 <span class="sc">+</span></span>
+<span id="cb12-7"><a href="#cb12-7"></a>            ed<span class="sc">:</span>d<span class="sc">:</span>srp1 <span class="sc">+</span> ed<span class="sc">:</span>d<span class="sc">:</span>srp2 <span class="sc">+</span></span>
+<span id="cb12-8"><a href="#cb12-8"></a>            efx <span class="sc">+</span> ef<span class="sc">:</span>f,  </span>
+<span id="cb12-9"><a href="#cb12-9"></a>          <span class="at">data =</span> d, <span class="at">family =</span> <span class="fu">binomial</span>())</span>
+<span id="cb12-10"><a href="#cb12-10"></a></span>
+<span id="cb12-11"><a href="#cb12-11"></a><span class="co"># summary(f2)</span></span>
+<span id="cb12-12"><a href="#cb12-12"></a></span>
+<span id="cb12-13"><a href="#cb12-13"></a><span class="co"># dtmp &lt;- data.table(model.matrix(f2)) </span></span>
+<span id="cb12-14"><a href="#cb12-14"></a><span class="co"># dtmp &lt;- cbind(model.matrix(f2), tot = 0)</span></span>
+<span id="cb12-15"><a href="#cb12-15"></a><span class="co"># pracma::rref(dtmp)</span></span>
+<span id="cb12-16"><a href="#cb12-16"></a><span class="co"># d_s</span></span>
+<span id="cb12-17"><a href="#cb12-17"></a></span>
+<span id="cb12-18"><a href="#cb12-18"></a><span class="co"># dtmp &lt;- data.table(model.matrix(f2))</span></span>
+<span id="cb12-19"><a href="#cb12-19"></a><span class="co"># </span></span>
+<span id="cb12-20"><a href="#cb12-20"></a><span class="co"># rref(dtmp)</span></span>
+<span id="cb12-21"><a href="#cb12-21"></a><span class="co"># dtmp.mean &lt;- apply(dtmp, 2, mean)</span></span>
+<span id="cb12-22"><a href="#cb12-22"></a><span class="co"># dtmp &lt;- sweep(dtmp, 2, dtmp.mean)</span></span>
+<span id="cb12-23"><a href="#cb12-23"></a><span class="co"># </span></span>
+<span id="cb12-24"><a href="#cb12-24"></a><span class="co"># f3 &lt;- prcomp(dtmp)</span></span>
+<span id="cb12-25"><a href="#cb12-25"></a><span class="co"># print(f3)</span></span>
+<span id="cb12-26"><a href="#cb12-26"></a><span class="co"># </span></span>
+<span id="cb12-27"><a href="#cb12-27"></a><span class="co"># # Fairly unsafe - checking for full rank on removal of each var</span></span>
+<span id="cb12-28"><a href="#cb12-28"></a><span class="co"># linearly_dep_cols(f2)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
 </div>
-<p>G-formula:</p>
+<p>The parameter estimates align reasonably well to the simulation parameters used in the linear predictor:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># g-comp - calculations are complicated by virtue of use of binomial</span></span>
-<span id="cb21-2"><a href="#cb21-2"></a><span class="co"># instead of bernoulli model. Approach is to weight the log-odds contributions</span></span>
-<span id="cb21-3"><a href="#cb21-3"></a><span class="co"># by the number of trials associated with each unique combination.</span></span>
-<span id="cb21-4"><a href="#cb21-4"></a></span>
-<span id="cb21-5"><a href="#cb21-5"></a></span>
-<span id="cb21-6"><a href="#cb21-6"></a>b_r <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, <span class="fu">mclapply</span>(<span class="dv">1</span><span class="sc">:</span>(<span class="fu">min</span>(<span class="fu">nrow</span>(eta_r_0), <span class="dv">1000</span>)), <span class="cf">function</span>(ii){</span>
-<span id="cb21-7"><a href="#cb21-7"></a>  lo_0 <span class="ot">&lt;-</span> eta_r_0[ii, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d_s), <span class="at">times =</span> ld<span class="sc">$</span>n)]</span>
-<span id="cb21-8"><a href="#cb21-8"></a>  lo_1 <span class="ot">&lt;-</span> eta_r_1[ii, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d_s), <span class="at">times =</span> ld<span class="sc">$</span>n)]</span>
-<span id="cb21-9"><a href="#cb21-9"></a>  mu_b_r <span class="ot">=</span> <span class="fu">mean</span>(lo_1 <span class="sc">-</span> lo_0)</span>
-<span id="cb21-10"><a href="#cb21-10"></a>  </span>
-<span id="cb21-11"><a href="#cb21-11"></a>  <span class="co"># Should be no effect of rev in those that were not rand to surg</span></span>
-<span id="cb21-12"><a href="#cb21-12"></a>  idx <span class="ot">&lt;-</span> d_s[er <span class="sc">==</span> <span class="dv">0</span> , which <span class="ot">=</span> T]</span>
-<span id="cb21-13"><a href="#cb21-13"></a>  lo_0_erx <span class="ot">&lt;-</span> eta_r_0[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-14"><a href="#cb21-14"></a>  lo_1_erx <span class="ot">&lt;-</span> eta_r_1[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-15"><a href="#cb21-15"></a>  mu_f_erx <span class="ot">&lt;-</span> <span class="fu">sum</span>(lo_1_erx <span class="sc">-</span> lo_0_erx) <span class="sc">/</span> <span class="fu">sum</span>(ld<span class="sc">$</span>n[idx])</span>
-<span id="cb21-16"><a href="#cb21-16"></a>  </span>
-<span id="cb21-17"><a href="#cb21-17"></a>  idx <span class="ot">&lt;-</span> d_s[er <span class="sc">==</span> <span class="dv">1</span> , which <span class="ot">=</span> T]</span>
-<span id="cb21-18"><a href="#cb21-18"></a>  lo_0_erx <span class="ot">&lt;-</span> eta_r_0[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-19"><a href="#cb21-19"></a>  lo_1_erx <span class="ot">&lt;-</span> eta_r_1[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-20"><a href="#cb21-20"></a>  mu_f_er <span class="ot">&lt;-</span> <span class="fu">sum</span>(lo_1_erx <span class="sc">-</span> lo_0_erx) <span class="sc">/</span> <span class="fu">sum</span>(ld<span class="sc">$</span>n[idx])</span>
-<span id="cb21-21"><a href="#cb21-21"></a>  </span>
-<span id="cb21-22"><a href="#cb21-22"></a>  <span class="fu">c</span>(<span class="st">"mu_b_r"</span> <span class="ot">=</span> mu_b_r, <span class="st">"mu_f_erx"</span> <span class="ot">=</span> mu_f_erx, <span class="st">"mu_f_er"</span> <span class="ot">=</span> mu_f_er)</span>
-<span id="cb21-23"><a href="#cb21-23"></a>}, <span class="at">mc.cores =</span> <span class="dv">10</span>))</span>
-<span id="cb21-24"><a href="#cb21-24"></a></span>
-<span id="cb21-25"><a href="#cb21-25"></a></span>
-<span id="cb21-26"><a href="#cb21-26"></a>b_d <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, <span class="fu">mclapply</span>(<span class="dv">1</span><span class="sc">:</span>(<span class="fu">min</span>(<span class="fu">nrow</span>(eta_d_0), <span class="dv">1000</span>)), <span class="cf">function</span>(ii){</span>
-<span id="cb21-27"><a href="#cb21-27"></a>  </span>
-<span id="cb21-28"><a href="#cb21-28"></a>  lo_0 <span class="ot">&lt;-</span> eta_d_0[ii, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d_s), <span class="at">times =</span> ld<span class="sc">$</span>n)]</span>
-<span id="cb21-29"><a href="#cb21-29"></a>  lo_1 <span class="ot">&lt;-</span> eta_d_1[ii, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d_s), <span class="at">times =</span> ld<span class="sc">$</span>n)]</span>
-<span id="cb21-30"><a href="#cb21-30"></a></span>
-<span id="cb21-31"><a href="#cb21-31"></a>  <span class="co"># stratification, silo/revision type that actually took place</span></span>
-<span id="cb21-32"><a href="#cb21-32"></a>  idx <span class="ot">&lt;-</span> d_s[ed <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> srp2 <span class="sc">==</span> <span class="dv">0</span>, which <span class="ot">=</span> T]</span>
-<span id="cb21-33"><a href="#cb21-33"></a>  lo_0_edx_srp1 <span class="ot">&lt;-</span> eta_d_0[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-34"><a href="#cb21-34"></a>  lo_1_edx_srp1 <span class="ot">&lt;-</span> eta_d_1[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-35"><a href="#cb21-35"></a>  mu_edx_srp1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(lo_1_edx_srp1 <span class="sc">-</span> lo_0_edx_srp1) <span class="sc">/</span> <span class="fu">sum</span>(ld<span class="sc">$</span>n[idx])</span>
-<span id="cb21-36"><a href="#cb21-36"></a>  </span>
-<span id="cb21-37"><a href="#cb21-37"></a>  idx <span class="ot">&lt;-</span> d_s[ed <span class="sc">==</span> <span class="dv">0</span> <span class="sc">&amp;</span> srp2 <span class="sc">==</span> <span class="dv">1</span>, which <span class="ot">=</span> T]</span>
-<span id="cb21-38"><a href="#cb21-38"></a>  lo_0_edx_srp2 <span class="ot">&lt;-</span> eta_d_0[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-39"><a href="#cb21-39"></a>  lo_1_edx_srp2 <span class="ot">&lt;-</span> eta_d_1[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-40"><a href="#cb21-40"></a>  mu_edx_srp2 <span class="ot">&lt;-</span> <span class="fu">sum</span>(lo_1_edx_srp2 <span class="sc">-</span> lo_0_edx_srp2) <span class="sc">/</span> <span class="fu">sum</span>(ld<span class="sc">$</span>n[idx])</span>
-<span id="cb21-41"><a href="#cb21-41"></a></span>
-<span id="cb21-42"><a href="#cb21-42"></a>  idx <span class="ot">&lt;-</span> d_s[ed <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> srp2 <span class="sc">==</span> <span class="dv">0</span>, which <span class="ot">=</span> T]</span>
-<span id="cb21-43"><a href="#cb21-43"></a>  lo_0_ed_srp1 <span class="ot">&lt;-</span> eta_d_0[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-44"><a href="#cb21-44"></a>  lo_1_ed_srp1 <span class="ot">&lt;-</span> eta_d_1[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-45"><a href="#cb21-45"></a>  mu_ed_srp1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(lo_1_ed_srp1 <span class="sc">-</span> lo_0_ed_srp1) <span class="sc">/</span> <span class="fu">sum</span>(ld<span class="sc">$</span>n[idx])</span>
-<span id="cb21-46"><a href="#cb21-46"></a></span>
-<span id="cb21-47"><a href="#cb21-47"></a>  idx <span class="ot">&lt;-</span> d_s[ed <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> srp2 <span class="sc">==</span> <span class="dv">1</span>, which <span class="ot">=</span> T]</span>
-<span id="cb21-48"><a href="#cb21-48"></a>  lo_0_ed_srp2 <span class="ot">&lt;-</span> eta_d_0[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-49"><a href="#cb21-49"></a>  lo_1_ed_srp2 <span class="ot">&lt;-</span> eta_d_1[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-50"><a href="#cb21-50"></a>  mu_ed_srp2 <span class="ot">&lt;-</span> <span class="fu">sum</span>(lo_1_ed_srp2 <span class="sc">-</span> lo_0_ed_srp2) <span class="sc">/</span> <span class="fu">sum</span>(ld<span class="sc">$</span>n[idx])</span>
-<span id="cb21-51"><a href="#cb21-51"></a></span>
-<span id="cb21-52"><a href="#cb21-52"></a>  <span class="fu">c</span>(<span class="st">"mu"</span> <span class="ot">=</span> <span class="fu">mean</span>(lo_1 <span class="sc">-</span> lo_0), </span>
-<span id="cb21-53"><a href="#cb21-53"></a>    <span class="co"># you need to base the mean on the n that were used in the strata</span></span>
-<span id="cb21-54"><a href="#cb21-54"></a>    <span class="st">"mu_edx_srp1"</span> <span class="ot">=</span> mu_edx_srp1,  <span class="st">"mu_edx_srp2"</span> <span class="ot">=</span> mu_edx_srp2,</span>
-<span id="cb21-55"><a href="#cb21-55"></a>    <span class="st">"mu_ed_srp1"</span> <span class="ot">=</span> mu_ed_srp1, <span class="st">"mu_ed_srp2"</span> <span class="ot">=</span> mu_ed_srp2</span>
-<span id="cb21-56"><a href="#cb21-56"></a>    )</span>
-<span id="cb21-57"><a href="#cb21-57"></a>  </span>
-<span id="cb21-58"><a href="#cb21-58"></a>}, <span class="at">mc.cores =</span> <span class="dv">10</span>))</span>
-<span id="cb21-59"><a href="#cb21-59"></a></span>
-<span id="cb21-60"><a href="#cb21-60"></a>b_f <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, <span class="fu">mclapply</span>(<span class="dv">1</span><span class="sc">:</span>(<span class="fu">min</span>(<span class="fu">nrow</span>(eta_f_0), <span class="dv">1000</span>)), <span class="cf">function</span>(ii){</span>
-<span id="cb21-61"><a href="#cb21-61"></a>  </span>
-<span id="cb21-62"><a href="#cb21-62"></a>  <span class="co"># Avg effect of rif - what is the effect of rif in the sample population</span></span>
-<span id="cb21-63"><a href="#cb21-63"></a>  <span class="co"># Might be wrong, but don't believe this is a meaningful/useful quantity.</span></span>
-<span id="cb21-64"><a href="#cb21-64"></a>  lo_0 <span class="ot">&lt;-</span> eta_f_0[ii, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d_s), <span class="at">times =</span> ld<span class="sc">$</span>n)]</span>
-<span id="cb21-65"><a href="#cb21-65"></a>  lo_1 <span class="ot">&lt;-</span> eta_f_1[ii, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d_s), <span class="at">times =</span> ld<span class="sc">$</span>n)]</span>
-<span id="cb21-66"><a href="#cb21-66"></a>  mu_f <span class="ot">&lt;-</span> <span class="fu">mean</span>(lo_1 <span class="sc">-</span> lo_0)</span>
-<span id="cb21-67"><a href="#cb21-67"></a>  </span>
-<span id="cb21-68"><a href="#cb21-68"></a>  <span class="co"># Should be no effect of rif in those that were not rand to choice</span></span>
-<span id="cb21-69"><a href="#cb21-69"></a>  idx <span class="ot">&lt;-</span> d_s[ef <span class="sc">==</span> <span class="dv">0</span> , which <span class="ot">=</span> T]</span>
-<span id="cb21-70"><a href="#cb21-70"></a>  lo_0_efx <span class="ot">&lt;-</span> eta_f_0[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-71"><a href="#cb21-71"></a>  lo_1_efx <span class="ot">&lt;-</span> eta_f_1[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-72"><a href="#cb21-72"></a>  mu_f_efx <span class="ot">&lt;-</span> <span class="fu">sum</span>(lo_1_efx <span class="sc">-</span> lo_0_efx) <span class="sc">/</span> <span class="fu">sum</span>(ld<span class="sc">$</span>n[idx])</span>
-<span id="cb21-73"><a href="#cb21-73"></a></span>
-<span id="cb21-74"><a href="#cb21-74"></a>  <span class="co"># Effect of rif in those rand to choice domain</span></span>
-<span id="cb21-75"><a href="#cb21-75"></a>  idx <span class="ot">&lt;-</span> d_s[ef <span class="sc">==</span> <span class="dv">1</span> , which <span class="ot">=</span> T]</span>
-<span id="cb21-76"><a href="#cb21-76"></a>  lo_0_ef <span class="ot">&lt;-</span> eta_f_0[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-77"><a href="#cb21-77"></a>  lo_1_ef <span class="ot">&lt;-</span> eta_f_1[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
-<span id="cb21-78"><a href="#cb21-78"></a>  mu_f_ef <span class="ot">&lt;-</span> <span class="fu">sum</span>(lo_1_ef <span class="sc">-</span> lo_0_ef) <span class="sc">/</span> <span class="fu">sum</span>(ld<span class="sc">$</span>n[idx])</span>
-<span id="cb21-79"><a href="#cb21-79"></a>  </span>
-<span id="cb21-80"><a href="#cb21-80"></a>  <span class="fu">c</span>(<span class="st">"mu_f"</span> <span class="ot">=</span> mu_f, <span class="st">"mu_f_efx"</span> <span class="ot">=</span> mu_f_efx, <span class="st">"mu_f_ef"</span> <span class="ot">=</span> mu_f_ef)</span>
-<span id="cb21-81"><a href="#cb21-81"></a>}, <span class="at">mc.cores =</span> <span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>post1 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="fu">c</span>(<span class="st">"a0"</span>, <span class="st">"m"</span>, <span class="st">"b"</span>)), <span class="at">format =</span> <span class="st">"matrix"</span>))</span>
+<span id="cb13-2"><a href="#cb13-2"></a>cf <span class="ot">&lt;-</span> <span class="fu">coef</span>(f2)</span>
+<span id="cb13-3"><a href="#cb13-3"></a></span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="fu">round</span>(<span class="fu">rbind</span>(</span>
+<span id="cb13-5"><a href="#cb13-5"></a>  <span class="st">"Simulation parameters"</span> <span class="ot">=</span> <span class="fu">c</span>(sim_spec<span class="sc">$</span>a0, sim_spec<span class="sc">$</span>m, sim_spec<span class="sc">$</span>b),</span>
+<span id="cb13-6"><a href="#cb13-6"></a>  <span class="st">"Posterior means"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(post1),</span>
+<span id="cb13-7"><a href="#cb13-7"></a>  <span class="st">"Max likelihood"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
+<span id="cb13-8"><a href="#cb13-8"></a>    cf[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>], </span>
+<span id="cb13-9"><a href="#cb13-9"></a>    cf[<span class="st">"erx:srp0"</span>], cf[<span class="st">"erx:srp1"</span>], cf[<span class="st">"erx:srp2"</span>], </span>
+<span id="cb13-10"><a href="#cb13-10"></a>    cf[<span class="st">"srp1:er:r"</span>], cf[<span class="st">"srp2:er:r"</span>] , </span>
+<span id="cb13-11"><a href="#cb13-11"></a>    cf[<span class="st">"srp1:ed:d"</span>], cf[<span class="st">"srp2:ed:d"</span>],</span>
+<span id="cb13-12"><a href="#cb13-12"></a>    cf[<span class="st">"efx"</span>], cf[<span class="st">"ef:f"</span>]</span>
+<span id="cb13-13"><a href="#cb13-13"></a>  )</span>
+<span id="cb13-14"><a href="#cb13-14"></a>), <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>                                 l1     l2  erx-r0 erx-r1 erx-r2      r1
+Simulation parameters 0.6190 0.5700 0.6400 -0.1000 0.1000 0.0500 -0.6931
+Posterior means       0.6254 0.5600 0.6343 -0.1091 0.0841 0.0574 -0.7023
+Max likelihood        0.6257 0.5596 0.6342 -0.1095 0.0839 0.0572 -0.7023
+                           r2     r1d     r2d     efx       f
+Simulation parameters -0.6931 -0.6931 -0.6931 -0.2000 -0.6931
+Posterior means       -0.6928 -0.6787 -0.7005 -0.1975 -0.6914
+Max likelihood        -0.6926 -0.6787 -0.7006 -0.1976 -0.6914</code></pre>
 </div>
-<p>The following shows the results and also comparisons to combinations of parameters used in data simulation.</p>
-<p>For the surgery domain, the comparison of interest is dair (ref) vs revision, which can be obtained by averaging over the distribution of surgery type that took place. The revision effects are silo-specific in that only the late silo is randomised which we obtain by producing a conditional treatment effect by stratifying on the reveal status (<code>er</code>).</p>
-<div class="callout callout-style-default callout-warning callout-titled">
+</div>
+</section>
+<section id="estimation---g-computation" class="level2">
+<h2 class="anchored" data-anchor-id="estimation---g-computation">Estimation - G-computation</h2>
+<p>This section is now incomplete due to the revised model specification.</p>
+<div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Warning
+Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-2" class="callout-2-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>I don’t believe that we currently need to worry about differential selection (<span class="math inline">\(\mathbb{P}(S=s|G=1)\ne\mathbb{P}(S=s|G=2)\)</span>) because only one silo is contributing to the randomised comparison and I think we are restricting to that silo by virtue of conditiong on <code>er</code>.</p>
+<p>Calculations based on Bayesian model are complicated by virtue of use of binomial instead of bernoulli likelihood. To deal with this, we weight the log-odds contributions by the number of trials associated with each unique combination.</p>
 </div>
 </div>
 </div>
+<p>Predictions on log-odds scale:</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a><span class="co"># dair (ref)  vs revision (of any form)</span></span>
-<span id="cb22-2"><a href="#cb22-2"></a><span class="fu">avg_comparisons</span>(f2, <span class="at">variables =</span> <span class="st">"r"</span>, <span class="at">comparison =</span> <span class="st">"lnor"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
- Term              Contrast Estimate Std. Error    z Pr(&gt;|z|)     S 2.5 %
-    r ln(odds(1) / odds(0))    0.118    0.00529 22.3   &lt;0.001 361.9 0.107
- 97.5 %
-  0.128
-
-Columns: term, contrast, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high 
-Type:  response </code></pre>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>eta_r_0 <span class="ot">&lt;-</span> f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"eta_r_0"</span>), <span class="at">format =</span> <span class="st">"matrix"</span>)</span>
+<span id="cb15-2"><a href="#cb15-2"></a>eta_r_1 <span class="ot">&lt;-</span> f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"eta_r_1"</span>), <span class="at">format =</span> <span class="st">"matrix"</span>)</span>
+<span id="cb15-3"><a href="#cb15-3"></a>eta_d_0 <span class="ot">&lt;-</span> f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"eta_d_0"</span>), <span class="at">format =</span> <span class="st">"matrix"</span>)</span>
+<span id="cb15-4"><a href="#cb15-4"></a>eta_d_1 <span class="ot">&lt;-</span> f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"eta_d_1"</span>), <span class="at">format =</span> <span class="st">"matrix"</span>)</span>
+<span id="cb15-5"><a href="#cb15-5"></a>eta_f_0 <span class="ot">&lt;-</span> f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"eta_f_0"</span>), <span class="at">format =</span> <span class="st">"matrix"</span>)</span>
+<span id="cb15-6"><a href="#cb15-6"></a>eta_f_1 <span class="ot">&lt;-</span> f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="fu">c</span>(<span class="st">"eta_f_1"</span>), <span class="at">format =</span> <span class="st">"matrix"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a><span class="co"># Equivalent approach e.g. for `r`:</span></span>
-<span id="cb24-2"><a href="#cb24-2"></a><span class="co"># w_eta_r0 &lt;- sweep(eta_r0, 1, ld$n, "*")</span></span>
-<span id="cb24-3"><a href="#cb24-3"></a>d_new <span class="ot">&lt;-</span> <span class="fu">copy</span>(d)</span>
-<span id="cb24-4"><a href="#cb24-4"></a>lo <span class="ot">&lt;-</span> <span class="fu">copy</span>(d_new[, <span class="at">r :=</span> <span class="dv">0</span>])</span>
-<span id="cb24-5"><a href="#cb24-5"></a>d_new <span class="ot">&lt;-</span> <span class="fu">copy</span>(d)</span>
-<span id="cb24-6"><a href="#cb24-6"></a>hi <span class="ot">&lt;-</span> <span class="fu">copy</span>(d_new[, <span class="at">r :=</span> <span class="dv">1</span>])</span>
-<span id="cb24-7"><a href="#cb24-7"></a>y_lo <span class="ot">&lt;-</span> <span class="fu">predict</span>(f2, <span class="at">newdata =</span> lo)</span>
-<span id="cb24-8"><a href="#cb24-8"></a>y_hi <span class="ot">&lt;-</span> <span class="fu">predict</span>(f2, <span class="at">newdata =</span> hi)</span>
-<span id="cb24-9"><a href="#cb24-9"></a><span class="co"># mean(y_hi - y_lo)</span></span>
-<span id="cb24-10"><a href="#cb24-10"></a></span>
-<span id="cb24-11"><a href="#cb24-11"></a><span class="co"># narrows the focus to the randomised pts</span></span>
-<span id="cb24-12"><a href="#cb24-12"></a><span class="fu">avg_comparisons</span>(f2, <span class="at">variables =</span> <span class="st">"r"</span>, <span class="at">comparison =</span> <span class="st">"lnor"</span>, <span class="at">by =</span> <span class="st">"er"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
- Term              Contrast er Estimate Std. Error    z Pr(&gt;|z|)     S 2.5 %
-    r ln(odds(1) / odds(0))  0    0.000         NA   NA       NA    NA    NA
-    r ln(odds(1) / odds(0))  1    0.238     0.0108 21.9   &lt;0.001 352.2 0.216
- 97.5 %
-     NA
-  0.259
-
-Columns: term, contrast, er, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high 
-Type:  response </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a><span class="fu">colMeans</span>(b_r)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>   mu_b_r  mu_f_erx   mu_f_er 
-0.1175722 0.0000000 0.2401255 </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="co"># The randomised comparison should approx map to a weighted combination of the pars </span></span>
-<span id="cb28-2"><a href="#cb28-2"></a><span class="fu">mean</span>(post1<span class="sc">$</span><span class="st">`</span><span class="at">b[2]</span><span class="st">`</span> <span class="sc">+</span> d[, <span class="fu">mean</span>(srp2)] <span class="sc">*</span> post1<span class="sc">$</span><span class="st">`</span><span class="at">b[3]</span><span class="st">`</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.2357584</code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a><span class="fu">mean</span>(post1<span class="sc">$</span><span class="st">`</span><span class="at">b[2]</span><span class="st">`</span> <span class="sc">+</span> d[er <span class="sc">==</span> <span class="dv">1</span>, <span class="fu">mean</span>(srp2)] <span class="sc">*</span> post1<span class="sc">$</span><span class="st">`</span><span class="at">b[3]</span><span class="st">`</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.2403739</code></pre>
-</div>
-</div>
-<p>For the choice domain, the comparison of interest is no-rf (ref) vs rif, which can be obtained directly from the parameter estimate that characterised the effects of the randomised comparisons. Choice domain effects reflect an average over the silos since all silos can enter this domain.</p>
+<p>The G-formula allows you to go from a conditional estimate to a marginal one via standardisation or other means.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a><span class="co"># no-rif (ref)  vs rif (of any form)</span></span>
-<span id="cb32-2"><a href="#cb32-2"></a><span class="fu">avg_comparisons</span>(f2, <span class="at">variables =</span> <span class="st">"f"</span>, <span class="at">comparison =</span> <span class="st">"lnor"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
- Term              Contrast Estimate Std. Error    z Pr(&gt;|z|)     S  2.5 %
-    f ln(odds(1) / odds(0))   0.0872     0.0032 27.3   &lt;0.001 541.5 0.0809
- 97.5 %
- 0.0935
-
-Columns: term, contrast, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high 
-Type:  response </code></pre>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a><span class="co"># g-comp - calculations are complicated by virtue of use of binomial</span></span>
+<span id="cb16-2"><a href="#cb16-2"></a><span class="co"># instead of bernoulli model. Approach is to weight the log-odds contributions</span></span>
+<span id="cb16-3"><a href="#cb16-3"></a><span class="co"># by the number of trials associated with each unique combination.</span></span>
+<span id="cb16-4"><a href="#cb16-4"></a></span>
+<span id="cb16-5"><a href="#cb16-5"></a>max_rows <span class="ot">&lt;-</span> <span class="dv">1000</span></span>
+<span id="cb16-6"><a href="#cb16-6"></a></span>
+<span id="cb16-7"><a href="#cb16-7"></a><span class="co"># Compute the effect of revision</span></span>
+<span id="cb16-8"><a href="#cb16-8"></a>b_r <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, <span class="fu">mclapply</span>(<span class="dv">1</span><span class="sc">:</span>(<span class="fu">min</span>(<span class="fu">nrow</span>(eta_r_0), max_rows)), <span class="cf">function</span>(ii){</span>
+<span id="cb16-9"><a href="#cb16-9"></a>  </span>
+<span id="cb16-10"><a href="#cb16-10"></a>  <span class="co"># columns in eta_r_0 correspond to the covariate groups, i.e. the rows in d_s</span></span>
+<span id="cb16-11"><a href="#cb16-11"></a>  </span>
+<span id="cb16-12"><a href="#cb16-12"></a>  <span class="co"># The repitition gives the right contribution (weight) for each covariate </span></span>
+<span id="cb16-13"><a href="#cb16-13"></a>  <span class="co"># combination i.e. each column (covariate combination) is replicated by </span></span>
+<span id="cb16-14"><a href="#cb16-14"></a>  <span class="co"># the number of pts with this covariate combination. </span></span>
+<span id="cb16-15"><a href="#cb16-15"></a>  </span>
+<span id="cb16-16"><a href="#cb16-16"></a>  <span class="co"># This first one is averaged across both non-reveal and revealed. It is not</span></span>
+<span id="cb16-17"><a href="#cb16-17"></a>  <span class="co"># what we want</span></span>
+<span id="cb16-18"><a href="#cb16-18"></a>  lo_0 <span class="ot">&lt;-</span> eta_r_0[ii, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d_s), <span class="at">times =</span> ld<span class="sc">$</span>n)]</span>
+<span id="cb16-19"><a href="#cb16-19"></a>  lo_1 <span class="ot">&lt;-</span> eta_r_1[ii, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d_s), <span class="at">times =</span> ld<span class="sc">$</span>n)]</span>
+<span id="cb16-20"><a href="#cb16-20"></a>  mu_r <span class="ot">=</span> <span class="fu">mean</span>(lo_1 <span class="sc">-</span> lo_0)</span>
+<span id="cb16-21"><a href="#cb16-21"></a>  </span>
+<span id="cb16-22"><a href="#cb16-22"></a>  <span class="co"># Should be no effect of rev in those that were not rand to surg</span></span>
+<span id="cb16-23"><a href="#cb16-23"></a>  <span class="co"># idx &lt;- d_s[er == 0 , which = T]</span></span>
+<span id="cb16-24"><a href="#cb16-24"></a>  <span class="co"># lo_0_erx &lt;- eta_r_0[ii, rep(idx, times = ld$n[idx])]</span></span>
+<span id="cb16-25"><a href="#cb16-25"></a>  <span class="co"># lo_1_erx &lt;- eta_r_1[ii, rep(idx, times = ld$n[idx])]</span></span>
+<span id="cb16-26"><a href="#cb16-26"></a>  <span class="co"># mu_r_erx &lt;- sum(lo_1_erx - lo_0_erx) / sum(ld$n[idx])</span></span>
+<span id="cb16-27"><a href="#cb16-27"></a>  </span>
+<span id="cb16-28"><a href="#cb16-28"></a>  <span class="co"># Finally, these give the effect in those revealed to surgery domain. This</span></span>
+<span id="cb16-29"><a href="#cb16-29"></a>  <span class="co"># is what we want.</span></span>
+<span id="cb16-30"><a href="#cb16-30"></a>  idx <span class="ot">&lt;-</span> d_s[er <span class="sc">==</span> <span class="dv">1</span> , which <span class="ot">=</span> T]</span>
+<span id="cb16-31"><a href="#cb16-31"></a>  lo_0_erx <span class="ot">&lt;-</span> eta_r_0[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
+<span id="cb16-32"><a href="#cb16-32"></a>  lo_1_erx <span class="ot">&lt;-</span> eta_r_1[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
+<span id="cb16-33"><a href="#cb16-33"></a>  mu_r_er <span class="ot">&lt;-</span> <span class="fu">sum</span>(lo_1_erx <span class="sc">-</span> lo_0_erx) <span class="sc">/</span> <span class="fu">sum</span>(ld<span class="sc">$</span>n[idx])</span>
+<span id="cb16-34"><a href="#cb16-34"></a>  </span>
+<span id="cb16-35"><a href="#cb16-35"></a>  <span class="co"># avg effect then effect in non-reveal and reveal</span></span>
+<span id="cb16-36"><a href="#cb16-36"></a>  <span class="fu">c</span>(<span class="st">"mu_r"</span> <span class="ot">=</span> mu_r, </span>
+<span id="cb16-37"><a href="#cb16-37"></a>    <span class="co"># "mu_r_erx" = mu_r_erx, </span></span>
+<span id="cb16-38"><a href="#cb16-38"></a>    <span class="st">"mu_r_er"</span> <span class="ot">=</span> mu_r_er)</span>
+<span id="cb16-39"><a href="#cb16-39"></a>}, <span class="at">mc.cores =</span> <span class="dv">10</span>))</span>
+<span id="cb16-40"><a href="#cb16-40"></a></span>
+<span id="cb16-41"><a href="#cb16-41"></a></span>
+<span id="cb16-42"><a href="#cb16-42"></a><span class="co"># Compute the effect of duration for the pt that received one-stage</span></span>
+<span id="cb16-43"><a href="#cb16-43"></a><span class="co"># and for those that received two-stage surgery.</span></span>
+<span id="cb16-44"><a href="#cb16-44"></a>b_d <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, <span class="fu">mclapply</span>(<span class="dv">1</span><span class="sc">:</span>(<span class="fu">min</span>(<span class="fu">nrow</span>(eta_d_0), max_rows)), <span class="cf">function</span>(ii){</span>
+<span id="cb16-45"><a href="#cb16-45"></a>  </span>
+<span id="cb16-46"><a href="#cb16-46"></a>  lo_0 <span class="ot">&lt;-</span> eta_d_0[ii, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d_s), <span class="at">times =</span> ld<span class="sc">$</span>n)]</span>
+<span id="cb16-47"><a href="#cb16-47"></a>  lo_1 <span class="ot">&lt;-</span> eta_d_1[ii, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d_s), <span class="at">times =</span> ld<span class="sc">$</span>n)]</span>
+<span id="cb16-48"><a href="#cb16-48"></a></span>
+<span id="cb16-49"><a href="#cb16-49"></a>  <span class="co"># stratification, silo/revision type that actually took place</span></span>
+<span id="cb16-50"><a href="#cb16-50"></a>  <span class="co"># idx &lt;- d_s[ed == 0 &amp; srp2 == 0, which = T]</span></span>
+<span id="cb16-51"><a href="#cb16-51"></a>  <span class="co"># lo_0_edx_srp1 &lt;- eta_d_0[ii, rep(idx, times = ld$n[idx])]</span></span>
+<span id="cb16-52"><a href="#cb16-52"></a>  <span class="co"># lo_1_edx_srp1 &lt;- eta_d_1[ii, rep(idx, times = ld$n[idx])]</span></span>
+<span id="cb16-53"><a href="#cb16-53"></a>  <span class="co"># mu_d_edx_srp1 &lt;- sum(lo_1_edx_srp1 - lo_0_edx_srp1) / sum(ld$n[idx])</span></span>
+<span id="cb16-54"><a href="#cb16-54"></a>  <span class="co"># </span></span>
+<span id="cb16-55"><a href="#cb16-55"></a>  <span class="co"># idx &lt;- d_s[ed == 0 &amp; srp2 == 1, which = T]</span></span>
+<span id="cb16-56"><a href="#cb16-56"></a>  <span class="co"># lo_0_edx_srp2 &lt;- eta_d_0[ii, rep(idx, times = ld$n[idx])]</span></span>
+<span id="cb16-57"><a href="#cb16-57"></a>  <span class="co"># lo_1_edx_srp2 &lt;- eta_d_1[ii, rep(idx, times = ld$n[idx])]</span></span>
+<span id="cb16-58"><a href="#cb16-58"></a>  <span class="co"># mu_d_edx_srp2 &lt;- sum(lo_1_edx_srp2 - lo_0_edx_srp2) / sum(ld$n[idx])</span></span>
+<span id="cb16-59"><a href="#cb16-59"></a></span>
+<span id="cb16-60"><a href="#cb16-60"></a>  idx <span class="ot">&lt;-</span> d_s[ed <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> srp2 <span class="sc">==</span> <span class="dv">0</span>, which <span class="ot">=</span> T]</span>
+<span id="cb16-61"><a href="#cb16-61"></a>  lo_0_ed_srp1 <span class="ot">&lt;-</span> eta_d_0[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
+<span id="cb16-62"><a href="#cb16-62"></a>  lo_1_ed_srp1 <span class="ot">&lt;-</span> eta_d_1[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
+<span id="cb16-63"><a href="#cb16-63"></a>  mu_d_ed_srp1 <span class="ot">&lt;-</span> <span class="fu">sum</span>(lo_1_ed_srp1 <span class="sc">-</span> lo_0_ed_srp1) <span class="sc">/</span> <span class="fu">sum</span>(ld<span class="sc">$</span>n[idx])</span>
+<span id="cb16-64"><a href="#cb16-64"></a></span>
+<span id="cb16-65"><a href="#cb16-65"></a>  idx <span class="ot">&lt;-</span> d_s[ed <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> srp2 <span class="sc">==</span> <span class="dv">1</span>, which <span class="ot">=</span> T]</span>
+<span id="cb16-66"><a href="#cb16-66"></a>  lo_0_ed_srp2 <span class="ot">&lt;-</span> eta_d_0[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
+<span id="cb16-67"><a href="#cb16-67"></a>  lo_1_ed_srp2 <span class="ot">&lt;-</span> eta_d_1[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
+<span id="cb16-68"><a href="#cb16-68"></a>  mu_d_ed_srp2 <span class="ot">&lt;-</span> <span class="fu">sum</span>(lo_1_ed_srp2 <span class="sc">-</span> lo_0_ed_srp2) <span class="sc">/</span> <span class="fu">sum</span>(ld<span class="sc">$</span>n[idx])</span>
+<span id="cb16-69"><a href="#cb16-69"></a></span>
+<span id="cb16-70"><a href="#cb16-70"></a>  <span class="fu">c</span>(<span class="st">"mu_d"</span> <span class="ot">=</span> <span class="fu">mean</span>(lo_1 <span class="sc">-</span> lo_0), </span>
+<span id="cb16-71"><a href="#cb16-71"></a>    <span class="co"># you need to base the mean on the n that were used in the strata</span></span>
+<span id="cb16-72"><a href="#cb16-72"></a>    <span class="co"># "mu_d_edx_srp1" = mu_d_edx_srp1,  "mu_d_edx_srp2" = mu_d_edx_srp2,</span></span>
+<span id="cb16-73"><a href="#cb16-73"></a>    <span class="st">"mu_d_ed_srp1"</span> <span class="ot">=</span> mu_d_ed_srp1, <span class="st">"mu_d_ed_srp2"</span> <span class="ot">=</span> mu_d_ed_srp2</span>
+<span id="cb16-74"><a href="#cb16-74"></a>    )</span>
+<span id="cb16-75"><a href="#cb16-75"></a>  </span>
+<span id="cb16-76"><a href="#cb16-76"></a>}, <span class="at">mc.cores =</span> <span class="dv">10</span>))</span>
+<span id="cb16-77"><a href="#cb16-77"></a></span>
+<span id="cb16-78"><a href="#cb16-78"></a><span class="co"># Compute the effect of AB choice.</span></span>
+<span id="cb16-79"><a href="#cb16-79"></a>b_f <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, <span class="fu">mclapply</span>(<span class="dv">1</span><span class="sc">:</span>(<span class="fu">min</span>(<span class="fu">nrow</span>(eta_f_0), max_rows)), <span class="cf">function</span>(ii){</span>
+<span id="cb16-80"><a href="#cb16-80"></a>  </span>
+<span id="cb16-81"><a href="#cb16-81"></a>  <span class="co"># Avg effect of rif - what is the effect of rif in the sample population</span></span>
+<span id="cb16-82"><a href="#cb16-82"></a>  <span class="co"># Might be wrong, but don't believe this is a meaningful/useful quantity.</span></span>
+<span id="cb16-83"><a href="#cb16-83"></a>  lo_0 <span class="ot">&lt;-</span> eta_f_0[ii, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d_s), <span class="at">times =</span> ld<span class="sc">$</span>n)]</span>
+<span id="cb16-84"><a href="#cb16-84"></a>  lo_1 <span class="ot">&lt;-</span> eta_f_1[ii, <span class="fu">rep</span>(<span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(d_s), <span class="at">times =</span> ld<span class="sc">$</span>n)]</span>
+<span id="cb16-85"><a href="#cb16-85"></a>  mu_f <span class="ot">&lt;-</span> <span class="fu">mean</span>(lo_1 <span class="sc">-</span> lo_0)</span>
+<span id="cb16-86"><a href="#cb16-86"></a>  </span>
+<span id="cb16-87"><a href="#cb16-87"></a>  <span class="co"># Should be no effect of rif in those that were not rand to choice</span></span>
+<span id="cb16-88"><a href="#cb16-88"></a>  <span class="co"># idx &lt;- d_s[ef == 0 , which = T]</span></span>
+<span id="cb16-89"><a href="#cb16-89"></a>  <span class="co"># lo_0_efx &lt;- eta_f_0[ii, rep(idx, times = ld$n[idx])]</span></span>
+<span id="cb16-90"><a href="#cb16-90"></a>  <span class="co"># lo_1_efx &lt;- eta_f_1[ii, rep(idx, times = ld$n[idx])]</span></span>
+<span id="cb16-91"><a href="#cb16-91"></a>  <span class="co"># mu_f_efx &lt;- sum(lo_1_efx - lo_0_efx) / sum(ld$n[idx])</span></span>
+<span id="cb16-92"><a href="#cb16-92"></a></span>
+<span id="cb16-93"><a href="#cb16-93"></a>  <span class="co"># Effect of rif in those rand to choice domain</span></span>
+<span id="cb16-94"><a href="#cb16-94"></a>  idx <span class="ot">&lt;-</span> d_s[ef <span class="sc">==</span> <span class="dv">1</span> , which <span class="ot">=</span> T]</span>
+<span id="cb16-95"><a href="#cb16-95"></a>  lo_0_ef <span class="ot">&lt;-</span> eta_f_0[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
+<span id="cb16-96"><a href="#cb16-96"></a>  lo_1_ef <span class="ot">&lt;-</span> eta_f_1[ii, <span class="fu">rep</span>(idx, <span class="at">times =</span> ld<span class="sc">$</span>n[idx])]</span>
+<span id="cb16-97"><a href="#cb16-97"></a>  mu_f_ef <span class="ot">&lt;-</span> <span class="fu">sum</span>(lo_1_ef <span class="sc">-</span> lo_0_ef) <span class="sc">/</span> <span class="fu">sum</span>(ld<span class="sc">$</span>n[idx])</span>
+<span id="cb16-98"><a href="#cb16-98"></a>  </span>
+<span id="cb16-99"><a href="#cb16-99"></a>  <span class="fu">c</span>(<span class="st">"mu_f"</span> <span class="ot">=</span> mu_f, </span>
+<span id="cb16-100"><a href="#cb16-100"></a>    <span class="co"># "mu_f_efx" = mu_f_efx, </span></span>
+<span id="cb16-101"><a href="#cb16-101"></a>    <span class="st">"mu_f_ef"</span> <span class="ot">=</span> mu_f_ef)</span>
+<span id="cb16-102"><a href="#cb16-102"></a>}, <span class="at">mc.cores =</span> <span class="dv">10</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a><span class="fu">avg_comparisons</span>(f2, <span class="at">variables =</span> <span class="st">"f"</span>, <span class="at">comparison =</span> <span class="st">"lnor"</span>, <span class="at">by =</span> <span class="st">"ef"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
- Term              Contrast ef Estimate Std. Error    z Pr(&gt;|z|)     S 2.5 %
-    f ln(odds(1) / odds(0))  0    0.000         NA   NA       NA    NA    NA
-    f ln(odds(1) / odds(0))  1    0.144    0.00528 27.3   &lt;0.001 541.5 0.134
- 97.5 %
-     NA
-  0.154
-
-Columns: term, contrast, ef, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high 
-Type:  response </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1"></a><span class="fu">colMeans</span>(b_f)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>      mu_f   mu_f_efx    mu_f_ef 
-0.08722815 0.00000000 0.14545200 </code></pre>
-</div>
-<div class="sourceCode cell-code" id="cb38"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb38-1"><a href="#cb38-1"></a><span class="co"># And this should just be the same as the coefficient from the model</span></span>
-<span id="cb38-2"><a href="#cb38-2"></a><span class="fu">mean</span>(post1<span class="sc">$</span><span class="st">`</span><span class="at">b[8]</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.1453614</code></pre>
-</div>
-</div>
+<p>The following provides the results and also comparisons to combinations of parameters used in data simulation.</p>
+<p>For the surgery domain, the comparison of interest is dair (ref) vs revision, which can be obtained by averaging over the distribution of surgery type that took place. The revision effects are silo-specific in that only the late silo is randomised which we obtain by producing a conditional treatment effect by stratifying on the reveal status (<code>er</code>).</p>
 <div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="true" aria-label="Toggle callout">
 <div class="callout-icon-container">
@@ -904,75 +850,108 @@ Warning
 </div>
 <div id="callout-3" class="callout-3-contents callout-collapse collapse show">
 <div class="callout-body-container callout-body">
-<p>Question - for the duration domain, should we be producing silo-specific effects or an average view of the duration effects irrespective of silo membership?</p>
+<p>I don’t believe that we currently need to worry about differential selection (<span class="math inline">\(\mathbb{P}(S=s|G=1)\ne\mathbb{P}(S=s|G=2)\)</span>) because only one silo is contributing to the randomised comparison and I think we are restricting to that silo by virtue of conditiong on <code>er</code>.</p>
 </div>
 </div>
 </div>
-<p>For the duration domain, the comparison of interest is long (ref) vs short, which can be obtained directly from the parameter estimate that characterised the effects of the randomised comparisons. Duration domain effects are also currently reflecting an average over the silos.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb40"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb40-1"><a href="#cb40-1"></a><span class="co"># long (ref) vs short (specific to the type of surg recvd - one or two stage)</span></span>
-<span id="cb40-2"><a href="#cb40-2"></a><span class="fu">avg_comparisons</span>(f2, <span class="at">variables =</span> <span class="st">"d"</span>, <span class="at">comparison =</span> <span class="st">"lnor"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a><span class="co"># dair (ref)  vs revision (of any form)</span></span>
+<span id="cb17-2"><a href="#cb17-2"></a><span class="fu">avg_comparisons</span>(f2, <span class="at">variables =</span> <span class="st">"r"</span>, <span class="at">comparison =</span> <span class="st">"lnor"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
- Term              Contrast Estimate Std. Error    z Pr(&gt;|z|)     S  2.5 %
-    d ln(odds(1) / odds(0))    0.073    0.00285 25.6   &lt;0.001 478.5 0.0674
- 97.5 %
- 0.0786
+ Term              Contrast Estimate Std. Error    z Pr(&gt;|z|)   S  2.5 % 97.5 %
+    r ln(odds(1) / odds(0))    -0.17    0.00118 -144   &lt;0.001 Inf -0.173 -0.168
 
 Columns: term, contrast, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high 
 Type:  response </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb42"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1"></a><span class="fu">avg_comparisons</span>(f2, <span class="at">variables =</span> <span class="st">"d"</span>, <span class="at">comparison =</span> <span class="st">"lnor"</span>, <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"ed"</span>, <span class="st">"srp2"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="co"># The above call to avg_comparisons is equivalent to:</span></span>
+<span id="cb19-2"><a href="#cb19-2"></a><span class="co"># w_eta_r0 &lt;- sweep(eta_r0, 1, ld$n, "*")</span></span>
+<span id="cb19-3"><a href="#cb19-3"></a>d_new <span class="ot">&lt;-</span> <span class="fu">copy</span>(d)</span>
+<span id="cb19-4"><a href="#cb19-4"></a>lo <span class="ot">&lt;-</span> <span class="fu">copy</span>(d_new[, <span class="at">r :=</span> <span class="dv">0</span>])</span>
+<span id="cb19-5"><a href="#cb19-5"></a>d_new <span class="ot">&lt;-</span> <span class="fu">copy</span>(d)</span>
+<span id="cb19-6"><a href="#cb19-6"></a>hi <span class="ot">&lt;-</span> <span class="fu">copy</span>(d_new[, <span class="at">r :=</span> <span class="dv">1</span>])</span>
+<span id="cb19-7"><a href="#cb19-7"></a>y_lo <span class="ot">&lt;-</span> <span class="fu">predict</span>(f2, <span class="at">newdata =</span> lo)</span>
+<span id="cb19-8"><a href="#cb19-8"></a>y_hi <span class="ot">&lt;-</span> <span class="fu">predict</span>(f2, <span class="at">newdata =</span> hi)</span>
+<span id="cb19-9"><a href="#cb19-9"></a><span class="fu">mean</span>(y_hi <span class="sc">-</span> y_lo)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -0.170319</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># But we are only interested in the effect of r in the group that were revealed.</span></span>
+<span id="cb21-2"><a href="#cb21-2"></a><span class="co"># The following, in avg_comparisons, does not make sense to me. Need to revisit.</span></span>
+<span id="cb21-3"><a href="#cb21-3"></a><span class="co"># cmp &lt;- avg_comparisons(f2, newdata = d[er == 1 &amp; r == 1], variables = "r", comparison = "lnor")</span></span>
+<span id="cb21-4"><a href="#cb21-4"></a><span class="co"># print(cmp, digits = 6)</span></span>
+<span id="cb21-5"><a href="#cb21-5"></a></span>
+<span id="cb21-6"><a href="#cb21-6"></a><span class="co"># The randomised comparison should approx map to a weighted combination of the pars.</span></span>
+<span id="cb21-7"><a href="#cb21-7"></a><span class="co"># The reason that the weights are computed conditional on r == 1 is so that we are</span></span>
+<span id="cb21-8"><a href="#cb21-8"></a><span class="co"># weight by the proportion within the revision group that receive each revision type </span></span>
+<span id="cb21-9"><a href="#cb21-9"></a><span class="co"># (approx 30% one-stage, 70% two-stage) and not the proportion receiving each revision </span></span>
+<span id="cb21-10"><a href="#cb21-10"></a><span class="co"># type over all those that received randomised surgery (approx 50% dair, 15% one, 35% two).</span></span>
+<span id="cb21-11"><a href="#cb21-11"></a><span class="fu">mean</span>(d[er <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> r <span class="sc">==</span> <span class="dv">1</span>, <span class="fu">mean</span>(srp1)] <span class="sc">*</span> post1<span class="sc">$</span><span class="st">`</span><span class="at">b[4]</span><span class="st">`</span> <span class="sc">+</span> d[er <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> r <span class="sc">==</span> <span class="dv">1</span>, <span class="fu">mean</span>(srp2)] <span class="sc">*</span> post1<span class="sc">$</span><span class="st">`</span><span class="at">b[5]</span><span class="st">`</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -0.695645</code></pre>
+</div>
+</div>
+<p>The above series of outputs suggest somewhat that we are able to recover the required parameters using various approaches.</p>
+<p>For the choice domain, the comparison of interest is no-rf (ref) vs rif, which can be obtained directly from the parameter estimate that characterised the effects of the randomised comparisons. Choice domain effects reflect an average over the silos since all silos can enter this domain.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a><span class="co"># no-rif (ref)  vs rif (of any form)</span></span>
+<span id="cb23-2"><a href="#cb23-2"></a><span class="co"># NO - avg_comparisons(f2, variables = "f", comparison = "lnor")</span></span>
+<span id="cb23-3"><a href="#cb23-3"></a><span class="co"># We are only interested in the effect of choice for those revealed to choice</span></span>
+<span id="cb23-4"><a href="#cb23-4"></a><span class="co"># cmp &lt;- avg_comparisons(f2, newdata = d[ef == 1], variables = "f", comparison = "lnor")</span></span>
+<span id="cb23-5"><a href="#cb23-5"></a><span class="co"># print(cmp, digits = 6)</span></span>
+<span id="cb23-6"><a href="#cb23-6"></a></span>
+<span id="cb23-7"><a href="#cb23-7"></a><span class="co"># colMeans(b_f)</span></span>
+<span id="cb23-8"><a href="#cb23-8"></a><span class="co"># And this should just be the same as the coefficient from the model</span></span>
+<span id="cb23-9"><a href="#cb23-9"></a><span class="fu">mean</span>(post1<span class="sc">$</span><span class="st">`</span><span class="at">b[9]</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] -0.6914353</code></pre>
+</div>
+</div>
+<p>For the duration domain, the comparison of interest can be obtained directly from the parameter estimates that characterised the effects of the randomised comparisons. Duration domain effects are also currently reflecting an average over the silos.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a><span class="co"># long (ref) vs short (specific to the type of surg recvd - one or two stage)</span></span>
+<span id="cb25-2"><a href="#cb25-2"></a></span>
+<span id="cb25-3"><a href="#cb25-3"></a>cmp <span class="ot">&lt;-</span> <span class="fu">avg_comparisons</span>(f2, <span class="at">newdata =</span> d[ed <span class="sc">==</span> <span class="dv">1</span> ], <span class="at">variables =</span> <span class="st">"d"</span>, <span class="at">comparison =</span> <span class="st">"lnor"</span>, <span class="at">by =</span> <span class="st">"d"</span>)</span>
+<span id="cb25-4"><a href="#cb25-4"></a><span class="fu">print</span>(cmp, <span class="at">digits =</span> <span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
- Term              Contrast ed srp2 Estimate Std. Error    z Pr(&gt;|z|)     S
-    d ln(odds(1) / odds(0))  0    0    0.000         NA   NA       NA    NA
-    d ln(odds(1) / odds(0))  1    0    0.292    0.01012 28.9   &lt;0.001 606.2
-    d ln(odds(1) / odds(0))  1    1    0.100    0.00738 13.6   &lt;0.001 137.6
-  2.5 % 97.5 %
-     NA     NA
- 0.2722  0.312
- 0.0859  0.115
+ Term              Contrast d  Estimate Std. Error        z Pr(&gt;|z|)   S
+    d ln(odds(1) / odds(0)) 0 -0.656909 0.00421194 -155.963  &lt; 0.001 Inf
+    d ln(odds(1) / odds(0)) 1 -0.656735 0.00421091 -155.960  &lt; 0.001 Inf
+     2.5 %    97.5 %
+ -0.665164 -0.648654
+ -0.664988 -0.648481
 
-Columns: term, contrast, ed, srp2, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high 
+Columns: term, contrast, d, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high 
 Type:  response </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb44"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1"></a><span class="fu">colMeans</span>(b_d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>cmp <span class="ot">&lt;-</span> <span class="fu">avg_comparisons</span>(f2, <span class="at">newdata =</span> d[ed <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> srp2 <span class="sc">==</span> <span class="dv">1</span>], <span class="at">variables =</span> <span class="st">"d"</span>, <span class="at">comparison =</span> <span class="st">"lnor"</span>)</span>
+<span id="cb27-2"><a href="#cb27-2"></a><span class="fu">print</span>(cmp, <span class="at">digits =</span> <span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         mu mu_edx_srp1 mu_edx_srp2  mu_ed_srp1  mu_ed_srp2 
- 0.07306913  0.00000000         NaN  0.29336337  0.10064305 </code></pre>
+<pre><code>
+ Term              Contrast  Estimate Std. Error        z Pr(&gt;|z|)   S
+    d ln(odds(1) / odds(0)) -0.700637   0.005446 -128.652  &lt; 0.001 Inf
+     2.5 %    97.5 %
+ -0.711311 -0.689963
+
+Columns: term, contrast, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high 
+Type:  response </code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb46"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb46-1"><a href="#cb46-1"></a><span class="co"># The randomised comparison should approx map directly to the surg type </span></span>
-<span id="cb46-2"><a href="#cb46-2"></a><span class="co"># specific pars </span></span>
-<span id="cb46-3"><a href="#cb46-3"></a><span class="fu">mean</span>(post1<span class="sc">$</span><span class="st">`</span><span class="at">b[5]</span><span class="st">`</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a><span class="co"># colMeans(b_d)</span></span>
+<span id="cb29-2"><a href="#cb29-2"></a></span>
+<span id="cb29-3"><a href="#cb29-3"></a><span class="co"># The randomised comparison should approx map directly to the surg type </span></span>
+<span id="cb29-4"><a href="#cb29-4"></a><span class="co"># specific pars </span></span>
+<span id="cb29-5"><a href="#cb29-5"></a><span class="fu">mean</span>(post1<span class="sc">$</span><span class="st">`</span><span class="at">b[6]</span><span class="st">`</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.2927034</code></pre>
+<pre><code>[1] -0.6786935</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb48"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb48-1"><a href="#cb48-1"></a><span class="fu">mean</span>(post1<span class="sc">$</span><span class="st">`</span><span class="at">b[5]</span><span class="st">`</span> <span class="sc">+</span> post1<span class="sc">$</span><span class="st">`</span><span class="at">b[6]</span><span class="st">`</span> ) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="fu">mean</span>(post1<span class="sc">$</span><span class="st">`</span><span class="at">b[7]</span><span class="st">`</span> ) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 0.3935301</code></pre>
+<pre><code>[1] -0.7005013</code></pre>
 </div>
 </div>
-<!-- @fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model. -->
-<!-- It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset. -->
-<div class="cell fig-cap-location-margin">
-
-</div>
-<div class="cell">
-
-</div>
-<!-- @fig-post-vs-tru shows a comparison between the true log-odds of treatment success with the 95% credible interval obtained from the model. -->
-<!-- It suggests a strong association between the true and estimated log-odds of treatment success for this particular dataset. -->
-<div class="cell fig-cap-location-margin">
-
-</div>
-<div class="cell">
-
-</div>
-<!-- @fig-post-cor shows the correlation between parameters estimated from the model. -->
-<div class="cell fig-cap-location-margin">
-
-</div>
+<p>Based on the above, we seem to be in the right ballpark.</p>
 
 
 </section>

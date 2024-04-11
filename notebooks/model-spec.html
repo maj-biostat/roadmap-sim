@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-13">
+<meta name="dcterms.date" content="2024-04-11">
 
 <title>ROADMAP - design notes and simulations - Model specification</title>
 <style>
@@ -224,26 +224,8 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design1-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 1</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design2-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 2</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../notebooks/sim-design3-results.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Simulation results 3</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design4-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 4</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -276,15 +258,21 @@ window.Quarto = {
     <h2 id="toc-title">Contents</h2>
    
   <ul>
-  <li><a href="#early-infection" id="toc-early-infection" class="nav-link active" data-scroll-target="#early-infection">Early infection</a></li>
+  <li><a href="#primary-outcome" id="toc-primary-outcome" class="nav-link active" data-scroll-target="#primary-outcome">Primary outcome</a></li>
+  <li><a href="#early-infection" id="toc-early-infection" class="nav-link" data-scroll-target="#early-infection">Early infection</a></li>
   <li><a href="#late-infection" id="toc-late-infection" class="nav-link" data-scroll-target="#late-infection">Late infection</a></li>
   <li><a href="#chronic-infection" id="toc-chronic-infection" class="nav-link" data-scroll-target="#chronic-infection">Chronic infection</a></li>
+  <li><a href="#causal-structure" id="toc-causal-structure" class="nav-link" data-scroll-target="#causal-structure">Causal structure</a></li>
+  <li><a href="#research-questions" id="toc-research-questions" class="nav-link" data-scroll-target="#research-questions">Research questions</a></li>
+  <li><a href="#sec-model-spec" id="toc-sec-model-spec" class="nav-link" data-scroll-target="#sec-model-spec">Model specification</a></li>
+  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a></li>
+  <li><a href="#treatment-effects" id="toc-treatment-effects" class="nav-link" data-scroll-target="#treatment-effects">Treatment effects</a></li>
   <li><a href="#priors" id="toc-priors" class="nav-link" data-scroll-target="#priors">Priors</a>
   <ul>
   <li><a href="#intercepts" id="toc-intercepts" class="nav-link" data-scroll-target="#intercepts">Intercepts</a></li>
   <li><a href="#other-covariates" id="toc-other-covariates" class="nav-link" data-scroll-target="#other-covariates">Other covariates</a></li>
+  <li><a href="#treatment-effects-1" id="toc-treatment-effects-1" class="nav-link" data-scroll-target="#treatment-effects-1">Treatment effects</a></li>
   </ul></li>
-  <li><a href="#treatment-effects" id="toc-treatment-effects" class="nav-link" data-scroll-target="#treatment-effects">Treatment effects</a></li>
   </ul>
 </nav>
     </div>
@@ -304,14 +292,14 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 13, 2024</p>
+      <p class="date">April 11, 2024</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">March 10, 2024</p>
+      <p class="date-modified">April 11, 2024</p>
     </div>
   </div>
     
@@ -325,6 +313,8 @@ window.Quarto = {
 <div class="cell">
 
 </div>
+<section id="primary-outcome" class="level2">
+<h2 class="anchored" data-anchor-id="primary-outcome">Primary outcome</h2>
 <p>The primary outcome is treatment success at 12 months post platform entry, defined as <strong>all of</strong>:</p>
 <ol type="1">
 <li>Alive</li>
@@ -332,8 +322,23 @@ window.Quarto = {
 <li>No ongoing use of antibiotics for the index joint; and</li>
 <li>The prosthesis present after the initial management strategy is complete (destination prosthesis) still in place</li>
 </ol>
-<p>hereafter referred to as ‘treatment success’.</p>
-<p>We assume the following DAG:</p>
+<p>referred to as ‘treatment success’.</p>
+</section>
+<section id="early-infection" class="level2">
+<h2 class="anchored" data-anchor-id="early-infection">Early infection</h2>
+<p>Patients with early stage infection are not revealed<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> to the surgical domain. The surgical intervention will usually be dair for which 12 weeks of antibiotics are recommended. There are, however, instances where early stage infection patients will receive a surgical intervention and these patients will therefore be able to enter the duration domain and receive randomised antibiotic duration. These patients will also enter the choice domain.</p>
+</section>
+<section id="late-infection" class="level2">
+<h2 class="anchored" data-anchor-id="late-infection">Late infection</h2>
+<p>Patients with late infection enter all domains, but with some restrictions. They are randomised to dair vs revision in the surgical domain. Patients allocated to revision will receive a one or two-stage procedure. Both the planned surgery (one-stage/two-stage) and the surgery actually performed should be captured – the former should be recorded at the time of randomisation. These patients will also enter the choice domain.</p>
+</section>
+<section id="chronic-infection" class="level2">
+<h2 class="anchored" data-anchor-id="chronic-infection">Chronic infection</h2>
+<p>Patients with chronic stage infection are not randomised into the surgical domain, but they can enter into the duration domain based on the type of surgery they receive. These patients will also enter the choice domain.</p>
+</section>
+<section id="causal-structure" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="causal-structure">Causal structure</h2>
+<p>We assume the following DAG, which is a simplified causal representation of how patients reach their treatment status across the domains:</p>
 <div class="cell page-columns page-full" data-layout-align="default">
 <div class="cell-output-display page-columns page-full">
 <div id="fig-modspec-1" class="quarto-figure quarto-figure-center quarto-float anchored page-columns page-full">
@@ -393,57 +398,163 @@ Figure&nbsp;1: Assumed causal diagram representing the (simplified) processes on
 <li><span class="math inline">\(S_R\)</span> revision type preference (pre-randomisation) - 0: DAIR, 1: one-stage, 2: two-stage</li>
 <li><span class="math inline">\(R_A\)</span> allocated surgery - 0: DAIR, 1: one-stage, 2: two-stage</li>
 <li><span class="math inline">\(R_P\)</span> performed surgery - 0: DAIR, 1: revision</li>
-<li><span class="math inline">\(S_{R_P}\)</span> revision type performed (post-randomisation) - 0: one-stage, 1: two-stage</li>
-<li><span class="math inline">\(D\)</span> randomised duration - 0: long, 1: short</li>
+<li><span class="math inline">\(S_{R_P}\)</span> revision type performed (post-randomisation) - 0: dair, 1: one-stage, 2: two-stage</li>
+<li><span class="math inline">\(D\)</span> randomised duration - 0: long, 1: short (for one-stage), 0: short, 1: long (for two-stage)</li>
 <li><span class="math inline">\(D_A\)</span> allocated duration - 0: long, 1: short, 2: other</li>
-<li><span class="math inline">\(S_D\)</span> selected duration - 0: long, 1: short, 2: other</li>
+<li><span class="math inline">\(S_D\)</span> selected duration - 0: long, 1: short, 2: other (sometimes duration will be selected rather than randomised)</li>
 <li><span class="math inline">\(F\)</span> randomised choice - 0: norif, 1: rif</li>
 <li><span class="math inline">\(F_A\)</span> allocated choice - 0: norif, 1: rif, 2: other</li>
 <li><span class="math inline">\(S_F\)</span> selected choice - 0: norif, 1: rif, 2: other</li>
 <li><span class="math inline">\(Y\)</span> treatment success - 0: no, 1: yes</li>
 </ul>
-<p>For each silo <span class="math inline">\(l\)</span> and site of infection <span class="math inline">\(j\)</span> we model the probability of treatment success as follows:</p>
+</section>
+<section id="research-questions" class="level2">
+<h2 class="anchored" data-anchor-id="research-questions">Research questions</h2>
+<p>The questions of interest are:</p>
+<ul>
+<li>Surg Domain – Early Silo – Revision is superior to DAIR (reference group)</li>
+<li>AB Duration – One-stage revision – 6 weeks (short) is non-inferior to 12 weeks (long) (reference group)</li>
+<li>AB Duration – Two-stage revision – 12 weeks (long) is superior to 7 days (short) (reference group)</li>
+<li>AB Choice – All silos combined – Rifampicin is superior to no-rifampicin (reference group)</li>
+</ul>
+</section>
+<section id="sec-model-spec" class="level2">
+<h2 class="anchored" data-anchor-id="sec-model-spec">Model specification</h2>
+<p>For each silo <span class="math inline">\(l\)</span> and site of infection <span class="math inline">\(j\)</span> we therefore simulate and model the probability of treatment success as:</p>
 <p><span id="eq-mod-spec-1"><span class="math display">\[
 \begin{aligned}
-\mathbb{E}[Y|L; \beta] &amp;=  \text{expit}( \alpha_0 + \\
+\mathbb{E}[Y|Q; \alpha,  \beta,\lambda] &amp;=  \text{expit}( \alpha_0 + \\
   &amp;\quad \lambda_1 \mathbb{I}(L = 1) + \lambda_2 \mathbb{I}(L = 2) + \\
-  &amp;\quad \beta_1 \mathbb{I}(1-E_R) + ([\beta_2 R + \beta_3 R \mathbb{I}(S_{R_P} = 2) ])\mathbb{I}(E_R) + \\
-  &amp;\quad \beta_4 \mathbb{I}(1-E_D) + ([\beta_{5} R_P D + \beta_{6} R_P D \mathbb{I}(S_{R_P} = 2)])\mathbb{I}(E_D) + \\
-  &amp;\quad \beta_{7} \mathbb{I}(1-E_F) + \beta_{8} F E_F )
+  &amp;\quad (\beta_1 \mathbb{I}(S_{R_P} = 0) + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\
+  &amp;\quad (\beta_4 \mathbb{I}(S_{R_P} = 1) + \beta_5 \mathbb{I}(S_{R_P} = 2) )R E_R + \\
+  &amp;\quad \beta_6 (1-E_D) + \\
+  &amp;\quad (\beta_{7} \mathbb{I}(S_{R_P} = 1) + \beta_{8} \mathbb{I}(S_{R_P} = 2)])D E_D + \\
+  &amp;\quad \beta_{9} (1-E_F) + \beta_{10} F E_F )
 \end{aligned}
 \tag{1}\]</span></span></p>
-<p>where</p>
+<p>where the <span class="math inline">\(Q\)</span>, <span class="math inline">\(\alpha\)</span>, <span class="math inline">\(\lambda\)</span> and <span class="math inline">\(\beta\)</span> denote the terms and parameters included in the model and specifically</p>
 <ul>
 <li><span class="math inline">\(\alpha_0\)</span> denotes the baseline log-odds of treatment success</li>
-<li><span class="math inline">\(\lambda_1\)</span> denotes the shift associated with membership of the late silo</li>
-<li><span class="math inline">\(\lambda_2\)</span> denotes the shift associated with membership of the chronic silo</li>
-<li><span class="math inline">\(\beta_{1}\)</span> shift under non-reveal (surgery<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>)</li>
-<li><span class="math inline">\(\beta_{2}\)</span> shift under revision that was performed with one-stage procedure for long duration and no-rif</li>
-<li><span class="math inline">\(\beta_{3}\)</span> relative shift under revision that was performed with two-stage procedure for long duration and no-rif</li>
-<li><span class="math inline">\(\beta_{4}\)</span> shift under non-reveal (duration) with no differentiation for surgical nor duration preference</li>
-<li><span class="math inline">\(\beta_{5}\)</span> shift for short duration when one-stage was actually performed</li>
-<li><span class="math inline">\(\beta_{6}\)</span> shift for short duration when two-stage was actually performed</li>
-<li><span class="math inline">\(\beta_{7}\)</span> shift under non-reveal (choice) with no differentiation for choice preference</li>
-<li><span class="math inline">\(\beta_{8}\)</span> shift for rif</li>
+<li><span class="math inline">\(\lambda_1\)</span> change associated with membership of the late silo</li>
+<li><span class="math inline">\(\lambda_2\)</span> change associated with membership of the chronic silo</li>
+<li><span class="math inline">\(\beta_{1}\)</span> change under non-reveal surgery receiving dair</li>
+<li><span class="math inline">\(\beta_{2}\)</span> change under non-reveal surgery receiving one-stage</li>
+<li><span class="math inline">\(\beta_{3}\)</span> change under non-reveal surgery receiving two-stage</li>
+<li><span class="math inline">\(\beta_{4}\)</span> change under revision that was performed with one-stage procedure</li>
+<li><span class="math inline">\(\beta_{5}\)</span> change under revision that was performed with two-stage procedure</li>
+<li><span class="math inline">\(\beta_{6}\)</span> change under non-reveal (duration)</li>
+<li><span class="math inline">\(\beta_{7}\)</span> change for short duration when one-stage was actually performed</li>
+<li><span class="math inline">\(\beta_{8}\)</span> change for long duration when two-stage was actually performed</li>
+<li><span class="math inline">\(\beta_{9}\)</span> change under non-reveal (choice)</li>
+<li><span class="math inline">\(\beta_{10}\)</span> change for rif</li>
 </ul>
-<p>There are situations where the design matrix could be singular, which would necessitate removing redundant terms from the model.</p>
-<p>In the full model, there would be additional terms to capture time trends, site variation and prognostic covariates.</p>
-<section id="early-infection" class="level3">
-<h3 class="anchored" data-anchor-id="early-infection">Early infection</h3>
-<p>Patients with early stage infection are not randomised into the surgical domain. The surgical intervention will usually be dair and the 12 weeks antibiotic duration is recommended. There are instances where early stage infection patients will receive a surgical intervention, in which case they will enter the duration domain for randomisation of long vs short dependent on the type of revision received.</p>
+<p>In order to easily evaluate the duration effects, we to make the reference arm 12-weeks (long) in the case of one-stage revision and 7-days (short) in the case of two-stage revision.</p>
+<p>In the full model, there would be additional terms to capture time trends, site variation, prognostic covariates and joint (knee/hip) effects.</p>
+<p><span class="math inline">\(\beta_1\)</span>, <span class="math inline">\(\beta_2\)</span> and <span class="math inline">\(\beta_3\)</span> are required because there will be some patients who are not randomised to revision and yet will still receive either a one-stage or two-stage surgical procedure. These patients may be eligible to enter into the duration domain and therefore the duration domain effects are informed by patients receiving randomised and non-randomised surgical treatment. The <span class="math inline">\(\beta_1\)</span>, <span class="math inline">\(\beta_2\)</span> and <span class="math inline">\(\beta_3\)</span> parameters provide adjustment for non-randomised surgical treatment and <span class="math inline">\(\beta_4\)</span> and <span class="math inline">\(\beta_5\)</span> provide adjustment for the patients that did.</p>
+<p>Notice that <span class="math inline">\(E_D = 0\)</span> generally implies <span class="math inline">\(S_{R_P} \notin \{1, 2\}\)</span> such that <span class="math inline">\(1-E_D\)</span> is some linear function of the other terms in the model. This can lead to estimation problems that might necessitate model re-parameterisation and it is for this reason that the simulation model drops the <span class="math inline">\((1 - E_D)\)</span> term:</p>
+<p><span id="eq-mod-spec-2"><span class="math display">\[
+\begin{aligned}
+\mathbb{E}[Y|Q; \alpha,  \beta,\lambda] &amp;=  \text{expit}( \alpha_0 + \\
+  &amp;\quad \lambda_1 \mathbb{I}(L = 1) + \lambda_2 \mathbb{I}(L = 2) + \\
+  &amp;\quad (\beta_1 \mathbb{I}(S_{R_P} = 0) + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\
+  &amp;\quad (\beta_4 \mathbb{I}(S_{R_P} = 1) + \beta_5 \mathbb{I}(S_{R_P} = 2) )R E_R + \\
+  &amp;\quad (\beta_{6} \mathbb{I}(S_{R_P} = 1) + \beta_{7} \mathbb{I}(S_{R_P} = 2)])D E_D + \\
+  &amp;\quad \beta_{8} (1-E_F) + \beta_{9} F E_F )
+\end{aligned}
+\tag{2}\]</span></span></p>
 </section>
-<section id="late-infection" class="level3">
-<h3 class="anchored" data-anchor-id="late-infection">Late infection</h3>
-<p>Patients with late infection enter all domains, but with some restrictions. They are randomised to dair vs revision in the surgical domain. Patients allocated to revision will receive a one or two-stage procedure, the plan for which should be captured at the time of randomisation. The surgical intervention actually received should also be captured as this may deviate from the original plan.</p>
-<p>The reference level parameters for the treatment effects are all set to zero. Duration effects are currently completely pooled across silo, although this will likely be revised.</p>
+<section id="examples" class="level2">
+<h2 class="anchored" data-anchor-id="examples">Examples</h2>
+<p>The following characterise how patients enter into the likelihood under various scenarios under <a href="#eq-mod-spec-2" class="quarto-xref">Equation&nbsp;2</a>.</p>
+<div class="column" style="width:100%;">
+<table class="table-striped table-hover table">
+<caption>Likelihood contributions under various scenarios</caption>
+<colgroup>
+<col style="width: 11%">
+<col style="width: 44%">
+<col style="width: 44%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Patient type</th>
+<th>Log-odds treatment success</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>Late silo receiving rand DAIR, non-rand 12 weeks AB and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_{9}\)</span></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Late silo receiving rand rev (one-stage), rand 12 weeks AB (ref group) and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_4 + \beta_{9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Late silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref group) and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_2 + \beta_{9}\)</span></td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>Chronic silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref group) and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_2 + \beta_2 + \beta_{9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td>Late silo receiving non-rand rev (two-stage), rand 7 days AB (ref group) and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_3 + \beta_{9}\)</span></td>
+</tr>
+<tr class="even">
+<td>6</td>
+<td>Chronic silo receiving non-rand rev (two-stage), rand 7 days AB (ref group) and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_2 + \beta_3 + \beta_{9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td>Late silo receiving rand rev (one-stage), rand 6 weeks AB and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_4 + \beta_6 + \beta_{9}\)</span></td>
+</tr>
+<tr class="even">
+<td>8</td>
+<td>Late silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_2 + \beta_6 + \beta_{9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>9</td>
+<td>Chronic silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_2 + \beta_2 + \beta_6 + \beta_{9}\)</span></td>
+</tr>
+<tr class="even">
+<td>10</td>
+<td>Late silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_3 + \beta_7 + \beta_{9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>11</td>
+<td>Chronic silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_2 + \beta_3 + \beta_7 + \beta_{9}\)</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>If the non-reveal parameters for the surgical domain were not split by surgery type, then ID 3 above would have the same terms as ID 5 and ID 4 would have the same terms as ID 6.</p>
 </section>
-<section id="chronic-infection" class="level3">
-<h3 class="anchored" data-anchor-id="chronic-infection">Chronic infection</h3>
-<p>Patients with chronic stage infection are not randomised into the surgical domain.</p>
+<section id="treatment-effects" class="level2">
+<h2 class="anchored" data-anchor-id="treatment-effects">Treatment effects</h2>
+<p>For the surgical domain, the effect of interest is an average conditional log-odds ratio and is applicable to the late silo. This amounts to a weighted combination of <span class="math inline">\(\beta_2\)</span> and <span class="math inline">\(\beta_3\)</span> where the weights are the sample based expectations for the probability of receiving one-stage and two-stage surgery.</p>
+<p><span class="math display">\[
+\begin{aligned}
+\Delta_R = \beta_4 \mathbb{E}[S_{R_P} == 1 \land R == 1] + \beta_5 \mathbb{E}[S_{R_P} == 2 \land R == 1]
+\end{aligned}
+\]</span></p>
+<p>For the duration domain, the conditional log-odds ratios of interest are <span class="math inline">\(\beta_6\)</span> and <span class="math inline">\(\beta_7\)</span> which characterise the effect of 6 weeks (short) vs 12 weeks (long) under one-stage revision and 12 weeks (long) vs 7 days (short) in two-stage revision. For the choice domain, the conditional log-odd ratios of interest is <span class="math inline">\(\beta_{9}\)</span>, characterising the effect of rifampacin vs no-rifampacin. For the duration and choice domains, the effects are applicable to all silos.</p>
 </section>
 <section id="priors" class="level2">
 <h2 class="anchored" data-anchor-id="priors">Priors</h2>
-<p>As with the linear predictor, the priors are currently targeted towards the simulation work but may be appropriate for the final model.</p>
+<p>As with the linear predictor, the priors are currently targeted towards the simulation work and may be modified in the final model.</p>
 <section id="intercepts" class="level3">
 <h3 class="anchored" data-anchor-id="intercepts">Intercepts</h3>
 <p>The silo and infection site intercepts are given independent normal priors</p>
@@ -451,59 +562,24 @@ Figure&nbsp;1: Assumed causal diagram representing the (simplified) processes on
 \alpha_0 \sim \mathcal{N}(0, 1.5^2)
 \end{aligned}\]</span>
 <p>On the probability scale, these concentrate on 0.5 with 95% of the density between 0.04 and 0.96, approximately uniform across this interval.</p>
-<p>While the intercept priors are currently independent, consideration should be given to partial pooling across site of infection.</p>
-<p>There are no randomisation options for early stage infection in domains A and B and therefore the baseline log-odds (intercept) refers to the cohort of patients that were not randomised within A nor B and randomised to the reference group for domain C. In contrast, for the late stage patients, the baseline log-odds of treatment success is interpreted contextually for the cohort of patients that were randomised to the reference level of domains A, B and C, see below.</p>
-<div class="column" style="width:50%;">
-<table class="table-striped table-hover table">
-<caption>Groups corresponding to baseline log-odds of treatment success</caption>
-<thead>
-<tr class="header">
-<th>Silo</th>
-<th>A</th>
-<th>B</th>
-<th>C</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>early</td>
-<td>-</td>
-<td>-</td>
-<td>no-rif</td>
-</tr>
-<tr class="even">
-<td>late</td>
-<td>dair</td>
-<td>-</td>
-<td>no-rif</td>
-</tr>
-<tr class="odd">
-<td>chronic</td>
-<td>one</td>
-<td>long</td>
-<td>no-rif</td>
-</tr>
-</tbody>
-</table>
-</div>
 </section>
 <section id="other-covariates" class="level3">
 <h3 class="anchored" data-anchor-id="other-covariates">Other covariates</h3>
 <p>Independent standard normal priors are assumed for all other covariate terms effects.</p>
 </section>
-</section>
-<section id="treatment-effects" class="level2">
-<h2 class="anchored" data-anchor-id="treatment-effects">Treatment effects</h2>
+<section id="treatment-effects-1" class="level3">
+<h3 class="anchored" data-anchor-id="treatment-effects-1">Treatment effects</h3>
 <p>All covariates relating to treatment effects have standard normal priors.</p>
 
 
+</section>
 </section>
 
 
 <div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
 
 <ol>
-<li id="fn1"><p>The parameter ignores potential differentiation for surgical type.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn1"><p>Dependent on how the randomisation process is designed and implemented, they might not even be randomised.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">

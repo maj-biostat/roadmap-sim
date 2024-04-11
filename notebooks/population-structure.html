@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-03-13">
+<meta name="dcterms.date" content="2024-04-11">
 
 <title>ROADMAP - design notes and simulations - Population structure</title>
 <style>
@@ -255,26 +255,8 @@ window.Quarto = {
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design1-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 1</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design2-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 2</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
   <a href="../notebooks/sim-design3-results.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Simulation results 3</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="../notebooks/sim-design4-results.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Simulation results 4</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -336,14 +318,14 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">March 13, 2024</p>
+      <p class="date">April 11, 2024</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">February 26, 2024</p>
+      <p class="date-modified">April 11, 2024</p>
     </div>
   </div>
     
@@ -357,10 +339,10 @@ window.Quarto = {
 <div class="cell">
 
 </div>
-<p>The following specification is for the partially factorial structure of the study. The outcome model is specified separately.</p>
+<p>The following provides some detail on the assumptions relating to important design variables. The outcome model is specified separately.</p>
 <section id="silo" class="level2">
 <h2 class="anchored" data-anchor-id="silo">Silo</h2>
-<p>The total sample size is divided across the silos in proportion to the values described in the table below. These proportions are expectations. Each simulated dataset will vary somewhat from these proportions due to the stochastic nature of the generation process.</p>
+<p>The total sample size is divided across the silos in proportion to the values described in the table below. Each simulated dataset will vary somewhat from these proportions due to the stochastic nature of the data generation process.</p>
 <div class="column" style="width:50%;">
 <table class="table-striped table-hover table">
 <caption>Silo categories (<span class="math inline">\(\pi\)</span> denotes probability of membership)</caption>
@@ -389,7 +371,7 @@ window.Quarto = {
 </section>
 <section id="site-of-infection-joint" class="level2">
 <h2 class="anchored" data-anchor-id="site-of-infection-joint">Site of infection (joint)</h2>
-<p>Each silo comprises patients assumed to have primary infection in either knee or hip (not both). The proportion of infections associated with each joint for each silo are shown below. As previously, these proportions are expectations and the empirical proportions observed in simulated datasets will vary from these.</p>
+<p>Each silo comprises patients assumed to have primary infection in either knee or hip (not both). The assumed proportion of infections for each joint and for each silo are shown below.</p>
 <div class="column" style="width:70%;">
 <table class="table-striped table-hover table">
 <caption>Site of infection (<span class="math inline">\(\pi\)</span> denotes probability of site infection conditional on silo membership)</caption>
@@ -444,83 +426,33 @@ window.Quarto = {
 </section>
 <section id="randomisation-into-surgery-domain-a" class="level2">
 <h2 class="anchored" data-anchor-id="randomisation-into-surgery-domain-a">Randomisation into surgery domain (A)</h2>
-<p>Only the late-stage infection cohort presently have randomisation options for surgery type. Other silos are assigned by clinician/patient preference.</p>
+<p>Only the late-stage infection cohort has randomisation options for surgery type. Other silos are assigned by clinician/patient preference.</p>
 </section>
 <section id="surgery-domain-a" class="level2">
 <h2 class="anchored" data-anchor-id="surgery-domain-a">Surgery domain (A)</h2>
-<p>Allocation probabilities (conditional on entry into domain A) are shown below. Early stage patients do not receive randomisation and are assumed to receive DAIR. Chronic stage patients do not receive randomisation and are assumed to receive DAIR, one-stage and two-stage based on clinician assessment.</p>
-<div class="column" style="width:70%;">
-<table class="table-striped table-hover table">
-<caption>Allocation within domain A (<span class="math inline">\(\pi\)</span> denotes probability allocation to surgery type conditional on silo membership)</caption>
-<thead>
-<tr class="header">
-<th>Silo</th>
-<th>Surgery type (<span class="math inline">\(a\)</span>)</th>
-<th><span class="math inline">\(\pi\)</span></th>
-<th></th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>early</td>
-<td>dair</td>
-<td>-</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>late</td>
-<td>dair</td>
-<td>0.5</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>late</td>
-<td>revision</td>
-<td>0.5</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>chronic</td>
-<td>dair</td>
-<td>-</td>
-<td></td>
-</tr>
-<tr class="odd">
-<td>chronic</td>
-<td>one-stage</td>
-<td>-</td>
-<td></td>
-</tr>
-<tr class="even">
-<td>chronic</td>
-<td>two-stage</td>
-<td>-</td>
-<td></td>
-</tr>
-</tbody>
-</table>
-</div>
+<p>Only late stage patients enter the surgery domain and are randomised 1:1 to DAIR/revision. The clinician selects what type of revision to perform.</p>
+<p>Early stage patients do not receive randomisation and are assumed to mostly receive DAIR, although they may have any form of surgery. Chronic stage patients do not receive randomisation and are assumed to receive DAIR, one-stage and two-stage based on clinician assessment.</p>
 </section>
 <section id="intended-surgery" class="level2">
 <h2 class="anchored" data-anchor-id="intended-surgery">Intended surgery</h2>
-<p>Intended or planned surgery relates to the surgical preference, which may be conditional on which intervention is randomised.</p>
-<p>For early stage infection, we take preference towards dair, one and two-stage surgery to be distributed as 90%, 10% and 0%.</p>
-<p>For late stage infection, we take preference towards one and two-stage as 30% and 70%, if randomised to revision. When randomised to dair, we assume the preference to dair, one and two-stage is 20%, 24% and 56%.</p>
-<p>For chronic stage infection, we take preference towards dair, one and two-stage surgery to be distributed as 20%, 20% and 60%.</p>
+<p>The planned surgery will be based on a range of factors including clinician preference, hospital protocols etc.</p>
+<p>For early stage infection patients, we assume the proportion of dair, one and two-stage surgery to be 90%, 10% and 0%.</p>
+<p>For late stage infection patients randomised to revision, we assume that the preferences for one and two-stage are 30% and 70%. For late stage infection patients randomised to dair, we assume that the preferences for dair, one and two-stage are 20%, 24% and 56%.</p>
+<p>For chronic stage infection patients, we assume that the preferences for dair, one and two-stage are 20%, 20% and 60%.</p>
 </section>
 <section id="randomisation-into-duration-domain-b" class="level2">
 <h2 class="anchored" data-anchor-id="randomisation-into-duration-domain-b">Randomisation into duration domain (B)</h2>
 <p>Entry into domain B is dependent on the surgery that was actually received.</p>
 <p>Surgery received is dependent on whether surgery was randomised (as in late infection patients) and what the surgical preference is (as in chronic infection patients).</p>
-<p>While allocated surgery (dair, one and two-stage) is a linear function of randomised surgery and preference, the surgery received may deviate from the original plan.</p>
+<p>The surgery received may deviate from the original randomised allocation or preferred approach (in the case where randomisation was not applicable).</p>
 </section>
 <section id="duration-domain-b" class="level2">
 <h2 class="anchored" data-anchor-id="duration-domain-b">Duration domain (B)</h2>
-<p>Within the duration domain, allocation is to long vs short duration, the meaning of which differs under one and two-stage surgery. Patients receiving DAIR are assumed to have 12 wk duration (not randomised). Default randomisation is 1:1 for long vs short within surgery type.</p>
+<p>Within the duration domain, allocation is to long vs short duration, the meaning of which differs under one and two-stage surgery. Patients receiving DAIR are assumed to have 12 wk duration (not randomised). The default randomisation is 1:1 for long vs short within surgery type.</p>
 </section>
 <section id="randomisation-into-antibiotic-choice-domain-c" class="level2">
 <h2 class="anchored" data-anchor-id="randomisation-into-antibiotic-choice-domain-c">Randomisation into antibiotic choice domain (C)</h2>
-<p>The data generating process assume that 60% of the cohort enter into this domain at random, unrelated to risk factors. The remainder are held out so that we do not over-estimate the operating characteristics, such as power.</p>
+<p>The data generating process assumes that 60% of the total sample enter into this domain at random, unrelated to risk factors.</p>
 </section>
 <section id="antibiotic-choice-domain-c" class="level2">
 <h2 class="anchored" data-anchor-id="antibiotic-choice-domain-c">Antibiotic choice domain (C)</h2>
@@ -619,50 +551,36 @@ norif   rif
         }
     }
     r[er == 0] &lt;- 0
-    sr &lt;- rep(NA, N)
+    dtmp &lt;- data.table(cbind(l, er, r, srp = rep(NA, N)))
     for (i in 1:length(pop_spec$r_a_q)) {
         z &lt;- pop_spec$r_a_q[[i]]
-        if (all(!is.na(z))) {
-            r_0 &lt;- (r == 0) &amp; (l == i - 1)
-            sr[r_0] &lt;- sample(0:(length(z) - 1), sum(r_0), TRUE, 
-                z)
-            r_1 &lt;- (r == 1) &amp; (l == i - 1)
-            sr[r_1] &lt;- sample(1:(length(z) - 1), sum(r_1), TRUE, 
-                z[2:length(z)]/sum(z[2:length(z)]))
-        }
-        else {
-            sr[(l == i - 1)] &lt;- 0
-        }
+        dtmp[l == i - 1 &amp; er == 0, `:=`(srp, sample(0:(length(z) - 
+            1), .N, TRUE, z))]
+        dtmp[l == i - 1 &amp; er == 1 &amp; r == 0, `:=`(srp, 0)]
+        dtmp[l == i - 1 &amp; er == 1 &amp; r == 1, `:=`(srp, sample(1:(length(z) - 
+            1), .N, TRUE, z[2:length(z)]/sum(z[2:length(z)])))]
     }
-    sra &lt;- as.numeric(sr == 2)
-    ra &lt;- (1 - er) * sr + er * r * (sr)
-    srp &lt;- ra
-    ic &lt;- rbinom(N, 1, 0.005)
-    if (all(ic == 0)) {
-        ic[sample(length(ic), 1)] &lt;- 1
-    }
-    srp[as.logical(ic)] &lt;- sample(0:2, sum(ic), replace = T, 
-        prob = c(0.1, 0.3, 0.6))
-    rp &lt;- as.numeric(srp %in% 1:2)
-    dtmp &lt;- data.table(rp, srp, ed = rep(0, N))
+    srp &lt;- dtmp$srp
+    dtmp &lt;- data.table(srp, ed = rep(0, N))
     if (all(!is.na(pop_spec$r_b$one))) {
-        dtmp[rp == 1 &amp; srp == 1, `:=`(ed, 1)]
+        dtmp[srp == 1, `:=`(ed, 1)]
     }
     if (all(!is.na(pop_spec$r_b$two))) {
-        dtmp[rp == 1 &amp; srp == 2, `:=`(ed, 1)]
+        dtmp[srp == 2, `:=`(ed, 1)]
     }
     ed &lt;- dtmp$ed
-    d &lt;- rep(NA, N)
+    dtmp &lt;- data.table(cbind(srp, ed, d = rep(NA, N)))
     for (i in 1:length(pop_spec$r_b)) {
         z &lt;- pop_spec$r_b[[i]]
         if (all(!is.na(z))) {
-            d[srp == (i - 1)] &lt;- sample(0:(length(z) - 1), sum(srp == 
-                (i - 1)), TRUE, z)
+            dtmp[srp == (i - 1), `:=`(d, sample(0:(length(z) - 
+                1), .N, TRUE, z))]
         }
         else {
-            d[srp == (i - 1)] &lt;- 0
+            dtmp[srp == (i - 1), `:=`(d, 0)]
         }
     }
+    d &lt;- dtmp$d
     if (all(is.na(pop_spec$r_c))) {
         ef &lt;- rep(0, N)
         f &lt;- rep(0, N)
@@ -672,28 +590,29 @@ norif   rif
         f &lt;- as.numeric((ef == 1) * rbinom(N, 1, pop_spec$r_c))
     }
     D &lt;- data.table(l, l1, l2, j, er, ed, ef, erx = 1 - er, edx = 1 - 
-        ed, efx = 1 - ef, r, sr, sra, ra, ic, rp, srp, srp1 = as.numeric(srp == 
-        1), srp2 = as.numeric(srp == 2), d, f)
+        ed, efx = 1 - ef, r, srp, srp0 = as.numeric(srp == 0), 
+        srp1 = as.numeric(srp == 1), srp2 = as.numeric(srp == 
+            2), d, f)
     D[, `:=`(id, idx_s:(N + idx_s - 1))]
     setcolorder(D, "id")
     D
 }
-&lt;bytecode: 0x11cf0aed8&gt;
+&lt;bytecode: 0x11172fae0&gt;
 &lt;environment: namespace:roadmap.data&gt;</code></pre>
 </div>
 </div>
-<p>The data generation assumptions imply unique patients groups on which we would observe the outcome. The outcome is known to be heterogenous across these groups and yet the stated goal is to aggregate measures of effect (odds ratios) across all these groups, e.g.&nbsp;no rif vs rif. However, the effect of interest is assumed to be obtained from the model parameter that characterises the effect of antibiotic type conditional on the other covariates in the model.</p>
+<p>The data generation assumptions imply unique patient groups on which we would observe the outcome. The outcome is known to be heterogenous across these groups and yet the stated goal is to aggregate measures of effect (odds ratios) across all these groups, e.g.&nbsp;no rif vs rif.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>d <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_design</span>()</span>
 <span id="cb5-2"><a href="#cb5-2"></a><span class="fu">head</span>(d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>   id l l1 l2 j er ed ef erx edx efx r sr sra ra ic rp srp srp1 srp2 d f
-1:  1 0  0  0 1  0  0  0   1   1   1 0  0   0  0  0  0   0    0    0 0 0
-2:  2 0  0  0 1  0  0  0   1   1   1 0  0   0  0  0  0   0    0    0 0 0
-3:  3 2  0  1 1  0  0  1   1   1   0 0  0   0  0  0  0   0    0    0 0 1
-4:  4 0  0  0 0  0  0  0   1   1   1 0  0   0  0  0  0   0    0    0 0 0
-5:  5 1  1  0 1  1  1  1   0   0   0 1  2   1  2  0  1   2    0    1 0 0
-6:  6 1  1  0 1  1  1  0   0   0   1 1  2   1  2  0  1   2    0    1 1 0</code></pre>
+<pre><code>   id l l1 l2 j er ed ef erx edx efx r srp srp0 srp1 srp2 d f
+1:  1 1  1  0 1  1  1  0   0   0   1 1   2    0    0    1 1 0
+2:  2 1  1  0 0  1  1  0   0   0   1 1   1    0    1    0 1 0
+3:  3 0  0  0 1  0  1  0   1   0   1 0   1    0    1    0 0 0
+4:  4 2  0  1 1  0  0  0   1   1   1 0   0    1    0    0 0 0
+5:  5 2  0  1 1  0  0  0   1   1   1 0   0    1    0    0 0 0
+6:  6 2  0  1 1  0  1  1   1   0   0 0   2    0    0    1 1 0</code></pre>
 </div>
 </div>
 
