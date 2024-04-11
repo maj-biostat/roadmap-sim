@@ -369,6 +369,8 @@ d_fig_2[, lor_num := rep(g_lor_num, each = length(unique(d_fig$par)))]
 
 p <- ggplot(d_fig, aes(x = lor_lab, y = mu)) +
   geom_boxplot() +
+  geom_point(data = d_fig_2, 
+             aes(x = lor_lab, y = lor_num), col = 2) +
   scale_x_discrete("", guide = guide_axis(angle = 45)) +
   scale_y_continuous("Distribution of posterior mean") +
   facet_grid(par~.)
