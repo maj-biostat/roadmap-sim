@@ -81,11 +81,11 @@ The model spec can be translated into stan, albeit using a different likelihood 
 cat(readLines("stan/model-sim-04.stan"), sep = "\n")
 ```
 
-Fit the stan model and extract and summarise the posterior in order to see if the parameter estimates are close to the true values.
+The model is fitted to a large dataset and the posterior summarised to determine if the parameter estimates approximate the known values.
 
 ::: {.callout-note collapse=false}
 
-There are some terms in the model that under 'ideal' situation where all patients are revealed as they should be that will cause estimation problems.
+There are some terms in the model that under 'ideal' situation, i.e. where all patients are revealed as initially intended, that may cause estimation problems.
 These issues can manifest as sluggish MCMC or weird `NA` terms appearing in the regression results.
 In general an `NA` in the regression results from `lm` means that the coefficient is not estimable. This can happen due to exact collinearity, e.g. when Q3 = a Q1 + b Q2 + c for some a, b and c, but, it can also happen due to not having enough observations to estimate the relevant parameters (e.g. if p >> n). 
 If you predictors are categorical and you're adding interaction terms, an `NA` can also mean that there are no observations with that combination of levels of the factors.
@@ -97,7 +97,22 @@ m4 <- cmdstanr::cmdstan_model("stan/model-sim-04.stan")
 
 set.seed(1)
 
-ll <- roadmap.data::get_trial_data(N = 1e6, sim_spec = sim_spec)
+sim_spec <- roadmap.data::get_sim_spec()
+sim_spec$a0  <- qlogis(0.65)
+sim_spec$m["l1"] <- 0.57
+sim_spec$m["l2"] <- 0.64
+sim_spec$b["erx-r0"] <- -0.1
+sim_spec$b["erx-r1"] <- 0.1
+sim_spec$b["erx-r2"] <- 0.05
+sim_spec$b["r1"] <- -0.6931472
+sim_spec$b["r2"] <- -0.6931472
+sim_spec$b["r1d"] <- -0.6931472
+sim_spec$b["r2d"] <- -0.6931472
+sim_spec$b["efx"] <- -0.2
+sim_spec$b["f"] <- -0.6931472
+
+
+ll <- roadmap.data::get_trial_data(N = 2e6, sim_spec = sim_spec)
 lsd <- roadmap.data::get_stan_data(ll$d)
 
 d <- copy(ll$d)
@@ -162,6 +177,8 @@ round(rbind(
 
 ## Estimation - G-computation
 
+This section is now incomplete due to the revised model specification.
+
 ::: {.callout-note collapse=false}
 
 Calculations based on Bayesian model are complicated by virtue of use of binomial instead of bernoulli likelihood.
@@ -185,14 +202,14 @@ eta_f_1 <- f1$draws(variables = c("eta_f_1"), format = "matrix")
 
 The G-formula allows you to go from a conditional estimate to a marginal one via standardisation or other means.
 
-```{r, eval = T}
+```{r, eval = F}
 #| code-fold: false
 
 # g-comp - calculations are complicated by virtue of use of binomial
 # instead of bernoulli model. Approach is to weight the log-odds contributions
 # by the number of trials associated with each unique combination.
 
-max_rows <- 4000
+max_rows <- 1000
 
 # Compute the effect of revision
 b_r <- do.call(rbind, mclapply(1:(min(nrow(eta_r_0), max_rows)), function(ii){
@@ -311,7 +328,7 @@ I don't believe that we currently need to worry about differential selection ($\
 # dair (ref)  vs revision (of any form)
 avg_comparisons(f2, variables = "r", comparison = "lnor")
 
-# Here, the call to avg_comparisons is equivalent to:
+# The above call to avg_comparisons is equivalent to:
 # w_eta_r0 <- sweep(eta_r0, 1, ld$n, "*")
 d_new <- copy(d)
 lo <- copy(d_new[, r := 0])
@@ -321,11 +338,17 @@ y_lo <- predict(f2, newdata = lo)
 y_hi <- predict(f2, newdata = hi)
 mean(y_hi - y_lo)
 
-# we are only interested in the effect of r in the group that were revealed.
-cmp <- avg_comparisons(f2, newdata = d[er == 1], variables = "r", comparison = "lnor")
-print(cmp, digits = 6)
-# The randomised comparison should approx map to a weighted combination of the pars 
-mean(d[er == 1, mean(srp1)] * post1$`b[4]` + d[er == 1, mean(srp2)] * post1$`b[5]`) 
+# But we are only interested in the effect of r in the group that were revealed.
+# The following, in avg_comparisons, does not make sense to me. Need to revisit.
+# cmp <- avg_comparisons(f2, newdata = d[er == 1 & r == 1], variables = "r", comparison = "lnor")
+# print(cmp, digits = 6)
+
+# The randomised comparison should approx map to a weighted combination of the pars.
+# The reason that the weights are computed conditional on r == 1 is so that we are
+# weight by the proportion within the revision group that receive each revision type 
+# (approx 30% one-stage, 70% two-stage) and not the proportion receiving each revision 
+# type over all those that received randomised surgery (approx 50% dair, 15% one, 35% two).
+mean(d[er == 1 & r == 1, mean(srp1)] * post1$`b[4]` + d[er == 1 & r == 1, mean(srp2)] * post1$`b[5]`) 
 ```
 
 The above series of outputs suggest somewhat that we are able to recover the required parameters using various approaches.
@@ -341,9 +364,10 @@ Choice domain effects reflect an average over the silos since all silos can ente
 # no-rif (ref)  vs rif (of any form)
 # NO - avg_comparisons(f2, variables = "f", comparison = "lnor")
 # We are only interested in the effect of choice for those revealed to choice
-cmp <- avg_comparisons(f2, newdata = d[ef == 1], variables = "f", comparison = "lnor")
-print(cmp, digits = 6)
-colMeans(b_f)
+# cmp <- avg_comparisons(f2, newdata = d[ef == 1], variables = "f", comparison = "lnor")
+# print(cmp, digits = 6)
+
+# colMeans(b_f)
 # And this should just be the same as the coefficient from the model
 mean(post1$`b[9]`)
 ```
@@ -358,18 +382,20 @@ Duration domain effects are also currently reflecting an average over the silos.
 
 # long (ref) vs short (specific to the type of surg recvd - one or two stage)
 
-cmp <- avg_comparisons(f2, newdata = d[ed == 1 & srp1 == 1], variables = "d", comparison = "lnor")
+cmp <- avg_comparisons(f2, newdata = d[ed == 1 ], variables = "d", comparison = "lnor", by = "d")
 print(cmp, digits = 6)
 
 cmp <- avg_comparisons(f2, newdata = d[ed == 1 & srp2 == 1], variables = "d", comparison = "lnor")
 print(cmp, digits = 6)
 
-colMeans(b_d)
+# colMeans(b_d)
 
 # The randomised comparison should approx map directly to the surg type 
 # specific pars 
 mean(post1$`b[6]`) 
 mean(post1$`b[7]` ) 
+
+
 ```
 
 Based on the above, we seem to be in the right ballpark.
