@@ -9,10 +9,8 @@ source("./R/init.R")
 log_info("Called trial-data notebook")
 ```
 
-
-Trial data is simulated under the model specification, see earlier section.
-The sub-totals sum to the size of the subset (e.g. patients under late stage infection) and not the size of the total sample.
-The missingness is a consequence of the partial factorial structure.
+The following give a sense of the number of participants contributing to each treatment arm and cell.
+The data are simulated under the [model specification](model-spec.qmd#sec-model-spec) with a total sample size of 2500.
 
 ```{r}
 set.seed(1)
@@ -23,7 +21,9 @@ d <- copy(ll$d)
 
 ```
 
-Only patients in the late stage infection silo enter into the surgical domain for randomised comparison of surgery type.
+## Surgical domain
+
+Only patients in the late silo receive randomised surgical treatment (dair vs revision) with the type of revision selected by the clinician.
 @tbl-smry-late-Da shows the allocation to dair vs rev for this cohort and the balance across the remaining group levels in the data.
 
 ```{r, eval = T}
@@ -94,6 +94,8 @@ gt_tbl <- d_tbl |>
 
 gt_tbl
 ```
+
+## Duration domain
 
 @tbl-smry-Db shows the allocation to the duration domain conditional on surgery type actually received and the balance across the remaining group levels in the data.
 Only units randomised within the duration domain are reported.
@@ -170,7 +172,9 @@ gt_tbl <- d_tbl |>
 gt_tbl
 ```
 
-@tbl-smry-Dc shows the allocation to the duration domain conditional on surgery type actually received and the balance across the remaining group levels in the data.
+## Choice domain
+
+@tbl-smry-Dc shows the allocation to the choice domain and the balance across the remaining group levels in the data.
 Only units randomised within the antibiotic choice domain are reported.
 
 
