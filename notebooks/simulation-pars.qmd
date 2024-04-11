@@ -37,6 +37,8 @@ Accrual is assumed to follow a non-homogeneous Poisson process event times with 
 #| label: fig-accrual1
 #| fig-cap: 'Expected accrual'
 #| fig.height: 5
+#| fig.width: 5
+#| out-width: 70%
 
 # events per day
 lambda = 1.52
