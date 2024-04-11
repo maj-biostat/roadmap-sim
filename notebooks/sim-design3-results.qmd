@@ -11,7 +11,7 @@ date-modified: last-modified
 
 source("./R/init.R")
 source("./R/util.R")
-log_info("Called simulation-results notebook")
+log_info("Called simulation-results 3 notebook")
 
 # Labels, constants etc for plots
 g_or_lab <- c("OR 1/2" , "OR 1/1.5" , "OR 1/1.2", "OR 1", "OR 1.2", "OR 1.5", "OR 2")
@@ -25,7 +25,7 @@ g_lor_num <- log(c(1/2, 1/1.5, 1/1.2, 1, 1.2, 1.5, 2))
 names(g_lor_lab) <- paste0("v0", 1:7)
 ```
 
-Simulation 3 is based on a sequential trial with decision criteria for superiority, and non-inferiority and also for futility with respect to both superiority and non-inferiority.
+Simulation 3 is a sequential trial with decision criteria for superiority, and non-inferiority and also for futility with respect to both superiority and non-inferiority.
 
 1. For the surgical domain we evaluate whether revision is superior to dair and futility for superiority.
 2. For the duration domain (one-stage) we evaluate whether short duration is non-inferior to long duration antibiotic treatment. We also evaluate whether the non-inferiority decision is futile.
