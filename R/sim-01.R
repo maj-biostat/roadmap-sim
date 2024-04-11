@@ -42,10 +42,14 @@ run_trial <- function(ix){
   sim_spec$m['l1'] <- qlogis(g_cfgsc$m_l1) - sim_spec$a0
   sim_spec$m['l2'] <- qlogis(g_cfgsc$m_l2) - sim_spec$a0
   
-  sim_spec$b['erx'] <- g_cfgsc$b_erx
+  sim_spec$b['erx-r0'] <- g_cfgsc$b_erx_r0
+  sim_spec$b['erx-r1'] <- g_cfgsc$b_erx_r1
+  sim_spec$b['erx-r2'] <- g_cfgsc$b_erx_r2
+  
   sim_spec$b['r1'] <- g_cfgsc$b_r1
   sim_spec$b['r2'] <- g_cfgsc$b_r2
-  sim_spec$b['edx'] <- g_cfgsc$b_edx
+  # no longer required for the data generation process
+  # sim_spec$b['edx'] <- g_cfgsc$b_edx
   sim_spec$b['r1d'] <- g_cfgsc$b_r1d
   sim_spec$b['r2d'] <- g_cfgsc$b_r2d
   sim_spec$b['efx'] <- g_cfgsc$b_efx
@@ -78,10 +82,15 @@ run_trial <- function(ix){
   post_smry_1 <- t(m)
   
   post_fx <- data.table(cbind(
-    b_r = post_1$b_2 + mean(ll$d$srp2) * post_1$b_2,
-    b_r1d = post_1$b_5,
-    b_r2d = post_1$b_5 + post_1$b_6,
-    b_f = post_1$b_8
+    b_r = ll$d[er == 1 & r == 1, mean(srp1)] * post_1$b_4 + 
+      ll$d[er == 1 & r == 1, mean(srp2)] * post_1$b_5,
+    # short vs long (one-stage)
+    b_r1d = post_1$b_6,
+    # short vs long (two-stage)
+    # now based on a single parameter
+    b_r2d = post_1$b_7,
+    # rif vs no-rif
+    b_f = post_1$b_9
   ))
   
   m <- post_fx[, sapply(.SD, function(z){
@@ -92,27 +101,24 @@ run_trial <- function(ix){
   post_smry_2 <- t(m)
   
   pr_sup <- post_fx[, sapply(.SD, function(z){mean(z > log(g_cfgsc$delta_sup))}), .SDcols = g_fx]
-  pr_inf  <- 1 - pr_sup
+  pr_sup_fut <- post_fx[, sapply(.SD, function(z){mean(z > log(g_cfgsc$delta_sup_fut))}), .SDcols = g_fx]
   
   pr_trt_ni_ref <- post_fx[, sapply(.SD, function(z){mean(z > log(1/g_cfgsc$delta_ni))}), .SDcols = g_fx]
-  pr_ref_ni_trt <- post_fx[, sapply(.SD, function(z){mean(-z > log(1/g_cfgsc$delta_ni))}), .SDcols = g_fx]
 
   sup <- pr_sup > g_cfgsc$thresh_sup
-  inf <- pr_inf > g_cfgsc$thresh_sup
   trt_ni_ref <- pr_trt_ni_ref > g_cfgsc$thresh_non_inf
-  ref_ni_trt <- pr_ref_ni_trt > g_cfgsc$thresh_non_inf
-  fut <- pr_sup < g_cfgsc$thresh_fut
-  
+  fut_sup <- pr_sup_fut < g_cfgsc$thresh_fut_sup
+  fut_trt_ni_ref  <- pr_trt_ni_ref < g_cfgsc$thresh_fut_ni
+ 
   # return results
   list(
     d_grp = ll$d[, .(y = sum(y), .N), keyby = .(l, er, r, srp, ed, d, ef, f)],
     pr_sup = pr_sup,
-    pr_inf = pr_inf,
-    pr_ref_ni_trt = pr_ref_ni_trt,
     pr_trt_ni_ref = pr_trt_ni_ref,
-    sup = sup, inf = inf, 
-    trt_ni_ref = trt_ni_ref, ref_ni_trt = ref_ni_trt,
-    fut = fut,
+    sup = sup, 
+    trt_ni_ref = trt_ni_ref,
+    fut_sup = fut_sup,
+    fut_trt_ni_ref = fut_trt_ni_ref,
     post_smry_1 = post_smry_1,
     post_smry_2 = post_smry_2
   )
@@ -127,8 +133,8 @@ run_sim_01 <- function(){
   e = NULL
   log_info("Starting simulation")   #
   r <- parallel::mclapply(
-    X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
-    # X=1:5, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    # X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    X=1:5, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
       log_info("Simulation ", ix);
       ll <- tryCatch({
         run_trial(ix)
@@ -142,16 +148,14 @@ run_sim_01 <- function(){
     })
   
   d_pr_sup <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$pr_sup } )))
-  d_pr_inf <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$pr_inf } )))
+  d_pr_sup_fut <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$fut_sup } )))
   d_pr_trt_ni_ref <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$pr_trt_ni_ref } )))
-  d_pr_ref_ni_trt <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$pr_ref_ni_trt } )))
   # no pr_fut
 
   d_sup <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$sup } )))
-  d_inf <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$inf } )))
   d_trt_ni_ref <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$trt_ni_ref } )))
-  d_ref_ni_trt <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$ref_ni_trt } )))
-  d_fut <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$fut } )))
+  d_fut_sup <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$fut_sup } )))
+  d_fut_trt_ni_ref <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$fut_trt_ni_ref } )))
   
   # posterior parameter summary
   d_post_smry_2 <- data.table(do.call(rbind, lapply(1:length(r), function(i){ 
@@ -168,15 +172,13 @@ run_sim_01 <- function(){
   l <- list(
     cfg = g_cfgsc,
     d_pr_sup = d_pr_sup, 
-    d_pr_inf = d_pr_inf,
+    d_pr_sup_fut = d_pr_sup_fut, 
     d_pr_trt_ni_ref = d_pr_trt_ni_ref, 
-    d_pr_ref_ni_trt = d_pr_ref_ni_trt, 
     
     d_sup = d_sup,
-    d_inf = d_inf,
     d_trt_ni_ref = d_trt_ni_ref,
-    d_ref_ni_trt = d_ref_ni_trt,
-    d_fut = d_fut,
+    d_fut_sup = d_fut_sup,
+    d_fut_trt_ni_ref = d_fut_trt_ni_ref,
     d_post_smry_2 = d_post_smry_2,
     d_grp = d_grp
     )

@@ -1,4 +1,4 @@
-# simulation configuration (all OR = log(1.4))
+# simulation configuration (all OR = log(1.8))
 default:
   nsim: 5000
   mc_cores: 5
@@ -9,17 +9,17 @@ default:
   b_erx_r0: -0.1 # effect of non-reveal for surgery
   b_erx_r1: 0.1 # effect of non-reveal for surgery
   b_erx_r2: 0.05 # effect of non-reveal for surgery
-  b_r1: -0.1823216 # increment for one-stage surg
-  b_r2: -0.1823216 # relative increment for surgery under two-stage
+  b_r1: 0.4054651 # increment for one-stage surg
+  b_r2: 0.4054651 # relative increment for surgery under two-stage
   # w_srp2 is just calculated based on a very large simulated dataset
   # it is used to produce a 'true' effect of revision as a reference line
   # when reporting the simulation results
   w_srp2: 0.351 # proportion of those rand to surg recv two-stage
   b_edx: -0.15 # effect of non-reveal for duration
-  b_r1d: -0.1823216 # increment for duration under one-stage
-  b_r2d: -0.1823216 # increment for duration under two-stage
+  b_r1d: 0.4054651 # increment for duration under one-stage
+  b_r2d: 0.4054651 # increment for duration under two-stage
   b_efx: -0.2 # effect of non-reveal for choice domain
-  b_f: -0.1823216 # increment for rif in choice domain
+  b_f: 0.4054651 # increment for rif in choice domain
   delta_sup: 1 # translated to log(delta_sup)
   delta_sup_fut: 1.2 # futility wrt to the superiority decision 
   delta_ni: 1.2 # translated to log(1/delta_ni)
@@ -29,3 +29,5 @@ default:
   thresh_fut_ni: 0.2
 
   
+
+

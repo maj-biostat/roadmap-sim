@@ -8,55 +8,80 @@ date-modified: last-modified
 ```{r, echo = FALSE}
 source("./R/init.R")
 source("./R/util.R")
-log_info("Called simulation-results notebook")
+
+log_info("Called simulation-results 1 notebook")
+
+# Labels, constants etc for plots
+g_or_lab <- c("OR 1/2" , "OR 1/1.5" , "OR 1/1.2", "OR 1", "OR 1.2", "OR 1.5", "OR 2")
+g_or_lev <- c("1/2", "1/1.5", "1/1.2", "1", "1.2", "1.5", "2")
+g_or_num <- c(1/2, 1/1.5, 1/1.2, 1, 1.2, 1.5, 2)
+names(g_or_lab) <- paste0("v0", 1:7)
+names(g_or_num) <- paste0("v0", 1:7)
+# log OR
+g_lor_lab <- c("log(1/2)" , "log(1/1.5)" , "log(1/1.2)", "log(1)", "log(1.2)", "log(1.5)", "log(2)")
+g_lor_num <- log(c(1/2, 1/1.5, 1/1.2, 1, 1.2, 1.5, 2))
+names(g_lor_lab) <- paste0("v0", 1:7)
 ```
 
-## Equal effects in all treatment arms
+Simulation 1 is a fixed sized trial with decision criteria for superiority, and non-inferiority and also for futility with respect to both superiority and non-inferiority.
+
+We provide summaries of each simulation scenario and the results that were obtained.
 
 ```{r}
-or_lab <- c("OR 1/2" , "OR 1/1.5", "OR 1", "OR 1.5", "OR 2")
-or_lev <- c("1/2", "1/1.5", "1", "1.5", "2")
-or_num <- c(1/2, 1/1.5, 1, 1.5, 2)
-names(or_lab) <- paste0("v0",c(1, 2, 3, 4, 5))
-names(or_num) <- paste0("v0",c(1, 2, 3, 4, 5))
+#| label: loadfiles
+#| code-summary: Load simulation results
 
+# files of interest
 flist <- list.files("data", pattern = "sim01-sc01")
-
 toks <- list()
 l <- list()
 for(i in 1:length(flist)){
   l[[i]] <- qs::qread(file.path("data", flist[i]))
   toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
 }
+```
 
+
+```{r}
+#| label: simcfg
+#| code-summary: Configuration used for each simulated scenario
+
+# cfg used in each scenario
 d_cfg <- rbindlist(lapply(seq_along(l), function(i){
   tok <- toks[[i]]
   m <- data.table(do.call(cbind, l[[i]]$cfg))
   data.table(cbind(sc = tok[2], v = tok[3], analys = 1:nrow(m), m))
 }))
 
-# urgh - conversion to numeric
+# conversion to numeric
 d_cfg[, `:=`(
   nsim = as.numeric(nsim),
   N_pt = as.numeric(N_pt),
   b_r1 = as.numeric(b_r1),
   b_r2 = as.numeric(b_r2),
+  w_srp2 = as.numeric(w_srp2),
   b_r1d = as.numeric(b_r1d),
   b_r2d = as.numeric(b_r2d),
   b_f = as.numeric(b_f),
   d_sup = as.numeric(thresh_sup),
   d_ni = as.numeric(thresh_non_inf),
-  d_fut = as.numeric(thresh_fut)
+  d_fut_sup = as.numeric(thresh_fut_sup),
+  d_fut_ni = as.numeric(thresh_fut_ni)
   )]
 
-# derive the true effect for surgery based on weight combination
-d_cfg[, b_r := b_r1 + w_srp2 * b_r2]
-d_cfg[, `:=`(b_r1 = NULL, b_r2 = NULL, w_srp2 = NULL)]
+d_cfg[, `:=`(w_srp2 = NULL)]
 
-d_tru <- melt(d_cfg[
-  , .SD, .SDcols = c("sc", "v", "analys", 
-                     "b_r", "b_r1d", "b_r2d", "b_f")], 
-  id.vars = c("sc", "v", "analys"), value.name = "lor_tru")
+```
+
+
+
+```{r}
+#| label: simres
+#| code-summary: Process simulation results for variables of interest
+
+# Decisions
+i <- 1
+
 
 d_sup <- rbindlist(lapply(seq_along(l), function(i){
   cbind(sc = d_cfg[i, sc], v = d_cfg[i, v], l[[i]]$d_sup[, lapply(.SD, mean)])
@@ -64,60 +89,68 @@ d_sup <- rbindlist(lapply(seq_along(l), function(i){
 d_sup <- melt(d_sup, id.vars = c("sc", "v"), value.name = "p")
 d_sup[, type := "sup"]
 
-d_inf <- rbindlist(lapply(seq_along(l), function(i){
-  cbind(sc = d_cfg[i, sc], v = d_cfg[i, v], l[[i]]$d_inf[, lapply(.SD, mean)])
-}))
-d_inf <- melt(d_inf, id.vars = c("sc", "v"), value.name = "p")
-d_inf[, type := "inf"]
-
 d_trt_ni_ref <- rbindlist(lapply(seq_along(l), function(i){
   cbind(sc = d_cfg[i, sc], v = d_cfg[i, v], l[[i]]$d_pr_trt_ni_ref[, lapply(.SD, mean)])
 }))
 d_trt_ni_ref <- melt(d_trt_ni_ref, id.vars = c("sc", "v"), value.name = "p")
 d_trt_ni_ref[, type := "trt_ni_ref"]
 
-d_ref_ni_trt <- rbindlist(lapply(seq_along(l), function(i){
-  cbind(sc = d_cfg[i, sc], v = d_cfg[i, v], l[[i]]$d_pr_ref_ni_trt[, lapply(.SD, mean)])
+d_fut_sup <- rbindlist(lapply(seq_along(l), function(i){
+  cbind(sc = d_cfg[i, sc], v = d_cfg[i, v], l[[i]]$d_fut_sup[, lapply(.SD, mean)])
 }))
-d_ref_ni_trt <- melt(d_ref_ni_trt, id.vars = c("sc", "v"), value.name = "p")
-d_ref_ni_trt[, type := "ref_ni_trt"]
+d_fut_sup <- melt(d_fut_sup, id.vars = c("sc", "v"), value.name = "p")
+d_fut_sup[, type := "fut_sup"]
 
-d_fut <- rbindlist(lapply(seq_along(l), function(i){
-  cbind(sc = d_cfg[i, sc], v = d_cfg[i, v], l[[i]]$d_fut[, lapply(.SD, mean)])
+d_fut_ni <- rbindlist(lapply(seq_along(l), function(i){
+  cbind(sc = d_cfg[i, sc], v = d_cfg[i, v], l[[i]]$d_fut_trt_ni_ref[, lapply(.SD, mean)])
 }))
-d_fut <- melt(d_fut, id.vars = c("sc", "v"), value.name = "p")
-d_fut[, type := "fut"]
+d_fut_ni <- melt(d_fut_ni, id.vars = c("sc", "v"), value.name = "p")
+d_fut_ni[, type := "fut_ni"]
 
 d_dec <- rbind(
-  d_sup, d_inf, d_trt_ni_ref, d_ref_ni_trt, d_fut
+  d_sup, d_trt_ni_ref, d_fut_sup, d_fut_ni
 )
 
 n_sims <- d_cfg$nsim[1]
 N_pt <- d_cfg$N_pt[1]
 
+
+# Posterior summaries on effects of interest
+d_post_smry_2 <- rbindlist(lapply(seq_along(l), function(i){
+  tok <- toks[[i]]
+  m <- l[[i]]$d_post_smry_2
+  cbind(sc = tok[2], v = tok[3], m)
+}))
+
+# Participant data from trial (grouped)
+d_all <- rbindlist(lapply(seq_along(l), function(i){
+  tok <- toks[[i]]
+  m <- l[[i]]$d_grp
+  cbind(sc = tok[2], v = tok[3], m)
+}))
 ```
 
-@tbl-sim-par summarises the setup for the simulated effect sizes (from $\log(1/1.4)$ to $\log(2)$). 
-All parameters are simulated to have the same effect size such that all parameters are effective, show no effect or are harmful.
+@tbl-sim-design1-par summarises the configurations used in each simulated scenario.
+Each treatment effect parameter is set to have the same magnitude of effect.
+The effects range from $\log(1/2)$ in scenario 1 to $\log(2)$ in scenario 7.
+Decision rules and thresholds remain constant over the entire enrolment period.
 
-Results based on `r n_sims` simulations for a cohort sample size of `r N_pt`.
+Revision effects are computed as a weighted combination of the log-odds ratios for the one-stage and two-stage revision effects.
+The weights are the sample proportion receiving one-stage and two-stage surgery in those patients receiving randomised surgical treatment and randomised to revision.
+
+
 
 ```{r}
-#| label: tbl-sim-par
+#| label: tbl-sim-design1-par
 #| tbl-cap: 'Parameters used to simulate treatment effects and decision thresholds'
 #| column: page
+#| out-width: 50%
 
-
-d_tbl <- d_cfg[, .(v, N_pt, b_r, b_r1d, b_r2d, b_f, thresh_sup, thresh_non_inf, thresh_fut)]
-
-d_tbl[, b_r2d := b_r2d + b_r1d]
-
-d_tbl[, `:=`(
-  b_r = exp(b_r),
-  b_r1d = exp(b_r1d),
-  b_r2d = exp(b_r2d),
-  b_f = exp(b_f)
-)]
+d_tbl <- d_cfg[, .(v, N_pt, b_r1, b_r2, b_r1d, b_r2d, b_f, 
+                   delta_sup = delta_sup,
+                   delta_sup_fut = delta_sup_fut,
+                   delta_ni = 1/delta_ni,
+                   thresh_sup, thresh_non_inf, thresh_fut_sup, thresh_fut_ni)]
 
 g_tbl <- d_tbl |> gt() |> 
   cols_align(
@@ -125,12 +158,14 @@ g_tbl <- d_tbl |> gt() |>
     align = "center"
   )  |> 
   fmt_number(
-    columns = c(b_r, b_r1d, b_r2d, b_f),
+    columns = c(b_r1, b_r2, b_r1d, b_r2d, b_f,
+                delta_ni
+                ),
     decimals = 3
   ) |>
   tab_spanner(
     label = html("Surgical (D<sub>a</sub>)"),
-    columns = c(b_r)
+    columns = c(b_r1, b_r2)
   ) |>
   tab_spanner(
     label = html("Duration (D<sub>b</sub>)"),
@@ -141,29 +176,92 @@ g_tbl <- d_tbl |> gt() |>
     columns = c(b_f)
   ) |>
   tab_spanner(
-    label = html("Decision thresholds"),
-    columns = c(thresh_sup, thresh_non_inf, thresh_fut)
+    label = html("Decision setup"),
+    columns = c(delta_sup, thresh_sup, 
+                delta_sup_fut, thresh_fut_sup, 
+                delta_ni, thresh_non_inf, thresh_fut_ni)
   ) |>
   cols_label(
     v = html("Configuration"),
-    b_r = html("revision"),
+    b_r1 = html("rev<br>(one-stage)"),
+    b_r2 = html("rev<br>(two-stage)"),
     b_r1d = html("short<br>(one-stage)"),
     b_r2d = html("short<br>(two-stage)"),
     b_f = html("rif"),
-    thresh_sup = html("delta<sub>sup</sub>"),
-    thresh_non_inf = html("delta<sub>ni</sub>"),
-    thresh_fut = html("delta<sub>fut</sub>")
+    delta_sup = html("delta<sub>sup</sub>"),
+    thresh_sup = html("p<sub>sup</sub>"),
+    delta_sup_fut = html("delta<sub>fut-sup</sub>"),
+    thresh_fut_sup = html("p<sub>fut-sup</sub>"),
+    delta_ni = html("delta<sub>ni</sub>"),
+    thresh_non_inf = html("p<sub>ni</sub>"),
+    thresh_fut_ni = html("p<sub>fut-ni</sub>")
+  ) |>
+  tab_style(
+    style = list(
+      cell_borders(
+        sides = c("bottom"), color = "black", weight = px(1), style = "solid"
+      )),
+    locations = list(
+      cells_body(
+        columns = everything(),
+        rows = N_pt == 2500
+      )
+    )
   ) |>
   tab_options(
-    table.font.size = "80%"
-  ) 
+    table.font.size = "70%"
+  ) |> 
+  tab_footnote(
+    footnote = "Surgical effects only applies to late silo, effect is relative to response under DAIR.",
+    locations = cells_column_labels(columns = c(b_r1, b_r2))
+  ) |> 
+  tab_footnote(
+    footnote = "Applies to all silos, effect is relative to response under long duration.",
+    locations = cells_column_labels(columns = b_r1d)
+  ) |> 
+  tab_footnote(
+    footnote = "Applies to all silos, effect is relative to response under short duration.",
+    locations = cells_column_labels(columns = b_r2d)
+  ) |> 
+  tab_footnote(
+    footnote = "Applies to all silos, effect is relative to response under no-rifampicin",
+    locations = cells_column_labels(columns = b_f)
+  ) |> 
+  tab_footnote(
+    footnote = "Reference OR for evaluating superiority",
+    locations = cells_column_labels(columns = delta_sup)
+  ) |>
+  tab_footnote(
+    footnote = "Probability threshold above which superiority is concluded",
+    locations = cells_column_labels(columns = thresh_sup)
+  ) |> 
+  tab_footnote(
+    footnote = "Reference OR for evaluating futility wrt the superiority decision",
+    locations = cells_column_labels(columns = delta_sup_fut)
+  ) |> 
+  tab_footnote(
+    footnote = "Probability threshold below which futility is concluded",
+    locations = cells_column_labels(columns = thresh_fut_sup)
+  ) |> 
+  tab_footnote(
+    footnote = "Reference OR for evaluating non-inferiority",
+    locations = cells_column_labels(columns = delta_ni)
+  ) |> 
+  tab_footnote(
+    footnote = "Probability threshold above which non-inferiority is concluded",
+    locations = cells_column_labels(columns = thresh_non_inf)
+  ) |> 
+  tab_footnote(
+    footnote = "Probability threshold below which non-inferiority decision is deemed futile",
+    locations = cells_column_labels(columns = thresh_fut_ni)
+  )   
 
 g_tbl
 ```
 
+
 @fig-pr-1 summarises the variation in the probability of declaring each decision type on each parameter with increasing effects size (odds ratios).
-All domains are set so that the treatment effects are all equal, e.g. all set to $\log(2)$ etc.
-The parameters are log-odds-ratios relative to the relevant reference values.
+The results based on `r n_sims` simulations for a cohort sample size of `r N_pt`.
 
 ```{r}
 #| label: fig-pr-1
@@ -173,9 +271,11 @@ The parameters are log-odds-ratios relative to the relevant reference values.
 
 d_fig <- copy(d_dec)
 
-d_fig[, or := or_num[v]]
+d_fig[, or := g_or_num[v]]
 
-d_fig[, type := factor(type, levels = c("sup", "inf", "trt_ni_ref", "ref_ni_trt", "fut"))]
+d_fig[, type := factor(
+  type, levels = c("sup", "fut_sup", "trt_ni_ref", "fut_ni"),
+  labels = c("sup", "fut_sup", "ni", "fut_ni"))]
 
 ggplot(d_fig, aes(x = or, y = p, group = type, col = type)) +
   geom_point(size = 0.5) +
@@ -190,75 +290,7 @@ ggplot(d_fig, aes(x = or, y = p, group = type, col = type)) +
   facet_wrap(~variable, ncol = 2, scales = "free") 
 ```
 
-
-```{r, echo = F, eval = F}
-flist <- list.files("data", pattern = "sim01-sc02")
-l <- list()
-for(i in 1:length(flist)){
-  l[[i]] <- qs::qread(file.path("data", flist[i]))
-}
-
-d_sup <- rbindlist(lapply(l, function(z){
-  cbind(sc = z$cfg$sc, v = z$cfg$v, z$d_sup[, lapply(.SD, mean)])
-}))
-d_sup <- melt(d_sup, id.vars = c("sc", "v"), value.name = "pr_sup")
-
-d_inf <- rbindlist(lapply(l, function(z){
-  cbind(sc = z$cfg$sc, v = z$cfg$v, z$d_inf[, lapply(.SD, mean)])
-}))
-d_inf <- melt(d_inf, id.vars = c("sc", "v"), value.name = "pr_inf")
-
-d_fut <- rbindlist(lapply(l, function(z){
-  cbind(sc = z$cfg$sc, v = z$cfg$v, z$d_fut[, lapply(.SD, mean)])
-}))
-d_fut <- melt(d_fut, id.vars = c("sc", "v"), value.name = "pr_fut")
-
-d_cfg <- rbindlist(lapply(l, function(z){
-  data.table(do.call(cbind, z$cfg)) 
-}))
-# urgh - conversion to numeric
-d_cfg[, `:=`(
-  nsim = as.numeric(nsim),
-  mc_cores = as.numeric(mc_cores),
-  b_a_l_2 = as.numeric(b_a_l_2),
-  b_a_c_2 = as.numeric(b_a_c_2),
-  b_b1_l_2 = as.numeric(b_b1_l_2),
-  b_b2_l_2 = as.numeric(b_b2_l_2),
-  b_b1_c_2 = as.numeric(b_b1_c_2),
-  b_b2_c_2 = as.numeric(b_b2_c_2),
-  b_c_2 = as.numeric(b_c_2),
-  d_sup = as.numeric(d_sup),
-  d_inf = as.numeric(d_inf),
-  d_fut = as.numeric(d_fut)
-  )]
-
-
-n_sims <- d_cfg$nsim[1]
-N_pt <- d_cfg$N_pt[1]
-
-
-d_pars <- melt(d_cfg[
-  , .SD, .SDcols = c("sc", "v", 
-                     "b_a_l_2", "b_a_c_2", 
-                     "b_b1_l_2", "b_b2_l_2", "b_b1_c_2", "b_b2_c_2", 
-                     "b_c_2")], 
-  id.vars = c("sc", "v"), value.name = "lor_tru")
-
-
-d_sup <- add_effect_field(d_sup, d_pars)
-d_inf <- add_effect_field(d_inf, d_pars)
-d_fut <- add_effect_field(d_fut, d_pars)
-
-
-d_fig <- merge(d_sup, d_inf, by = c("sc", "v", "variable", "lor_tru", "parname"))
-d_fig <- merge(d_fig, d_fut, by = c("sc", "v", "variable", "lor_tru", "parname"))
-d_fig <- melt(d_fig, measure.vars = c("pr_sup", "pr_inf", "pr_fut"), variable.name = "decision_type")
-d_fig[decision_type == "pr_sup", decision_type := "Superiority"]
-d_fig[decision_type == "pr_inf", decision_type := "Inferiority"]
-d_fig[decision_type == "pr_fut", decision_type := "Futility"]
-```
-
-@tbl-sim-design1-oc1a provides the same detail as the above figure, but makes it easier to see what the magnitudes of the cumulate probabilities are.
+@tbl-sim-design1-oc1a shows the same detail as the above figure, but makes it easier to see what the magnitudes of the probabilities are.
 
 ```{r}
 #| label: tbl-sim-design1-oc1a
@@ -271,34 +303,21 @@ d_fig[decision_type == "pr_fut", decision_type := "Futility"]
 d_tbl <- copy(d_fig)
 d_tbl <- dcast(d_tbl, variable + or ~ type, value.var = "p")
 names(d_tbl) <- gsub("superiority", "sup", names(d_tbl))
-names(d_tbl) <- gsub("inferiority", "inf", names(d_tbl))
 names(d_tbl) <- gsub("futility", "fut", names(d_tbl))
 names(d_tbl) <- gsub("trt ni ref", "trt_ni_ref", names(d_tbl))
-names(d_tbl) <- gsub("ref ni trt", "ref_ni_trt", names(d_tbl))
 d_tbl <- d_tbl[order(variable, or)]
-# d_tbl[, parlab := paste0(parname, " - ", get_effect_label(as.character(parname), do_html = F))]
-# d_tbl[, parname := NULL]
-
-lor_lab <- c("1/2" , "1/1.5", "1", "1.5", "2")
-names(lor_lab) <- sprintf("%.1f", c(1/2, 1/1.5, 1, 1.5, 2))
-d_tbl[, or := sprintf("%.1f", or)]
-d_tbl[, or_lab := lor_lab[d_tbl$or]]
-d_tbl[, or := NULL]
-setcolorder(d_tbl, c("variable", "or_lab"))
-setnames(d_tbl, "or_lab", "or")
 
 
 g_tbl <- d_tbl |> gt(groupname_col = "variable") |> 
   cols_label(
     or = html("Odds ratio<br>(true)"),
     sup = html("Superiority"),
-    fut = html("Futility"),
-    inf = html("Inferiority"),
-    trt_ni_ref = html("NI (trt ni ref)"),
-    ref_ni_trt = html("NI (ref ni trt)"),
+    fut_sup = html("Futility (sup)"),
+    ni = html("NI (trt ni ref)"),
+    fut_ni = html("Futility (ni)"),
   )  |>
   fmt_number(
-    columns = c(sup, fut, inf, trt_ni_ref, ref_ni_trt),
+    columns = everything(),
     decimals = 3
   ) |>
   tab_style(
@@ -320,5 +339,41 @@ g_tbl <- d_tbl |> gt(groupname_col = "variable") |>
 g_tbl
 ```
 
+@fig-est-design1-1 shows the distribution of estimated posterior means by simulated effect size, parameter and scenario.
+
+```{r, echo = F, eval = T}
+#| label: fig-est-design1-1
+#| fig-cap: 'Distribution of posterior means (true log OR shown in red).'
+#| fig-cap-location: margin
+#| fig-height: 5
+#| fig-width: 5
+#| out-width: 80%
+
+# only interted in the distribution of posterior means for now
+d_fig <- d_post_smry_2[!is.na(mu), .(sc, v, N_pt = N_pt, sim, par, mu)]
+
+d_fig[, lor_lab := g_lor_lab[v]]
+d_fig[, lor_lab := factor(
+  lor_lab, 
+  levels = g_lor_lab,
+  labels = g_lor_lab)]
+
+d_fig[, par := factor(par, 
+                      levels = c("b_r", "b_r1d", "b_r2d", "b_f"))]
+
+d_fig_2 <- CJ(
+  lor_lab = factor(g_lor_lab, levels = g_lor_lab, labels = g_lor_lab),
+  par = factor(unique(d_fig$par), levels = unique(d_fig$par))
+)
+d_fig_2[, lor_num := rep(g_lor_num, each = length(unique(d_fig$par)))]
+
+p <- ggplot(d_fig, aes(x = lor_lab, y = mu)) +
+  geom_boxplot() +
+  scale_x_discrete("", guide = guide_axis(angle = 45)) +
+  scale_y_continuous("Distribution of posterior mean") +
+  facet_grid(par~.)
+
+suppressWarnings(print(p))
+```
 
 
