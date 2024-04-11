@@ -23,16 +23,17 @@ referred to as 'treatment success'.
 ## Early infection
 
 Patients with early stage infection are not revealed^[Dependent on how the randomisation process is designed and implemented, they might not even be randomised.] to the surgical domain.
-The surgical intervention will usually be dair for which the 12 weeks antibiotic duration is recommended.
-There are instances where early stage infection patients will receive a surgical intervention.
-These patients will be able to enter the duration domain for randomisation of long vs short dependent based on the type of revision received.
+The surgical intervention will usually be dair for which 12 weeks of antibiotics are recommended.
+There are, however, instances where early stage infection patients will receive a surgical intervention and these patients will therefore be able to enter the duration domain and receive randomised antibiotic duration.
+These patients will also enter the choice domain.
 
 ## Late infection
 
 Patients with late infection enter all domains, but with some restrictions.
 They are randomised to dair vs revision in the surgical domain. 
 Patients allocated to revision will receive a one or two-stage procedure.
-Both the planned surgery (one-stage/two-stage) should be captured at the time of randomisation and the surgical intervention actually performed should also be captured as this may deviate from the original plan and the duration domain is based on the surgery performed rather than the surgery that was originally planned.
+Both the planned surgery (one-stage/two-stage) and the surgery actually performed should be captured -- the former should be recorded at the time of randomisation.
+These patients will also enter the choice domain.
 
 ## Chronic infection
 
@@ -41,7 +42,7 @@ These patients will also enter the choice domain.
 
 ## Causal structure
 
-We assume the following DAG:
+We assume the following DAG, which is a simplified causal representation of how patients reach their treatment status across the domains:
 
 ```{mermaid}
 %%| label: fig-modspec-1
@@ -109,9 +110,7 @@ The questions of interest are:
 + AB Duration – Two-stage revision – 12 weeks (long) is superior to 7 days (short) (reference group)
 + AB Choice – All silos combined – Rifampicin is superior to no-rifampicin (reference group)
 
-In order to easily evaluate the duration effects, we to make the reference arm 12-weeks (long) in the case of one-stage revision and 7-days (short) in the case of two-stage revision.
-
-## Model specification
+## Model specification {#sec-model-spec}
 
 For each silo $l$ and site of infection $j$ we therefore simulate and model the probability of treatment success as:
 
@@ -143,10 +142,12 @@ where the $Q$, $\alpha$, $\lambda$ and $\beta$ denote the terms and parameters i
 + $\beta_{9}$ change under non-reveal (choice) 
 + $\beta_{10}$ change for rif
 
+In order to easily evaluate the duration effects, we to make the reference arm 12-weeks (long) in the case of one-stage revision and 7-days (short) in the case of two-stage revision.
+
 In the full model, there would be additional terms to capture time trends, site variation, prognostic covariates and joint (knee/hip) effects.
 
 $\beta_1$, $\beta_2$ and $\beta_3$ are required because there will be some patients who are not randomised to revision and yet will still receive either a one-stage or two-stage surgical procedure. 
-These patients may be eligible to enter into the duration domain and so the duration domain effects will be informed by patients that entered into the surgical domain for randomised surgical treatment and also patients that did not receive randomised treatment.
+These patients may be eligible to enter into the duration domain and therefore the duration domain effects are informed by patients receiving randomised and non-randomised surgical treatment.
 The $\beta_1$, $\beta_2$ and $\beta_3$ parameters provide adjustment for non-randomised surgical treatment and $\beta_4$ and $\beta_5$ provide adjustment for the patients that did.
 
 Notice that $E_D = 0$ generally implies $S_{R_P} \notin \{1, 2\}$ such that $1-E_D$ is some linear function of the other terms in the model.
@@ -197,12 +198,12 @@ If the non-reveal parameters for the surgical domain were not split by surgery t
 
 ## Treatment effects
 
-The effect of interest is an average conditional log-odds ratio and is applicable to the late silo.
-For the surgical domain, this amounts to a weighted combination of $\beta_2$ and $\beta_3$ where the weights are the sample based expectations for the probability of receiving one-stage and two-stage surgery.
+For the surgical domain, the effect of interest is an average conditional log-odds ratio and is applicable to the late silo.
+This amounts to a weighted combination of $\beta_2$ and $\beta_3$ where the weights are the sample based expectations for the probability of receiving one-stage and two-stage surgery.
 
 $$
 \begin{aligned}
-\Delta_R = \beta_4 \mathbb{E}[S_{R_P} == 1] + \beta_5 \mathbb{E}[S_{R_P} == 2]
+\Delta_R = \beta_4 \mathbb{E}[S_{R_P} == 1 \land R == 1] + \beta_5 \mathbb{E}[S_{R_P} == 2 \land R == 1]
 \end{aligned}
 $$
 
