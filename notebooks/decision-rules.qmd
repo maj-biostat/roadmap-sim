@@ -36,6 +36,9 @@ and enrolment is stopped for futility if $P_{\text{surgical (fut)}} < 0.05$.
 
 The duration domain considers the effect of short relative to long duration therapy depending on the type of revision received.
 
+If, in the surgical domain, revision is found to be inferior to DAIR, then randomisation in the surgical domain will cease and DAIR will be recommended for all late acute who meet the domain eligibility criteria.
+But the duration domain will continue, because people in other silos will continue to have revision surgery (occasionally in Early and routinely in Chronic).
+
 ### DAIR 
 
 No duration effects are applicable for DAIR.
