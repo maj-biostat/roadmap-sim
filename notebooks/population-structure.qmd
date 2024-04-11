@@ -112,9 +112,8 @@ The following function simulates the design matrix.
 roadmap.data::get_design
 ```
 
-The data generation assumptions imply unique patients groups on which we would observe the outcome.
+The data generation assumptions imply unique patient groups on which we would observe the outcome.
 The outcome is known to be heterogenous across these groups and yet the stated goal is to aggregate measures of effect (odds ratios) across all these groups, e.g. no rif vs rif.
-However, the effect of interest is assumed to be obtained from the model parameter that characterises the effect of antibiotic type conditional on the other covariates in the model.
 
 ```{r}
 #| code-fold: false
