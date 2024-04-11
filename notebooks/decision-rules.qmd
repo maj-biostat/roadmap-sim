@@ -15,7 +15,7 @@ In the following, all treatment effect parameters relate back to the model speci
 
 The surgical domain considers the effect of revision relative to dair in the late-stage infection silo.
 
-Following the earlier model specification, let $\Delta_R = \beta_4 \mathbb{E}[\mathbb{I}(S_{R_P} == 1)] + \beta_5 \mathbb{E}[\mathbb{I}(S_{R_P} == 2)]$ correspond to the average conditional log-odds ratio associated with revision.
+Following the earlier [model specification](model-spec.qmd#sec-model-spec), let $\Delta_R = \beta_4 \mathbb{E}[\mathbb{I}(S_{R_P} == 1 \land R == 1)] + \beta_5 \mathbb{E}[\mathbb{I}(S_{R_P} == 2 \land R == 1)]$ correspond to the average conditional log-odds ratio associated with revision.
 The probability that revision is superior to dair is defined as:
 
 \begin{aligned}
