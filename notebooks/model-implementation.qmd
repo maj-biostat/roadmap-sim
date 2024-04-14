@@ -101,8 +101,8 @@ sim_spec <- roadmap.data::get_sim_spec()
 sim_spec$a0  <- qlogis(0.65)
 sim_spec$m["l1"] <- 0.57
 sim_spec$m["l2"] <- 0.64
-sim_spec$b["erx-r0"] <- -0.1
-sim_spec$b["erx-r1"] <- 0.1
+sim_spec$b["erx"] <- -0.1
+sim_spec$b["erx-r1"] <- -0.05
 sim_spec$b["erx-r2"] <- 0.05
 sim_spec$b["r1"] <- -0.6931472
 sim_spec$b["r2"] <- -0.6931472
@@ -119,6 +119,10 @@ d <- copy(ll$d)
 d_s <- copy(lsd$d_s)
 ld <- lsd$ld
 
+
+# ld$pri_m_sd <- rep(1, 2)
+# ld$pri_b_sd <- rep(1, 9)
+
 f1 <- m4$sample(
   ld, iter_warmup = 1000, iter_sampling = 2000,
   parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F,
@@ -129,7 +133,7 @@ f1 <- m4$sample(
 # srp1 and srp2 and leads to an estimation issue.
 
 f2 <- glm(y ~ l1 + l2 +
-            erx:srp0 + erx:srp1 + erx:srp2 +
+            erx + erx:srp1 + erx:srp2 +
             er:r:srp1 + er:r:srp2 +
             ed:d:srp1 + ed:d:srp2 +
             efx + ef:f,  
@@ -167,7 +171,7 @@ round(rbind(
   "Posterior means" = colMeans(post1),
   "Max likelihood" = c(
     cf[1:3], 
-    cf["erx:srp0"], cf["erx:srp1"], cf["erx:srp2"], 
+    cf["erx"], cf["erx:srp1"], cf["erx:srp2"], 
     cf["srp1:er:r"], cf["srp2:er:r"] , 
     cf["srp1:ed:d"], cf["srp2:ed:d"],
     cf["efx"], cf["ef:f"]
@@ -188,7 +192,7 @@ To deal with this, we weight the log-odds contributions by the number of trials 
 
 Predictions on log-odds scale:
 
-```{r, eval = T}
+```{r, eval = F}
 #| code-fold: false
 
 eta_r_0 <- f1$draws(variables = c("eta_r_0"), format = "matrix")
