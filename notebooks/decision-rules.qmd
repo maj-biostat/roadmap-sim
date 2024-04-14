@@ -56,7 +56,7 @@ and enrolment is stopped for non-inferiority if $P_{\text{duration-1 (ni)}} > 0.
 
 ### Two-stage revision
 
-Let $\beta_8$ correspond to the conditional log-odds ratio associated with 12 weeks (long) duration antibiotics relative to 7 days (short) when two-stage revision is received.
+Let $\beta_7$ correspond to the conditional log-odds ratio associated with 12 weeks (long) duration antibiotics relative to 7 days (short) when two-stage revision is received.
 The probability that long duration is superior to short is defined as:
 
 \begin{aligned}
