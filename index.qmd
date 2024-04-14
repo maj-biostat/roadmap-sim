@@ -12,10 +12,6 @@ If you find any issues, let me know and I will prioritise accordingly.
 
 ## Notes/TODO
 
-+ Analyses based on cohorts having reached primary endpoint (12 months post rand)
-+ Query definition and implementation of targets of inference (`b_r`, `b_r1d` etc)
-+ Should inference and decisions leading to trial actions be restricted to very specific questions ?
-+ TODO - compute implications of NI margin in terms of risk for each parameter
 + TODO - compute family wise type-i errors?
 
 
