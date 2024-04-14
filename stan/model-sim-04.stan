@@ -27,7 +27,7 @@ data {
   int prior_only;
 }
 transformed data{
-  vector[N] erx_srp0;
+  vector[N] erx;
   vector[N] erx_srp1;
   vector[N] erx_srp2;
   vector[N] er_r;
@@ -37,7 +37,7 @@ transformed data{
   vector[N] ed_d_srp2;
   vector[N] ef_f;
   
-  erx_srp0 = (1-er) .* srp0;
+  erx = (1-er) ;
   erx_srp1 = (1-er) .* srp1;
   erx_srp2 = (1-er) .* srp2;
   
@@ -63,7 +63,7 @@ transformed parameters{
  
   eta = a0 + 
       m[1]*l1 + m[2]*l2 +  
-      (b[1]*erx_srp0 + b[2]*erx_srp1 + b[3]*erx_srp2)  +
+      (b[1]*erx + b[2]*erx_srp1 + b[3]*erx_srp2)  +
       (b[4]*er_r_srp1 + b[5]*er_r_srp2) +
       // b[6] * (1 - ed) + 
       (b[6]*ed_d_srp1 + b[7]*ed_d_srp2)  + 
@@ -71,7 +71,7 @@ transformed parameters{
       
 }
 model{
-  target += normal_lpdf(a0 | 0, 1.5);
+  target += logistic_lpdf(a0 | 0, 1);
   target += normal_lpdf(m | 0, pri_m_sd);
   target += normal_lpdf(b | 0, pri_b_sd);
   
@@ -84,71 +84,71 @@ model{
 }
 generated quantities{
 
-  vector[N] eta_r_0;
-  vector[N] eta_r_1;
-  vector[N] eta_d_0;
-  vector[N] eta_d_1;
-  vector[N] eta_f_0;
-  vector[N] eta_f_1;
-
-  {
-
-    // predictions on log-odds scale setting all participants to the level
-    // of interest, e.g. assume all have r = 0
-    eta_r_0   =  a0 +
-      m[1]*l1   + m[2]*l2 +
-      (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +
-      // b[6] * (1 - ed  ) + 
-      (b[6]*ed_d_srp1   + b[7]*ed_d_srp2)   +
-      b[8] * (1 - ef  ) + (b[9]*ef_f)  ;
-    // r = 1
-    // (only those revealed to surgery domain contribute due to the er term)
-    eta_r_1   =  a0 +
-      m[1]*l1   + m[2]*l2 +
-      // note the use of er here and not er_r, i.e. the r is set to 1 for
-      // everyone
-      (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +
-      (b[4]*er .* srp1 + b[5]*er .* srp2) +
-      // b[6] * (1 - ed  ) + 
-      (b[6]*ed_d_srp1   + b[7]*ed_d_srp2)   +
-      b[8] * (1 - ef  ) + (b[9]*ef_f);
-
-    // duration, d = 0
-    eta_d_0   =  a0 +
-      m[1]*l1 + m[2]*l2 +
-      (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +
-      (b[4]*er_r_srp1 + b[5]*er_r_srp2) +
-      // b[6] * (1 - ed) +
-      b[8] * (1 - ef) + (b[9]*ef_f);
-    // d = 1
-    eta_d_1   =  a0 +
-      m[1]*l1 + m[2]*l2 +
-      (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +
-      (b[4]*er_r_srp1 + b[5]*er_r_srp2) +
-      // note the use of ed and rp here and not ed_rp_d_srp1, i.e. the d is
-      // set to 1 for everyone
-      // b[6] * (1 - ed) + 
-      (b[6]*ed .* srp1 + b[7]*ed .* srp2)  +
-      b[8] * (1 - ef) + (b[9]*ef_f);
-
-    // choice, f = 0
-    eta_f_0   =  a0 +
-      m[1]*l1 + m[2]*l2 +
-      (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +
-      (b[4]*er_r_srp1 + b[5]*er_r_srp2) +
-      // b[6] * (1 - ed) + 
-      (b[6]*ed_d_srp1 + b[7]*ed_d_srp2)  +
-      b[8] * (1 - ef)  ;
-    // f = 1
-    eta_f_1   =  a0 +
-      m[1]*l1 + m[2]*l2 +
-      (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +
-      (b[4]*er_r_srp1 + b[5]*er_r_srp2) +
-      // b[6] * (1 - ed) + 
-      (b[6]*ed_d_srp1 + b[7]*ed_d_srp2)  +
-      // note the use of ef here and not ef_f
-      b[8] * (1 - ef) + (b[9]*ef);
-
-  }
+  // vector[N] eta_r_0;
+  // vector[N] eta_r_1;
+  // vector[N] eta_d_0;
+  // vector[N] eta_d_1;
+  // vector[N] eta_f_0;
+  // vector[N] eta_f_1;
+  // 
+  // {
+  // 
+  //   // predictions on log-odds scale setting all participants to the level
+  //   // of interest, e.g. assume all have r = 0
+  //   eta_r_0   =  a0 +
+  //     m[1]*l1   + m[2]*l2 +
+  //     (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +
+  //     // b[6] * (1 - ed  ) + 
+  //     (b[6]*ed_d_srp1   + b[7]*ed_d_srp2)   +
+  //     b[8] * (1 - ef  ) + (b[9]*ef_f)  ;
+  //   // r = 1
+  //   // (only those revealed to surgery domain contribute due to the er term)
+  //   eta_r_1   =  a0 +
+  //     m[1]*l1   + m[2]*l2 +
+  //     // note the use of er here and not er_r, i.e. the r is set to 1 for
+  //     // everyone
+  //     (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +
+  //     (b[4]*er .* srp1 + b[5]*er .* srp2) +
+  //     // b[6] * (1 - ed  ) + 
+  //     (b[6]*ed_d_srp1   + b[7]*ed_d_srp2)   +
+  //     b[8] * (1 - ef  ) + (b[9]*ef_f);
+  // 
+  //   // duration, d = 0
+  //   eta_d_0   =  a0 +
+  //     m[1]*l1 + m[2]*l2 +
+  //     (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +
+  //     (b[4]*er_r_srp1 + b[5]*er_r_srp2) +
+  //     // b[6] * (1 - ed) +
+  //     b[8] * (1 - ef) + (b[9]*ef_f);
+  //   // d = 1
+  //   eta_d_1   =  a0 +
+  //     m[1]*l1 + m[2]*l2 +
+  //     (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +
+  //     (b[4]*er_r_srp1 + b[5]*er_r_srp2) +
+  //     // note the use of ed and rp here and not ed_rp_d_srp1, i.e. the d is
+  //     // set to 1 for everyone
+  //     // b[6] * (1 - ed) + 
+  //     (b[6]*ed .* srp1 + b[7]*ed .* srp2)  +
+  //     b[8] * (1 - ef) + (b[9]*ef_f);
+  // 
+  //   // choice, f = 0
+  //   eta_f_0   =  a0 +
+  //     m[1]*l1 + m[2]*l2 +
+  //     (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +
+  //     (b[4]*er_r_srp1 + b[5]*er_r_srp2) +
+  //     // b[6] * (1 - ed) + 
+  //     (b[6]*ed_d_srp1 + b[7]*ed_d_srp2)  +
+  //     b[8] * (1 - ef)  ;
+  //   // f = 1
+  //   eta_f_1   =  a0 +
+  //     m[1]*l1 + m[2]*l2 +
+  //     (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +
+  //     (b[4]*er_r_srp1 + b[5]*er_r_srp2) +
+  //     // b[6] * (1 - ed) + 
+  //     (b[6]*ed_d_srp1 + b[7]*ed_d_srp2)  +
+  //     // note the use of ef here and not ef_f
+  //     b[8] * (1 - ef) + (b[9]*ef);
+  // 
+  // }
 
 }
