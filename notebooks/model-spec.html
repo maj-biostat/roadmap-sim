@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-04-11">
+<meta name="dcterms.date" content="2024-04-14">
 
 <title>ROADMAP - design notes and simulations - Model specification</title>
 <style>
@@ -271,7 +271,11 @@ window.Quarto = {
   <li><a href="#causal-structure" id="toc-causal-structure" class="nav-link" data-scroll-target="#causal-structure">Causal structure</a></li>
   <li><a href="#research-questions" id="toc-research-questions" class="nav-link" data-scroll-target="#research-questions">Research questions</a></li>
   <li><a href="#sec-model-spec" id="toc-sec-model-spec" class="nav-link" data-scroll-target="#sec-model-spec">Model specification</a></li>
-  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a></li>
+  <li><a href="#examples" id="toc-examples" class="nav-link" data-scroll-target="#examples">Examples</a>
+  <ul>
+  <li><a href="#randomised-surgical-treatment" id="toc-randomised-surgical-treatment" class="nav-link" data-scroll-target="#randomised-surgical-treatment">Randomised surgical treatment</a></li>
+  <li><a href="#non-randomised-surgical-treatment" id="toc-non-randomised-surgical-treatment" class="nav-link" data-scroll-target="#non-randomised-surgical-treatment">Non-randomised surgical treatment</a></li>
+  </ul></li>
   <li><a href="#treatment-effects" id="toc-treatment-effects" class="nav-link" data-scroll-target="#treatment-effects">Treatment effects</a></li>
   <li><a href="#priors" id="toc-priors" class="nav-link" data-scroll-target="#priors">Priors</a>
   <ul>
@@ -298,14 +302,14 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 11, 2024</p>
+      <p class="date">April 14, 2024</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">April 11, 2024</p>
+      <p class="date-modified">April 12, 2024</p>
     </div>
   </div>
     
@@ -431,7 +435,7 @@ Figure&nbsp;1: Assumed causal diagram representing the (simplified) processes on
 \begin{aligned}
 \mathbb{E}[Y|Q; \alpha,  \beta,\lambda] &amp;=  \text{expit}( \alpha_0 + \\
   &amp;\quad \lambda_1 \mathbb{I}(L = 1) + \lambda_2 \mathbb{I}(L = 2) + \\
-  &amp;\quad (\beta_1 \mathbb{I}(S_{R_P} = 0) + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\
+  &amp;\quad (\beta_1 + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\
   &amp;\quad (\beta_4 \mathbb{I}(S_{R_P} = 1) + \beta_5 \mathbb{I}(S_{R_P} = 2) )R E_R + \\
   &amp;\quad \beta_6 (1-E_D) + \\
   &amp;\quad (\beta_{7} \mathbb{I}(S_{R_P} = 1) + \beta_{8} \mathbb{I}(S_{R_P} = 2)])D E_D + \\
@@ -443,26 +447,26 @@ Figure&nbsp;1: Assumed causal diagram representing the (simplified) processes on
 <li><span class="math inline">\(\alpha_0\)</span> denotes the baseline log-odds of treatment success</li>
 <li><span class="math inline">\(\lambda_1\)</span> change associated with membership of the late silo</li>
 <li><span class="math inline">\(\lambda_2\)</span> change associated with membership of the chronic silo</li>
-<li><span class="math inline">\(\beta_{1}\)</span> change under non-reveal surgery receiving dair</li>
-<li><span class="math inline">\(\beta_{2}\)</span> change under non-reveal surgery receiving one-stage</li>
-<li><span class="math inline">\(\beta_{3}\)</span> change under non-reveal surgery receiving two-stage</li>
-<li><span class="math inline">\(\beta_{4}\)</span> change under revision that was performed with one-stage procedure</li>
-<li><span class="math inline">\(\beta_{5}\)</span> change under revision that was performed with two-stage procedure</li>
-<li><span class="math inline">\(\beta_{6}\)</span> change under non-reveal (duration)</li>
-<li><span class="math inline">\(\beta_{7}\)</span> change for short duration when one-stage was actually performed</li>
-<li><span class="math inline">\(\beta_{8}\)</span> change for long duration when two-stage was actually performed</li>
-<li><span class="math inline">\(\beta_{9}\)</span> change under non-reveal (choice)</li>
-<li><span class="math inline">\(\beta_{10}\)</span> change for rif</li>
+<li><span class="math inline">\(\beta_{1}\)</span> change under non-randomised surgical treatment relative to randomised surgical treatment</li>
+<li><span class="math inline">\(\beta_{2}\)</span> relative change under non-randomised surgical treatment (receiving one-stage)</li>
+<li><span class="math inline">\(\beta_{3}\)</span> relative change under non-randomised surgical treatment (receiving two-stage)</li>
+<li><span class="math inline">\(\beta_{4}\)</span> change under randomised surgical treatment (revision) where one-stage procedure occurred</li>
+<li><span class="math inline">\(\beta_{5}\)</span> change under randomised surgical treatment (revision) where two-stage procedure occurred</li>
+<li><span class="math inline">\(\beta_{6}\)</span> change under non-randomised duration treatment</li>
+<li><span class="math inline">\(\beta_{7}\)</span> change for randomised duration treatment (short duration) when one-stage surgical procedure occurred</li>
+<li><span class="math inline">\(\beta_{8}\)</span> change for randomised duration treatment (long duration) when two-stage surgical procedure occurred</li>
+<li><span class="math inline">\(\beta_{9}\)</span> change under non-randomised choice treatment</li>
+<li><span class="math inline">\(\beta_{10}\)</span> change for randomised choice treatment (rif)</li>
 </ul>
 <p>In order to easily evaluate the duration effects, we to make the reference arm 12-weeks (long) in the case of one-stage revision and 7-days (short) in the case of two-stage revision.</p>
 <p>In the full model, there would be additional terms to capture time trends, site variation, prognostic covariates and joint (knee/hip) effects.</p>
 <p><span class="math inline">\(\beta_1\)</span>, <span class="math inline">\(\beta_2\)</span> and <span class="math inline">\(\beta_3\)</span> are required because there will be some patients who are not randomised to revision and yet will still receive either a one-stage or two-stage surgical procedure. These patients may be eligible to enter into the duration domain and therefore the duration domain effects are informed by patients receiving randomised and non-randomised surgical treatment. The <span class="math inline">\(\beta_1\)</span>, <span class="math inline">\(\beta_2\)</span> and <span class="math inline">\(\beta_3\)</span> parameters provide adjustment for non-randomised surgical treatment and <span class="math inline">\(\beta_4\)</span> and <span class="math inline">\(\beta_5\)</span> provide adjustment for the patients that did.</p>
-<p>Notice that <span class="math inline">\(E_D = 0\)</span> generally implies <span class="math inline">\(S_{R_P} \notin \{1, 2\}\)</span> such that <span class="math inline">\(1-E_D\)</span> is some linear function of the other terms in the model. This can lead to estimation problems that might necessitate model re-parameterisation and it is for this reason that the simulation model drops the <span class="math inline">\((1 - E_D)\)</span> term:</p>
+<p>Notice that <span class="math inline">\(E_D = 0\)</span> generally implies <span class="math inline">\(S_{R_P} \notin \{1, 2\}\)</span> such that <span class="math inline">\(1-E_D\)</span> is some linear function of the other terms in the model. This can lead to estimation problems that might necessitate model re-parameterisation and it is for this reason that the simulation model drops the <span class="math inline">\((1 - E_D)\)</span> term and re-index the <span class="math inline">\(\beta\)</span> parameters:</p>
 <p><span id="eq-mod-spec-2"><span class="math display">\[
 \begin{aligned}
 \mathbb{E}[Y|Q; \alpha,  \beta,\lambda] &amp;=  \text{expit}( \alpha_0 + \\
   &amp;\quad \lambda_1 \mathbb{I}(L = 1) + \lambda_2 \mathbb{I}(L = 2) + \\
-  &amp;\quad (\beta_1 \mathbb{I}(S_{R_P} = 0) + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\
+  &amp;\quad (\beta_1 + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\
   &amp;\quad (\beta_4 \mathbb{I}(S_{R_P} = 1) + \beta_5 \mathbb{I}(S_{R_P} = 2) )R E_R + \\
   &amp;\quad (\beta_{6} \mathbb{I}(S_{R_P} = 1) + \beta_{7} \mathbb{I}(S_{R_P} = 2)])D E_D + \\
   &amp;\quad \beta_{8} (1-E_F) + \beta_{9} F E_F )
@@ -471,7 +475,9 @@ Figure&nbsp;1: Assumed causal diagram representing the (simplified) processes on
 </section>
 <section id="examples" class="level2">
 <h2 class="anchored" data-anchor-id="examples">Examples</h2>
-<p>The following characterise how patients enter into the likelihood under various scenarios under <a href="#eq-mod-spec-2" class="quarto-xref">Equation&nbsp;2</a>.</p>
+<p>The following characterise how patients enter into the likelihood under various scenarios under <a href="#eq-mod-spec-2" class="quarto-xref">Equation&nbsp;2</a>. The main consideration is whether randomised or non-randomised surgical treatment occurs and how this impacts the other terms in the model.</p>
+<section id="randomised-surgical-treatment" class="level3">
+<h3 class="anchored" data-anchor-id="randomised-surgical-treatment">Randomised surgical treatment</h3>
 <div class="column" style="width:100%;">
 <table class="table-striped table-hover table">
 <caption>Likelihood contributions under various scenarios</caption>
@@ -483,70 +489,168 @@ Figure&nbsp;1: Assumed causal diagram representing the (simplified) processes on
 <thead>
 <tr class="header">
 <th>ID</th>
-<th>Patient type</th>
+<th>Covariate characteristics</th>
 <th>Log-odds treatment success</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>1</td>
-<td>Late silo receiving rand DAIR, non-rand 12 weeks AB and rand rif</td>
+<td>1a</td>
+<td>Late silo receiving rand DAIR, non-rand AB duration and rand rif</td>
 <td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_{9}\)</span></td>
 </tr>
 <tr class="even">
-<td>2</td>
-<td>Late silo receiving rand rev (one-stage), rand 12 weeks AB (ref group) and rand rif</td>
+<td>2a</td>
+<td>Late silo receiving rand rev (one-stage), rand 12 weeks AB (ref) and rand rif</td>
 <td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_4 + \beta_{9}\)</span></td>
 </tr>
 <tr class="odd">
-<td>3</td>
-<td>Late silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref group) and rand rif</td>
-<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_2 + \beta_{9}\)</span></td>
-</tr>
-<tr class="even">
-<td>4</td>
-<td>Chronic silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref group) and rand rif</td>
-<td><span class="math inline">\(\alpha_0 + \lambda_2 + \beta_2 + \beta_{9}\)</span></td>
-</tr>
-<tr class="odd">
-<td>5</td>
-<td>Late silo receiving non-rand rev (two-stage), rand 7 days AB (ref group) and rand rif</td>
-<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_3 + \beta_{9}\)</span></td>
-</tr>
-<tr class="even">
-<td>6</td>
-<td>Chronic silo receiving non-rand rev (two-stage), rand 7 days AB (ref group) and rand rif</td>
-<td><span class="math inline">\(\alpha_0 + \lambda_2 + \beta_3 + \beta_{9}\)</span></td>
-</tr>
-<tr class="odd">
-<td>7</td>
+<td>3a</td>
 <td>Late silo receiving rand rev (one-stage), rand 6 weeks AB and rand rif</td>
 <td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_4 + \beta_6 + \beta_{9}\)</span></td>
 </tr>
 <tr class="even">
-<td>8</td>
-<td>Late silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif</td>
-<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_2 + \beta_6 + \beta_{9}\)</span></td>
+<td>4a</td>
+<td>Late silo receiving rand rev (two-stage), rand 7 days AB (ref) and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_5 + \beta_{9}\)</span></td>
 </tr>
 <tr class="odd">
-<td>9</td>
-<td>Chronic silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif</td>
-<td><span class="math inline">\(\alpha_0 + \lambda_2 + \beta_2 + \beta_6 + \beta_{9}\)</span></td>
-</tr>
-<tr class="even">
-<td>10</td>
-<td>Late silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif</td>
-<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_3 + \beta_7 + \beta_{9}\)</span></td>
-</tr>
-<tr class="odd">
-<td>11</td>
-<td>Chronic silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif</td>
-<td><span class="math inline">\(\alpha_0 + \lambda_2 + \beta_3 + \beta_7 + \beta_{9}\)</span></td>
+<td>5a</td>
+<td>Late silo receiving rand rev (two-stage), rand 12 weeks AB and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_5 + \beta_7 + \beta_{9}\)</span></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>If the non-reveal parameters for the surgical domain were not split by surgery type, then ID 3 above would have the same terms as ID 5 and ID 4 would have the same terms as ID 6.</p>
+</section>
+<section id="non-randomised-surgical-treatment" class="level3">
+<h3 class="anchored" data-anchor-id="non-randomised-surgical-treatment">Non-randomised surgical treatment</h3>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="true" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse show">
+<div class="callout-body-container callout-body">
+<p>Unsure whether non-randomised surgical treatment would occur for the late-silo patients but have included anyway.</p>
+<p>If the non-reveal parameters for the surgical domain were not split by surgery type, then, in the following table:</p>
+<ul>
+<li>ID 7b would have the same terms as ID 9b</li>
+<li>ID 12b would have the same terms as ID 14b</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="column" style="width:100%;">
+<table class="table-striped table-hover table">
+<caption>Likelihood contributions under various scenarios</caption>
+<colgroup>
+<col style="width: 11%">
+<col style="width: 44%">
+<col style="width: 44%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>ID</th>
+<th>Covariate characteristics</th>
+<th>Log-odds treatment success</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1b</td>
+<td>Early silo receiving non-rand DAIR, non-rand AB duration and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \beta_1 + \beta_{9}\)</span></td>
+</tr>
+<tr class="even">
+<td>2b</td>
+<td>Early silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref) and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \beta_1 + \beta_2 + \beta_{9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>3b</td>
+<td>Early silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \beta_1 + \beta_2 + \beta_6 + \beta_{9}\)</span></td>
+</tr>
+<tr class="even">
+<td>4b</td>
+<td>Early silo receiving non-rand rev (two-stage), rand 7 days AB (ref) and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \beta_1 + \beta_3 + \beta_{9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>5b</td>
+<td>Early silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \beta_1 + \beta_3 + \beta_7 + \beta_{9}\)</span></td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>6b</td>
+<td>Late silo receiving non-rand DAIR, non-rand AB duration and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_1 + \beta_{9}\)</span></td>
+</tr>
+<tr class="even">
+<td>7b</td>
+<td>Late silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref) and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_1 + \beta_2 + \beta_{9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>8b</td>
+<td>Late silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_1 + \beta_2 + \beta_6 + \beta_{9}\)</span></td>
+</tr>
+<tr class="even">
+<td>9b</td>
+<td>Late silo receiving non-rand rev (two-stage), rand 7 days AB (ref) and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_1 + \beta_3 + \beta_{9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>10b</td>
+<td>Late silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_1 + \beta_1 + \beta_3 + \beta_7 + \beta_{9}\)</span></td>
+</tr>
+<tr class="even">
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>11b</td>
+<td>Chronic silo receiving non-rand DAIR, non-rand AB duration and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_2 + \beta_1 + \beta_{9}\)</span></td>
+</tr>
+<tr class="even">
+<td>12b</td>
+<td>Chronic silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref) and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_2 + \beta_1 + \beta_2 + \beta_{9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>13b</td>
+<td>Chronic silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_2 + \beta_1 + \beta_2 + \beta_6 + \beta_{9}\)</span></td>
+</tr>
+<tr class="even">
+<td>14b</td>
+<td>Chronic silo receiving non-rand rev (two-stage), rand 7 days AB (ref) and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_2 + \beta_1 + \beta_3 + \beta_{9}\)</span></td>
+</tr>
+<tr class="odd">
+<td>15b</td>
+<td>Chronic silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif</td>
+<td><span class="math inline">\(\alpha_0 + \lambda_2 + \beta_1 + \beta_3 + \beta_7 + \beta_{9}\)</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 </section>
 <section id="treatment-effects" class="level2">
 <h2 class="anchored" data-anchor-id="treatment-effects">Treatment effects</h2>

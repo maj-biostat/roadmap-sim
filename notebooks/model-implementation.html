@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-04-11">
+<meta name="dcterms.date" content="2024-04-14">
 
 <title>ROADMAP - design notes and simulations - Model implementation</title>
 <style>
@@ -316,14 +316,14 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 11, 2024</p>
+      <p class="date">April 14, 2024</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">April 11, 2024</p>
+      <p class="date-modified">April 12, 2024</p>
     </div>
   </div>
     
@@ -346,11 +346,11 @@ window.Quarto = {
     a0 &lt;- sim_spec$a0
     m &lt;- sim_spec$m
     b &lt;- sim_spec$b
-    eta &lt;- a0 + m["l1"] * d$l1 + m["l2"] * d$l2 + (b["erx-r0"] * 
-        d$srp0 + b["erx-r1"] * d$srp1 + b["erx-r2"] * d$srp2) * 
-        d$erx + (b["r1"] * d$srp1 + b["r2"] * d$srp2) * d$r * 
-        d$er + (b["r1d"] * d$d * d$srp1 + b["r2d"] * d$d * d$srp2) * 
-        d$ed + b["efx"] * d$efx + b["f"] * d$f * d$ef
+    eta &lt;- a0 + m["l1"] * d$l1 + m["l2"] * d$l2 + (b["erx"] + 
+        b["erx-r1"] * d$srp1 + b["erx-r2"] * d$srp2) * d$erx + 
+        (b["r1"] * d$srp1 + b["r2"] * d$srp2) * d$r * d$er + 
+        (b["r1d"] * d$d * d$srp1 + b["r2d"] * d$d * d$srp2) * 
+            d$ed + b["efx"] * d$efx + b["f"] * d$f * d$ef
     eta
 }</code></pre>
 </div>
@@ -363,8 +363,8 @@ window.Quarto = {
 <span id="cb3-4"><a href="#cb3-4"></a></span>
 <span id="cb3-5"><a href="#cb3-5"></a><span class="fu">unlist</span>(sim_spec)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>         a0        m.l1        m.l2    b.erx-r0    b.erx-r1    b.erx-r2 
- 0.61903921 -0.33718806 -0.08682239 -0.10000000  0.10000000  0.05000000 
+<pre><code>         a0        m.l1        m.l2       b.erx    b.erx-r1    b.erx-r2 
+ 0.61903921 -0.33718806 -0.08682239 -0.10000000 -0.05000000  0.05000000 
        b.r1        b.r2       b.r1d       b.r2d       b.efx         b.f 
  0.20000000  0.09000000  0.30000000  0.10000000  0.25000000  0.15000000 </code></pre>
 </div>
@@ -458,7 +458,7 @@ window.Quarto = {
 <span id="cb9-27"><a href="#cb9-27"></a>  <span class="dt">int</span> prior_only;</span>
 <span id="cb9-28"><a href="#cb9-28"></a>}</span>
 <span id="cb9-29"><a href="#cb9-29"></a><span class="kw">transformed data</span>{</span>
-<span id="cb9-30"><a href="#cb9-30"></a>  <span class="dt">vector</span>[N] erx_srp0;</span>
+<span id="cb9-30"><a href="#cb9-30"></a>  <span class="dt">vector</span>[N] erx;</span>
 <span id="cb9-31"><a href="#cb9-31"></a>  <span class="dt">vector</span>[N] erx_srp1;</span>
 <span id="cb9-32"><a href="#cb9-32"></a>  <span class="dt">vector</span>[N] erx_srp2;</span>
 <span id="cb9-33"><a href="#cb9-33"></a>  <span class="dt">vector</span>[N] er_r;</span>
@@ -468,7 +468,7 @@ window.Quarto = {
 <span id="cb9-37"><a href="#cb9-37"></a>  <span class="dt">vector</span>[N] ed_d_srp2;</span>
 <span id="cb9-38"><a href="#cb9-38"></a>  <span class="dt">vector</span>[N] ef_f;</span>
 <span id="cb9-39"><a href="#cb9-39"></a>  </span>
-<span id="cb9-40"><a href="#cb9-40"></a>  erx_srp0 = (<span class="dv">1</span>-er) .* srp0;</span>
+<span id="cb9-40"><a href="#cb9-40"></a>  erx = (<span class="dv">1</span>-er) ;</span>
 <span id="cb9-41"><a href="#cb9-41"></a>  erx_srp1 = (<span class="dv">1</span>-er) .* srp1;</span>
 <span id="cb9-42"><a href="#cb9-42"></a>  erx_srp2 = (<span class="dv">1</span>-er) .* srp2;</span>
 <span id="cb9-43"><a href="#cb9-43"></a>  </span>
@@ -494,7 +494,7 @@ window.Quarto = {
 <span id="cb9-63"><a href="#cb9-63"></a> </span>
 <span id="cb9-64"><a href="#cb9-64"></a>  eta = a0 + </span>
 <span id="cb9-65"><a href="#cb9-65"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +  </span>
-<span id="cb9-66"><a href="#cb9-66"></a>      (b[<span class="dv">1</span>]*erx_srp0 + b[<span class="dv">2</span>]*erx_srp1 + b[<span class="dv">3</span>]*erx_srp2)  +</span>
+<span id="cb9-66"><a href="#cb9-66"></a>      (b[<span class="dv">1</span>]*erx + b[<span class="dv">2</span>]*erx_srp1 + b[<span class="dv">3</span>]*erx_srp2)  +</span>
 <span id="cb9-67"><a href="#cb9-67"></a>      (b[<span class="dv">4</span>]*er_r_srp1 + b[<span class="dv">5</span>]*er_r_srp2) +</span>
 <span id="cb9-68"><a href="#cb9-68"></a>      <span class="co">// b[6] * (1 - ed) + </span></span>
 <span id="cb9-69"><a href="#cb9-69"></a>      (b[<span class="dv">6</span>]*ed_d_srp1 + b[<span class="dv">7</span>]*ed_d_srp2)  + </span>
@@ -502,7 +502,7 @@ window.Quarto = {
 <span id="cb9-71"><a href="#cb9-71"></a>      </span>
 <span id="cb9-72"><a href="#cb9-72"></a>}</span>
 <span id="cb9-73"><a href="#cb9-73"></a><span class="kw">model</span>{</span>
-<span id="cb9-74"><a href="#cb9-74"></a>  <span class="kw">target +=</span> normal_lpdf(a0 | <span class="dv">0</span>, <span class="fl">1.5</span>);</span>
+<span id="cb9-74"><a href="#cb9-74"></a>  <span class="kw">target +=</span> logistic_lpdf(a0 | <span class="dv">0</span>, <span class="dv">1</span>);</span>
 <span id="cb9-75"><a href="#cb9-75"></a>  <span class="kw">target +=</span> normal_lpdf(m | <span class="dv">0</span>, pri_m_sd);</span>
 <span id="cb9-76"><a href="#cb9-76"></a>  <span class="kw">target +=</span> normal_lpdf(b | <span class="dv">0</span>, pri_b_sd);</span>
 <span id="cb9-77"><a href="#cb9-77"></a>  </span>
@@ -515,72 +515,72 @@ window.Quarto = {
 <span id="cb9-84"><a href="#cb9-84"></a>}</span>
 <span id="cb9-85"><a href="#cb9-85"></a><span class="kw">generated quantities</span>{</span>
 <span id="cb9-86"><a href="#cb9-86"></a></span>
-<span id="cb9-87"><a href="#cb9-87"></a>  <span class="dt">vector</span>[N] eta_r_0;</span>
-<span id="cb9-88"><a href="#cb9-88"></a>  <span class="dt">vector</span>[N] eta_r_1;</span>
-<span id="cb9-89"><a href="#cb9-89"></a>  <span class="dt">vector</span>[N] eta_d_0;</span>
-<span id="cb9-90"><a href="#cb9-90"></a>  <span class="dt">vector</span>[N] eta_d_1;</span>
-<span id="cb9-91"><a href="#cb9-91"></a>  <span class="dt">vector</span>[N] eta_f_0;</span>
-<span id="cb9-92"><a href="#cb9-92"></a>  <span class="dt">vector</span>[N] eta_f_1;</span>
-<span id="cb9-93"><a href="#cb9-93"></a></span>
-<span id="cb9-94"><a href="#cb9-94"></a>  {</span>
-<span id="cb9-95"><a href="#cb9-95"></a></span>
-<span id="cb9-96"><a href="#cb9-96"></a>    <span class="co">// predictions on log-odds scale setting all participants to the level</span></span>
-<span id="cb9-97"><a href="#cb9-97"></a>    <span class="co">// of interest, e.g. assume all have r = 0</span></span>
-<span id="cb9-98"><a href="#cb9-98"></a>    eta_r_0   =  a0 +</span>
-<span id="cb9-99"><a href="#cb9-99"></a>      m[<span class="dv">1</span>]*l1   + m[<span class="dv">2</span>]*l2 +</span>
-<span id="cb9-100"><a href="#cb9-100"></a>      (b[<span class="dv">1</span>] * erx_srp0 + b[<span class="dv">2</span>] * erx_srp1 + b[<span class="dv">3</span>] * erx_srp2) +</span>
-<span id="cb9-101"><a href="#cb9-101"></a>      <span class="co">// b[6] * (1 - ed  ) + </span></span>
-<span id="cb9-102"><a href="#cb9-102"></a>      (b[<span class="dv">6</span>]*ed_d_srp1   + b[<span class="dv">7</span>]*ed_d_srp2)   +</span>
-<span id="cb9-103"><a href="#cb9-103"></a>      b[<span class="dv">8</span>] * (<span class="dv">1</span> - ef  ) + (b[<span class="dv">9</span>]*ef_f)  ;</span>
-<span id="cb9-104"><a href="#cb9-104"></a>    <span class="co">// r = 1</span></span>
-<span id="cb9-105"><a href="#cb9-105"></a>    <span class="co">// (only those revealed to surgery domain contribute due to the er term)</span></span>
-<span id="cb9-106"><a href="#cb9-106"></a>    eta_r_1   =  a0 +</span>
-<span id="cb9-107"><a href="#cb9-107"></a>      m[<span class="dv">1</span>]*l1   + m[<span class="dv">2</span>]*l2 +</span>
-<span id="cb9-108"><a href="#cb9-108"></a>      <span class="co">// note the use of er here and not er_r, i.e. the r is set to 1 for</span></span>
-<span id="cb9-109"><a href="#cb9-109"></a>      <span class="co">// everyone</span></span>
-<span id="cb9-110"><a href="#cb9-110"></a>      (b[<span class="dv">1</span>] * erx_srp0 + b[<span class="dv">2</span>] * erx_srp1 + b[<span class="dv">3</span>] * erx_srp2) +</span>
-<span id="cb9-111"><a href="#cb9-111"></a>      (b[<span class="dv">4</span>]*er .* srp1 + b[<span class="dv">5</span>]*er .* srp2) +</span>
-<span id="cb9-112"><a href="#cb9-112"></a>      <span class="co">// b[6] * (1 - ed  ) + </span></span>
-<span id="cb9-113"><a href="#cb9-113"></a>      (b[<span class="dv">6</span>]*ed_d_srp1   + b[<span class="dv">7</span>]*ed_d_srp2)   +</span>
-<span id="cb9-114"><a href="#cb9-114"></a>      b[<span class="dv">8</span>] * (<span class="dv">1</span> - ef  ) + (b[<span class="dv">9</span>]*ef_f);</span>
-<span id="cb9-115"><a href="#cb9-115"></a></span>
-<span id="cb9-116"><a href="#cb9-116"></a>    <span class="co">// duration, d = 0</span></span>
-<span id="cb9-117"><a href="#cb9-117"></a>    eta_d_0   =  a0 +</span>
-<span id="cb9-118"><a href="#cb9-118"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +</span>
-<span id="cb9-119"><a href="#cb9-119"></a>      (b[<span class="dv">1</span>] * erx_srp0 + b[<span class="dv">2</span>] * erx_srp1 + b[<span class="dv">3</span>] * erx_srp2) +</span>
-<span id="cb9-120"><a href="#cb9-120"></a>      (b[<span class="dv">4</span>]*er_r_srp1 + b[<span class="dv">5</span>]*er_r_srp2) +</span>
-<span id="cb9-121"><a href="#cb9-121"></a>      <span class="co">// b[6] * (1 - ed) +</span></span>
-<span id="cb9-122"><a href="#cb9-122"></a>      b[<span class="dv">8</span>] * (<span class="dv">1</span> - ef) + (b[<span class="dv">9</span>]*ef_f);</span>
-<span id="cb9-123"><a href="#cb9-123"></a>    <span class="co">// d = 1</span></span>
-<span id="cb9-124"><a href="#cb9-124"></a>    eta_d_1   =  a0 +</span>
-<span id="cb9-125"><a href="#cb9-125"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +</span>
-<span id="cb9-126"><a href="#cb9-126"></a>      (b[<span class="dv">1</span>] * erx_srp0 + b[<span class="dv">2</span>] * erx_srp1 + b[<span class="dv">3</span>] * erx_srp2) +</span>
-<span id="cb9-127"><a href="#cb9-127"></a>      (b[<span class="dv">4</span>]*er_r_srp1 + b[<span class="dv">5</span>]*er_r_srp2) +</span>
-<span id="cb9-128"><a href="#cb9-128"></a>      <span class="co">// note the use of ed and rp here and not ed_rp_d_srp1, i.e. the d is</span></span>
-<span id="cb9-129"><a href="#cb9-129"></a>      <span class="co">// set to 1 for everyone</span></span>
-<span id="cb9-130"><a href="#cb9-130"></a>      <span class="co">// b[6] * (1 - ed) + </span></span>
-<span id="cb9-131"><a href="#cb9-131"></a>      (b[<span class="dv">6</span>]*ed .* srp1 + b[<span class="dv">7</span>]*ed .* srp2)  +</span>
-<span id="cb9-132"><a href="#cb9-132"></a>      b[<span class="dv">8</span>] * (<span class="dv">1</span> - ef) + (b[<span class="dv">9</span>]*ef_f);</span>
-<span id="cb9-133"><a href="#cb9-133"></a></span>
-<span id="cb9-134"><a href="#cb9-134"></a>    <span class="co">// choice, f = 0</span></span>
-<span id="cb9-135"><a href="#cb9-135"></a>    eta_f_0   =  a0 +</span>
-<span id="cb9-136"><a href="#cb9-136"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +</span>
-<span id="cb9-137"><a href="#cb9-137"></a>      (b[<span class="dv">1</span>] * erx_srp0 + b[<span class="dv">2</span>] * erx_srp1 + b[<span class="dv">3</span>] * erx_srp2) +</span>
-<span id="cb9-138"><a href="#cb9-138"></a>      (b[<span class="dv">4</span>]*er_r_srp1 + b[<span class="dv">5</span>]*er_r_srp2) +</span>
-<span id="cb9-139"><a href="#cb9-139"></a>      <span class="co">// b[6] * (1 - ed) + </span></span>
-<span id="cb9-140"><a href="#cb9-140"></a>      (b[<span class="dv">6</span>]*ed_d_srp1 + b[<span class="dv">7</span>]*ed_d_srp2)  +</span>
-<span id="cb9-141"><a href="#cb9-141"></a>      b[<span class="dv">8</span>] * (<span class="dv">1</span> - ef)  ;</span>
-<span id="cb9-142"><a href="#cb9-142"></a>    <span class="co">// f = 1</span></span>
-<span id="cb9-143"><a href="#cb9-143"></a>    eta_f_1   =  a0 +</span>
-<span id="cb9-144"><a href="#cb9-144"></a>      m[<span class="dv">1</span>]*l1 + m[<span class="dv">2</span>]*l2 +</span>
-<span id="cb9-145"><a href="#cb9-145"></a>      (b[<span class="dv">1</span>] * erx_srp0 + b[<span class="dv">2</span>] * erx_srp1 + b[<span class="dv">3</span>] * erx_srp2) +</span>
-<span id="cb9-146"><a href="#cb9-146"></a>      (b[<span class="dv">4</span>]*er_r_srp1 + b[<span class="dv">5</span>]*er_r_srp2) +</span>
-<span id="cb9-147"><a href="#cb9-147"></a>      <span class="co">// b[6] * (1 - ed) + </span></span>
-<span id="cb9-148"><a href="#cb9-148"></a>      (b[<span class="dv">6</span>]*ed_d_srp1 + b[<span class="dv">7</span>]*ed_d_srp2)  +</span>
-<span id="cb9-149"><a href="#cb9-149"></a>      <span class="co">// note the use of ef here and not ef_f</span></span>
-<span id="cb9-150"><a href="#cb9-150"></a>      b[<span class="dv">8</span>] * (<span class="dv">1</span> - ef) + (b[<span class="dv">9</span>]*ef);</span>
-<span id="cb9-151"><a href="#cb9-151"></a></span>
-<span id="cb9-152"><a href="#cb9-152"></a>  }</span>
+<span id="cb9-87"><a href="#cb9-87"></a>  <span class="co">// vector[N] eta_r_0;</span></span>
+<span id="cb9-88"><a href="#cb9-88"></a>  <span class="co">// vector[N] eta_r_1;</span></span>
+<span id="cb9-89"><a href="#cb9-89"></a>  <span class="co">// vector[N] eta_d_0;</span></span>
+<span id="cb9-90"><a href="#cb9-90"></a>  <span class="co">// vector[N] eta_d_1;</span></span>
+<span id="cb9-91"><a href="#cb9-91"></a>  <span class="co">// vector[N] eta_f_0;</span></span>
+<span id="cb9-92"><a href="#cb9-92"></a>  <span class="co">// vector[N] eta_f_1;</span></span>
+<span id="cb9-93"><a href="#cb9-93"></a>  <span class="co">// </span></span>
+<span id="cb9-94"><a href="#cb9-94"></a>  <span class="co">// {</span></span>
+<span id="cb9-95"><a href="#cb9-95"></a>  <span class="co">// </span></span>
+<span id="cb9-96"><a href="#cb9-96"></a>  <span class="co">//   // predictions on log-odds scale setting all participants to the level</span></span>
+<span id="cb9-97"><a href="#cb9-97"></a>  <span class="co">//   // of interest, e.g. assume all have r = 0</span></span>
+<span id="cb9-98"><a href="#cb9-98"></a>  <span class="co">//   eta_r_0   =  a0 +</span></span>
+<span id="cb9-99"><a href="#cb9-99"></a>  <span class="co">//     m[1]*l1   + m[2]*l2 +</span></span>
+<span id="cb9-100"><a href="#cb9-100"></a>  <span class="co">//     (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +</span></span>
+<span id="cb9-101"><a href="#cb9-101"></a>  <span class="co">//     // b[6] * (1 - ed  ) + </span></span>
+<span id="cb9-102"><a href="#cb9-102"></a>  <span class="co">//     (b[6]*ed_d_srp1   + b[7]*ed_d_srp2)   +</span></span>
+<span id="cb9-103"><a href="#cb9-103"></a>  <span class="co">//     b[8] * (1 - ef  ) + (b[9]*ef_f)  ;</span></span>
+<span id="cb9-104"><a href="#cb9-104"></a>  <span class="co">//   // r = 1</span></span>
+<span id="cb9-105"><a href="#cb9-105"></a>  <span class="co">//   // (only those revealed to surgery domain contribute due to the er term)</span></span>
+<span id="cb9-106"><a href="#cb9-106"></a>  <span class="co">//   eta_r_1   =  a0 +</span></span>
+<span id="cb9-107"><a href="#cb9-107"></a>  <span class="co">//     m[1]*l1   + m[2]*l2 +</span></span>
+<span id="cb9-108"><a href="#cb9-108"></a>  <span class="co">//     // note the use of er here and not er_r, i.e. the r is set to 1 for</span></span>
+<span id="cb9-109"><a href="#cb9-109"></a>  <span class="co">//     // everyone</span></span>
+<span id="cb9-110"><a href="#cb9-110"></a>  <span class="co">//     (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +</span></span>
+<span id="cb9-111"><a href="#cb9-111"></a>  <span class="co">//     (b[4]*er .* srp1 + b[5]*er .* srp2) +</span></span>
+<span id="cb9-112"><a href="#cb9-112"></a>  <span class="co">//     // b[6] * (1 - ed  ) + </span></span>
+<span id="cb9-113"><a href="#cb9-113"></a>  <span class="co">//     (b[6]*ed_d_srp1   + b[7]*ed_d_srp2)   +</span></span>
+<span id="cb9-114"><a href="#cb9-114"></a>  <span class="co">//     b[8] * (1 - ef  ) + (b[9]*ef_f);</span></span>
+<span id="cb9-115"><a href="#cb9-115"></a>  <span class="co">// </span></span>
+<span id="cb9-116"><a href="#cb9-116"></a>  <span class="co">//   // duration, d = 0</span></span>
+<span id="cb9-117"><a href="#cb9-117"></a>  <span class="co">//   eta_d_0   =  a0 +</span></span>
+<span id="cb9-118"><a href="#cb9-118"></a>  <span class="co">//     m[1]*l1 + m[2]*l2 +</span></span>
+<span id="cb9-119"><a href="#cb9-119"></a>  <span class="co">//     (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +</span></span>
+<span id="cb9-120"><a href="#cb9-120"></a>  <span class="co">//     (b[4]*er_r_srp1 + b[5]*er_r_srp2) +</span></span>
+<span id="cb9-121"><a href="#cb9-121"></a>  <span class="co">//     // b[6] * (1 - ed) +</span></span>
+<span id="cb9-122"><a href="#cb9-122"></a>  <span class="co">//     b[8] * (1 - ef) + (b[9]*ef_f);</span></span>
+<span id="cb9-123"><a href="#cb9-123"></a>  <span class="co">//   // d = 1</span></span>
+<span id="cb9-124"><a href="#cb9-124"></a>  <span class="co">//   eta_d_1   =  a0 +</span></span>
+<span id="cb9-125"><a href="#cb9-125"></a>  <span class="co">//     m[1]*l1 + m[2]*l2 +</span></span>
+<span id="cb9-126"><a href="#cb9-126"></a>  <span class="co">//     (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +</span></span>
+<span id="cb9-127"><a href="#cb9-127"></a>  <span class="co">//     (b[4]*er_r_srp1 + b[5]*er_r_srp2) +</span></span>
+<span id="cb9-128"><a href="#cb9-128"></a>  <span class="co">//     // note the use of ed and rp here and not ed_rp_d_srp1, i.e. the d is</span></span>
+<span id="cb9-129"><a href="#cb9-129"></a>  <span class="co">//     // set to 1 for everyone</span></span>
+<span id="cb9-130"><a href="#cb9-130"></a>  <span class="co">//     // b[6] * (1 - ed) + </span></span>
+<span id="cb9-131"><a href="#cb9-131"></a>  <span class="co">//     (b[6]*ed .* srp1 + b[7]*ed .* srp2)  +</span></span>
+<span id="cb9-132"><a href="#cb9-132"></a>  <span class="co">//     b[8] * (1 - ef) + (b[9]*ef_f);</span></span>
+<span id="cb9-133"><a href="#cb9-133"></a>  <span class="co">// </span></span>
+<span id="cb9-134"><a href="#cb9-134"></a>  <span class="co">//   // choice, f = 0</span></span>
+<span id="cb9-135"><a href="#cb9-135"></a>  <span class="co">//   eta_f_0   =  a0 +</span></span>
+<span id="cb9-136"><a href="#cb9-136"></a>  <span class="co">//     m[1]*l1 + m[2]*l2 +</span></span>
+<span id="cb9-137"><a href="#cb9-137"></a>  <span class="co">//     (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +</span></span>
+<span id="cb9-138"><a href="#cb9-138"></a>  <span class="co">//     (b[4]*er_r_srp1 + b[5]*er_r_srp2) +</span></span>
+<span id="cb9-139"><a href="#cb9-139"></a>  <span class="co">//     // b[6] * (1 - ed) + </span></span>
+<span id="cb9-140"><a href="#cb9-140"></a>  <span class="co">//     (b[6]*ed_d_srp1 + b[7]*ed_d_srp2)  +</span></span>
+<span id="cb9-141"><a href="#cb9-141"></a>  <span class="co">//     b[8] * (1 - ef)  ;</span></span>
+<span id="cb9-142"><a href="#cb9-142"></a>  <span class="co">//   // f = 1</span></span>
+<span id="cb9-143"><a href="#cb9-143"></a>  <span class="co">//   eta_f_1   =  a0 +</span></span>
+<span id="cb9-144"><a href="#cb9-144"></a>  <span class="co">//     m[1]*l1 + m[2]*l2 +</span></span>
+<span id="cb9-145"><a href="#cb9-145"></a>  <span class="co">//     (b[1] * erx_srp0 + b[2] * erx_srp1 + b[3] * erx_srp2) +</span></span>
+<span id="cb9-146"><a href="#cb9-146"></a>  <span class="co">//     (b[4]*er_r_srp1 + b[5]*er_r_srp2) +</span></span>
+<span id="cb9-147"><a href="#cb9-147"></a>  <span class="co">//     // b[6] * (1 - ed) + </span></span>
+<span id="cb9-148"><a href="#cb9-148"></a>  <span class="co">//     (b[6]*ed_d_srp1 + b[7]*ed_d_srp2)  +</span></span>
+<span id="cb9-149"><a href="#cb9-149"></a>  <span class="co">//     // note the use of ef here and not ef_f</span></span>
+<span id="cb9-150"><a href="#cb9-150"></a>  <span class="co">//     b[8] * (1 - ef) + (b[9]*ef);</span></span>
+<span id="cb9-151"><a href="#cb9-151"></a>  <span class="co">// </span></span>
+<span id="cb9-152"><a href="#cb9-152"></a>  <span class="co">// }</span></span>
 <span id="cb9-153"><a href="#cb9-153"></a></span>
 <span id="cb9-154"><a href="#cb9-154"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -613,8 +613,8 @@ Note
 <span id="cb10-6"><a href="#cb10-6"></a>sim_spec<span class="sc">$</span>a0  <span class="ot">&lt;-</span> <span class="fu">qlogis</span>(<span class="fl">0.65</span>)</span>
 <span id="cb10-7"><a href="#cb10-7"></a>sim_spec<span class="sc">$</span>m[<span class="st">"l1"</span>] <span class="ot">&lt;-</span> <span class="fl">0.57</span></span>
 <span id="cb10-8"><a href="#cb10-8"></a>sim_spec<span class="sc">$</span>m[<span class="st">"l2"</span>] <span class="ot">&lt;-</span> <span class="fl">0.64</span></span>
-<span id="cb10-9"><a href="#cb10-9"></a>sim_spec<span class="sc">$</span>b[<span class="st">"erx-r0"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.1</span></span>
-<span id="cb10-10"><a href="#cb10-10"></a>sim_spec<span class="sc">$</span>b[<span class="st">"erx-r1"</span>] <span class="ot">&lt;-</span> <span class="fl">0.1</span></span>
+<span id="cb10-9"><a href="#cb10-9"></a>sim_spec<span class="sc">$</span>b[<span class="st">"erx"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.1</span></span>
+<span id="cb10-10"><a href="#cb10-10"></a>sim_spec<span class="sc">$</span>b[<span class="st">"erx-r1"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.05</span></span>
 <span id="cb10-11"><a href="#cb10-11"></a>sim_spec<span class="sc">$</span>b[<span class="st">"erx-r2"</span>] <span class="ot">&lt;-</span> <span class="fl">0.05</span></span>
 <span id="cb10-12"><a href="#cb10-12"></a>sim_spec<span class="sc">$</span>b[<span class="st">"r1"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
 <span id="cb10-13"><a href="#cb10-13"></a>sim_spec<span class="sc">$</span>b[<span class="st">"r2"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
@@ -631,16 +631,20 @@ Note
 <span id="cb10-24"><a href="#cb10-24"></a>d_s <span class="ot">&lt;-</span> <span class="fu">copy</span>(lsd<span class="sc">$</span>d_s)</span>
 <span id="cb10-25"><a href="#cb10-25"></a>ld <span class="ot">&lt;-</span> lsd<span class="sc">$</span>ld</span>
 <span id="cb10-26"><a href="#cb10-26"></a></span>
-<span id="cb10-27"><a href="#cb10-27"></a>f1 <span class="ot">&lt;-</span> m4<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb10-28"><a href="#cb10-28"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
-<span id="cb10-29"><a href="#cb10-29"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb10-30"><a href="#cb10-30"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-27"><a href="#cb10-27"></a></span>
+<span id="cb10-28"><a href="#cb10-28"></a><span class="co"># ld$pri_m_sd &lt;- rep(1, 2)</span></span>
+<span id="cb10-29"><a href="#cb10-29"></a><span class="co"># ld$pri_b_sd &lt;- rep(1, 9)</span></span>
+<span id="cb10-30"><a href="#cb10-30"></a></span>
+<span id="cb10-31"><a href="#cb10-31"></a>f1 <span class="ot">&lt;-</span> m4<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb10-32"><a href="#cb10-32"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb10-33"><a href="#cb10-33"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb10-34"><a href="#cb10-34"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
 Chain 1 finished in 1.5 seconds.
-Chain 2 finished in 1.6 seconds.
+Chain 2 finished in 1.5 seconds.
 
 Both chains finished successfully.
 Mean chain execution time: 1.5 seconds.
@@ -652,7 +656,7 @@ Total execution time: 1.6 seconds.</code></pre>
 <span id="cb12-2"><a href="#cb12-2"></a><span class="co"># srp1 and srp2 and leads to an estimation issue.</span></span>
 <span id="cb12-3"><a href="#cb12-3"></a></span>
 <span id="cb12-4"><a href="#cb12-4"></a>f2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> l1 <span class="sc">+</span> l2 <span class="sc">+</span></span>
-<span id="cb12-5"><a href="#cb12-5"></a>            erx<span class="sc">:</span>srp0 <span class="sc">+</span> erx<span class="sc">:</span>srp1 <span class="sc">+</span> erx<span class="sc">:</span>srp2 <span class="sc">+</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>            erx <span class="sc">+</span> erx<span class="sc">:</span>srp1 <span class="sc">+</span> erx<span class="sc">:</span>srp2 <span class="sc">+</span></span>
 <span id="cb12-6"><a href="#cb12-6"></a>            er<span class="sc">:</span>r<span class="sc">:</span>srp1 <span class="sc">+</span> er<span class="sc">:</span>r<span class="sc">:</span>srp2 <span class="sc">+</span></span>
 <span id="cb12-7"><a href="#cb12-7"></a>            ed<span class="sc">:</span>d<span class="sc">:</span>srp1 <span class="sc">+</span> ed<span class="sc">:</span>d<span class="sc">:</span>srp2 <span class="sc">+</span></span>
 <span id="cb12-8"><a href="#cb12-8"></a>            efx <span class="sc">+</span> ef<span class="sc">:</span>f,  </span>
@@ -690,7 +694,7 @@ Total execution time: 1.6 seconds.</code></pre>
 <span id="cb13-6"><a href="#cb13-6"></a>  <span class="st">"Posterior means"</span> <span class="ot">=</span> <span class="fu">colMeans</span>(post1),</span>
 <span id="cb13-7"><a href="#cb13-7"></a>  <span class="st">"Max likelihood"</span> <span class="ot">=</span> <span class="fu">c</span>(</span>
 <span id="cb13-8"><a href="#cb13-8"></a>    cf[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>], </span>
-<span id="cb13-9"><a href="#cb13-9"></a>    cf[<span class="st">"erx:srp0"</span>], cf[<span class="st">"erx:srp1"</span>], cf[<span class="st">"erx:srp2"</span>], </span>
+<span id="cb13-9"><a href="#cb13-9"></a>    cf[<span class="st">"erx"</span>], cf[<span class="st">"erx:srp1"</span>], cf[<span class="st">"erx:srp2"</span>], </span>
 <span id="cb13-10"><a href="#cb13-10"></a>    cf[<span class="st">"srp1:er:r"</span>], cf[<span class="st">"srp2:er:r"</span>] , </span>
 <span id="cb13-11"><a href="#cb13-11"></a>    cf[<span class="st">"srp1:ed:d"</span>], cf[<span class="st">"srp2:ed:d"</span>],</span>
 <span id="cb13-12"><a href="#cb13-12"></a>    cf[<span class="st">"efx"</span>], cf[<span class="st">"ef:f"</span>]</span>
@@ -698,14 +702,14 @@ Total execution time: 1.6 seconds.</code></pre>
 <span id="cb13-14"><a href="#cb13-14"></a>), <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
-<pre><code>                                 l1     l2  erx-r0 erx-r1 erx-r2      r1
-Simulation parameters 0.6190 0.5700 0.6400 -0.1000 0.1000 0.0500 -0.6931
-Posterior means       0.6254 0.5600 0.6343 -0.1091 0.0841 0.0574 -0.7023
-Max likelihood        0.6257 0.5596 0.6342 -0.1095 0.0839 0.0572 -0.7023
-                           r2     r1d     r2d     efx       f
-Simulation parameters -0.6931 -0.6931 -0.6931 -0.2000 -0.6931
-Posterior means       -0.6928 -0.6787 -0.7005 -0.1975 -0.6914
-Max likelihood        -0.6926 -0.6787 -0.7006 -0.1976 -0.6914</code></pre>
+<pre><code>                                 l1     l2     erx  erx-r1 erx-r2      r1
+Simulation parameters 0.6190 0.5700 0.6400 -0.1000 -0.0500 0.0500 -0.6931
+Posterior means       0.6201 0.5651 0.6365 -0.1042 -0.0585 0.0664 -0.6996
+Max likelihood        0.6203 0.5649 0.6365 -0.1045 -0.0585 0.0664 -0.6995
+                           r2     r1d     r2d    efx       f
+Simulation parameters -0.6931 -0.6931 -0.6931 -0.200 -0.6931
+Posterior means       -0.6927 -0.6844 -0.7004 -0.197 -0.6918
+Max likelihood        -0.6927 -0.6845 -0.7004 -0.197 -0.6918</code></pre>
 </div>
 </div>
 </section>
@@ -866,7 +870,7 @@ Warning
 <div class="cell-output cell-output-stdout">
 <pre><code>
  Term              Contrast Estimate Std. Error    z Pr(&gt;|z|)   S  2.5 % 97.5 %
-    r ln(odds(1) / odds(0))    -0.17    0.00118 -144   &lt;0.001 Inf -0.173 -0.168
+    r ln(odds(1) / odds(0))    -0.17    0.00118 -144   &lt;0.001 Inf -0.172 -0.168
 
 Columns: term, contrast, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high 
 Type:  response </code></pre>
@@ -881,7 +885,7 @@ Type:  response </code></pre>
 <span id="cb19-8"><a href="#cb19-8"></a>y_hi <span class="ot">&lt;-</span> <span class="fu">predict</span>(f2, <span class="at">newdata =</span> hi)</span>
 <span id="cb19-9"><a href="#cb19-9"></a><span class="fu">mean</span>(y_hi <span class="sc">-</span> y_lo)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] -0.170319</code></pre>
+<pre><code>[1] -0.1701395</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a><span class="co"># But we are only interested in the effect of r in the group that were revealed.</span></span>
 <span id="cb21-2"><a href="#cb21-2"></a><span class="co"># The following, in avg_comparisons, does not make sense to me. Need to revisit.</span></span>
@@ -895,7 +899,7 @@ Type:  response </code></pre>
 <span id="cb21-10"><a href="#cb21-10"></a><span class="co"># type over all those that received randomised surgery (approx 50% dair, 15% one, 35% two).</span></span>
 <span id="cb21-11"><a href="#cb21-11"></a><span class="fu">mean</span>(d[er <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> r <span class="sc">==</span> <span class="dv">1</span>, <span class="fu">mean</span>(srp1)] <span class="sc">*</span> post1<span class="sc">$</span><span class="st">`</span><span class="at">b[4]</span><span class="st">`</span> <span class="sc">+</span> d[er <span class="sc">==</span> <span class="dv">1</span> <span class="sc">&amp;</span> r <span class="sc">==</span> <span class="dv">1</span>, <span class="fu">mean</span>(srp2)] <span class="sc">*</span> post1<span class="sc">$</span><span class="st">`</span><span class="at">b[5]</span><span class="st">`</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] -0.695645</code></pre>
+<pre><code>[1] -0.6947469</code></pre>
 </div>
 </div>
 <p>The above series of outputs suggest somewhat that we are able to recover the required parameters using various approaches.</p>
@@ -911,7 +915,7 @@ Type:  response </code></pre>
 <span id="cb23-8"><a href="#cb23-8"></a><span class="co"># And this should just be the same as the coefficient from the model</span></span>
 <span id="cb23-9"><a href="#cb23-9"></a><span class="fu">mean</span>(post1<span class="sc">$</span><span class="st">`</span><span class="at">b[9]</span><span class="st">`</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] -0.6914353</code></pre>
+<pre><code>[1] -0.6918082</code></pre>
 </div>
 </div>
 <p>For the duration domain, the comparison of interest can be obtained directly from the parameter estimates that characterised the effects of the randomised comparisons. Duration domain effects are also currently reflecting an average over the silos.</p>
@@ -923,11 +927,11 @@ Type:  response </code></pre>
 <div class="cell-output cell-output-stdout">
 <pre><code>
  Term              Contrast d  Estimate Std. Error        z Pr(&gt;|z|)   S
-    d ln(odds(1) / odds(0)) 0 -0.656909 0.00421194 -155.963  &lt; 0.001 Inf
-    d ln(odds(1) / odds(0)) 1 -0.656735 0.00421091 -155.960  &lt; 0.001 Inf
+    d ln(odds(1) / odds(0)) 0 -0.664385 0.00422153 -157.380  &lt; 0.001 Inf
+    d ln(odds(1) / odds(0)) 1 -0.664248 0.00422073 -157.377  &lt; 0.001 Inf
      2.5 %    97.5 %
- -0.665164 -0.648654
- -0.664988 -0.648481
+ -0.672659 -0.656111
+ -0.672521 -0.655976
 
 Columns: term, contrast, d, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high 
 Type:  response </code></pre>
@@ -936,10 +940,10 @@ Type:  response </code></pre>
 <span id="cb27-2"><a href="#cb27-2"></a><span class="fu">print</span>(cmp, <span class="at">digits =</span> <span class="dv">6</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
- Term              Contrast  Estimate Std. Error        z Pr(&gt;|z|)   S
-    d ln(odds(1) / odds(0)) -0.700637   0.005446 -128.652  &lt; 0.001 Inf
-     2.5 %    97.5 %
- -0.711311 -0.689963
+ Term              Contrast  Estimate Std. Error        z Pr(&gt;|z|)   S    2.5 %
+    d ln(odds(1) / odds(0)) -0.700403 0.00541208 -129.415  &lt; 0.001 Inf -0.71101
+    97.5 %
+ -0.689795
 
 Columns: term, contrast, estimate, std.error, statistic, p.value, s.value, conf.low, conf.high 
 Type:  response </code></pre>
@@ -950,11 +954,11 @@ Type:  response </code></pre>
 <span id="cb29-4"><a href="#cb29-4"></a><span class="co"># specific pars </span></span>
 <span id="cb29-5"><a href="#cb29-5"></a><span class="fu">mean</span>(post1<span class="sc">$</span><span class="st">`</span><span class="at">b[6]</span><span class="st">`</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] -0.6786935</code></pre>
+<pre><code>[1] -0.6843975</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a><span class="fu">mean</span>(post1<span class="sc">$</span><span class="st">`</span><span class="at">b[7]</span><span class="st">`</span> ) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] -0.7005013</code></pre>
+<pre><code>[1] -0.7003817</code></pre>
 </div>
 </div>
 <p>Based on the above, we seem to be in the right ballpark.</p>
