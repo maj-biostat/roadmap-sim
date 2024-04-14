@@ -118,7 +118,7 @@ $$
 \begin{aligned}
 \mathbb{E}[Y|Q; \alpha,  \beta,\lambda] &=  \text{expit}( \alpha_0 + \\ 
   &\quad \lambda_1 \mathbb{I}(L = 1) + \lambda_2 \mathbb{I}(L = 2) + \\
-  &\quad (\beta_1 \mathbb{I}(S_{R_P} = 0) + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\ 
+  &\quad (\beta_1 + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\ 
   &\quad (\beta_4 \mathbb{I}(S_{R_P} = 1) + \beta_5 \mathbb{I}(S_{R_P} = 2) )R E_R + \\
   &\quad \beta_6 (1-E_D) + \\
   &\quad (\beta_{7} \mathbb{I}(S_{R_P} = 1) + \beta_{8} \mathbb{I}(S_{R_P} = 2)])D E_D + \\
@@ -131,16 +131,16 @@ where the $Q$, $\alpha$, $\lambda$ and $\beta$ denote the terms and parameters i
 + $\alpha_0$ denotes the baseline log-odds of treatment success 
 + $\lambda_1$ change associated with membership of the late silo
 + $\lambda_2$ change associated with membership of the chronic silo
-+ $\beta_{1}$ change under non-reveal surgery receiving dair
-+ $\beta_{2}$ change under non-reveal surgery receiving one-stage
-+ $\beta_{3}$ change under non-reveal surgery receiving two-stage
-+ $\beta_{4}$ change under revision that was performed with one-stage procedure
-+ $\beta_{5}$ change under revision that was performed with two-stage procedure
-+ $\beta_{6}$ change under non-reveal (duration) 
-+ $\beta_{7}$ change for short duration when one-stage was actually performed
-+ $\beta_{8}$ change for long duration when two-stage was actually performed
-+ $\beta_{9}$ change under non-reveal (choice) 
-+ $\beta_{10}$ change for rif
++ $\beta_{1}$ change under non-randomised surgical treatment relative to randomised surgical treatment
++ $\beta_{2}$ relative change under non-randomised surgical treatment (receiving one-stage)
++ $\beta_{3}$ relative change under non-randomised surgical treatment (receiving two-stage)
++ $\beta_{4}$ change under randomised surgical treatment (revision) where one-stage procedure occurred
++ $\beta_{5}$ change under randomised surgical treatment (revision) where two-stage procedure occurred
++ $\beta_{6}$ change under non-randomised duration treatment
++ $\beta_{7}$ change for randomised duration treatment (short duration) when one-stage surgical procedure occurred
++ $\beta_{8}$ change for randomised duration treatment (long duration) when two-stage surgical procedure occurred
++ $\beta_{9}$ change under non-randomised choice treatment
++ $\beta_{10}$ change for randomised choice treatment (rif)
 
 In order to easily evaluate the duration effects, we to make the reference arm 12-weeks (long) in the case of one-stage revision and 7-days (short) in the case of two-stage revision.
 
@@ -151,14 +151,14 @@ These patients may be eligible to enter into the duration domain and therefore t
 The $\beta_1$, $\beta_2$ and $\beta_3$ parameters provide adjustment for non-randomised surgical treatment and $\beta_4$ and $\beta_5$ provide adjustment for the patients that did.
 
 Notice that $E_D = 0$ generally implies $S_{R_P} \notin \{1, 2\}$ such that $1-E_D$ is some linear function of the other terms in the model.
-This can lead to estimation problems that might necessitate model re-parameterisation and it is for this reason that the simulation model drops the $(1 - E_D)$ term:
+This can lead to estimation problems that might necessitate model re-parameterisation and it is for this reason that the simulation model drops the $(1 - E_D)$ term and re-index the $\beta$ parameters:
 
 
 $$
 \begin{aligned}
 \mathbb{E}[Y|Q; \alpha,  \beta,\lambda] &=  \text{expit}( \alpha_0 + \\ 
   &\quad \lambda_1 \mathbb{I}(L = 1) + \lambda_2 \mathbb{I}(L = 2) + \\
-  &\quad (\beta_1 \mathbb{I}(S_{R_P} = 0) + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\ 
+  &\quad (\beta_1 + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\ 
   &\quad (\beta_4 \mathbb{I}(S_{R_P} = 1) + \beta_5 \mathbb{I}(S_{R_P} = 2) )R E_R + \\
   &\quad (\beta_{6} \mathbb{I}(S_{R_P} = 1) + \beta_{7} \mathbb{I}(S_{R_P} = 2)])D E_D + \\
   &\quad \beta_{8} (1-E_F) + \beta_{9} F E_F )
@@ -169,28 +169,68 @@ $$ {#eq-mod-spec-2}
 ## Examples
 
 The following characterise how patients enter into the likelihood under various scenarios under @eq-mod-spec-2.
+The main consideration is whether randomised or non-randomised surgical treatment occurs and how this impacts the other terms in the model.
+
+### Randomised surgical treatment
 
 
 ::: {.column width="100%"}
 
-| ID | Patient type |  Log-odds treatment success |
+| ID | Covariate characteristics |  Log-odds treatment success |
 |-|----|----|
-| 1 | Late silo receiving rand DAIR, non-rand 12 weeks AB and rand rif |  $\alpha_0 + \lambda_1 + \beta_{9}$  |
-| 2 | Late silo receiving rand rev (one-stage), rand 12 weeks AB (ref group) and rand rif |  $\alpha_0 + \lambda_1 + \beta_4 + \beta_{9}$ |
-| 3 | Late silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref group) and rand rif | $\alpha_0 + \lambda_1 + \beta_2 + \beta_{9}$ |
-| 4 | Chronic silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref group) and rand rif | $\alpha_0 + \lambda_2 + \beta_2 + \beta_{9}$ |
-| 5 | Late silo receiving non-rand rev (two-stage), rand 7 days AB (ref group) and rand rif | $\alpha_0 + \lambda_1 + \beta_3 + \beta_{9}$ |
-| 6 | Chronic silo receiving non-rand rev (two-stage), rand 7 days AB (ref group) and rand rif | $\alpha_0 + \lambda_2 + \beta_3 + \beta_{9}$ |
-| 7 | Late silo receiving rand rev (one-stage), rand 6 weeks AB and rand rif | $\alpha_0 + \lambda_1 + \beta_4 + \beta_6 + \beta_{9}$ |
-| 8 | Late silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif | $\alpha_0 + \lambda_1 + \beta_2 + \beta_6 + \beta_{9}$ |
-| 9 | Chronic silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif | $\alpha_0 + \lambda_2 + \beta_2 + \beta_6 + \beta_{9}$ |
-| 10 | Late silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif | $\alpha_0 + \lambda_1 + \beta_3 + \beta_7 + \beta_{9}$ |
-| 11 | Chronic silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif | $\alpha_0 + \lambda_2 + \beta_3 + \beta_7 + \beta_{9}$ |
+| 1a | Late silo receiving rand DAIR, non-rand AB duration and rand rif |  $\alpha_0 + \lambda_1 + \beta_{9}$  |
+| 2a | Late silo receiving rand rev (one-stage), rand 12 weeks AB (ref) and rand rif |  $\alpha_0 + \lambda_1 + \beta_4 + \beta_{9}$ |
+| 3a | Late silo receiving rand rev (one-stage), rand 6 weeks AB and rand rif | $\alpha_0 + \lambda_1 + \beta_4 + \beta_6 + \beta_{9}$ |
+| 4a | Late silo receiving rand rev (two-stage), rand 7 days AB (ref) and rand rif |  $\alpha_0 + \lambda_1 + \beta_5 + \beta_{9}$ |
+| 5a | Late silo receiving rand rev (two-stage), rand 12 weeks AB and rand rif | $\alpha_0 + \lambda_1 + \beta_5 + \beta_7 + \beta_{9}$ |
 
 : Likelihood contributions under various scenarios {.striped .hover}
 :::
 
-If the non-reveal parameters for the surgical domain were not split by surgery type, then ID 3 above would have the same terms as ID 5 and ID 4 would have the same terms as ID 6.
+
+
+### Non-randomised surgical treatment
+
+
+::: {.callout-note collapse=false}
+
+Unsure whether non-randomised surgical treatment would occur for the late-silo patients but have included anyway.
+
+If the non-reveal parameters for the surgical domain were not split by surgery type, then, in the following table:
+
++ ID 7b would have the same terms as ID 9b 
++ ID 12b would have the same terms as ID 14b
+
+:::
+
+
+
+
+::: {.column width="100%"}
+
+| ID | Covariate characteristics |  Log-odds treatment success |
+|-|----|----|
+| 1b | Early silo receiving non-rand DAIR, non-rand AB duration and rand rif |  $\alpha_0 + \beta_1 + \beta_{9}$  |
+| 2b | Early silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref) and rand rif |  $\alpha_0 + \beta_1 + \beta_2 + \beta_{9}$  |
+| 3b | Early silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif |  $\alpha_0 + \beta_1 + \beta_2 + \beta_6 + \beta_{9}$  |
+| 4b | Early silo receiving non-rand rev (two-stage), rand 7 days AB (ref) and rand rif |  $\alpha_0 + \beta_1 + \beta_3 + \beta_{9}$  |
+| 5b | Early silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif |  $\alpha_0 + \beta_1 + \beta_3 + \beta_7 + \beta_{9}$  |
+|  | | |
+| 6b | Late silo receiving non-rand DAIR, non-rand AB duration and rand rif |  $\alpha_0 + \lambda_1 + \beta_1 + \beta_{9}$  |
+| 7b | Late silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref) and rand rif |  $\alpha_0 + \lambda_1 + \beta_1 + \beta_2 + \beta_{9}$  |
+| 8b | Late silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif |  $\alpha_0 + \lambda_1 + \beta_1 + \beta_2 + \beta_6 + \beta_{9}$  |
+| 9b | Late silo receiving non-rand rev (two-stage), rand 7 days AB (ref) and rand rif |  $\alpha_0 + \lambda_1 + \beta_1 + \beta_3 + \beta_{9}$  |
+| 10b | Late silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif |  $\alpha_0 + \lambda_1 + \beta_1 + \beta_3 + \beta_7 + \beta_{9}$  |
+|  | | |
+| 11b | Chronic silo receiving non-rand DAIR, non-rand AB duration and rand rif |  $\alpha_0 + \lambda_2 + \beta_1 + \beta_{9}$  |
+| 12b | Chronic silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref) and rand rif |  $\alpha_0 + \lambda_2 + \beta_1 + \beta_2 + \beta_{9}$  |
+| 13b | Chronic silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif |  $\alpha_0 + \lambda_2 + \beta_1 + \beta_2 + \beta_6 + \beta_{9}$  |
+| 14b | Chronic silo receiving non-rand rev (two-stage), rand 7 days AB (ref) and rand rif |  $\alpha_0 + \lambda_2 + \beta_1 + \beta_3 + \beta_{9}$  |
+| 15b | Chronic silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif |  $\alpha_0 + \lambda_2 + \beta_1 + \beta_3 + \beta_7 + \beta_{9}$  |
+
+: Likelihood contributions under various scenarios {.striped .hover}
+:::
+
 
 
 
