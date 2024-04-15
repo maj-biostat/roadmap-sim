@@ -57,7 +57,7 @@ and enrolment is stopped for non-inferiority if $P_{\text{duration-1 (ni)}} > 0.
 The probability of futility for revision being superior to dair is defined as:
 
 \begin{aligned}
-P_{\text{duration-1 (fut)}} = Pr(\beta_6 > \log(1/1.4))
+P_{\text{duration-1 (fut)}} = Pr(\beta_6 > \log(1))
 \end{aligned}
 
 and enrolment is stopped for futility (with respect to being able to establish non-inferiority) if $P_{\text{duration-1 (fut)}} < 0.05$.

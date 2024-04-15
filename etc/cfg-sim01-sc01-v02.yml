@@ -1,7 +1,7 @@
 # simulation configuration (all OR = log(1.2))
 default:
   nsim: 5000
-  mc_cores: 5
+  mc_cores: 30
   N_pt: 2500
   p_a0: 0.65 # intercept (probability scale)
   m_l1: 0.57 # late silo baseline log-odds trt success
@@ -23,10 +23,11 @@ default:
   delta_sup: 1 # translated to log(delta_sup)
   delta_sup_fut: 1.2 # futility wrt to the superiority decision 
   delta_ni: 1.2 # translated to log(1/delta_ni)
+  delta_ni_fut: 1.0 # translated to log(1/delta_ni_fut)
   thresh_sup: 0.975
   thresh_non_inf: 0.975
   thresh_fut_sup: 0.05
-  thresh_fut_ni: 0.2
+  thresh_fut_ni: 0.05
 
   
 

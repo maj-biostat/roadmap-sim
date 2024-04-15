@@ -23,7 +23,7 @@ default:
   delta_sup: 1 # translated to log(delta_sup)
   delta_sup_fut: 1.2 # futility wrt to the superiority decision 
   delta_ni: 1.2 # translated to log(1/delta_ni)
-  delta_ni_fut: 1.4 # translated to log(1/delta_ni_fut)
+  delta_ni_fut: 1.0 # translated to log(1/delta_ni_fut)
   thresh_sup: 0.99
   thresh_non_inf: 0.99
   thresh_fut_sup: 0.05

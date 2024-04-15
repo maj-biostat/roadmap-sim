@@ -104,7 +104,8 @@ run_trial <- function(ix){
   pr_sup_fut <- post_fx[, sapply(.SD, function(z){mean(z > log(g_cfgsc$delta_sup_fut))}), .SDcols = g_fx]
   
   pr_trt_ni_ref <- post_fx[, sapply(.SD, function(z){mean(z > log(1/g_cfgsc$delta_ni))}), .SDcols = g_fx]
-
+  pr_trt_ni_ref_fut <- post_fx[, sapply(.SD, function(z){mean(z > log(1/g_cfgsc$delta_ni_fut))}), .SDcols = g_fx]
+ 
   sup <- pr_sup > g_cfgsc$thresh_sup
   trt_ni_ref <- pr_trt_ni_ref > g_cfgsc$thresh_non_inf
   fut_sup <- pr_sup_fut < g_cfgsc$thresh_fut_sup
@@ -114,7 +115,9 @@ run_trial <- function(ix){
   list(
     d_grp = ll$d[, .(y = sum(y), .N), keyby = .(l, er, r, srp, ed, d, ef, f)],
     pr_sup = pr_sup,
+    pr_sup_fut = pr_sup_fut,
     pr_trt_ni_ref = pr_trt_ni_ref,
+    pr_trt_ni_ref_fut = pr_trt_ni_ref_fut,
     sup = sup, 
     trt_ni_ref = trt_ni_ref,
     fut_sup = fut_sup,
@@ -150,6 +153,7 @@ run_sim_01 <- function(){
   d_pr_sup <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$pr_sup } )))
   d_pr_sup_fut <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$fut_sup } )))
   d_pr_trt_ni_ref <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$pr_trt_ni_ref } )))
+  d_pr_trt_ni_ref_fut <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$pr_trt_ni_ref_fut } )))
   # no pr_fut
 
   d_sup <- data.table(do.call(rbind, lapply(1:length(r), function(i){ r[[i]]$sup } )))
