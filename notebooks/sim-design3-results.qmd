@@ -465,8 +465,11 @@ g_tbl
 #| fig-width: 8
 
 # only interted in the distribution of posterior means for now
-d_fig <- d_post_smry_2[!is.na(mu), .(sc, v, sim, par, analys, mu)]
-d_fig <- merge(d_fig, unique(d_cfg[, .(analys, N_pt)]), by = "analys")
+d_fig <- d_post_smry_2[, .(sc, v, sim, par, analys, mu)]
+
+d_fig <- merge(d_fig, unique(d_cfg[, .(analys, N_pt)]), by = "analys") 
+d_fig[, mu := nafill(mu, type = "locf"), keyby = .(sim, sc, v, par)]
+setcolorder(d_fig, c("sc", "v", "sim", "par", "analys"))
 
 d_fig[, analys := factor(analys)]
 d_fig[, N_pt := factor(N_pt)]
@@ -482,8 +485,6 @@ d_fig_2 <- CJ(
   par = factor(unique(d_fig$par), levels = unique(d_fig$par))
 )
 d_fig_2[, lor_num := rep(g_lor_num, each = length(unique(d_fig$par)))]
-
-
 
 p <- ggplot(d_fig, aes(x = N_pt, y = mu)) +
   geom_hline(data = d_fig_2, aes(yintercept = lor_num, group = par), col = 2) +

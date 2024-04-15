@@ -106,6 +106,7 @@ sim_spec$b["erx-r1"] <- -0.05
 sim_spec$b["erx-r2"] <- 0.05
 sim_spec$b["r1"] <- -0.6931472
 sim_spec$b["r2"] <- -0.6931472
+# sim_spec$b["edx"] <- -0.07
 sim_spec$b["r1d"] <- -0.6931472
 sim_spec$b["r2d"] <- -0.6931472
 sim_spec$b["efx"] <- -0.2
@@ -135,6 +136,7 @@ f1 <- m4$sample(
 f2 <- glm(y ~ l1 + l2 +
             erx + erx:srp1 + erx:srp2 +
             er:r:srp1 + er:r:srp2 +
+            # edx +
             ed:d:srp1 + ed:d:srp2 +
             efx + ef:f,  
           data = d, family = binomial())
@@ -173,6 +175,7 @@ round(rbind(
     cf[1:3], 
     cf["erx"], cf["erx:srp1"], cf["erx:srp2"], 
     cf["srp1:er:r"], cf["srp2:er:r"] , 
+    # cf["edx"],
     cf["srp1:ed:d"], cf["srp2:ed:d"],
     cf["efx"], cf["ef:f"]
   )

@@ -121,7 +121,7 @@ $$
   &\quad (\beta_1 + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\ 
   &\quad (\beta_4 \mathbb{I}(S_{R_P} = 1) + \beta_5 \mathbb{I}(S_{R_P} = 2) )R E_R + \\
   &\quad \beta_6 (1-E_D) + \\
-  &\quad (\beta_{7} \mathbb{I}(S_{R_P} = 1) + \beta_{8} \mathbb{I}(S_{R_P} = 2)])D E_D + \\
+  &\quad (\beta_{7} \mathbb{I}(S_{R_P} = 1) + \beta_{8} \mathbb{I}(S_{R_P} = 2))D E_D + \\
   &\quad \beta_{9} (1-E_F) + \beta_{10} F E_F )
 \end{aligned}
 $$ {#eq-mod-spec-1}
@@ -160,7 +160,7 @@ $$
   &\quad \lambda_1 \mathbb{I}(L = 1) + \lambda_2 \mathbb{I}(L = 2) + \\
   &\quad (\beta_1 + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\ 
   &\quad (\beta_4 \mathbb{I}(S_{R_P} = 1) + \beta_5 \mathbb{I}(S_{R_P} = 2) )R E_R + \\
-  &\quad (\beta_{6} \mathbb{I}(S_{R_P} = 1) + \beta_{7} \mathbb{I}(S_{R_P} = 2)])D E_D + \\
+  &\quad (\beta_{6} \mathbb{I}(S_{R_P} = 1) + \beta_{7} \mathbb{I}(S_{R_P} = 2))D E_D + \\
   &\quad \beta_{8} (1-E_F) + \beta_{9} F E_F )
 \end{aligned}
 $$ {#eq-mod-spec-2}

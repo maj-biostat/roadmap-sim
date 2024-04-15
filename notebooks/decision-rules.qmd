@@ -52,7 +52,15 @@ The probability that short is non-inferior to long is defined as:
 P_{\text{duration-1 (ni)}} = Pr(\beta_6 > \log(1/1.2))
 \end{aligned}
 
-and enrolment is stopped for non-inferiority if $P_{\text{duration-1 (ni)}} > 0.99$ or $P_{\text{duration-1 (ni)}} < 0.2$, the latter being taken to imply futility (with respect to being able to establish non-inferiority).
+and enrolment is stopped for non-inferiority if $P_{\text{duration-1 (ni)}} > 0.99$.
+
+The probability of futility for revision being superior to dair is defined as:
+
+\begin{aligned}
+P_{\text{duration-1 (fut)}} = Pr(\beta_6 > \log(1/1.4))
+\end{aligned}
+
+and enrolment is stopped for futility (with respect to being able to establish non-inferiority) if $P_{\text{duration-1 (fut)}} < 0.05$.
 
 ### Two-stage revision
 
