@@ -1,7 +1,7 @@
 # simulation configuration (all OR = log(1))
 default:
-  nsim: 500
-  mc_cores: 5
+  nsim: 5000
+  mc_cores: 30
   N_pt: [500, 1000, 1500, 2000, 2500]
   p_a0: 0.65 # intercept (probability scale)
   m_l1: 0.57 # late silo baseline log-odds trt success

@@ -410,8 +410,8 @@ run_sim_03 <- function(){
   e = NULL
   log_info("Starting simulation")
   r <- parallel::mclapply(
-    # X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
-    X=1:100, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    # X=1:100, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
       log_info("Simulation ", ix);
       ll <- tryCatch({
         run_trial(ix)
