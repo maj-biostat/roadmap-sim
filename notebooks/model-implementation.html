@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-04-14">
+<meta name="dcterms.date" content="2024-04-16">
 
 <title>ROADMAP - design notes and simulations - Model implementation</title>
 <style>
@@ -316,14 +316,14 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">April 14, 2024</p>
+      <p class="date">April 16, 2024</p>
     </div>
   </div>
   
     <div>
     <div class="quarto-title-meta-heading">Modified</div>
     <div class="quarto-title-meta-contents">
-      <p class="date-modified">April 12, 2024</p>
+      <p class="date-modified">April 15, 2024</p>
     </div>
   </div>
     
@@ -618,33 +618,34 @@ Note
 <span id="cb10-11"><a href="#cb10-11"></a>sim_spec<span class="sc">$</span>b[<span class="st">"erx-r2"</span>] <span class="ot">&lt;-</span> <span class="fl">0.05</span></span>
 <span id="cb10-12"><a href="#cb10-12"></a>sim_spec<span class="sc">$</span>b[<span class="st">"r1"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
 <span id="cb10-13"><a href="#cb10-13"></a>sim_spec<span class="sc">$</span>b[<span class="st">"r2"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
-<span id="cb10-14"><a href="#cb10-14"></a>sim_spec<span class="sc">$</span>b[<span class="st">"r1d"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
-<span id="cb10-15"><a href="#cb10-15"></a>sim_spec<span class="sc">$</span>b[<span class="st">"r2d"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
-<span id="cb10-16"><a href="#cb10-16"></a>sim_spec<span class="sc">$</span>b[<span class="st">"efx"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.2</span></span>
-<span id="cb10-17"><a href="#cb10-17"></a>sim_spec<span class="sc">$</span>b[<span class="st">"f"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
-<span id="cb10-18"><a href="#cb10-18"></a></span>
+<span id="cb10-14"><a href="#cb10-14"></a><span class="co"># sim_spec$b["edx"] &lt;- -0.07</span></span>
+<span id="cb10-15"><a href="#cb10-15"></a>sim_spec<span class="sc">$</span>b[<span class="st">"r1d"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
+<span id="cb10-16"><a href="#cb10-16"></a>sim_spec<span class="sc">$</span>b[<span class="st">"r2d"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
+<span id="cb10-17"><a href="#cb10-17"></a>sim_spec<span class="sc">$</span>b[<span class="st">"efx"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.2</span></span>
+<span id="cb10-18"><a href="#cb10-18"></a>sim_spec<span class="sc">$</span>b[<span class="st">"f"</span>] <span class="ot">&lt;-</span> <span class="sc">-</span><span class="fl">0.6931472</span></span>
 <span id="cb10-19"><a href="#cb10-19"></a></span>
-<span id="cb10-20"><a href="#cb10-20"></a>ll <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="fl">2e6</span>, <span class="at">sim_spec =</span> sim_spec)</span>
-<span id="cb10-21"><a href="#cb10-21"></a>lsd <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_stan_data</span>(ll<span class="sc">$</span>d)</span>
-<span id="cb10-22"><a href="#cb10-22"></a></span>
-<span id="cb10-23"><a href="#cb10-23"></a>d <span class="ot">&lt;-</span> <span class="fu">copy</span>(ll<span class="sc">$</span>d)</span>
-<span id="cb10-24"><a href="#cb10-24"></a>d_s <span class="ot">&lt;-</span> <span class="fu">copy</span>(lsd<span class="sc">$</span>d_s)</span>
-<span id="cb10-25"><a href="#cb10-25"></a>ld <span class="ot">&lt;-</span> lsd<span class="sc">$</span>ld</span>
-<span id="cb10-26"><a href="#cb10-26"></a></span>
+<span id="cb10-20"><a href="#cb10-20"></a></span>
+<span id="cb10-21"><a href="#cb10-21"></a>ll <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_trial_data</span>(<span class="at">N =</span> <span class="fl">2e6</span>, <span class="at">sim_spec =</span> sim_spec)</span>
+<span id="cb10-22"><a href="#cb10-22"></a>lsd <span class="ot">&lt;-</span> roadmap.data<span class="sc">::</span><span class="fu">get_stan_data</span>(ll<span class="sc">$</span>d)</span>
+<span id="cb10-23"><a href="#cb10-23"></a></span>
+<span id="cb10-24"><a href="#cb10-24"></a>d <span class="ot">&lt;-</span> <span class="fu">copy</span>(ll<span class="sc">$</span>d)</span>
+<span id="cb10-25"><a href="#cb10-25"></a>d_s <span class="ot">&lt;-</span> <span class="fu">copy</span>(lsd<span class="sc">$</span>d_s)</span>
+<span id="cb10-26"><a href="#cb10-26"></a>ld <span class="ot">&lt;-</span> lsd<span class="sc">$</span>ld</span>
 <span id="cb10-27"><a href="#cb10-27"></a></span>
-<span id="cb10-28"><a href="#cb10-28"></a><span class="co"># ld$pri_m_sd &lt;- rep(1, 2)</span></span>
-<span id="cb10-29"><a href="#cb10-29"></a><span class="co"># ld$pri_b_sd &lt;- rep(1, 9)</span></span>
-<span id="cb10-30"><a href="#cb10-30"></a></span>
-<span id="cb10-31"><a href="#cb10-31"></a>f1 <span class="ot">&lt;-</span> m4<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb10-32"><a href="#cb10-32"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
-<span id="cb10-33"><a href="#cb10-33"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb10-34"><a href="#cb10-34"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb10-28"><a href="#cb10-28"></a></span>
+<span id="cb10-29"><a href="#cb10-29"></a><span class="co"># ld$pri_m_sd &lt;- rep(1, 2)</span></span>
+<span id="cb10-30"><a href="#cb10-30"></a><span class="co"># ld$pri_b_sd &lt;- rep(1, 9)</span></span>
+<span id="cb10-31"><a href="#cb10-31"></a></span>
+<span id="cb10-32"><a href="#cb10-32"></a>f1 <span class="ot">&lt;-</span> m4<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb10-33"><a href="#cb10-33"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">2000</span>,</span>
+<span id="cb10-34"><a href="#cb10-34"></a>  <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb10-35"><a href="#cb10-35"></a>  <span class="at">max_treedepth =</span> <span class="dv">13</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 1 finished in 1.5 seconds.
-Chain 2 finished in 1.6 seconds.
+Chain 1 finished in 1.4 seconds.
+Chain 2 finished in 1.5 seconds.
 
 Both chains finished successfully.
 Mean chain execution time: 1.5 seconds.
@@ -658,28 +659,29 @@ Total execution time: 1.6 seconds.</code></pre>
 <span id="cb12-4"><a href="#cb12-4"></a>f2 <span class="ot">&lt;-</span> <span class="fu">glm</span>(y <span class="sc">~</span> l1 <span class="sc">+</span> l2 <span class="sc">+</span></span>
 <span id="cb12-5"><a href="#cb12-5"></a>            erx <span class="sc">+</span> erx<span class="sc">:</span>srp1 <span class="sc">+</span> erx<span class="sc">:</span>srp2 <span class="sc">+</span></span>
 <span id="cb12-6"><a href="#cb12-6"></a>            er<span class="sc">:</span>r<span class="sc">:</span>srp1 <span class="sc">+</span> er<span class="sc">:</span>r<span class="sc">:</span>srp2 <span class="sc">+</span></span>
-<span id="cb12-7"><a href="#cb12-7"></a>            ed<span class="sc">:</span>d<span class="sc">:</span>srp1 <span class="sc">+</span> ed<span class="sc">:</span>d<span class="sc">:</span>srp2 <span class="sc">+</span></span>
-<span id="cb12-8"><a href="#cb12-8"></a>            efx <span class="sc">+</span> ef<span class="sc">:</span>f,  </span>
-<span id="cb12-9"><a href="#cb12-9"></a>          <span class="at">data =</span> d, <span class="at">family =</span> <span class="fu">binomial</span>())</span>
-<span id="cb12-10"><a href="#cb12-10"></a></span>
-<span id="cb12-11"><a href="#cb12-11"></a><span class="co"># summary(f2)</span></span>
-<span id="cb12-12"><a href="#cb12-12"></a></span>
-<span id="cb12-13"><a href="#cb12-13"></a><span class="co"># dtmp &lt;- data.table(model.matrix(f2)) </span></span>
-<span id="cb12-14"><a href="#cb12-14"></a><span class="co"># dtmp &lt;- cbind(model.matrix(f2), tot = 0)</span></span>
-<span id="cb12-15"><a href="#cb12-15"></a><span class="co"># pracma::rref(dtmp)</span></span>
-<span id="cb12-16"><a href="#cb12-16"></a><span class="co"># d_s</span></span>
-<span id="cb12-17"><a href="#cb12-17"></a></span>
-<span id="cb12-18"><a href="#cb12-18"></a><span class="co"># dtmp &lt;- data.table(model.matrix(f2))</span></span>
-<span id="cb12-19"><a href="#cb12-19"></a><span class="co"># </span></span>
-<span id="cb12-20"><a href="#cb12-20"></a><span class="co"># rref(dtmp)</span></span>
-<span id="cb12-21"><a href="#cb12-21"></a><span class="co"># dtmp.mean &lt;- apply(dtmp, 2, mean)</span></span>
-<span id="cb12-22"><a href="#cb12-22"></a><span class="co"># dtmp &lt;- sweep(dtmp, 2, dtmp.mean)</span></span>
-<span id="cb12-23"><a href="#cb12-23"></a><span class="co"># </span></span>
-<span id="cb12-24"><a href="#cb12-24"></a><span class="co"># f3 &lt;- prcomp(dtmp)</span></span>
-<span id="cb12-25"><a href="#cb12-25"></a><span class="co"># print(f3)</span></span>
-<span id="cb12-26"><a href="#cb12-26"></a><span class="co"># </span></span>
-<span id="cb12-27"><a href="#cb12-27"></a><span class="co"># # Fairly unsafe - checking for full rank on removal of each var</span></span>
-<span id="cb12-28"><a href="#cb12-28"></a><span class="co"># linearly_dep_cols(f2)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb12-7"><a href="#cb12-7"></a>            <span class="co"># edx +</span></span>
+<span id="cb12-8"><a href="#cb12-8"></a>            ed<span class="sc">:</span>d<span class="sc">:</span>srp1 <span class="sc">+</span> ed<span class="sc">:</span>d<span class="sc">:</span>srp2 <span class="sc">+</span></span>
+<span id="cb12-9"><a href="#cb12-9"></a>            efx <span class="sc">+</span> ef<span class="sc">:</span>f,  </span>
+<span id="cb12-10"><a href="#cb12-10"></a>          <span class="at">data =</span> d, <span class="at">family =</span> <span class="fu">binomial</span>())</span>
+<span id="cb12-11"><a href="#cb12-11"></a></span>
+<span id="cb12-12"><a href="#cb12-12"></a><span class="co"># summary(f2)</span></span>
+<span id="cb12-13"><a href="#cb12-13"></a></span>
+<span id="cb12-14"><a href="#cb12-14"></a><span class="co"># dtmp &lt;- data.table(model.matrix(f2)) </span></span>
+<span id="cb12-15"><a href="#cb12-15"></a><span class="co"># dtmp &lt;- cbind(model.matrix(f2), tot = 0)</span></span>
+<span id="cb12-16"><a href="#cb12-16"></a><span class="co"># pracma::rref(dtmp)</span></span>
+<span id="cb12-17"><a href="#cb12-17"></a><span class="co"># d_s</span></span>
+<span id="cb12-18"><a href="#cb12-18"></a></span>
+<span id="cb12-19"><a href="#cb12-19"></a><span class="co"># dtmp &lt;- data.table(model.matrix(f2))</span></span>
+<span id="cb12-20"><a href="#cb12-20"></a><span class="co"># </span></span>
+<span id="cb12-21"><a href="#cb12-21"></a><span class="co"># rref(dtmp)</span></span>
+<span id="cb12-22"><a href="#cb12-22"></a><span class="co"># dtmp.mean &lt;- apply(dtmp, 2, mean)</span></span>
+<span id="cb12-23"><a href="#cb12-23"></a><span class="co"># dtmp &lt;- sweep(dtmp, 2, dtmp.mean)</span></span>
+<span id="cb12-24"><a href="#cb12-24"></a><span class="co"># </span></span>
+<span id="cb12-25"><a href="#cb12-25"></a><span class="co"># f3 &lt;- prcomp(dtmp)</span></span>
+<span id="cb12-26"><a href="#cb12-26"></a><span class="co"># print(f3)</span></span>
+<span id="cb12-27"><a href="#cb12-27"></a><span class="co"># </span></span>
+<span id="cb12-28"><a href="#cb12-28"></a><span class="co"># # Fairly unsafe - checking for full rank on removal of each var</span></span>
+<span id="cb12-29"><a href="#cb12-29"></a><span class="co"># linearly_dep_cols(f2)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>The parameter estimates align reasonably well to the simulation parameters used in the linear predictor:</p>
@@ -696,10 +698,11 @@ Total execution time: 1.6 seconds.</code></pre>
 <span id="cb13-8"><a href="#cb13-8"></a>    cf[<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>], </span>
 <span id="cb13-9"><a href="#cb13-9"></a>    cf[<span class="st">"erx"</span>], cf[<span class="st">"erx:srp1"</span>], cf[<span class="st">"erx:srp2"</span>], </span>
 <span id="cb13-10"><a href="#cb13-10"></a>    cf[<span class="st">"srp1:er:r"</span>], cf[<span class="st">"srp2:er:r"</span>] , </span>
-<span id="cb13-11"><a href="#cb13-11"></a>    cf[<span class="st">"srp1:ed:d"</span>], cf[<span class="st">"srp2:ed:d"</span>],</span>
-<span id="cb13-12"><a href="#cb13-12"></a>    cf[<span class="st">"efx"</span>], cf[<span class="st">"ef:f"</span>]</span>
-<span id="cb13-13"><a href="#cb13-13"></a>  )</span>
-<span id="cb13-14"><a href="#cb13-14"></a>), <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-11"><a href="#cb13-11"></a>    <span class="co"># cf["edx"],</span></span>
+<span id="cb13-12"><a href="#cb13-12"></a>    cf[<span class="st">"srp1:ed:d"</span>], cf[<span class="st">"srp2:ed:d"</span>],</span>
+<span id="cb13-13"><a href="#cb13-13"></a>    cf[<span class="st">"efx"</span>], cf[<span class="st">"ef:f"</span>]</span>
+<span id="cb13-14"><a href="#cb13-14"></a>  )</span>
+<span id="cb13-15"><a href="#cb13-15"></a>), <span class="dv">4</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>                                 l1     l2     erx  erx-r1 erx-r2      r1
