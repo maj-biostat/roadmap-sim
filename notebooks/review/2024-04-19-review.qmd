@@ -1,11 +1,6 @@
 ---
 title: Model Notes Review
 date: 2024-04-19
-standalone: true
-embed-resources: true
-navbar: false
-sidebar: false
-page-navigation: false
 ---
 
 ## Population Structure
