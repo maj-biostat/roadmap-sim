@@ -1,0 +1,145 @@
+---
+title: Model Notes Review
+date: 2024-04-19
+standalone: true
+embed-resources: true
+navbar: false
+sidebar: false
+page-navigation: false
+---
+
+## Population Structure
+
+No comments.
+
+## Model Specification
+
+The current model equation is given as
+
+![](/assets/20240419-model-eq.png){fig-align="center"}
+
+I just want to run through to make sure I'm roughly on the same page.
+
+Just to re-label a little bit for myself, in the late silo (ignoring the gamma terms above) this would look something like
+
+$$
+\begin{aligned}
+&(\beta_1 + \beta_2 R + \beta_3 RS)(1 - E_R)\ + \\
+&(\alpha_1 + \alpha_2 R + \alpha_3 RS)E_R\ + \\
+&\beta_4(1-E_D)\ + \\
+&(\alpha_4D_1 + \alpha_5 D_2)RE_D\ + \\
+&\beta_5(1-E_F) + \alpha_6 EF
+\end{aligned}
+$$
+
+where $E_R$ denotes randomised or non-randomised surgery, $R$ indicates revision and $S$ indicates selection of two-stage revision. Here $\beta$ denotes observational effects and $\alpha$ denotes interventional effects. Here I've made it explicit that $D_1$ is (short) duration if given one-stage and $D_2$ is (short) duration if given two-stage.
+
+First thing, I think that $\beta_4$ ($\beta_6$ in the image) needs to be multiplied by $R$. For all DAIR participants, duration is non-randomised, (so $E_D=0$) so no need to adjust for an effect of non-randomised duration in that case. I note that you say this is dropped in the simulation model, but if included, I would think $R$ dependency is necessary.
+
+Thinking through some examples, if $E_R=E_D=E_F=1$ then $\alpha_1 + \alpha_2R + \alpha_3RS + \alpha_4RD_1 + \alpha_5RSD_2 + \alpha_6F$.
+
+Suppose $E_D=0$, i.e. they are ineligible or choose not to participate in the duration domain. Then
+
+$$
+\alpha_1 + \alpha_2 R + \alpha_3 RS + \beta_4 + \alpha_6F
+$$
+
+Question: do we want observational duration to have the same effect on both revision types? Or should it be revision type specific? E.g.
+
+$$
+\alpha_1 + \alpha_2 R + \alpha_3 RS + \beta_4 + \beta_4^\star S + \alpha_6F
+$$
+
+Just for arguments sake, say if duration is non-randomised one-stage get long duration only, but two-stage get some other random combination of duration. Expect different shifts dependent on revision type? Do we care?
+
+Say just $E_R=0$, i.e. ineligible or choose not to participate in surgery domain, but if receive revision, would participate in duration domain
+
+$$
+\beta_1 + \beta_2R + \beta_3 RS + \alpha_4 RD_1 + \alpha_5 RSD_2 + \alpha_6 F
+$$
+
+This seems okay to me. What if both $E_R=0$ and $E_D=0$, then
+
+$$
+\beta_1 + \beta_2R + \beta_3 RS + \beta_4 + \alpha_6 F
+$$
+
+Again, I not sure if we would want the non-randomised duration to potentially differ in effect between revision types.
+
+I would perhaps re-configure as something like
+
+$$ 
+\begin{aligned} 
+&(\beta_1 + \beta_2 R + \beta_3 RS)(1 - E_R)\ + \\ 
+&(\alpha_1 + \alpha_2 R + \alpha_3 RS)E_R\ + \\ 
+&(\beta_4 + \beta_4^\star S)R(1-E_D)\ + \\ &(\alpha_4D_1 + \alpha_5D_2 S)RE_D\ + \\ 
+&\beta_5(1-E_F) + \alpha_6 EF 
+\end{aligned} 
+$$
+
+where I'm not sure about relevance of $\beta_4^\star$.
+
+Big picture, I think the above makes sense, and makes enough simplifications to be useful but still be mostly interpretable (at least as far is probably going to be possible). Other complexity could be added, e.g. is the effect of randomised duration dependent on whether surgery type was randomised or selected, similarly for non-randomised duration? But it gets to a point where there's too many moving parts to be useful.
+
+### Early/Chronic
+
+Here there is no option for randomised surgery, so $E_R=0$ for everyone. However, I don't think that there is any reason to believe that the same parameters apply. For example, in early we expect most patients will receive DAIR, whereas in late, if surgery were not randomised, most patients might receive two-stage revision. The outcomes under non-randomised surgery may differ between the three silos. So, my initial belief would be something like:
+
+$$
+\beta_{1l} + \beta_{2l}R + \beta_{3l}RS
+$$
+
+where $l=0,1,2$ denotes the silo. In the current model specification we have something like $\beta_{1l} + \beta_2 + \beta_3$ instead, i.e. responses may differ under DAIR, but the effect of doing a specific revision type is the same irrespective of silo. It seems like that may not be the case given the different preference for surgery types within each silo. For arguments sake in early, maybe everyone except a specific subset of patients get DAIR, whereas in chronic, it's more to do with the surgeon's experience most preferring two-stage. The shift in patients who receive non-randomised one-stage revision might be positive in one silo but negative in another. Again, maybe this starts to make it too complex, but seems a possibility that may be useful to account for. Or maybe conditional on the other baseline factors to be included it's sufficient to assume shared parameters.
+
+## Decision Rules
+
+### Surgical Domain
+
+I think this rule as specified might be insufficiently clear. It looks like this comparison is specifically for "Revision vs DAIR" where by "Revision" we mean "long duration if selected for one-stage and short duration if selected for two-stage" (i.e. $D=0$). That's fine, and might be the only comparison we care about, but other comparisons might need to be considered. In any case, decision rule will need to be explicit about the policy for duration in the comparison being made given we intervene here, and there is no such thing as just a "revision". It might make sense to consider "revision vs DAIR" to be the *best* revision policy vs DAIR.
+
+For example, there are (currently) four possible policies:
+
+-   1L + 2L (if *one* stage, give *long* duration, if *two* stage give *long* duration)
+-   1L + 2S (if *one* stage, give *long* duration, if *two* stage give *short* duration)
+-   1S + 2L
+-   1S + 2S
+
+We can't recommend a specific revision type because we have no control over who gets what revision, we only observe what patients happen to receive. We can only recommended a duration policy conditional on whatever revision happens to be selected for a patient.
+
+Suppose that, in terms of the probability of treatment success we found that
+
+-   1L + 2L, 1L + 2S \> DAIR \> 1S + 2L, 1S + 2S, and this was due to
+-   1L \>\> DAIR \> 1S = 2L = 2S. (where 1L means one-stage plus long duration)
+
+and that most participants assigned to revision happen to be given one-stage. So, conditional on one-stage, long is better than short, but conditional on two-stage there is no difference in outcomes due to duration. Here, the policies which are better than DAIR are any that say "if one-stage revision give them long duration, ....". Any other policy is inferior to DAIR (e.g. the policy "if one-stage revision give short duration, ...." is worse than giving DAIR).
+
+Alternatively, say
+
+-   1L + 2S \> DAIR \> 1S + 2L, due to
+-   2S = 1L \>\> DAIR \> 1S = 2L.
+
+So, conditional on two-stage, short is better than long, but conditional on one-stage long is better than short. In this case, our recommended policy would be "if two-stage give short, if one-stage give long". There might be other policies which also appear better than DAIR depending on the distribution of revision types, e.g. "If one-stage give long if two-stage give long" might be better than DAIR if most participants get one-stage revision, but it might be worse if most get two-stage revision. However, no matter the distribution the policy "If one-stage give short, if two-stage give long" is worse than DAIR.
+
+Say instead 
+
+-  DAIR \> 1L + 2S \> 1S + 2L, due to
+
+Our best revision policy remains the same, but there is no policy which is better than just giving DAIR.
+
+So, perhaps the comparison should be based on the maximum (over all duration combinations) of
+
+$$
+\mathbb{E}\left[\ln\frac{o(Y|R=1,S,D_1,D_2)}{o(Y|R=0,S,D_1,D_2)}\bigg | D_1,D_2\right] = \alpha_2 + \alpha_3\mathbb{E}[S] + \alpha_4D_1 + \alpha_5D_2\mathbb{E}[S].
+$$
+
+Thinking through all of this, it seems like it may have implications w.r.t eligibility and inclusion in this comparison. E.g. for those ineligibile for the duration domain, should their data contribute to decisions here or not? Those patients are getting revision + some un-specified duration. Should eligibiltiy/participation in surgery domain require eligibility/participation in duration domain?
+
+### Duration
+
+Given that "revision vs DAIR" requires specification of duration, the decisions here may have implications on the "revision vs DAIR" comparison. May need to consider what the actions are after a decision criteria is met. For example, in two-stage, if we find that long is superior to short, I assume we would give all future participants who receive a two-stage revision the long duration, and we would want these to contribute to "revision vs DAIR" as we may have not yet shown that "one stage + long, two stage + long" is better than DAIR even though we know long is the better duration for any revision type.
+
+For one-stage, if we find short duration is non-inferior, I assume we would still continue to randomise everyone to one of either short or long (or both, unless one is clearly superior?), as still need to include a one-stage duration in the "revision vs DAIR" comparison.
+
+### Choice
+
+These make sense to me.
