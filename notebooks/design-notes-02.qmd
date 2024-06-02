@@ -1,0 +1,303 @@
+---
+title: "More Design Notes"
+date: 2024-02-02
+date-modified: last-modified
+---
+
+
+
+```{r}
+#| label: setup
+#| code-summary: Setup
+
+source("./R/init.R")
+log_info("Called design-notes-02 notebook")
+```
+
+
+This starts with a digression to help frame some background technicalities and then considers the topics that have been discussed recently.
+
+## Associational effects
+
+Start by thinking about the representation of a linear regression versus a logistic regression and what they are aiming to achieve.
+This is easiest via an example so assume we have two independent factors that are predictive of independent continuous and binary outcomes.
+Assume that we are interested in the effect of `A` but `B` is still predictive of the outcome.
+In other words, assume something analogous to a randomised clinical trial setup where `A` corresponds to our set (here just control vs test) of randomised interventions and `B` is some prognostic baseline characteristic (age, sex etc).
+For a continuous outcome, adopt a linear model of the form $\mathbb{E}[Y | A,B] = \mu = \alpha_0 + \alpha_1 A + \alpha_2 B$ with $Y$ normally distributed.
+This model encapsulates our assumptions (unknowable in real life) for the data generating process.
+For the binary outcome adopt a logistic model of the form $g(\mathbb{E}[W | A,B]) = \eta = \beta_0 + \beta_1 A + \beta_2 B$ with $W$ is bernoulli $\eta$ being log-odds of response and $g$ being the logit link function such that the conditional mean of the response is now given by applying the inverse link $\mathbb{E}[W | A,B] = g^{-1}(\beta_0 + \beta_1 A + \beta_2 B)$ with $g^{-1}(z) = \frac{1}{1+\exp(-z)} = \frac{\exp(z)}{1 + \exp(z)} = \text{expit}(z)$.
+This latter representation does make sense for the dichotomous response since what we are interested in is the probability of the event and that happens to equate to the expectation, e.g. the conditional expectation of $W$, given $X = x$:
+
+$$
+\begin{aligned}
+\mathbb{E}(W | X = x) &= \sum_{w \in \mathcal{W} } w Pr(W=w | X = x) \\
+  &= 0 Pr(W = 0 | X = x) + 1 Pr(W = 1 | X = x) \\
+  &= Pr(W = 1 | X = x)
+\end{aligned}
+$$
+
+In other words, the conditional mean equates to the conditional probability; $\mathbb{E}[W | A, B] = g^{-1}(\beta_0 + \beta_1 A + \beta_2 B) = Pr(W = 1 | A, B)$.
+
+A reminder about odds ratios - consider the model of the above logistic regression.
+However, instead of `B` mapping to the presence/absence of a baseline characteristic, think of it as a second set of interventions so that we are now describing a factorial setup (conveniently ignoring the possibility of interactions).
+Both `A` and `B` remain independent dichotomous random variables.
+In a complete factorial experiment we would randomise units to all combinations of `A` and `B` and usually take parameter estimates as the effects (e.g. log-odds-ratios or odds ratios) of interest.
+The exponentiated $\beta_1$ is the multiplicative change in the odds of response associated with moving from the control to the intervention group, with the important caveat that we are holding all other terms constant.
+
+In case you need to see how this works out -
+
+Recall that the logistic regression gives us the probability of the outcome via the inverse logit transformation: $Pr(W = 1 | A, B) = g^{-1}(\beta_0 + \beta_1 A + \beta_2 B)$.
+The odds ratio for a unit change in A (i.e. a shift from control to test) is defined as:
+
+$$
+\begin{aligned}
+OR(a + 1, a | b) &= \frac{\frac{g^{-1}(\beta_0 + \beta_1 (a+1) + \beta_2 b)}{1-g^{-1}(\beta_0 + \beta_1 (a+1) + \beta_2 b)}}{\frac{g^{-1}(\beta_0 + \beta_1 a + \beta_2 b)}{1-g^{-1}(\beta_0 + \beta_1 a + \beta_2 b)}} \\
+ &= \frac{\exp(\beta_0 + \beta_1 (a+1) + \beta_2 b)}{\exp(\beta_0 + \beta_1 a + \beta_2 b)} \\
+ &= \exp(\beta_1)
+\end{aligned}
+$$
+
+The $\beta_2 b$ term cancels out so long as whatever `b` was, was the same for both groups, which is what the *holding all other terms constant* part relates to.
+
+Another way to get to this is to take the difference between the two logged values. 
+We know that when we take the difference between two logged values (e.g. the log-odds of response in the treatment vs control group) this equates to the log of their ratio, hence $\beta_1$ being referred to as the log-odds-ratio.
+
+$$
+\begin{aligned}
+log(\phi) - \log(\psi) = \log(\frac{\phi}{\psi})
+\end{aligned}
+$$
+
+All of the above should be comfortably familiar, but the point was to be explicit for how things are in the context of a conditional logistic regression model and a complete factorial experiment where we have the full set of parameters irrespective of what combination of interventions we are considering.
+
+Now imagine a situation where we remove the secondary intervention factor (`B`) for one level of the primary intervention factor (`A`).
+This is analogous to a simplified version of the current roadmap design where `A` is representing the surgical domain and `B` the duration domain.
+I have whittled things down so that we are only thinking about dair vs one-stage revision for the surgical interventions and 12 vs 6 weeks duration following surgery for those having the one-stage procedure.
+
+Given the above scenario, we might choose to model the groups independently as we do not intervene on antibiotic duration for the dair group and therefore the system has a distinct data generation processes for each group.
+
+For dair we could simply model and estimate the log-odds of response, say $\theta$ estimated from the cohort that receive dair.
+We take it for granted that the dair intervention is well defined in all its supportive components, which may include some flexibility in the duration of antibiotics received but it isn't something we have control over via randomisation.
+Based on the literature it seems like there might be variation in the response under dair conditional on duration but again we are putting that thought on hold for now.
+
+For the one-stage group, we could have
+
+$$
+\begin{aligned}
+\zeta = \gamma_0 + \gamma_1 B
+\end{aligned}
+$$
+
+where the first term is the log-odds of response for those receiving one-stage revision and the second term relates to how the duration of antibiotics impacts that response.
+Based on the earlier details for how to derive the log-odds-ratio, we take the difference between the two groups:
+
+$$
+\begin{aligned}
+\log(OR) = (\gamma_0 + \gamma_1 B) - \theta
+\end{aligned}
+$$
+
+The above means that we need to make some decision on what to do with `B` since it hasn't dropped out of the calculations as it did under the complete design setup discussed previously.
+Specifically, if we set `B = 0` then we get one answer for the effect of one-stage vs dair, namely $\gamma_0 - \theta$ and if we set `B = 1` then we get another answer $\gamma_0+\gamma_1 - \theta$.
+Furthermore, it doesn't matter whether we use independent models or one large joint model, you still have to make a decision or an assumption about how to handle `B`.
+We haven't got a single parameter to represent the odds-ratio and if such a parameter existed it would probably have a fairly unusual interpretation.
+
+One response to the question of what to do with `B` is to average over `B` and to adopt a marginal view of the measure of association.
+This necessitates some assumption regarding the distribution of `B`.
+In a complete factorial 2x2 design where `A` and `B` are randomised 1:1, the distribution of `B` is known. 
+However, this probably doesn't reflect the distribution of `B` in the population.
+
+## Adjustment
+
+Another thing to be aware of is the concept of collapsibility.
+Formally, measures of association are said to be collapsible if the marginal view equates to a weighted average of the strata specific effects.
+In a factorial design, for the comparison of treatments in factor `A`, units can be grouped in stratum based on the assignment of factor `B`.
+Odds-ratios are generally not collapsible and so this should probably be a consideration when using odds-ratios as the population-level summary measure for an estimand.
+
+As an example, and with reference to the earlier model, assume that the OR for the treatment group in `A` relative to the control is 0.5 and for `B` the effect is 0.1.
+Additionally, assume that the probability of response in the strata that receive the reference level for both `A` and `B` is 0.5.
+The following simulates a large sample to simply demonstrate the occurrence of differing views of association dependent on the model that is adopted and thus the need to be clear in what we are trying to target in terms of the causal estimand of interest.
+
+```{r}
+#| label: non-collapsibility-ex-1
+#| code-summary: Odds-ratios are non-collapsible
+#| code-fold: false
+#| results: hold
+
+library(data.table)
+# Large sample size
+N <- 1e6
+
+# 1:1 Randomisation of A and B
+a <- rbinom(N, 1, 0.5)
+b <- rbinom(N, 1, 0.5)
+
+# No interaction by design
+eta <- 0 + log(0.5)*a + log(0.1)*b
+y <- rbinom(N, 1, plogis(eta))
+
+d <- data.table(a, b, eta, y)
+
+# Multivariable logistic regression
+l1 <- glm(y ~ a + b, data = d, family = binomial)
+
+# Conditional probabilities for each treatment group
+d_pred <- CJ(a=0:1,b=0:1)
+d_pred[, p := predict(l1, type = "response", newdata = d_pred)]
+
+# Observed distribution of b (should be 0.5)
+p_b_obs <- mean(b)
+
+# Standardisation to the marginal distribution of b
+d_pred[b == 1, p_b := p_b_obs]
+d_pred[b == 0, p_b := 1-p_b_obs]
+p_a_0 <- d_pred[a == 0, sum(p * p_b)]
+p_a_1 <- d_pred[a == 1, sum(p * p_b)]
+
+# Univariate logistic regression
+l2 <- glm(y ~ a, data = d, family = binomial)
+
+# Measure of association (all odds-ratios)
+
+# Conditional measures
+a_cond <- unname(exp(coef(l1)[2]))
+# Marginal odds ratio computed from standardisation 
+a_marg_std <- p_a_1/(1-p_a_1) / (p_a_0/(1-p_a_0))
+# Marginal odds ratio computed from univariate regression
+a_marg_reg <- unname(exp(coef(l2)[2]))
+
+c(a_cond = a_cond, a_marg_std = a_marg_std, a_marg_reg = a_marg_reg)
+```
+
+The conditional esitmates give the strata level odds-ratios that we anticipate, however, the marginal odds-ratios are a reflection the observed distribution of `B`.
+Clearly, this has implications for the interpretation and generalisability of the results.
+
+## Causal ambiguity
+
+None of the above has considered the causal overlay, which is perhaps the primary motivation for running a randomised clinical trial - we want to be able to say that a change in the response was *caused* by an intervention rather than simply being associated with it.
+Some background on a popular causal framework follows.
+
+The Neyman-Rubin (causal) model introudces potential outcomes as a means to specify the causal effects.
+For a treatment with two levels (e.g. control = 0 vs active = 1), the outcome has two possible (potential) values $Y_i(0)$ and $Y_i(1)$ for each experimental unit, $i$.
+That is, a hypothetical world is posed where the outcomes under both the control and active treatment are available to us.
+Two assumptions are implicit in the definition of potential outcomes:
+
+1. no interference - the potential outcome for unit $i$ does not depend on any other units' treatment
+2. consistency^[Has no relation with statistical consistency.] - if the treatment is $T$ then the observed outcome is equal to the potential outcome under $T$
+
+Using this notation we can define a unit level effect as say the difference between the potential outcomes $\tau_i = Y_i(1) - Y_i(0)$. 
+The problem is that we can never observe both the response to both treatment levels on a single unit.
+We therefore resort to group level effects for a collection of units by defining an average treatment effect $\tau = \mathbb{E}(Y_i(1) - Y_i(0))$.
+Unlike the unit level effect, the average treatment effect can be identified under certain conditions and then estimated from the observed data.
+
+One statistical solution^[Holland (1986) talks about others.] to the identification problem above (identification is the technical term for being able to produce a statistical estimand for a given causal estimand) is to randomly assign treatments to the experimental units so that the probability of assignment does not depend on anything other than the flip of a coin.
+This implies that the potential outcomes will be independent of the treatment which then means that the expected value of a potential outcome is equal to the expected value of the potential outcome conditioned on the treatment status, e.g. $\mathbb{E}(Y(0)) = \mathbb{E}(Y(0) | T = 0)$.
+Formally, this is referred to as the exchaneability assumption and if the consistency assumption also  holds then we can resolve the causal quantity into something we can observe and estimate, e.g. $\mathbb{E}(Y(0) | T = 0) = \mathbb{E}(Y | T = 0)$.
+Of course, given that the conditional expection is defined as $\mathbb{E}(Y | T = 0) = \sum_{y\in \mathcal{Y}} y Pr(Y | T = 0) = \sum_{y\in \mathcal{Y}} y \frac{Pr(Y , T = 0)}{Pr(T = 0)}$, there needs to be a non-zero probability of assigning $T$, otherwise the quantities that we require will not be defined mathematically.
+Models will work around this, but we are taking a leap of faith (sometimes an unjustifiable one) in order to believe what they are telling  us.
+This final assumption is known as positivity - we need to have a non-zero probability of treatment assignment for all treatments.
+
+So, if our trial has a single domain `A` which is simply looking at dair (0) vs revision (1) and the outcome were binary then we might posit the causal effect of interest (causal estimand) as the ATE.
+For a binary outcome amounts to a risk difference, but we are not restricted to this estimand specification, it is just convenient and simple for the purposes of the discussion.
+Assuming that our modelling approach remains logistic regression we would have
+
+$$
+\begin{aligned}
+\tau &= \mathbb{E}(Y(1)) -  \mathbb{E}(Y(0)) \\
+     &= \mathbb{E}(Y(1)|A = 1) -  \mathbb{E}(Y(0)|A = 0) \\
+     &= \mathbb{E}(Y|A = 1) -  \mathbb{E}(Y|A = 0) \\
+     &= g^{-1}(\beta_0 + \beta_1) - g^{-1}(\beta_0)
+\end{aligned}
+$$
+
+which we can work with so long as the above identification assumptions are met.
+This would mean that what we get from our model can be given a causal interpretation.
+
+If we have two interventional factors, e.g. surgical (`A`) and duration (`B`) then we have a larger number of causal estimands to consider under a complete 2x2 factorial design.
+The potential outcome for a given unit is now usually specified as $Y_i(a_i, b_i)$ where $a_i$ and $b_i$ constitute specific levels of a treatment combination for unit $i$.
+For concreteness, take the levels for `A` to be dair and one-stage and the levels for `B` to be 12wks and 6wks so that $Y(1,0)$ would denote the potential outcome under dair and 12wks.
+A consequence of this setup is that we can no longer meaningfully discuss $Y(A)$ in isolation as it omits a component of the treatment and is therefore inconsistent in the sense that $Y(1)$ might refer to either $Y(1,0)$ or $Y(1,1)$.
+
+For the factorial design, the exchangeability/unconfoundedness assumption required for identification needs to consider both factors, i.e. we need $(Y(a,b))_{a\in\mathcal{A},b\perp\mathcal{B}} \perp (A,B)$ which can (again) be achieved via randomisation.
+The final assumption of positivity is also extended so that we require a non-zero probability of assignment for all treatment combinations $Pr(A = a, B = b) > 0$ for all $a \in \mathcal{A}$ and $b \in \mathcal{B}$.
+If you are going to adhere strictly to the framework, then I think this final point rules out the use of fractional factorial designs.
+
+As mentioned above, with the factorial design we can consider a variety of causal estimands.
+In our case, these might hypothetically include:
+
+1. the effect of one-stage vs dair under 12wks duration
+2. the effect of one-stage vs dair under 6wks duration
+3. the effect of one-stage vs dair under usual practice for duration
+4. the effect of one-stage + 12wks vs dair + 6wks
+
+For the sake of argument, pick (1) and use an analogous approach to earlier to identify the effect:
+
+$$
+\begin{aligned}
+\tau &= \mathbb{E}(Y(1,0)) -  \mathbb{E}(Y(0,0)) \\
+     &= \mathbb{E}(Y(1,0)|A = 1,B=0) -  \mathbb{E}(Y(0,0)|A = 0,B=0) \\
+     &= \mathbb{E}(Y|A = 1,B=0) -  \mathbb{E}(Y|A = 0,B=0) \\
+     &= g^{-1}(\beta_0 + \beta_1) - g^{-1}(\beta_0)
+\end{aligned}
+$$
+
+using the same model specification ($\mathbb{E}[W | A,B] = g^{-1}(\beta_0 + \beta_1 A + \beta_2 B)$) as was used earlier and where $\tau$ now represents a combination effect.
+However, while $Y(A)$ is ill-defined in the factorial setting, we can still address effects within a single factor through marginalisation:
+
+$$
+\begin{aligned}
+\psi &= \mathbb{E}_B[\mathbb{E}[(Y(1,B) - Y(0,B)]]
+\end{aligned}
+$$
+
+where $\psi$ is the marginal effect for the selected levels of $A$ although this still clearly depends on the distribution of `B` and therefore might not generalise well to the super population if the measure of association is non-collapsible (see earlier).
+The central point that I am trying to get across here is that under a complete factorial design we can provide a clear specification of the causal estimands, we can identify the associated statistical estimands and this allows us to estimate effects of interest.
+
+I do not believe that we have this level of clarity or unification within roadmap.
+Returning to the current simplified roadmap setup where we have dair vs one-stage and for one-stage we have 12 vs 6 wks, we have
+
++ dair + 12 wks: $Y(0,0)$
++ one + 12 wks: $Y(1,0)$
++ one + 6 wks: $Y(1,1)$
+
+$Y(0,1)$ is an impossibility by design even though it exists in principle.
+This looks somewhat like a violation in the positivity assumption.
+Additionally, $Y(0,0)$ is actually never formally assigned to any unit.
+What we actually have is $Y(0,U)$ where $U$ denotes whatever usual practice is, or perhaps a recommendation of usual practice.
+While we expect (and might assume) that $Y(0,U) := Y(0,0)$ but that does not appear to be guaranteed.
+We can potentially make assumptions that might help us with all of the above within the context of a model but I am currently uncertain as to whether the causal interpretation can truly be resolved under the present specification.
+
+The above simplification is obviously (and purposefully a bit inaccurate) as we currently specify that the surgical domain randomises dair vs revision where the revision intervention is then selected to be either one-stage or two-stage by a clinician based on unobserved variables.
+
+Considering a design where only the surgical domain was included, this would also seem to violate the consistency assumption.
+Recall that consistency connects the potential outcome with the observed data.
+It is defined as $Y_i = Y_i(x)$ if $x = x_i$; in words - the observed outcome for a unit equals the potential outcome for that unit with the intervention level set to the exposure that the unit received.
+However, given that what we observe under revision is consequence of either a one-stage or two-stage procedure, then there are two distinct values that singular $Y_i(1)$ could take on, either $Y_{one}$, the observed outcome under a one-stage revision or $Y_{two}$, the observed outcome under a two-stage revision.
+The argument against this would be that the meaning of revision simply maps to a one or two-stage procedure and the distinction does not matter.
+I am still not sure if this is completely reasonable.
+
+# Note
+
+I think, at best, we have multiple, quite distinct, experiments running that have differing goals.
+For example, one concerns a surgical intervention and the duration of antibiotics following the first stage operation and the choice of an antibiotic is conceptually relevant to all surgical interventions and units with the correct bacterial profile.
+Another concerns a surgical intervention, the duration of antibiotics following the first stage operation and the duration of antibiotics following the second stage operation and is relevant only to the population that are exposed to a two-stage procedure and so on.
+
+One thing I am really stuck on is finding a clear representation of the potential outcomes that is applicable to a design as in a form that would address the research questions.
+One possibility might be along the lines of $Y(a, b_1, b_2, c)$ where $a$, $b_1$, $b_2$ and $c$ denote the factors (with duration split as detailed above) that takes a factorial perspective, but in the context of dair and one-stage revision, obviously some of the elements are not applicable.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
