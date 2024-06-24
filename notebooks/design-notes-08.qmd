@@ -1,0 +1,28 @@
+---
+title: "Missingness"
+date: today
+date-modified: last-modified
+---
+
+
+
+```{r, echo = F}
+#| label: setup
+#| code-summary: Setup
+
+source("./R/init.R")
+log_info("Called design-notes-06 notebook")
+```
+
+There are three types of missingness commonly defined - missing at random, missing not at random, missing 
+
+How ITT is impacted by missingness
+
+
+
+
+
+
+
+
+

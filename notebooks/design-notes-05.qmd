@@ -1,0 +1,702 @@
+---
+title: "Late silo question"
+date: today
+date-modified: last-modified
+---
+
+```{r, echo = F}
+#| label: setup
+#| code-summary: Setup
+
+source("./R/init.R")
+log_info("Called design-notes-05 notebook")
+```
+
+For the surgery question, we can focus on the late silo units.
+The following DAG includes surgery, antibiotic duration, extended prophylactic and prohphylaxis domain and knee/hip joint.
+Baseline clinician preferences are assumed to take primacy in selection of surgery type etc.
+This is just to represent the approximate structure, not to replicate the exact data generating process.
+Preference for surgery primarily impacts those assigned to revision but would also be applicable for a patient that switches treatment from dair (e.g. for loose joint).
+Preference for antibiotic duration comes into play for dair and two-stage patients since these units are never randomly assigned to duration.
+For example, if a unit received dair, then the preference would lead to some duration of backbone antibiotic therapy.
+Analogously, preference for extended prophylactic deals with the situation of where the unit didn't enter the extended prophylaxis domain even though they received a two-stage revision; here prophylaxis would be determined by the clinician assessment of what is best.
+
+Only a joint by surgery interaction is explicitly included (denoted with $A \times J$).
+However, there may be others that are of interest.
+
+We talked about direct paths, but you cannot define selection as a mediator because $Y(a,m)$ would need to be defined for both $a=0$ and $a=1$ and it is only makes sense in the context of the latter.
+Therefore there are no direct paths.
+
+```{r, echo = F}
+#| label: fig-dag1
+#| fig-cap: "Late silo units DAG (extension incorporating interactions on the DAG follows the proposal by Attia (https://doi.org/10.1093/ije/dyac126))"
+#| fig-cap-location: bottom
+#| fig-height: 9
+#| out-width: 90%
+
+dag1 <- dagify(
+  axj ~ sa + j,
+  cs ~ c + uc,
+  sa ~ a + ua,
+  sd1 ~ d1 + sa + ud1,
+  sd2 ~ d2 + sa + ud2,
+  y ~ sd1 + sd2 + sa + c + cs + ua + ud1 + ud2 + j + axj,
+  exposure = "a",
+  outcome = "y"
+)
+
+
+coordinates(dag1) <- list(
+  x = c(uc = 0, 
+        c = 0, cs = 1,  
+        axj = 3, 
+        j = 4, 
+        a = 0, sa = 1,
+        ua = 0,
+        d1 = 0, sd1 = 2, y = 4,
+        ud1 = 0 ,
+        ud2 = 0,
+        d2 = 0, sd2 = 1.5
+        ),
+  y = c(uc = 13,
+        c = 11, cs = 12,
+        axj = 9,
+        j = 9,
+        a = 8, sa = 2, 
+        ua = 6,
+        # d1xj = 2, 
+        d1 = -1, sd1 = 0, y = 1, 
+        ud1 = -3, 
+        d2 = -7, sd2 = -6,
+        ud2 = -10)
+)
+
+d_dag1 <- tidy_dagitty(dag1) |>
+  dag_label(labels = c(
+    c("a" = "expt\nsurg",
+             "sa" = "surg\ntype",
+             "ua" = "surg\npref",
+             "c" = "expt\nchoice",
+             "cs" = "choice",
+             "uc" = "choice\npref",
+             "j" = "joint",
+             "axj" = "axj",
+             "d1" = "expt\ndurn",
+             "sd1" = "durn",
+             "ud1" = "durn\npref",
+             "ud2" = "proph\npref",
+             "d2" = "expt\nproph",
+             "sd2" = "proph",
+             "y" = "trt\nsuccess"
+             )
+  )) 
+
+ggplot(data = d_dag1, 
+       aes(x = x, y = y, xend = xend, yend = yend)) +
+  
+  geom_dag_edges_diagonal(
+    curvature = 1,
+    edge_colour = "grey",
+    edge_width = 0.2,
+    start_cap = ggraph::circle(5, 'mm'),
+    end_cap = ggraph::circle(6, 'mm')
+  ) +
+  # prevent clipping if labels fall outside frame
+  coord_cartesian(clip = "off") +
+  
+  geom_dag_label_repel(aes(label = label),
+                       # point.size = NA,
+                       hjust = 0.5,
+                       col = "black",
+                       force = 0,
+                       size = 2.5,
+                       show.legend = FALSE
+  ) +
+  # geom_dag_point(size = 3) +
+  
+  # expand scales to make room for labels
+  scale_x_continuous(expand = expansion(mult = 0.15)) +
+  scale_y_continuous(expand = expansion(mult = 0.15)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+
+```
+
+\newpage
+
+Throughout, I will denote:
+
++ assigned surgery: $A$
++ preferred surgery: $U_A$
++ received surgery: $S_A$
++ assigned duration: $D1$
++ preferred duration: $U_{D1}$
++ received duration: $S_{D1}$
++ assigned prohphylaxis: $D2$
++ preferred prohphylaxis: $U_{D2}$
++ received prohphylaxis: $S_{D2}$
++ assigned choice: $C$
++ preferred prohphylaxis: $U_{C}$
++ received prohphylaxis: $S_{C}$
+
+The **total** effect of surgery ($A$) on outcome ($Y$) is identified.
+However, the total effect is the effect of treatment **through all paths**, so it amounts to a comparison of surgery plus some possible antibiotic duration and extended prophylaxis, i.e. all the open paths below.
+
+```{r}
+do.call(cbind, paths(dag1))
+```
+
+```{r, eval = T, echo = F}
+#| label: fig-dag2
+#| fig-cap: "Open paths from expt surgery (a) to outcome (y)"
+#| fig-cap-location: bottom
+#| fig-height: 7
+#| out-width: 90%
+
+ggdag_paths(dag1,
+            node_size = 10,
+            text_size = 3,
+            node = F,
+            text_col = "black") +
+
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+```
+
+Even though this picture doesn't do justice to the complexity inherent in roadmap, it is still probably a bit too involved for a demo.
+We can, however, simplify things down while retaining the essential elements of the interpretational issues that we are grappling with and trying to make clear.
+
+Assume the following is the simplified system we are dealing with, which basically just drops joint nodes and the path through extended prophylaxis.
+
+```{r, echo = F}
+#| label: fig-dag3
+#| fig-cap: "Simplified setting"
+#| fig-cap-location: bottom
+#| fig-height: 6
+#| out-width: 90%
+
+dag1 <- dagify(
+  sa ~ a + ua,
+  sd1 ~ d1 + sa + ud1,
+  y ~ sd1 + sa + ua + ud1 , 
+  exposure = "a",
+  outcome = "y"
+)
+
+
+coordinates(dag1) <- list(
+  x = c(axj = 2, 
+        a = 0, sa = 1,
+        ua = 0,
+        d1 = 0, sd1 = 1.5, y = 4,
+        ud1 = 0 
+        ),
+  y = c(axj = 8,
+        a = 9, sa = 6, 
+        ua = 6,
+        d1 = 4, sd1 = 3, y = 4, 
+        ud1 = 0)
+)
+
+d_dag1 <- tidy_dagitty(dag1) |>
+  dag_label(labels = c(
+    c("a" = "expt\nsurg",
+             "sa" = "surg\ntype",
+             "ua" = "surg\npref",
+             "d1" = "expt\ndurn",
+             "sd1" = "durn",
+             "ud1" = "durn\npref",
+             "y" = "trt\nsuccess"
+             )
+  )) 
+
+ggplot(data = d_dag1, 
+       aes(x = x, y = y, xend = xend, yend = yend)) +
+  
+  geom_dag_edges_diagonal(
+    curvature = 1,
+    edge_colour = "grey",
+    edge_width = 0.2,
+    start_cap = ggraph::circle(5, 'mm'),
+    end_cap = ggraph::circle(7, 'mm')
+  ) +
+  # prevent clipping if labels fall outside frame
+  coord_cartesian(clip = "off") +
+  
+  geom_dag_label_repel(aes(label = label),
+                       # point.size = NA,
+                       hjust = 0.5,
+                       col = "black",
+                       force = 0,
+                       size = 2.5,
+                       show.legend = FALSE
+  ) +
+  # geom_dag_point(size = 3) +
+  
+  # expand scales to make room for labels
+  scale_x_continuous(expand = expansion(mult = 0.15)) +
+  scale_y_continuous(expand = expansion(mult = 0.15)) +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        panel.grid.major = element_blank(), 
+        panel.grid.minor = element_blank())
+
+```
+
+
+```{r, eval = T, echo = F}
+#| label: fig-dag4
+#| fig-cap: "Open paths from expt surgery (a) to outcome (y) in simplified setting"
+#| fig-cap-location: bottom
+#| fig-height: 4
+#| out-width: 90%
+
+ggdag_paths(dag1,
+            node_size = 10,
+            text_size = 3,
+            node = F,
+            text_col = "black") +
+
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+```
+
+```{r, eval = T}
+n = 1e6
+get_data <- function(
+    n = 1e6,
+    f1 = function(a, ua, sa, d1, ud1, sd1){
+      0.35 + 0.1*ua + 0.007*sd1 - 0.004*ud1
+      },
+    f2 = function(a, ua, sa, d1, ud1, sd1){
+      0.35 + 0.1*ua + 0.0*(sa==1) + 0*(d1 == 12) - 0.004*ud1
+      },
+    f3 = function(a, ua, sa, d1, ud1, sd1){
+      0.35 + 0.1*ua + 0.0*(sa==2) + 0*sd1 - 0.004*ud1
+      }
+    ){
+  
+  # assigned surgery
+  a <- rbinom(n, 1, 0.5)
+  # under receipt of rev, 30% prefer to use two-stage
+  ua <- rbinom(n, 1, 0.3)
+  
+  # assigned duration
+  d1 <- sample(c(6,12), n, T)
+  # pref for duration of therapy after first op is towards longer durn
+  ud1 <- sample(seq(0, 12, by = 2), n, T, 1:7/sum(1:7))
+  
+  # dair = 0, one = 1, two = 2
+  sa <- rep(NA, n)
+  # assume full adherence in dair group
+  sa[a == 0] <- 0
+  
+  # assigned to rev:
+  # when preference is for one-stage, 80% get one stage
+  idx <- which(a == 1 & ua == 0); 
+  sa[idx] <- sample(1:2, length(idx), T, prob = c(0.8, 0.2))
+  # when preference is for two-stage, 90% get two stage
+  idx <- which(a == 1 & ua == 1); 
+  sa[idx] <- sample(1:2, length(idx), T, prob = c(0.1, 0.9))
+  # prop.table(table(sa))
+  
+  # duration of antibiotic following first procedure
+  sd1 <- rep(NA, n)
+  # for those getting dair, duration after first opn is exactly per pref
+  sd1[sa == 0] <- ud1[sa == 0]
+  # assume full adherence in one-stage group
+  # 6 wk vs 12 wk
+  sd1[sa == 1] <- d1[sa == 1]
+  # for those getting two-stage, duration after first opn is per pref
+  sd1[sa == 2] <- ud1[sa == 2]
+  
+  d <- data.table(a, ua, sa, d1, ud1, sd1)
+  
+  # outcome
+  
+  # those receiving dair:
+  d[sa == 0, p_y := f1(a, ua, sa, d1, ud1, sd1)]
+  d[sa == 0, y := rbinom(.N, 1, prob = p_y)]
+  
+  # receiving one-stage
+  d[sa == 1, p_y := f2(a, ua, sa, d1, ud1, sd1)]
+  d[sa == 1, y := rbinom(.N, 1, prob = p_y)]
+  
+  # under two-stage
+  # idx <- which(sa == 2 & sd2 == 7)
+  # (sa[idx]==2) to convert to indicator variable.
+  d[sa == 2, p_y := f3(a, ua, sa, d1, ud1, sd1)]
+  d[sa == 2, y := rbinom(.N, 1, prob = p_y)]
+  
+  # idx <- which(sa == 2 & sd2 == 12)
+  # p_y[idx] <- 0.30 + 0.05*ua[idx]+ 0.02*sd1[idx] + 0.05
+  # y[idx] <-  rbinom(length(idx),1, prob = p_y[idx])
+ 
+  d
+}
+
+
+d <- get_data(n = 1e6,
+              f1 = function(a, ua, sa, d1, ud1, sd1){
+                0.35 + + 0.1*ua + 0.007*sd1 - 0.004*ud1
+                },
+              f2 = function(a, ua, sa, d1, ud1, sd1){
+                0.35 + + 0.1*ua + 0.0*(sa==1) + 0*(d1 == 12) - 0.004*ud1
+                },
+              f3 = function(a, ua, sa, d1, ud1, sd1){
+                0.35 + + 0.1*ua + 0.0*(sa==2) + 0*sd1 - 0.004*ud1
+                })
+```
+
+Based on the simplified DAG and some arbitrary assumptions about effect sizes (see above code and below) we can generate simulated data.
+
+<!-- Note - need to include mathjax script in header, see _quarto.yml in order for labels to appear -->
+
+$$
+\small
+\begin{aligned}
+\mathbb{P}(Y | A = DAIR, U_A = u_a, S_{D1} = s_{d_1}, U_{D1} = u_{d1})  &= 0.35 + 0.1u_a + 0.07s_{d1} - 0.04u_{d1} \\
+\mathbb{P}(Y | A = 1, U_A = u_a, D_1 = d_1, S_{D1} = d_1, U_{D1} = u_{d1})  &= 0.35 + 0.1u_a + 0.0 d_1 + 0.0 s_{d1} - 0.04u_{d1}  \\
+\mathbb{P}(Y | A = 2, U_A = u_a, S_{D1} = s_{d_1}, U_{D1} = u_{d1})  &= 0.35 + 0.1u_a + 0.0 s_{d1} - 0.04u_{d1} 
+\end{aligned}
+\normalsize
+$$
+
+\newpage
+
+Loosely, the above encodes the following:
+
++ For those assigned and adhered to DAIR, increasing backbone duration ($S_{D1}$) via clinical preference has benefit on the outcome. A preference ($U_A$) for two-stage (had revision been assigned) increases probability of success (perhap since indicative of healthier unit). A preference ($U_{D1}$) for longer antibiotics reduces the likelihood of success (perhaps since indicative of poorer health).
++ For those assigned and adhered to revision (receiving one-stage), revision does nothing relative to DAIR, increasing backbone duration via random assignment similarly does nothing but the preferences retain their effects as above.
++ For those assigned and adhered to revision (receiving two-stage), revision does nothing relative to DAIR, increasing backbone duration via random assignment similarly does nothing but the preferences retain their effects as above.
+
+The main things are that we are assuming no effect of revision and no effect of duration of antibiotics in the revision group.
+
+Simulating the above translates to the true probabilities of success with the various groups being as follows:
+
+```{r, eval = T, echo = F}
+#| label: fig-het-prob1
+#| fig-cap: "Prob trt success by duration and surgery type"
+#| fig-cap-location: bottom
+#| fig-height: 6
+#| fig-width: 6
+#| out-width: 80%
+
+
+d_fig <- unique(d[, .(a, ua, sa, d1, ud1, sd1, p_y, y)])
+d_fig[a == 0, lab := "DAIR"]
+d_fig[a == 1, lab := "REV"]
+d_fig[sa == 0, type := "DAIR"]
+d_fig[sa == 1, type := "REV(ONE)"]
+d_fig[sa == 2, type := "REV(TWO)"]
+
+d_fig[ua == 0, pref_surg := "one"]
+d_fig[ua == 1, pref_surg := "two"]
+
+ggplot(d_fig, aes(x = sd1, y = p_y, group = lab, col = ud1, shape = pref_surg)) +
+  geom_point() +
+  scale_x_continuous("AB Duration (wks)", breaks = seq(0, 12,by = 2)) +
+  scale_y_continuous("Pr(Y)") +
+  scale_color_continuous("Duration pref") +
+  scale_shape_discrete("Surgical pref") +
+  facet_wrap(.~type) +
+  theme(legend.position="bottom", legend.box="vertical", legend.margin=margin())
+
+```
+
+\newpage
+
+According to the assumed DAG, we can identify the direct effect of surgery on the outcome if we condition on both surgical type received and surgical preference.
+The reason that we need to condition on both is that when we condition on surgical type (a collider) this opens a path through surgical preference which we need to close off.
+
+After that, we can code up a model to estimate the direct effect of revision.
+Here I use a gaussian model for convenience, the codes for the model and a sim follow:
+
+```{r}
+#| class-output: stan
+#| echo: false
+
+cat(readLines("stan/normal-demo-04.stan"), sep = "\n")
+```
+
+
+
+```{r, eval = F, echo = T}
+m1 <- cmdstanr::cmdstan_model("stan/normal-demo-04.stan")
+
+nsim <- 100
+
+mu <- unlist(mclapply(1:nsim, FUN = function(i){
+  
+  d <- get_data(n = 200,
+              f1 = function(a, ua, sa, d1, ud1, sd1){
+                0.35 + 0.1*ua + 0.007*sd1 - 0.004*ud1
+                },
+              f2 = function(a, ua, sa, d1, ud1, sd1){
+                0.35 + 0.1*ua + 0.0*(sa==1) + 0*(d1 == 12) - 0.004*ud1
+                },
+              f3 = function(a, ua, sa, d1, ud1, sd1){
+                0.35 + 0.1*ua + 0.0*(sa==2) + 0*sd1 - 0.004*ud1
+                })
+  
+  
+  X <- cbind(d$a, d$ua, d$sa == 1, d$sa == 2)
+
+  ld <- list(
+    N = nrow(d), 
+    y = d$y,
+    X = X,
+    prior_only = 0,
+    mu_a0 = 0.5,
+    mu_b = 0,
+    sd_a0 = 0.5,
+    sd_b = 1,
+    r_se = 1
+  )    
+  f1 <- m1$sample(
+      ld, iter_warmup = 1000, iter_sampling = 2000,
+      parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
+      max_treedepth = 10)
+  
+  # d_post_1 <- data.table(f1$draws(variables = c("rd"), format = "matrix"))
+  # d_post_1 <- melt(d_post_1, measure.vars = names(d_post_1))
+  # mean(d_post_1$value)
+  
+  d_post_1 <- data.table(f1$draws(variables = c("b[1]"), format = "matrix"))
+  mean(d_post_1$`b[1]`)
+  
+}, mc.cores = 6))
+
+d_smry <- data.table(mu)
+
+
+```
+
+Running the sim gives the following distribution for the posterior means for the causal effect of interest, namely a population level risk difference.
+
+```{r, eval = F, echo = F}
+#| label: fig-hist1
+#| fig-cap: "Distribution of posterior means for risk difference"
+#| fig-cap-location: bottom
+#| fig-height: 4
+#| fig-width: 4
+#| out-width: 80%
+
+
+ggplot(d_smry, aes(x = mu)) +
+  geom_histogram(bins = 15, fill = "grey", col = "black") +
+  geom_vline(xintercept = 0, col = "red")
+
+```
+
+
+\newpage
+
+Repeat the sim with a non-zero effect.
+
+```{r, eval = F, echo = T}
+m1 <- cmdstanr::cmdstan_model("stan/normal-demo-04.stan")
+
+nsim <- 100
+
+mu <- unlist(mclapply(1:nsim, FUN = function(i){
+  
+  d <- get_data(n = 200,
+              f1 = function(a, ua, sa, d1, ud1, sd1){
+                0.35 + 0.15*a + 0.1*ua + 0.007*sd1 - 0.004*ud1
+                },
+              f2 = function(a, ua, sa, d1, ud1, sd1){
+                0.35 + 0.15*a + 0.1*ua + 0.0*(sa==1) + 0*(d1 == 12) - 0.004*ud1
+                },
+              f3 = function(a, ua, sa, d1, ud1, sd1){
+                0.35 + 0.15*a + 0.1*ua + 0.0*(sa==2) + 0*sd1 - 0.004*ud1
+                })
+  
+  
+  X <- cbind(d$a, d$ua, d$sa == 1, d$sa == 2)
+
+  ld <- list(
+    N = nrow(d), 
+    y = d$y,
+    X = X,
+    prior_only = 0,
+    mu_a0 = 0.5,
+    mu_b = 0,
+    sd_a0 = 0.5,
+    sd_b = 1,
+    r_se = 1
+  )    
+  f1 <- m1$sample(
+      ld, iter_warmup = 1000, iter_sampling = 2000,
+      parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
+      max_treedepth = 10)
+  
+  # d_post_1 <- f1$draws(variables = c("b[1]"), format = "matrix")
+  # hist(d_post_1[, 1])
+  # abline(v = 0.15, col = 2, lwd = 2)
+  
+  d_post_1 <- data.table(f1$draws(variables = c("b[1]"), format = "matrix"))
+  mean(d_post_1$`b[1]`)
+  
+}, mc.cores = 6))
+
+d_smry <- data.table(mu)
+
+
+```
+
+
+
+```{r, eval = F, echo = F}
+#| label: fig-hist2
+#| fig-cap: "Distribution of posterior means for risk difference"
+#| fig-cap-location: bottom
+#| fig-height: 4
+#| fig-width: 4
+#| out-width: 80%
+
+
+ggplot(d_smry, aes(x = mu)) +
+  geom_histogram(bins = 15, fill = "grey", col = "black") +
+  geom_vline(xintercept = 0.15, col = "red")
+
+```
+
+\newpage
+
+# Archive
+
+This is just for historic reference and to act as a scratch pad.
+It can be ignored.
+
+
+By way of reference, here is the dag that TS provided a while ago:
+
+![TS DAG](../fig/ts-dag.png){width=80%}
+
+used to demonstrate the difficulties associated with establishing the direct effect of revision.
+
+
+
+```{r, eval = F}
+adjustmentSets(dag1, exposure = "a", outcome = "y", effect = "direct")
+
+
+d_smry <- d[, .(y = sum(y), n = .N), keyby = .(a, ua, sa)]
+
+d[, mean(p_y), keyby = a]
+d[, mean(p_y), keyby = a][a == 1, V1] - d[, mean(p_y), keyby = a][a == 0, V1]
+
+# or do it by weighting each relevant group.
+d_tru1 <- rbind(
+  d[a==0, .(w = .N/nrow(d[a==0]), p_y = unique(p_y)), keyby = .(a, ua, sa, sd1)],
+  d[a==1, .(w = .N/nrow(d[a==1]), p_y = unique(p_y)), keyby = .(a, ua, sa, sd1)]
+)
+d_tru1[, .(mu = sum(w*p_y)), keyby = a][a == 1, mu] - d_tru1[, .(mu = sum(w*p_y)), keyby = a][a == 0, mu] 
+
+# observed
+d[, mean(y), keyby = a][a == 1, V1] - d[, mean(y), keyby = a][a == 0, V1]
+```
+
+
+Priors.
+Posterior predictive doesn't make a massive amount of sense in this setup.
+Just using normal model for convenience.
+
+```{r, eval = F}
+#| label: fig-priors
+#| fig-cap: "Priors"
+#| layout-ncol: 2
+
+m1 <- cmdstanr::cmdstan_model("stan/normal-demo-04.stan")
+
+d <- get_data(n = 200,
+              f1 = function(a, ua, sa, d1, ud1, sd1){
+                0.35 + 0.1*ua + 0.007*sd1 - 0.004*ud1
+                },
+              f2 = function(a, ua, sa, d1, ud1, sd1){
+                0.35 + 0.1*ua + 0.0*(sa==1) + 0*(d1 == 12) - 0.004*ud1
+                },
+              f3 = function(a, ua, sa, d1, ud1, sd1){
+                0.35 + 0.1*ua + 0.0*(sa==2) + 0*sd1 - 0.004*ud1
+                })
+  
+  
+X <- cbind(d$a, d$ua, d$sa == 1, d$sa == 2)
+
+ld <- list(
+  N = nrow(d), 
+  y = d$y,
+  X = X,
+  prior_only = 1,
+  mu_a0 = 0.5,
+  mu_b = 0,
+  sd_a0 = 0.12,
+  sd_b = 0.02,
+  r_se = 3
+)  
+f1 <- m1$sample(
+    ld, iter_warmup = 1000, iter_sampling = 2000,
+    parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F, 
+    max_treedepth = 10)
+
+m_par <- f1$draws(variables = c("a0", "b"), format = "matrix")
+# includes intercept
+m_X <- as.matrix(unique(d[, .(1, a, ua, sa1 = as.numeric(sa == 1), sa2 = as.numeric(sa == 2))]))
+m_se <- f1$draws(variables = c("s_e"), format = "matrix")
+m_fig <- m_par %*% t(m_X) 
+
+d_fig <- data.table(m_fig)
+d_fig <- melt(data.table(d_fig), measure.vars = names(d_fig))
+d_fig <- d_fig[
+  , .(q_025 = quantile(value, prob = 0.001), 
+      q_975 = quantile(value, prob = 0.999)), keyby = variable]
+
+
+p1 <- ggplot(d_fig, aes(x = variable)) +
+  geom_linerange(aes(ymin = q_025, ymax = q_975)) +
+  geom_hline(yintercept = c(0,1))  +
+  ggtitle("Prior on proportion")
+
+m_y_rep <- t(do.call(rbind, lapply(1:ncol(m_fig), function(i){
+  rnorm(nrow(m_par), m_fig[, i], m_se[,1])    
+})))
+
+
+d_y_rep <- data.table(m_y_rep)
+d_fig <- melt(data.table(d_y_rep), measure.vars = names(d_y_rep))
+d_fig <- d_fig[
+  , .(q_025 = quantile(value, prob = 0.001), 
+      q_975 = quantile(value, prob = 0.999)), keyby = variable]
+
+
+p2 <- ggplot(d_fig, aes(x = variable)) +
+  geom_linerange(aes(ymin = q_025, ymax = q_975)) +
+  geom_hline(yintercept = c(0,1))   +
+  ggtitle("Posterior predictive y_rep")
+
+p1
+p2
+```
+
+

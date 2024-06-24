@@ -1,0 +1,294 @@
+---
+title: "Estimands, ITT and PP"
+date: today
+date-modified: last-modified
+---
+
+
+
+```{r, echo = F}
+#| label: setup
+#| code-summary: Setup
+
+source("./R/init.R")
+log_info("Called design-notes-04 notebook")
+```
+
+The ICH E9(R1) addendum on estimands and sensitivity analysis in clinical trials (estimand framework) provides an alternative to the traditional approach of specifying treatment effects.
+A more explicit definition of the causal effect of interest is advocated, the goal being to measure how the outcome of an intervention compares to the outcome that would have happened to the same units under a different intervention.
+As we never see the unit level outcomes under all interventions, clinical trials employ randomisation as the structural mechanism to enable these effects to be identified.
+The causal aspects are therefore linked with randomised assignment rather than received treatment.
+It is, however, assumed that units will follow the assigned treatment and therefore, in the ideal case, the causal relationship can be extended to the actual taking of treatment.
+Intercurrent event (unit level events that occur after randomisation that alter the interpretation or existence of the outcome) can compromise the causal effects and thus need to be considered in the estimand definitions.
+The specification of the treatment regimen is critical in understanding what constitutes an IE.
+
+The components of an estimand are: treatment condition, population, outcome, intercurrent event handling and summary measure.
+In English, these correspond to "what is the trial comparing?", "what people/condition are we trying to help?", "what is being measured?", "how do we intend to handle treatment events that disrupt the existence or interpretation of the outcome?" and "what statistical measure is going to be used?"
+
+Even though the estimand framework never refers to it directly, it has causal inference very much in mind and therefore the notation used by the potential outcomes framework is a natural way to define the causal effects that are being targeted by the estimands.
+
+As a way to give some insight into the concepts and notation inherent in the estimand perspective, consider a simple two-arm randomised trial.
+The trial has units $i = 1 \dots n$ where each can be assigned to either control $a=0$ or test $a = 1$.
+Take $Y_i$ to denote an observable binary response variable of interest and $M_i$ to denote a binary IE such as discontinuation due to availability of treatment ($m=1$ being discontinued, $m = 0$ completed).
+We expect that the IE to encode characteristics $U_i$ of the unit $i$ as well as the treatment.
+
+Let $M_i(a)$ denote the potential outcome for the IE and let $Y_i(a,m)$ be the potential outcome for the response for unit $i$ assigned to $a$ and $m$.
+Each unit has potential outcomes for the outcome:
+
++ $Y(0,0)$ the outcome under control without discontinuation
++ $Y(0,1)$ the outcome under control with discontinuation
++ $Y(1,0)$ the outcome under test without discontinuation
++ $Y(1,1)$ the outcome under test with discontinuation
+
+Explicitly:
+
++ $M_i(a=1)$ is the potential outcome for the IE when unit $i$ is assigned to the test group
++ $Y_i(a, m = 0)$ is the potential outcome for the response when intervening intervening with $a$ and $m=0$ (assuming that intervening on $m$ is somehow possible, i.e. it is a hypothetical world)
++ $Y_i(a,M_i(a))$ is the potential outcome for the response when the assigned treatment is $a$ and the natural state that IE has when the assigned treatment is $a$
++ $Y_i(a=1,M_i(a=1)=0) \equiv Y_i(1,M_i(1)=0)$ is the potential outcome for the response when under $a=1$ for those who do not have the IE
+
+For any given unit we can only observe one set of potential outcomes, that is if $i$ is assigned to test $a = 1$ then what becomes observable are $M_i(a=1)$ and $Y_i(a=1,M(a=1)) \equiv Y_i(a=1)$, where the abbreviation follows from the composition assumption.
+
+A graphical representation of the study is shown below.
+
+```{mermaid}
+%%| fig-width: 5
+%%| fig-height: 4
+
+flowchart LR
+  U --> Y
+  U(("U")) --> M
+  A(("A" )) --> M(("M")) --> Y(("Y"))
+  A --> Y
+  
+  style U stroke-dasharray: 5 5
+```
+
+The ITT principle involves what units to include and what data to include on each unit.
+If IEs are thought of as mediators of treatment, then the ITT effect aligns with the *total* effect of assigned treatment, i.e. the effect of treatment through all paths.
+One way to implement ITT is to include all randomised units and all their outcomes ignoring post-randomisation changes in treatment, protocol violations, non-adherence etc.
+The implied treatment regimen is therefore the offer of the assigned treatment with potential for discontinuation of that treatment and/or the use of any other treatment at any time without restriction.
+Under this formulation, IEs may break the link between assignment and received treatment and this can make the results less relevant for some applications.
+In the estimand framework, *treatment policy* is aligned with ITT.
+
+Under randomised treatment we have:
+
+$$
+\begin{aligned}
+\Delta_{ITT} &= \mathbb{E}[Y(1)] - \mathbb{E}[Y(0)] \\
+   &= \mathbb{E}[Y(1)|A = 1] - \mathbb{E}[Y(0) | A = 0] \\
+   &= \mathbb{E}[Y|A = 1] - \mathbb{E}[Y | A = 0] \\
+\end{aligned}
+$$
+
+
+
+A per-protocol analysis aims at offering a specific perspective on the trial results; the implicit goal is usually that of evaluating the effect of treatment in those that adhere to the protocol.
+However, a traditional per-protocol analysis simply subsets the trial data to those units that have adhered and performs the primary analysis (unchanged) on that part of the data.
+This is insufficient to define a causal effect.
+
+Say we are interested in a per protocol perspective but we would like to be as clear as possible about what we want this effect to represent.
+Firstly, we need to account for how post-randomisation events (intercurrent events - IEs) such as discontinuation, treatment switching (non-compliance), toxicity, AEs might impact the results.
+To do this there are various strategies.
+One option that might be relevant is the hypothetical setting where we make believe that the IE didn't occur.
+Clearly, this assumes that such a counterfactual reality is possible.
+For example, if the IE were discontinuation due to toxicity, it might not be reasonble to conceive a scenario where we could somehow make the intervention less toxic.
+
+To construct an estimand of interest using potential outcomes, we will use a simple example.
+
+
+For the hypothetical strategy, if we let $m = 0$ represent the absence the IE, then the estimand could be specified as:
+
+$$
+\begin{aligned}
+\Delta_{HYP} &= \mathbb{E}[Y(1,m=0)] - \mathbb{E}[Y(0,m=0)]
+\end{aligned}
+$$
+
+which is the difference in the expectations of the potential outcomes under test and control where in the hypothetical setting where no IE occurs.
+If we attempt to estimate this effect by subsetting the data to the cohort that did not have the IE then what we are implicitly conditioning on $M$ in the above DAG and because $M$ is a collider, this opens a backdoor path through $U$. This means that the potential outcome $Y(a,m)$ is dependent on $M(a)$:
+
+$$
+\begin{aligned}
+\Delta_{HYP} &= \mathbb{E}[Y(1,m=0)] - \mathbb{E}[Y(0,m=0)]  \ne \mathbb{E}[Y|A=1,M=0] - \mathbb{E}[Y|A=0,M=0]
+\end{aligned}
+$$
+
+In other words, the estimand is no longer identified and cannot be converted into a statistical quantity using such an approach, which is why the traditional per-protocol analysis does not produce a causal effect.
+
+The intuition is simple - say we had placebo vs test and the IE is toxicity leading to discontinuation and this is more likely in units with severe illness.
+If we condition on those that did not have the IE, then we will be comparing the placebo group that has a mix of illness severities with the test group that only contains units with lower severity of disease. 
+In other words, the groups are no longer directly comparable.
+
+However, if we do have access to $U$ or some proxy for $U$ then we might be able to assume conditional independence within levels of $U$, i.e. $Y(a,m) \perp M(a) | U$.
+This gives us a way to estimate the *direct* effect of treatment, which is effect solely due to the intervention.
+With $U$ we can identify the estimand:
+
+$$
+\begin{aligned}
+\Delta_{HYP} &= \mathbb{E}[Y(1,m=0)] - \mathbb{E}[Y(0,m=0)]  \\
+   &= \sum_\mathcal{U} \mathbb{E}[Y | U = u, M = 0, A = 1]Pr(U = u) - \sum_\mathcal{U} \mathbb{E}[Y | U = u, M = 0, A = 0]Pr(U = u)
+\end{aligned}
+$$
+
+and so we can produce an estimate of the causal effect of the hypothetical situation where the IE does not occur.
+Of course, this still comes at the cost of assumptions that we cannot entirely verify and we therefore need to be cautious in the reporting.
+
+Below is a simple simulation to show the difference between the ITT, the naive per protocol approach and the hypothetical estimand obtained from standardisation over the distribution of $U$.
+It assumes the following setup
+
+$$
+\begin{aligned}
+U_i &\sim \text{Bernoulli}(0.35) \\
+A_i &\sim \text{Bernoulli}(0.5) \\
+\pi_{m(i)} &= 0.05 + 0.15 A + 0.3 AU \\
+M_i &\sim \text{Bernoulli}(\pi_{m(i)}) \\
+\pi_{y(i)} &= 0.5 + 0*a - 0.35*u  \\
+Y_i &\sim \text{Bernoulli}(\pi_{y(i)}) \\
+\end{aligned}
+$$
+
+where the probability of the risk factor $U$ is 35% in the population, the interventions are randomised 1:1, the occurrence of the IE is a function of $A$ and $U$ and the probability of $Y$ is a function of $A$, $U$.
+The direct effect of $A$ is fixed at zero.
+
+The ITT and hypothetical strategy effects are consistent whereas the naive per-protocol approach inflates the effect estimate.
+
+```{r}
+# number of simulations
+N_sim <- 1e3
+# sample size of each study
+N <- 1e3
+# probability of factor that is external determinant of ice 
+p_u <- 0.35
+# rand to ctl vs test
+p_a <- 0.5
+
+m_rd <- do.call(rbind, mclapply(1:N_sim, FUN = function(i){
+  
+  rd <- rep(NA, 3)
+  
+  u <- rbinom(N, 1, p_u)
+  a <- rbinom(N, 1, p_a)
+  d <- data.table(u, a)
+  
+  # chance of ice increases when in the test group and where u is present
+  # probability that m occurs.
+  d[, m := rbinom(N, 1, 0.05 + 0.15*a + 0.3*a*u)]
+  
+  # say occurrence of y is desirable
+  # occurrence of y dependent on a, m and u 
+  # a has no effect on outcome
+  # u decreases prob of y e.g. effect of risk factor
+  # m only influences y through a
+  d[, p_y := 0.5 + 0*a - 0.35*u]  
+  
+  d[, y := rbinom(N, 1, p_y)]
+  
+  # if we ignore the occurrence of the ice then we are aligned with an itt 
+  # perspective and there should be negligible difference between the groups 
+  # on the risk of the outcome
+  m_p_y <- c(d[a == 0, mean(y)], d[a == 1, mean(y)])
+  rd[1] <- diff(m_p_y)
+  # however if we restrict attention to the subset for whom the ice did not occur
+  # e.g. the subset that adhered to the protocol then we note an increase in the
+  # risk of the outcome in the treatment group.
+  
+  # this arises due to the backdoor path from m through to y
+  m_p_y <- c(d[a == 0 & m == 0, mean(y)], d[a == 1 & m == 0, mean(y)])
+  rd[2] <- diff(m_p_y)
+  
+  # observed marginal distribution of u
+  p_u_obs <- d[, mean(u)]
+  p_a_0 <- sum( d[m == 0 & a == 0 & u == 1, .(mu_y = mean(y)),]*p_u_obs + 
+                  d[m == 0 & a == 0 & u == 0, .(mu_y = mean(y)),]*(1-p_u_obs))
+  p_a_1 <- sum( d[m == 0 & a == 1 & u == 1, .(mu_y = mean(y)),]*p_u_obs + 
+                  d[m == 0 & a == 1 & u == 0, .(mu_y = mean(y)),]*(1-p_u_obs))
+  
+  m_p_y <- c(p_a_0, p_a_1)
+  rd[3] <- diff(m_p_y)
+  
+  rd
+  
+}, mc.cores = 10))
+  
+colnames(m_rd) <- c("ITT", "Per protocol", "Hypothetical") 
+
+d_rd <- data.table(m_rd)
+d_rd <- melt(d_rd, measure.vars  = names(d_rd))
+d_rd[, variable := factor(variable, levels = c("ITT", "Per protocol", "Hypothetical"))]
+```
+
+
+```{r}
+#| label: fig-null-1
+#| fig-cap: 'Distribution of estimates of effect estimates under different estimand strategies'
+#| fig-cap-location: margin
+#| fig-height: 5
+#| fig-width: 4
+#| out-width: 70%
+
+ggplot(d_rd, aes(x = value, group = variable)) + 
+  geom_histogram(fill = "white", col = "black", bins = 15) +
+  geom_vline(xintercept = 0, col = 2, lwd = 1) +
+  geom_vline(data = d_rd[, .(mu = mean(value)), keyby = variable], 
+             aes(xintercept = mu), lty = 2) + 
+  scale_x_continuous("Risk difference (Test vs Ctl)") +
+  scale_y_continuous("Frequency") +
+  facet_grid(variable ~.)
+```
+
+So far, only a single IE has been discussed, which isn't realistic, but it gives some intuition into what is already a well known characteristic of a naive per-protocol analyses.
+In practice, we (1) need to think through the implications of the multiple IEs that exist in the study and (2) need multiple variables to account for the IE.
+
+In some settings a hypothetical estimand might be appropriate but in another it might not.
+For example, in roadmap (thinking about the surgical domain in isolation, forgetting the other domains for now) we might have $U$ corresponding to a loose joint and as such treatment switching could be inevitable and it would be difficult to conceive of a world where this did not happen given the loose joint.
+The hypothetical strategy would probably not be suitable here but an effect that focuses on the strata of the population might be.
+Here, a principal stratum strategy might be more relevant where the IE might be thought of as a specific form of non-compliance (represented as a binary indicator for simplicity and treating compliance and adherence as equivalent).
+
+One formulation under the principal stratum strategy is to let $M$ denote the treatment actually received; $M=0$ for control and $M=1$ representing that test was received.
+This leads to strata $S_i = (M_i(0), M_i(1))$ where $M_i(0)$ and $M_i(1)$ are the received treatment under control and test assignment respectively.
+This defines four strata $S_i \in \{ (0,0), (0,1), (1,0), (1,1)\}$ which are usually given the names *never takers*, *compliers*, *defiers* and *always takers* which are all with reference to the test group, although this setup could be varied based on the particular situation.
+For a principal stratum strategy we are interested in the causal effect within one (or a combination) of these strata. Here, assume that interest is in the *compliers*.
+For this setup, the estimand could be specified as
+
+$$
+\begin{aligned}
+\Delta_{PS} &= \mathbb{E}[Y(a=1,m)|M(a = 1)=1] - \mathbb{E}[Y(a=0,m)|M(a = 0)=0]  
+\end{aligned}
+$$
+
+i.e. the average treatment effect in those units that would have received their assigned treatment had they been assigned to either the control or test group, which is not the same as the subset of units who were observed to have adhered to the treatment they were assigned to.
+
+The problem is that for a unit $i$ we only ever observe one of the components in the above definition and what we do observe represents membership in a mixture of strata rather than a single strata.
+For example, a unit who is assigned to control and is observed to receive control could belong to the *compliers* strata or the *never takes test* strata etc.
+
+To overcome these, the common assumptions are:
+
+1. for the never takers and always takers, the potential outcomes are the same irrespective of the treatment they are assigned to
+2. there are no defiers
+3. there is a non-zero probability for membership in the compliers strata
+
+however, there are actually a lot of different perspectives and approaches.
+Anyway, the point is that after making various assumptions, some principal strata are, in principle, identifiable.
+
+For roadmap, all of the above is a gross over-simplification.
+In the first instance, there are multiple domains, all of which will likely have domain specific IEs.
+In the surgery domain, treatment switching may be common, 
+
+Collapse into equivalent groups as necessary
+
++ Death (handled via composite)
++ Treatment repeated (surgery) (handled via composite)
++ Treatment interruption (or multiple)
++ Extension of treatment 
++ Treatment discontinuation due to admin reasons
++ Treatment discontinuation due to efficacy concerns
++ Use of protocol prohibited interventions
++ Switch over
++ Occurrence of AE - be specific
++ Non-compliance (insufficient dose, wrong procedure?)
++ Non-adherence never receives treatment for some reason other than death
++ Withdrawal from study
+
+
+
