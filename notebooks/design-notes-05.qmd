@@ -18,29 +18,28 @@ log_info("Called design-notes-05 notebook")
 cmdstanr::register_knitr_engine()
 ```
 
-The following DAG includes surgical, antibiotic duration, extended prophylactic and prohphylaxis domains.
-Additionally, site of infectionis (knee/hip) is included joint.
-Baseline clinician preferences are assumed to take primacy in selection of surgery type etc.
-However, this form is intended to represent the approximate structure, not to replicate the exact data generating process.
+The following DAG includes surgical, antibiotic backbone, extended prophylactic and choice domains.
+Additionally, site of infection (knee/hip) and baseline clinician preferences are included where the latter are assumed to take primacy in selection of surgery type etc.
+The setup is intended to represent the approximate structure, not to replicate the exact data generating process.
 
-Preference for surgery primarily impacts those assigned to revision but would also be applicable for a patient that switches treatment from dair (e.g. for loose joint).
+Preference for surgery primarily impacts those assigned to revision but would also be applicable for a patient that ends up switching treatment, for example switch from dair to revision due to a irreparable loose joint.
 Preference for antibiotic duration comes into play for dair and two-stage patients since these units are never randomly assigned to duration.
 For example, if a unit received dair, then the preference would lead to some duration of backbone antibiotic therapy.
-Analogously, preference for extended prophylactic deals with the situation of where the unit didn't enter the extended prophylaxis domain even though they received a two-stage revision; here prophylaxis would be determined by the clinician assessment of what is best.
+Analogously, preference for extended prophylactic applies where the unit didn't enter the extended prophylaxis domain even though they received a two-stage revision; here prophylaxis would be determined by the clinician assessment of what is best.
 For antibiotic choice (rifampicin), it is conceivable that patients are eligible for the domain but the clinician is not willing to risk them being allocated to the control arm, hence the possibility of clinical selection is included for that domain as well.
-Besides, only a subset of the cohort will ever enter the choice domain.
+Only a subset of the cohort will ever enter the choice domain anyway.
 
-Only a joint-by-surgical type (dair, one, two-stage) interaction is explicitly included (denoted with $A \times J$).
-However, there may be others that are of interest.
-My guess is that infection site will also influence the approach adopted for revision, but that is not reflected here (and I don't believe it would actually make any difference to the statistical considerations).
+A joint-by-surgical type (dair, one, two-stage) interaction is explicitly included (denoted with $S_A \times J$).
+There may be others that are of interest.
+My guess is that infection site will also influence the approach adopted for revision, but that is not reflected here (I don't think it would make any difference to the statistical considerations anyway).
 
-Previously, we have talked about direct paths, however, these have been removed.
+Previously, we have talked about direct paths, but these are assumed not to exist.
 This is because you cannot define, for example surgical procedure, as a mediator because $Y(a,m)$ would need to be defined for both $a=0$ and $a=1$ and it is only makes sense in the context of the latter.
 There are therefore no direct paths within the causal structure.
 
-Mentally I am restricting myself to the late silo and specifically to the question of the surgical intervention and hence the conditioning on that silo is implicit.
-Within this setting it is possible for units to receive randomised treatment in all domains.
-But some of the following may not align with a generic perspective applicable to the other silos.
+Mentally I am restricting myself to the late silo and specifically to the question of the surgical intervention and hence conditioning on that silo is implicit here and not mentioned within the DAG or models.
+
+Given the above, some of the following may not align with a generic perspective applicable to the other silos.
 
 ```{r, echo = F}
 #| label: fig-dag1
@@ -95,7 +94,7 @@ d_dag1 <- tidy_dagitty(dag1) |>
              "sc" = "choice",
              "uc" = "clinical\nselection",
              "j" = "joint",
-             "axj" = "axj",
+             "axj" = "SA x J",
              "d1" = "expt\ndurn",
              "sd1" = "durn",
              "ud1" = "durn\npersp",
@@ -169,27 +168,7 @@ However, the total effect is the effect of treatment **through all paths**, so i
 do.call(cbind, paths(dag1))
 ```
 
-```{r, eval = F, echo = F}
-#| label: fig-dag2
-#| fig-cap: "Open paths from expt surgery (a) to outcome (y)"
-#| fig-cap-location: bottom
-#| fig-height: 7
-#| out-width: 90%
-
-ggdag_paths(dag1,
-            node_size = 10,
-            text_size = 3,
-            node = F,
-            text_col = "black") +
-
-  theme(axis.title.x=element_blank(),
-        axis.text.x=element_blank(),
-        axis.ticks.x=element_blank(),
-        axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank(),
-        panel.grid.major = element_blank(), panel.grid.minor = element_blank())
-```
+No adjustment is necessary to obtain the total effect but under the design this obfuscates attribution due to the various interventions.
 
 ```{r, echo = F, eval = F}
 adjustmentSets(dag1, "a", "y")
@@ -197,7 +176,8 @@ adjustmentSets(dag1, "a", "y")
 
 ## Surgical domain model
 
-For the surgical domain we could focus on the cohort in the late silo that were revealed to their randomised assignment and use the following model specification:
+Per the above, we could simply regress on assigned surgical treatment to obtain the total effect.
+However, for the surgical domain it is informative to use the following model specification:
 
 $$
 \begin{aligned}
@@ -210,9 +190,25 @@ $$
 \end{aligned}
 $$  
 
-where $\pmb{Q}$ and $\pmb{\zeta}$ are the vector of covariates and parameters and with the parameters for $D2$ ($\beta_9$ and $\beta_{10}$) being relevant only for the cohort receiving two-stage revision.
+where $\pmb{Q}$ and $\pmb{\zeta}$ represent the vector of conditional elements and with the parameters for $D2$ ($\beta_9$ and $\beta_{10}$) being relevant only for the cohort receiving two-stage revision.
 
-To get to a view on dair vs revision I use the g-formula to average over all the other terms and then compute a weighted combination of the one-stage and two-stage effects based on the distribution of these in the sample.
+To get back to a view on dair vs revision we can use the g-formula to average over all the other terms and then compute a weighted combination of the one-stage and two-stage effects based on the distribution of these in the sample.
+For example, say the only conditioning element we have is $U_A$ and $Y(a)$ denotes the potential outcomes with respect to the randomised surgery type: 
+
+$$
+\begin{aligned}
+\mathbb{E}[Y(0)] &= \mathbb{E}_{U_A}[  \mathbb{E}[Y | S_A = 0, U_A = u_a] ] \\
+  &= \sum_{u_A} \mathbb{P}(U_A = u_a) \left(\sum_{y} y \mathbb{P}(Y = y | S_A = 0, U_A = u_a) \right)
+\end{aligned}
+$$
+
+
+$$
+\begin{aligned}
+\mathbb{E}[Y(1)] &= \mathbb{E}_{U_A}[  \mathbb{E}[Y | S_A \in \{ 1, 2\}, U_A = u_a] ] \\
+  &= \sum_{u_A} \mathbb{P}(U_A = u_a) \left(\sum_{y} y \mathbb{P}(Y = y | S_A = \in \{ 1, 2\}, U_A = u_a) \right)
+\end{aligned}
+$$
 
 The model is implemented in stan as follows:
 
@@ -222,10 +218,10 @@ The model is implemented in stan as follows:
 
 ```
 
-where the bootstrap functionality is used as the standardisation procedure and could be extended to estimate strata level effects such as those relating to site of infection (knee/hip).
+where the bootstrap functionality is used as a standardisation procedure and which could be extended to estimate strata level effects such as those relating to site of infection (knee/hip).
 
-Below are scenarios with different combinations of effects. 
-They are purely illustrative and not meant to reflect actual effect sizes.
+Below are scenarios with different combinations of effects that aims to illustrate the main limitation of the design.
+The assumed effect sizes are purely illustrative.
 
 ## Example 1 - null case
 
@@ -259,8 +255,8 @@ get_data <- function(
   
   # assigned surgery - just assume that all enter into this domain
   a <- rbinom(n, 1, 0.5)
-  # under receipt of rev, 70% would prefer to use two-stage for all units
-  ua <- rbinom(n, 1, 0.7)
+  # under receipt of rev, most clinicians would prefer to use two-stage
+  ua <- rbinom(n, 1, 0.75)
   
   # dair = 0, one = 1, two = 2
   sa <- rep(NA, n)
@@ -312,13 +308,12 @@ get_data <- function(
 }
 ```
 
-All treatment effects are set to zero, however, the effects of some baseline variables are given non-zero values.
-The stan model is fit with a large simulated dataset in order to get a sense of consistency.
+Here all domain treatment effects are set to zero, however, the some baseline variables have been assumed to create heterogeneity in the response.
+Rather than repeat simulation, the model is fit to a large simulated dataset to get a sense of consistency.
 
 ```{r, eval = T, echo = T}
 #| label: sim-1
 #| code-summary: Data simulation and parameter estimation
-
 
 set.seed(987654321)
 g_pars <- c(paste0("b1[",1:2,"]"),
@@ -327,8 +322,14 @@ g_pars <- c(paste0("b1[",1:2,"]"),
           paste0("b4[",1:2,"]")
           )
 names(g_pars) <- c(
-  paste0("b",1:10), paste0("g", 1:2)
+  "b1 (sa1)", "b2 (sa2)", "b3 (ua)", 
+  "b4 (sd1)", "b5 (ud1)",
+  "b6 (sc)", "b7 (uc)",
+  "b8 (j)",
+  "b9 (sd2)", "b10 (ud2)",
+  "g1 (sa1 x j)", "g2 (sa2 x j)"
 )
+
 
 m1 <- cmdstanr::cmdstan_model("stan/logistic-demo-03.stan")
 m2 <- cmdstanr::cmdstan_model("stan/logistic-demo-02.stan")
@@ -394,8 +395,6 @@ X1 <- cbind(d_s$sa1, d_s$sa2)
 X2 <- cbind(d_s$ua, d_s$sd1, d_s$ud1, d_s$sc, d_s$uc, d_s$j)
 # extended prophylaxis terms - only applies to two-stage pt
 X3 <- cbind(d_s$sd2, d_s$ud2)
-# just fill in the nas that are assoc with dair and one-stage pt
-# X3[is.na(X3[,1]),1] <- 99
 # interactions
 X4 <- cbind(d_s$j*d_s$sa1, d_s$j*d_s$sa2)
 
@@ -426,8 +425,6 @@ f1 <- m1$sample(
 #                              history_size=50, max_lbfgs_iters=100,
 #                              refresh = 0, draws = 2000)
 #     )
-
-
 # f_mode <- m1$optimize(data = ld, jacobian = TRUE, refresh =0)
 # f1 <- m1$laplace(data = ld, mode = f_mode, refresh = 0)
 
@@ -453,9 +450,9 @@ f2 <- m2$sample(
 
 \newpage
 
-The parameter estimates obviously do not align with the parameters used in the linear predictor as estimated parameters are on the log odds scale.
-However, the magnitudes of the effects should be in line with the parameters on the risk scale.
-The true non-null effects have the background shaded red.
+The parameter estimates obviously do not align with the parameters used in the linear predictor as these are estimated on the log odds scale.
+But the magnitudes of the effects should be in line with the parameters on the risk scale.
+The parameters that had non-null effects in the data generation process have been shaded red.
 
 ```{r, eval = T}
 #| label: fig-par-1
@@ -502,7 +499,8 @@ ggplot(d_fig, aes(x = value, group = variable)) +
 
 ```
 
-Marginal probability of $Y$ under each surgical treatment type is shown below.
+Below are the recovered marginal probabilities of $Y$ under each surgical treatment type (dair vs rev).
+The red overlay shows the marginal probabilities of $Y$ based on using a truncated model that includes a single fixed effect for surgical intervention (dair vs rev) and no other terms.
 
 ```{r, eval = T}
 #| label: fig-marg-probs-1
@@ -513,59 +511,32 @@ Marginal probability of $Y$ under each surgical treatment type is shown below.
 #| fig-width: 5
 #| out-width: 80%
 
-
 cols <- c("marg_p0", "marg_p1")
 d_post <- data.table(f1$draws(variables = cols, format = "matrix"))
 names(d_post) <- cols
-
-# hist(d_post$marg_p_rev - d_post$marg_p0)
  
-d_fig <- melt(d_post[, cols, with = F], measure.vars = cols)
-  
-ggplot(d_fig, aes(x = value, group = variable)) +
+d_fig1 <- melt(d_post[, cols, with = F], measure.vars = cols)
+d_fig2 <- data.table(f2$draws(variables = cols, format = "matrix"))
+d_fig2 <- melt(d_fig2, measure.vars = cols)
+
+ggplot(d_fig1, aes(x = value, group = variable)) +
   geom_density() +
-  geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
+  geom_density(data = d_fig2, aes(x = value, group = variable), 
+               col = 2) +
+  geom_vline(data = d_fig1[, .(mu = mean(value)), keyby = variable], 
              aes(xintercept = mu, group = variable)) +
   facet_wrap(~variable, ncol = 1) +
   scale_x_continuous(
     "Proportion with successful outcome",
     # labels = label_number(accuracy = 0.001),
-    labels = scales::percent_format(accuracy = 2)
-  )
-
-```
-
-
-```{r, eval = T}
-#| label: fig-marg-probs-1
-#| code-summary: Marginal probability of outcome by surgical type
-#| fig-cap: "Marginal probability of $Y$ under each surgical type (DAIR, one-stage, two-stage)"
-#| fig-cap-location: bottom
-#| fig-height: 5
-#| fig-width: 5
-#| out-width: 80%
-
-cols <- c("marg_p0", "marg_p1", "marg_p2", "marg_p_rev")
-d_post <- data.table(f1$draws(variables = cols, format = "matrix"))
-names(d_post) <- cols
-
-# hist(d_post$marg_p_rev - d_post$marg_p0)
- 
-d_fig <- melt(d_post[, cols, with = F], measure.vars = cols)
-  
-ggplot(d_fig, aes(x = value, group = variable)) +
-  geom_density() +
-  geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
-             aes(xintercept = mu, group = variable)) +
-  facet_wrap(~variable) +
-  scale_x_continuous(
-    labels = label_number(accuracy = 0.01)
+    labels = scales::percent_format(accuracy = 0.1)
   )
 
 ```
 
 Risk difference (rev - dair).
 The red dashed line shows the posterior distribution obtained from a reduced model that includes a single term for surgical treatment assignment (dair/rev).
+The result is centred around zero and aligns with what we expect.
 
 ```{r, eval = T}
 #| label: fig-rd-1
@@ -586,7 +557,7 @@ ggplot(d_fig1, aes(x = rd)) +
   scale_x_continuous(
     "Risk difference",
     # labels = label_number(accuracy = 0.001),
-    labels = scales::percent_format(accuracy = 2)
+    labels = scales::percent_format(accuracy = 0.1)
   ) +
   geom_vline(data = d_fig1[, .(mu = mean(rd))], 
              aes(xintercept = mu))  +
@@ -598,7 +569,7 @@ ggplot(d_fig1, aes(x = rd)) +
 
 ## Example 2 - revision effects
 
-Equal magnitude effects are used for revision for both one-stage and two-stage approach with worse outcomes for hip joints.
+Here equal magnitude effects are used for revision for both one-stage and two-stage approach with worse outcomes for hip joints but no interactions.
 In the other domains, the treatment effects are set to zero.
 
 ```{r, eval = T, echo = T}
@@ -607,10 +578,6 @@ In the other domains, the treatment effects are set to zero.
 
 m1 <- cmdstanr::cmdstan_model("stan/logistic-demo-03.stan")
 m2 <- cmdstanr::cmdstan_model("stan/logistic-demo-02.stan")
-
-# nsim <- 250
-
-# m_res <- do.call(rbind, mclapply(1:nsim, FUN = function(i){
   
 d <- get_data(
   n = 1e5,
@@ -625,7 +592,7 @@ d <- get_data(
       0*sd1[ix] - 0.01*ud1[ix] +
       0*sc[ix] + 0*uc[ix] +
       -0.1*j[ix] + 
-      -0.03*j[ix]**(sa[ix] == 1) -0.03*j[ix]**(sa[ix] == 2) 
+      -0.00*j[ix]**(sa[ix] == 1) -0.00*j[ix]**(sa[ix] == 2) 
       
     # one-stage
     ix <- which(sa == 1)
@@ -634,7 +601,7 @@ d <- get_data(
       0*sd1[ix] - 0.01*ud1[ix] +
       0*sc[ix] + 0*uc[ix] +
       -0.1*j[ix] +  
-      -0.03*j[ix]**(sa[ix] == 1) -0.03*j[ix]**(sa[ix] == 2)
+      -0.00*j[ix]**(sa[ix] == 1) -0.00*j[ix]**(sa[ix] == 2)
     
     # two-stage
     ix <- which(sa == 2)
@@ -645,13 +612,20 @@ d <- get_data(
       -0.1*j[ix] + 
       # last two parameters not included for dair and one-stage
       0.0*sd2[ix] + 0*ud2[ix] +
-      -0.03*j[ix]**(sa[ix] == 1) -0.03*j[ix]**(sa[ix] == 2)
+      -0.00*j[ix]**(sa[ix] == 1) -0.00*j[ix]**(sa[ix] == 2)
+    
+    
+    # p[ix] <- 0.6 +  
+    #   0.1*(sa[ix] == 1) + 0.1*(sa[ix] == 2) + 0.05*ua[ix] +
+    #   0*sd1[ix] - 0.01*ud1[ix] +
+    #   0*sc[ix] + 0*uc[ix] +
+    #   -0.1*j[ix] + 
+    #   # last two parameters not included for dair and one-stage
+    #   0.0*sd2[ix] + 0*ud2[ix] +
+    #   -0.03*j[ix]**(sa[ix] == 1) -0.03*j[ix]**(sa[ix] == 2)
 
     p
   })
-
-# range(d$p_y)
-# d[, .(.N, mean(y)), keyby = sa]
 
 d[, `:=`(sa1 = as.numeric(d$sa == 1), sa2 = as.numeric(d$sa == 2))]
 d_s <- d[, .(y = sum(y), n = .N, p_y = unique(p_y)), keyby = .(
@@ -664,8 +638,6 @@ X1 <- cbind(d_s$sa1, d_s$sa2)
 X2 <- cbind(d_s$ua, d_s$sd1, d_s$ud1, d_s$sc, d_s$uc, d_s$j)
 # extended prophylaxis terms - only applies to two-stage pt
 X3 <- cbind(d_s$sd2, d_s$ud2)
-# just fill in the nas that are assoc with dair and one-stage pt
-X3[is.na(X3[,1]),1] <- 99
 # interactions
 X4 <- cbind(d_s$j*d_s$sa1, d_s$j*d_s$sa2)
 
@@ -711,14 +683,13 @@ ld <- list(
   X = matrix(d_s$a),
   prior_only = 0,
   sd_a0 = 1.5,
-  sd_b = 3
+  sd_b = 10
 )   
 
 f2 <- m2$sample(
     ld, iter_warmup = 1000, iter_sampling = 1000,
     parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F,
     max_treedepth = 10)
-  
 
 ```
 
@@ -774,29 +745,6 @@ ggplot(d_fig, aes(x = value, group = variable)) +
 The distribution of the marginal probability of $Y$ under each treatment type. 
 
 ```{r, eval = T}
-
-cols <- c("marg_p0", "marg_p1")
-d_post <- data.table(f1$draws(variables = cols, format = "matrix"))
-names(d_post) <- cols
-
-# hist(d_post$marg_p_rev - d_post$marg_p0)
- 
-d_fig <- melt(d_post[, cols, with = F], measure.vars = cols)
-  
-ggplot(d_fig, aes(x = value, group = variable)) +
-  geom_density() +
-  geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
-             aes(xintercept = mu, group = variable)) +
-  facet_wrap(~variable, ncol = 1) +
-  scale_x_continuous(
-    "Proportion with successful outcome",
-    # labels = label_number(accuracy = 0.001),
-    labels = scales::percent_format(accuracy = 2)
-  )
-
-```
-
-```{r, eval = T}
 #| label: fig-marg-probs-2
 #| code-summary: Marginal probability of outcome by surgical type
 #| fig-cap: "Marginal probability of $Y$ under each surgical type (DAIR, one-stage, two-stage)"
@@ -805,26 +753,32 @@ ggplot(d_fig, aes(x = value, group = variable)) +
 #| fig-width: 5
 #| out-width: 80%
 
-cols <- c("marg_p0", "marg_p1", "marg_p2", "marg_p_rev")
+cols <- c("marg_p0", "marg_p1")
 d_post <- data.table(f1$draws(variables = cols, format = "matrix"))
 names(d_post) <- cols
-
-# hist(d_post$marg_p_rev - d_post$marg_p0)
  
-d_fig <- melt(d_post[, cols, with = F], measure.vars = cols)
-  
-ggplot(d_fig, aes(x = value, group = variable)) +
+d_fig1 <- melt(d_post[, cols, with = F], measure.vars = cols)
+d_fig2 <- data.table(f2$draws(variables = cols, format = "matrix"))
+d_fig2 <- melt(d_fig2, measure.vars = cols)
+
+ggplot(d_fig1, aes(x = value, group = variable)) +
   geom_density() +
-  scale_x_continuous(
-    labels = label_number(accuracy = 0.01)
-  ) +
-  geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
+  geom_density(data = d_fig2, aes(x = value, group = variable), 
+               col = 2) +
+  geom_vline(data = d_fig1[, .(mu = mean(value)), keyby = variable], 
              aes(xintercept = mu, group = variable)) +
-  facet_wrap(~variable)
+  facet_wrap(~variable, ncol = 1) +
+  scale_x_continuous(
+    "Proportion with successful outcome",
+    # labels = label_number(accuracy = 0.001),
+    labels = scales::percent_format(accuracy = 0.1)
+  )
+
 ```
 
 Risk difference (rev - dair).
 The red dashed line shows the posterior distribution obtained from a reduced model that includes a single term for surgical treatment assignment (dair/rev).
+The result is suggests a positive effect of surgery as expected.
 
 ```{r, eval = T}
 #| label: fig-rd-2
@@ -843,7 +797,7 @@ ggplot(d_fig1, aes(x = rd)) +
   scale_x_continuous(
     "Risk difference",
     # labels = label_number(accuracy = 0.001),
-    labels = scales::percent_format(accuracy = 2)
+    labels = scales::percent_format(accuracy = 0.1)
   ) +
   geom_density(data = d_fig2, 
                aes(x = rd), col = 2, lty = 2) +
@@ -857,7 +811,9 @@ ggplot(d_fig1, aes(x = rd)) +
 
 ## Example 3 - extended prophylaxis effects
 
-Revision effects are set to zero and a non-zero effect is set for the extended prophylaxis.
+Here revision effects are set to **zero** but a non-zero effect is set for the extended prophylaxis.
+
+This is where things start to go awry.
 
 Due to the fact that extended prophylaxis is only applicable for patients receiving a two-stage revision (the revision being the important part), any extended prophylaxis effect will manifest as being an effect of *revision*.
 Thus the observed effect has nothing to do with the surgery performed but rather the intervention received in the entangled domain.
@@ -870,10 +826,7 @@ Thus the observed effect has nothing to do with the surgery performed but rather
 
 m1 <- cmdstanr::cmdstan_model("stan/logistic-demo-03.stan")
 m2 <- cmdstanr::cmdstan_model("stan/logistic-demo-02.stan")
-# nsim <- 250
 
-# m_res <- do.call(rbind, mclapply(1:nsim, FUN = function(i){
-  
 d <- get_data(
   n = 1e5,
   ff = function(j, a, ua, sa, d1, ud1, sd1, d2, ud2, sd2, c, uc, sc){
@@ -912,8 +865,6 @@ d <- get_data(
     p
   })
 
-# d[, .(.N, mean(y)), keyby = sa]
-
 d[, `:=`(sa1 = as.numeric(d$sa == 1), sa2 = as.numeric(d$sa == 2))]
 d_s <- d[, .(y = sum(y), n = .N, p_y = unique(p_y)), keyby = .(
   sa1, sa2, ua, sd1, ud1, sc, uc, j, sd2, ud2, j 
@@ -925,8 +876,6 @@ X1 <- cbind(d_s$sa1, d_s$sa2)
 X2 <- cbind(d_s$ua, d_s$sd1, d_s$ud1, d_s$sc, d_s$uc, d_s$j)
 # extended prophylaxis terms - only applies to two-stage pt
 X3 <- cbind(d_s$sd2, d_s$ud2)
-# just fill in the nas that are assoc with dair and one-stage pt
-X3[is.na(X3[,1]),1] <- 99
 # interactions
 X4 <- cbind(d_s$j*d_s$sa1, d_s$j*d_s$sa2)
 
@@ -1035,30 +984,6 @@ ggplot(d_fig, aes(x = value, group = variable)) +
 The distribution of the marginal probability of $Y$ under each treatment type. 
 
 ```{r, eval = T}
-
-cols <- c("marg_p0", "marg_p1")
-d_post <- data.table(f1$draws(variables = cols, format = "matrix"))
-names(d_post) <- cols
-
-# hist(d_post$marg_p_rev - d_post$marg_p0)
- 
-d_fig <- melt(d_post[, cols, with = F], measure.vars = cols)
-  
-ggplot(d_fig, aes(x = value, group = variable)) +
-  geom_density() +
-  geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
-             aes(xintercept = mu, group = variable)) +
-  facet_wrap(~variable, ncol = 1) +
-  scale_x_continuous(
-    "Proportion with successful outcome",
-    # labels = label_number(accuracy = 0.001),
-    labels = scales::percent_format(accuracy = 2)
-  )
-
-```
-
-
-```{r, eval = T}
 #| label: fig-marg-probs-3
 #| code-summary: Marginal probability of outcome by surgical type
 #| fig-cap: "Marginal probability of $Y$ under each surgical type (DAIR, one-stage, two-stage)"
@@ -1067,26 +992,33 @@ ggplot(d_fig, aes(x = value, group = variable)) +
 #| fig-width: 5
 #| out-width: 80%
 
-cols <- c("marg_p0", "marg_p1", "marg_p2", "marg_p_rev")
+cols <- c("marg_p0", "marg_p1")
 d_post <- data.table(f1$draws(variables = cols, format = "matrix"))
 names(d_post) <- cols
-
-# hist(d_post$marg_p_rev - d_post$marg_p0)
  
-d_fig <- melt(d_post[, cols, with = F], measure.vars = cols)
-  
-ggplot(d_fig, aes(x = value, group = variable)) +
+d_fig1 <- melt(d_post[, cols, with = F], measure.vars = cols)
+d_fig2 <- data.table(f2$draws(variables = cols, format = "matrix"))
+d_fig2 <- melt(d_fig2, measure.vars = cols)
+
+ggplot(d_fig1, aes(x = value, group = variable)) +
   geom_density() +
-  scale_x_continuous(
-    labels = label_number(accuracy = 0.01)
-  ) +
-  geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
+  geom_density(data = d_fig2, aes(x = value, group = variable), 
+               col = 2) +
+  geom_vline(data = d_fig1[, .(mu = mean(value)), keyby = variable], 
              aes(xintercept = mu, group = variable)) +
-  facet_wrap(~variable)
+  facet_wrap(~variable, ncol = 1) +
+  scale_x_continuous(
+    "Proportion with successful outcome",
+    # labels = label_number(accuracy = 0.001),
+    labels = scales::percent_format(accuracy = 0.1)
+  )
+
 ```
+
 
 Risk difference (rev - dair).
 The red dashed line shows the posterior distribution obtained from a reduced model that includes a single term for surgical treatment assignment (dair/rev).
+Even though there is no effect of surgery, a positive risk difference for dair vs revision manifests due to the presence of an effect in the extended prophylaxis domain.
 
 ```{r, eval = T}
 #| label: fig-rd-3
@@ -1105,7 +1037,7 @@ ggplot(d_fig1, aes(x = rd)) +
   scale_x_continuous(
     "Risk difference",
     # labels = label_number(accuracy = 0.001),
-    labels = scales::percent_format(accuracy = 2)
+    labels = scales::percent_format(accuracy = 0.1)
   ) +
   geom_density(data = d_fig2, 
                aes(x = rd), col = 2, lty = 2) +
@@ -1117,9 +1049,9 @@ ggplot(d_fig1, aes(x = rd)) +
 
 ## Example 4 - combined revision and extended prophylaxis effects
 
-Revision effects are set to negative values and a positive effect is set for the extended prophylaxis.
+Here revision effects are set to negative values (i.e. people on revision do worse) and a positive effect is set for the extended prophylaxis.
 
-For similar reasons as above, the detrimental effect of revision is cancelled out when evaluated at the margins due to the offsetting effect of extended prophylaxis.
+For similar reasons as above, the negative effect of revision (people do worse under surgical removal and replacement of the joint) is cancelled out when evaluated at the margins due to the offsetting effect of extended prophylaxis.
 
 ```{r, eval = T, echo = T}
 #| label: sim-4
@@ -1127,10 +1059,7 @@ For similar reasons as above, the detrimental effect of revision is cancelled ou
 
 m1 <- cmdstanr::cmdstan_model("stan/logistic-demo-03.stan")
 m2 <- cmdstanr::cmdstan_model("stan/logistic-demo-02.stan")
-# nsim <- 250
 
-# m_res <- do.call(rbind, mclapply(1:nsim, FUN = function(i){
-  
 d <- get_data(
   n = 1e5,
   ff = function(j, a, ua, sa, d1, ud1, sd1, d2, ud2, sd2, c, uc, sc){
@@ -1140,7 +1069,7 @@ d <- get_data(
     # dair
     ix <- which(sa == 0)
     p[ix] <- 0.6 + 
-      -0.07*(sa[ix] == 1) + -0.07*(sa[ix] == 2) + 0.05*ua[ix] +
+      -0.1*(sa[ix] == 1) + -0.1*(sa[ix] == 2) + 0.05*ua[ix] +
       0*sd1[ix] - 0.01*ud1[ix] +
       0*sc[ix] + 0*uc[ix] +
       -0.1*j[ix] + 
@@ -1163,13 +1092,12 @@ d <- get_data(
       0*sc[ix] + 0*uc[ix] +
       -0.1*j[ix] + 
       # last two parameters not included for dair and one-stage
-      0.25*sd2[ix] + 0*ud2[ix] +
+      0.2*sd2[ix] + 0*ud2[ix] +
       0*j[ix]**(sa[ix] == 1) + 0*j[ix]**(sa[ix] == 2)
       
     p
   })
 
-# d[, .(.N, mean(y)), keyby = sa]
 
 d[, `:=`(sa1 = as.numeric(d$sa == 1), sa2 = as.numeric(d$sa == 2))]
 d_s <- d[, .(y = sum(y), n = .N, p_y = unique(p_y)), keyby = .(
@@ -1182,8 +1110,6 @@ X1 <- cbind(d_s$sa1, d_s$sa2)
 X2 <- cbind(d_s$ua, d_s$sd1, d_s$ud1, d_s$sc, d_s$uc, d_s$j)
 # extended prophylaxis terms - only applies to two-stage pt
 X3 <- cbind(d_s$sd2, d_s$ud2)
-# just fill in the nas that are assoc with dair and one-stage pt
-X3[is.na(X3[,1]),1] <- 99
 # interactions
 X4 <- cbind(d_s$j*d_s$sa1, d_s$j*d_s$sa2)
 
@@ -1282,8 +1208,7 @@ ggplot(d_fig, aes(x = value, group = variable)) +
   geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
              aes(xintercept = mu, group = variable)) +
   scale_x_continuous(
-    # labels = label_number(accuracy = 0.001),
-    labels = scales::percent_format(accuracy = 2)
+    labels = label_number(accuracy = 0.01)
   ) +
   facet_wrap(~variable, scales = "free") +
   theme(legend.position = "none")
@@ -1291,29 +1216,6 @@ ggplot(d_fig, aes(x = value, group = variable)) +
 ```
 
 The distribution of the marginal probability of $Y$ under each treatment type. 
-
-```{r, eval = T}
-
-cols <- c("marg_p0", "marg_p1")
-d_post <- data.table(f1$draws(variables = cols, format = "matrix"))
-names(d_post) <- cols
-
-# hist(d_post$marg_p_rev - d_post$marg_p0)
- 
-d_fig <- melt(d_post[, cols, with = F], measure.vars = cols)
-  
-ggplot(d_fig, aes(x = value, group = variable)) +
-  geom_density() +
-  geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
-             aes(xintercept = mu, group = variable)) +
-  facet_wrap(~variable, ncol = 1) +
-  scale_x_continuous(
-    "Proportion with successful outcome",
-    # labels = label_number(accuracy = 0.001),
-    labels = scales::percent_format(accuracy = 2)
-  )
-
-```
 
 ```{r, eval = T}
 #| label: fig-marg-probs-4
@@ -1324,22 +1226,27 @@ ggplot(d_fig, aes(x = value, group = variable)) +
 #| fig-width: 5
 #| out-width: 80%
 
-cols <- c("marg_p0", "marg_p1", "marg_p2", "marg_p_rev")
+cols <- c("marg_p0", "marg_p1")
 d_post <- data.table(f1$draws(variables = cols, format = "matrix"))
 names(d_post) <- cols
-
-# hist(d_post$marg_p_rev - d_post$marg_p0)
  
-d_fig <- melt(d_post[, cols, with = F], measure.vars = cols)
-  
-ggplot(d_fig, aes(x = value, group = variable)) +
+d_fig1 <- melt(d_post[, cols, with = F], measure.vars = cols)
+d_fig2 <- data.table(f2$draws(variables = cols, format = "matrix"))
+d_fig2 <- melt(d_fig2, measure.vars = cols)
+
+ggplot(d_fig1, aes(x = value, group = variable)) +
   geom_density() +
-  scale_x_continuous(
-    labels = label_number(accuracy = 0.01)
-  ) +
-  geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
+  geom_density(data = d_fig2, aes(x = value, group = variable), 
+               col = 2) +
+  geom_vline(data = d_fig1[, .(mu = mean(value)), keyby = variable], 
              aes(xintercept = mu, group = variable)) +
-  facet_wrap(~variable)
+  facet_wrap(~variable, ncol = 1) +
+  scale_x_continuous(
+    "Proportion with successful outcome",
+    # labels = label_number(accuracy = 0.001),
+    labels = scales::percent_format(accuracy = 0.1)
+  )
+
 ```
 
 Risk difference (rev - dair).
@@ -1362,7 +1269,7 @@ ggplot(d_fig1, aes(x = rd)) +
   scale_x_continuous(
     "Risk difference",
     # labels = label_number(accuracy = 0.001),
-    labels = scales::percent_format(accuracy = 2)
+    labels = scales::percent_format(accuracy = 0.1)
   ) +
   geom_density(data = d_fig2, 
                aes(x = rd), col = 2, lty = 2) +
@@ -1375,18 +1282,18 @@ ggplot(d_fig1, aes(x = rd)) +
 
 ## Discussion
 
-In a factorial design, the main effects can be isolated while having an interpretation conditional on all other terms in the model held at a constant level.
-When we are talking about an effect of $P$ it relates to intervening on $P$.
+In a factorial design, the main effects could be isolated and have an interpretation conditional on all other terms in the model held at a constant level.
+When we are talking about an effect of $P$ it relates specifically to intervening on $P$.
 Within the roadmap design, we don't have this.
-In fact, we could report on positive or negative *revision* effects that have arise as a consequence of the non-zero effects in other domains.
+In fact, we could presently end up in a situation where we identify positive or negative *revision* effects that have arisen solely as a consequence of the non-zero effects in other domains.
 
-The phenomena has nothing to do with the estimation process nor the statistical model.
-It is an artefact of the chosen design.
+The phenomena is an artefact of the design rather than the estimation process or the specification of the statistical model.
 
-One possible way to respond to this is to define the concept of revision as a specific combination of strategies. 
-Perhaps the most accessible to a potential user of the information is dair vs revision where dair corresponds strictly to a strategy of dair plus 12 weeks backbone therapy and where revision conrresponds to one-stage revision with 12 weeks backbone antibiotic or two-stage revision with 12 weeks backbone antibiotic and no extended prophylaxis.
+The only reasonable way to address this seems to be to define the concept of revision as a strategy that involves multiple domain elements.
+Probably the most interpretaable approach is to have dair vs revision corresponding to dair being a strict strategy of dair plus 12 weeks backbone therapy and where revision conrresponds to one-stage revision with 12 weeks backbone antibiotic or two-stage revision with 12 weeks backbone antibiotic and no extended prophylaxis.
 However, given that we do not have an intervention arm that is the absence of extended prophylaxis, we would have to settle on 7 days.
-In no way does the above fix the design, but it provides a more coherent quantity to report on than the mixture of strategies presently being conceptualised as representing the effect of surgical removal and replacement of a joint.
+
+In no way does the above fix the design, but it provides a more coherent quantity to evaluate and report on than an arbitrary mix of strategies.
 
 
 

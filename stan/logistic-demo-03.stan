@@ -69,20 +69,15 @@ model{
 generated quantities{
   vector[N] p;    
   real marg_p0;                                               
-  real marg_p1;                                              
-  // real marg_p2;    
-  // real marg_p_rev;
+  real marg_p1;       
   real rd;                                                    
                                                               
   vector[N] cond_p0;                                          
-  vector[N] cond_p1;                                          
-  // vector[N2] cond_p2;                                           
+  vector[N] cond_p1;                                               
                                                               
   // to get to pate rather than sate                          
   // Bayesian bootstrap (weights)                             
   vector[N] w = dirichlet_rng(to_vector(n)); 
-  // vector[N1] w1 = dirichlet_rng(to_vector(n[ix1])); 
-  // vector[N2] w2 = dirichlet_rng(to_vector(n[ix2])); 
                                                               
   p = inv_logit(eta);
   
@@ -97,9 +92,7 @@ generated quantities{
                                                               
   // taking average over bayesian bootstrap weights           
   marg_p0 = w' * cond_p0;                                  
-  marg_p1 = w' * cond_p1;   
-  // marg_p2 = w2' * cond_p2;    
+  marg_p1 = w' * cond_p1;    
 
-  // marg_p_rev  = (pr_one*marg_p1) + (1-pr_one)*marg_p2;
   rd = marg_p1 - marg_p0;
 }
