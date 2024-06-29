@@ -334,7 +334,7 @@ m1 <- cmdstanr::cmdstan_model("stan/logistic-demo-03.stan")
 m2 <- cmdstanr::cmdstan_model("stan/logistic-demo-02.stan")
   
 d <- get_data(
-  n = 1e6,
+  n = 1e5,
   ff = function(j, a, ua, sa, d1, ud1, sd1, d2, ud2, sd2, c, uc, sc){
   
     p <- rep(NA, length(a))
@@ -405,7 +405,12 @@ ld <- list(
   n = d_s$n,
   X1 = X1, X2 = X2, X3 = X3, X4 = X4,
   P1 = ncol(X1), P2 = ncol(X2), P3 = ncol(X3), P4 = ncol(X4),
-  pr_one = d[a == 1, mean(sa == 1)],
+  # number of recs preference for 1/2 under revision
+  N1 = d_s[ua == 0, .N], N2 = d_s[ua == 1, .N],
+  # idx for pref for 1/2
+  ix1 = d_s[ua == 0, which = T],
+  ix2 = d_s[ua == 1, which = T],
+  pr_one = d[, mean(ua == 0)],
   prior_only = 0,
   sd_a0 = 1.5,
   sd_b1 = 3, sd_b2 = 3, sd_b3 = 3, sd_b4 = 3
@@ -508,6 +513,38 @@ Marginal probability of $Y$ under each surgical treatment type is shown below.
 #| fig-width: 5
 #| out-width: 80%
 
+
+cols <- c("marg_p0", "marg_p1")
+d_post <- data.table(f1$draws(variables = cols, format = "matrix"))
+names(d_post) <- cols
+
+# hist(d_post$marg_p_rev - d_post$marg_p0)
+ 
+d_fig <- melt(d_post[, cols, with = F], measure.vars = cols)
+  
+ggplot(d_fig, aes(x = value, group = variable)) +
+  geom_density() +
+  geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
+             aes(xintercept = mu, group = variable)) +
+  facet_wrap(~variable, ncol = 1) +
+  scale_x_continuous(
+    "Proportion with successful outcome",
+    # labels = label_number(accuracy = 0.001),
+    labels = scales::percent_format(accuracy = 2)
+  )
+
+```
+
+
+```{r, eval = T}
+#| label: fig-marg-probs-1
+#| code-summary: Marginal probability of outcome by surgical type
+#| fig-cap: "Marginal probability of $Y$ under each surgical type (DAIR, one-stage, two-stage)"
+#| fig-cap-location: bottom
+#| fig-height: 5
+#| fig-width: 5
+#| out-width: 80%
+
 cols <- c("marg_p0", "marg_p1", "marg_p2", "marg_p_rev")
 d_post <- data.table(f1$draws(variables = cols, format = "matrix"))
 names(d_post) <- cols
@@ -547,7 +584,9 @@ ggplot(d_fig1, aes(x = rd)) +
   geom_density(data = d_fig2, 
                aes(x = rd), col = 2, lty = 2) +
   scale_x_continuous(
-    labels = label_number(accuracy = 0.001)
+    "Risk difference",
+    # labels = label_number(accuracy = 0.001),
+    labels = scales::percent_format(accuracy = 2)
   ) +
   geom_vline(data = d_fig1[, .(mu = mean(rd))], 
              aes(xintercept = mu))  +
@@ -574,7 +613,7 @@ m2 <- cmdstanr::cmdstan_model("stan/logistic-demo-02.stan")
 # m_res <- do.call(rbind, mclapply(1:nsim, FUN = function(i){
   
 d <- get_data(
-  n = 1e6,
+  n = 1e5,
   ff = function(j, a, ua, sa, d1, ud1, sd1, d2, ud2, sd2, c, uc, sc){
   
     p <- rep(NA, length(a))
@@ -636,7 +675,12 @@ ld <- list(
   n = d_s$n,
   X1 = X1, X2 = X2, X3 = X3, X4 = X4,
   P1 = ncol(X1), P2 = ncol(X2), P3 = ncol(X3), P4 = ncol(X4),
-  pr_one = d[a == 1, mean(sa == 1)],
+  # number of recs preference for 1/2 under revision
+  N1 = d_s[ua == 0, .N], N2 = d_s[ua == 1, .N],
+  # idx for pref for 1/2
+  ix1 = d_s[ua == 0, which = T],
+  ix2 = d_s[ua == 1, which = T],
+  pr_one = d[, mean(ua == 0)],
   prior_only = 0,
   sd_a0 = 1.5,
   sd_b1 = 3, sd_b2 = 3, sd_b3 = 3, sd_b4 = 3
@@ -730,6 +774,29 @@ ggplot(d_fig, aes(x = value, group = variable)) +
 The distribution of the marginal probability of $Y$ under each treatment type. 
 
 ```{r, eval = T}
+
+cols <- c("marg_p0", "marg_p1")
+d_post <- data.table(f1$draws(variables = cols, format = "matrix"))
+names(d_post) <- cols
+
+# hist(d_post$marg_p_rev - d_post$marg_p0)
+ 
+d_fig <- melt(d_post[, cols, with = F], measure.vars = cols)
+  
+ggplot(d_fig, aes(x = value, group = variable)) +
+  geom_density() +
+  geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
+             aes(xintercept = mu, group = variable)) +
+  facet_wrap(~variable, ncol = 1) +
+  scale_x_continuous(
+    "Proportion with successful outcome",
+    # labels = label_number(accuracy = 0.001),
+    labels = scales::percent_format(accuracy = 2)
+  )
+
+```
+
+```{r, eval = T}
 #| label: fig-marg-probs-2
 #| code-summary: Marginal probability of outcome by surgical type
 #| fig-cap: "Marginal probability of $Y$ under each surgical type (DAIR, one-stage, two-stage)"
@@ -774,7 +841,9 @@ d_fig2 <- data.table(f2$draws(variables = c("rd"), format = "matrix"))
 ggplot(d_fig1, aes(x = rd)) +
   geom_density() +
   scale_x_continuous(
-    labels = label_number(accuracy = 0.001)
+    "Risk difference",
+    # labels = label_number(accuracy = 0.001),
+    labels = scales::percent_format(accuracy = 2)
   ) +
   geom_density(data = d_fig2, 
                aes(x = rd), col = 2, lty = 2) +
@@ -806,7 +875,7 @@ m2 <- cmdstanr::cmdstan_model("stan/logistic-demo-02.stan")
 # m_res <- do.call(rbind, mclapply(1:nsim, FUN = function(i){
   
 d <- get_data(
-  n = 1e6,
+  n = 1e5,
   ff = function(j, a, ua, sa, d1, ud1, sd1, d2, ud2, sd2, c, uc, sc){
   
     p <- rep(NA, length(a))
@@ -837,7 +906,7 @@ d <- get_data(
       0*sc[ix] + 0*uc[ix] +
       -0.1*j[ix] + 
       # last two parameters not included for dair and one-stage
-      0.25*sd2[ix] + 0*ud2[ix] +
+      0.2*sd2[ix] + 0*ud2[ix] +
       0*j[ix]**(sa[ix] == 1) + 0*j[ix]**(sa[ix] == 2)
       
     p
@@ -867,7 +936,12 @@ ld <- list(
   n = d_s$n,
   X1 = X1, X2 = X2, X3 = X3, X4 = X4,
   P1 = ncol(X1), P2 = ncol(X2), P3 = ncol(X3), P4 = ncol(X4),
-  pr_one = d[a == 1, mean(sa == 1)],
+  # number of recs preference for 1/2 under revision
+  N1 = d_s[ua == 0, .N], N2 = d_s[ua == 1, .N],
+  # idx for pref for 1/2
+  ix1 = d_s[ua == 0, which = T],
+  ix2 = d_s[ua == 1, which = T],
+  pr_one = d[, mean(ua == 0)],
   prior_only = 0,
   sd_a0 = 1.5,
   sd_b1 = 3, sd_b2 = 3, sd_b3 = 3, sd_b4 = 3
@@ -961,6 +1035,30 @@ ggplot(d_fig, aes(x = value, group = variable)) +
 The distribution of the marginal probability of $Y$ under each treatment type. 
 
 ```{r, eval = T}
+
+cols <- c("marg_p0", "marg_p1")
+d_post <- data.table(f1$draws(variables = cols, format = "matrix"))
+names(d_post) <- cols
+
+# hist(d_post$marg_p_rev - d_post$marg_p0)
+ 
+d_fig <- melt(d_post[, cols, with = F], measure.vars = cols)
+  
+ggplot(d_fig, aes(x = value, group = variable)) +
+  geom_density() +
+  geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
+             aes(xintercept = mu, group = variable)) +
+  facet_wrap(~variable, ncol = 1) +
+  scale_x_continuous(
+    "Proportion with successful outcome",
+    # labels = label_number(accuracy = 0.001),
+    labels = scales::percent_format(accuracy = 2)
+  )
+
+```
+
+
+```{r, eval = T}
 #| label: fig-marg-probs-3
 #| code-summary: Marginal probability of outcome by surgical type
 #| fig-cap: "Marginal probability of $Y$ under each surgical type (DAIR, one-stage, two-stage)"
@@ -1005,7 +1103,9 @@ d_fig2 <- data.table(f2$draws(variables = c("rd"), format = "matrix"))
 ggplot(d_fig1, aes(x = rd)) +
   geom_density() +
   scale_x_continuous(
-    labels = label_number(accuracy = 0.001)
+    "Risk difference",
+    # labels = label_number(accuracy = 0.001),
+    labels = scales::percent_format(accuracy = 2)
   ) +
   geom_density(data = d_fig2, 
                aes(x = rd), col = 2, lty = 2) +
@@ -1032,7 +1132,7 @@ m2 <- cmdstanr::cmdstan_model("stan/logistic-demo-02.stan")
 # m_res <- do.call(rbind, mclapply(1:nsim, FUN = function(i){
   
 d <- get_data(
-  n = 1e6,
+  n = 1e5,
   ff = function(j, a, ua, sa, d1, ud1, sd1, d2, ud2, sd2, c, uc, sc){
   
     p <- rep(NA, length(a))
@@ -1093,11 +1193,16 @@ ld <- list(
   n = d_s$n,
   X1 = X1, X2 = X2, X3 = X3, X4 = X4,
   P1 = ncol(X1), P2 = ncol(X2), P3 = ncol(X3), P4 = ncol(X4),
-  pr_one = d[a == 1, mean(sa == 1)],
+  # number of recs preference for 1/2 under revision
+  N1 = d_s[ua == 0, .N], N2 = d_s[ua == 1, .N],
+  # idx for pref for 1/2
+  ix1 = d_s[ua == 0, which = T],
+  ix2 = d_s[ua == 1, which = T],
+  pr_one = d[, mean(ua == 0)],
   prior_only = 0,
   sd_a0 = 1.5,
   sd_b1 = 3, sd_b2 = 3, sd_b3 = 3, sd_b4 = 3
-)     
+)         
 
 f1 <- m1$sample(
     ld, iter_warmup = 1000, iter_sampling = 1000,
@@ -1177,7 +1282,8 @@ ggplot(d_fig, aes(x = value, group = variable)) +
   geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
              aes(xintercept = mu, group = variable)) +
   scale_x_continuous(
-    labels = label_number(accuracy = 0.01)
+    # labels = label_number(accuracy = 0.001),
+    labels = scales::percent_format(accuracy = 2)
   ) +
   facet_wrap(~variable, scales = "free") +
   theme(legend.position = "none")
@@ -1185,6 +1291,29 @@ ggplot(d_fig, aes(x = value, group = variable)) +
 ```
 
 The distribution of the marginal probability of $Y$ under each treatment type. 
+
+```{r, eval = T}
+
+cols <- c("marg_p0", "marg_p1")
+d_post <- data.table(f1$draws(variables = cols, format = "matrix"))
+names(d_post) <- cols
+
+# hist(d_post$marg_p_rev - d_post$marg_p0)
+ 
+d_fig <- melt(d_post[, cols, with = F], measure.vars = cols)
+  
+ggplot(d_fig, aes(x = value, group = variable)) +
+  geom_density() +
+  geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable], 
+             aes(xintercept = mu, group = variable)) +
+  facet_wrap(~variable, ncol = 1) +
+  scale_x_continuous(
+    "Proportion with successful outcome",
+    # labels = label_number(accuracy = 0.001),
+    labels = scales::percent_format(accuracy = 2)
+  )
+
+```
 
 ```{r, eval = T}
 #| label: fig-marg-probs-4
@@ -1231,7 +1360,9 @@ d_fig2 <- data.table(f2$draws(variables = c("rd"), format = "matrix"))
 ggplot(d_fig1, aes(x = rd)) +
   geom_density() +
   scale_x_continuous(
-    labels = label_number(accuracy = 0.001)
+    "Risk difference",
+    # labels = label_number(accuracy = 0.001),
+    labels = scales::percent_format(accuracy = 2)
   ) +
   geom_density(data = d_fig2, 
                aes(x = rd), col = 2, lty = 2) +
