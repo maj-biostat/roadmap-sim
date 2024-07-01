@@ -37,7 +37,7 @@ Quarto 1.5.52
 [✓] Checking versions of quarto dependencies......OK
 [✓] Checking Quarto installation......OK
       Version: 1.5.52
-      Path: /Applications/quarto/bin
+      Path: -
 
 [✓] Checking tools....................OK
       TinyTeX: v2024.03
@@ -45,14 +45,14 @@ Quarto 1.5.52
 
 [✓] Checking LaTeX....................OK
       Using: TinyTex
-      Path: /Users/mark/Library/TinyTeX/bin/universal-darwin
+      Path: -
       Version: 2024
 
 [✓] Checking basic markdown render....OK
 
 [✓] Checking Python 3 installation....OK
       Version: 3.10.1
-      Path: /Users/mark/.pyenv/versions/3.10.1/bin/python3
+      Path: -
       Jupyter: (None)
 
       Jupyter is not available in this Python installation.
@@ -60,9 +60,9 @@ Quarto 1.5.52
 
 [✓] Checking R installation...........OK
       Version: 4.4.1
-      Path: /Library/Frameworks/R.framework/Resources
+      Path: -
       LibPaths:
-        - /Library/Frameworks/R.framework/Versions/4.4-arm64/Resources/library
+        - -
       knitr: 1.47
       rmarkdown: 2.27
 
