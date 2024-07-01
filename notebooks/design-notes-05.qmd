@@ -1,5 +1,5 @@
 ---
-title: "Design notes - reduced models"
+title: "Marginal-ish effects"
 date: today
 date-modified: last-modified
 ---
@@ -1284,8 +1284,7 @@ ggplot(d_fig1, aes(x = rd)) +
 
 In a factorial design, the main effects could be isolated and have an interpretation conditional on all other terms in the model held at a constant level.
 When we are talking about an effect of $P$ it relates specifically to intervening on $P$.
-Within the roadmap design, we don't have this.
-In fact, we could presently end up in a situation where we identify positive or negative *revision* effects that have arisen solely as a consequence of the non-zero effects in other domains.
+However, due to the roadmap design using the marginal perspective could lead us to identify positive or negative *revision* effects solely as a consequence of the non-zero effects in other domains.
 
 The phenomena is an artefact of the design rather than the estimation process or the specification of the statistical model.
 

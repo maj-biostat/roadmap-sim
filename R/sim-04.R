@@ -1,3 +1,8 @@
+# Uses posterior predictive distribution to evaluate the likelihood of a 
+# trial conclusion in the next X pts. Does not evaluate at the max sample
+# size so probably of limited value. Nevertheless, implementation is basically
+# in place and so have left as is.
+
 source("./R/init.R")
 
 # Command line arguments list scenario (true dose response),
@@ -5,6 +10,7 @@ source("./R/init.R")
 # to use and the simulator to use.
 args = commandArgs(trailingOnly=TRUE)
 
+# Load cfg based on cmd line args.
 if (length(args)<1) {
   log_info("Setting default run method (does nothing)")
   args[1] = "run_none_sim_04"
@@ -14,12 +20,11 @@ if (length(args)<1) {
   log_info("Scenario config ", args[2])
 }
 
-# Logs
+# Log setup
 f_log_sim <- file.path("./logs", "log-sim.txt")
 log_appender(appender_file(f_log_sim))
-# message(Sys.time(), " Log file initialised ", f_log)
 log_info("*** START UP ***")
-log_threshold(TRACE)
+# log_threshold(TRACE)
 
 f_cfgsc <- file.path("./etc", args[2])
 g_cfgsc <- config::get(file = f_cfgsc)
@@ -28,29 +33,40 @@ stopifnot("Config is null" = !is.null(g_cfgsc))
 ix <- 1
 m1 <- cmdstanr::cmdstan_model("stan/model-sim-04.stan")
 
+
+
+# Main trial loop.
 run_trial <- function(ix){
   
   log_info("Entered  run_trial for trial ", ix)
   
-  # init
-  pop_spec <- get_pop_spec()
-  sim_spec <- get_sim_spec()
+  # initialise simulation parameters
+  # get_pop_spec and get_sim_spec are defined in the roadmap.data package
+  # These functions allow us to simulate data according to our spec and also 
+  # to switch treatments on and off. 
+  pop_spec <- roadmap.data::get_pop_spec()
+  sim_spec <- roadmap.data::get_sim_spec()
+  # Intercept
   sim_spec$a0 <- qlogis(g_cfgsc$p_a0)
+  # Strata
   sim_spec$m['l1'] <- qlogis(g_cfgsc$m_l1) - sim_spec$a0
   sim_spec$m['l2'] <- qlogis(g_cfgsc$m_l2) - sim_spec$a0
+  # Surgery 
   sim_spec$b['erx'] <- g_cfgsc$b_erx
   sim_spec$b['r1'] <- g_cfgsc$b_r1
   sim_spec$b['r2'] <- g_cfgsc$b_r2
+  # Duration
   sim_spec$b['edx'] <- g_cfgsc$b_edx
   sim_spec$b['r1d'] <- g_cfgsc$b_r1d
   sim_spec$b['r2d'] <- g_cfgsc$b_r2d
+  # Choice
   sim_spec$b['efx'] <- g_cfgsc$b_efx
   sim_spec$b['f'] <- g_cfgsc$b_f
 
   # enrol times
   # easier to produce enrol times all in one hit rather than try to do them 
   # incrementally with a non-hom pp.
-  loc_t0 <- get_enrol_time(max(g_cfgsc$N_pt))
+  loc_t0 <- roadmap.data::get_enrol_time(max(g_cfgsc$N_pt))
 
   # loop controls
   stop_enrol <- FALSE
@@ -84,9 +100,6 @@ run_trial <- function(ix){
     dim = c(N_analys, length(g_fx)),
     dimnames = list(1:N_analys, g_fx)
   )
-  
-  # no need to track pr_fut as just taken as a treshold for pr_sup
-  # i.e. fut iff pr_sup < 0.05 (or some other threshold)
   
   # decisions
   g_dec_type <- c("sup", 

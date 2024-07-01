@@ -1,12 +1,12 @@
 ---
-title: "More Design Notes"
+title: "Design discussion (part 1)"
 date: 2024-02-02
 date-modified: last-modified
 ---
 
 
 
-```{r}
+```{r, echo = F}
 #| label: setup
 #| code-summary: Setup
 
@@ -15,14 +15,200 @@ log_info("Called design-notes-02 notebook")
 ```
 
 
-This starts with a digression to help frame some background technicalities and then considers the topics that have been discussed recently.
+This provides some technical background with the goal of aiding insight into the limitations and challenges associated with the present design.
+
+## Complete design
+
+Conceptually, roadmap is somewhat nested within an approximation of a complete design, see  below.
+We have ignored the choice domain since it's not relevant to the discussion here, neither are variations in participation and deviations from assignment.
+The boxes denote nodes where assignment is under statistical control, the circles are self selected.
+
+The complete design as presented still has its quirks.
+There are multiple version of treatment under revision and these are self selected rather than randomised.
+Similarly with dair, we expect 12 weeks duration will be the recommended norm, but duration is ultimately self-selected for this group.
+Aspirationally, we posit 12 and 6 weeks duration following dair per the revision units.
+
+While the duration has been specified as a unified intervention.
+The figure decomposes the duration domain into duration of antibiotic following the first and second stage operations as this aligns more closely with the interventional procedures.
+The dashed lines indicate paths which are not available in the current design.
+
+```{mermaid}
+%%| fig-width: 6
+%%| fig-height: 5
+
+flowchart TD
+  Z[Surgery] --> T(Revision type selected) --> W[1st stage duration] --> X[2nd stage duration]
+  A1[DAIR] --> A5((DAIR))
+  A5 --> B0((12w))
+  A5 -.-> B1((6w))
+
+  A2[Revision] --> A3((One-stage))
+  A2 --> A4((Two-stage))
+
+  A3 --> B2[12w]
+  A3 --> B3[6w]
+  A4 --> B4[12w]
+  A4 -.-> B5[6w]
+
+  B2 --- STOP[ ]
+  B2 --- STOP2[ ]
+  B4 --> C1[12w]
+  B4 --> C2[7d]
+  B5 -.-> C3[12w]
+  B5 -.-> C4[7d]
+
+  linkStyle 5 stroke: red;
+  linkStyle 11 stroke: red;
+  linkStyle 16 stroke: red;
+  linkStyle 17 stroke: red;
+  linkStyle 12 fill:#FFFFFF00, stroke: #FFFFFF00
+  linkStyle 13 fill:#FFFFFF00, stroke: #FFFFFF00
+  style STOP  fill:#FFFFFF00, stroke:#FFFFFF00;
+  style STOP2  fill:#FFFFFF00, stroke:#FFFFFF00;
+```
+
+Neither *nested*, nor *fractional* properly characterise the nature of the roadmap design since some cells are self-selected and others fall outsize the specified set of factor levels.
+For want of a better descriptor, I will just say that roadmap approximately sits within the complete design.
+
+
+
+```{mermaid}
+%%| fig-width: 6
+%%| fig-height: 5
+
+flowchart TD
+  Z[Surgery] --> T(Revision type selected) --> W[1st stage duration] --> X[2nd stage duration]
+  A1[DAIR] --> B1((DAIR))
+  B1 --> C1((Usual care))
+
+  A2[Revision] --> B2((One-stage))
+  A2 --> B3((Two-stage))
+
+  B2 --> C2[12w]
+  B2 --> C3[6w]
+  B3 --> C4((Usual care))
+  C4 --> D1[12w]
+  C4 --> D2[7d]
+
+  C2 --- STOP[ ]
+  C3 --- STOP2[ ]
+
+  linkStyle 12 fill:#FFFFFF00, stroke: #FFFFFF00
+  linkStyle 13 fill:#FFFFFF00, stroke: #FFFFFF00
+  style STOP  fill:#FFFFFF00, stroke:#FFFFFF00;
+  style STOP2  fill:#FFFFFF00, stroke:#FFFFFF00;
+```
+
+In all cases in the above *Usual care* following the first operation equates to 12 weeks but that there is some flexibility in this and additionally, a duration of 12 weeks may be precluded by logistical considerations.
+For example, if the second stage of a two-stage unit occurs within 12 weeks of the first operation then it is not logically possible to assign 12 weeks worth of antibiotic.
+
+Nevertheless, tentatively, we might fill in usual care with 12 weeks to achieve the following structure.
+
+```{mermaid}
+%%| fig-width: 6
+%%| fig-height: 5
+
+flowchart TD
+  Z[Surgery] --> T(Revision type selected) --> W[1st stage duration] --> X[2nd stage duration]
+  A1[DAIR] --> B1((DAIR))
+  B1 --> C1((12w))
+
+  A2[Revision] --> B2((One-stage))
+  A2 --> B3((Two-stage))
+
+  B2 --> C2[12w]
+  B2 --> C3[6w]
+  B3 --> C4((12w))
+  C4 --> D1[12w]
+  C4 --> D2[7d]
+
+  C2 --- STOP[ ]
+  C3 --- STOP2[ ]
+
+  linkStyle 12 fill:#FFFFFF00, stroke: #FFFFFF00
+  linkStyle 13 fill:#FFFFFF00, stroke: #FFFFFF00
+  style STOP  fill:#FFFFFF00, stroke:#FFFFFF00;
+  style STOP2  fill:#FFFFFF00, stroke:#FFFFFF00;
+```
+
+Now, under the full design model, there would be 8 treatment cells of interest.
+
+- DAIR with 12 weeks
+- DAIR with 6 weeks
+- Revision, one-stage with 12 weeks
+- Revision, one-stage with 6 weeks
+- Revision, two-stage with 12 weeks following 1st, 12 weeks following 2nd
+- Revision, two-stage with 12 weeks following 1st, 7 days following 2nd
+- Revision, two-stage with 6 weeks following 1st, 12 weeks following 2nd
+- Revision, two-stage with 6 weeks following 1st, 7 days following 2nd
+
+But in the current roadmap setup we are reduced to 5 treatment:
+
+1. DAIR with 12 weeks
+1. Revision, one-stage with 12 weeks
+1. Revision, one-stage with 6 weeks
+1. Revision, two-stage with 12 weeks following 1st, 12 weeks following 2nd
+1. Revision, two-stage with 12 weeks following 1st, 7 days following 2nd
+
+However, for 1, 4 and 5, 12 weeks following the first surgery might not be an entirely reasonable assumption.
+For now, we will put that thought on hold.
+
+From the current design, although there are 5 cells, there are 3 comparisons which are of interest:
+
+1. DAIR with 12 weeks vs. revision with 12 weeks following 1st and X (could be 12w, 7d, or a mixture) days following 2nd if two-stage
+2. Revision, one stage with 12 weeks vs. with 6 weeks
+3. Revision, two stage with 12 weeks after 1st and 2nd vs. 7 days after 2nd.
+
+If 1 is what is meant by "Revision vs DAIR" then it is not entirely clear who would find this useful in practice since there is potential for substantial variation in the effect dependent on which components are included.
+
+A saturated model for the full design might be
+
+$$
+\begin{aligned}
+\eta = &\beta_0 + \beta_1r_{\text{one-stage}} + \beta_2 r_{\text{two-stage}} + \beta_3 d_{\text{1, 6 weeks}} \\
+&+ \beta_4 r_{\text{one-stage}}d_{\text{1, 6 weeks}} + \beta_5 r_{\text{two-stage}}d_{\text{1, 6 weeks}} \\
+&+ \beta_6 r_{\text{two-stage}} d_{2,\text{7 days}} + \beta_7 r_{\text{two-stage}}d_{\text{1, 6 weeks}} d_{2,\text{7 days}}
+\end{aligned}
+$$
+
+where the reference group is "DAIR with 12 weeks" and variations in participation are ignored, ditto with respect to the consideration of any level of interactions.
+
+Under the current roadmap design, only a reduced model can be considered.
+A saturated model for the reduced design could be:
+
+$$
+\eta = \alpha_0 + \alpha_1r_{\text{one-stage}} + \alpha_2 r_{\text{two-stage}} + \alpha_3 r_{\text{one-stage}} d_{\text{1, 6 weeks}} + \beta_4 r_{\text{two-stage}} d_{2,\text{7 days}}
+$$
+
+where the reference group is "DAIR with 12 weeks".
+
+A reduced model could also be considered under the full design.
+For example, if we assumed that the effect of first-stage duration was constant across surgery types (which it seems we don't), and assume that second stage duration is constant across first-stage duration types, then the model would be
+
+$$
+\eta = \beta_0 + \beta_1r_{\text{one-stage}} + \beta_2 r_{\text{two-stage}} + \beta_3 d_{\text{1, 6 weeks}} + \beta_6 r_{\text{two-stage}} d_{2,\text{7 days}}
+$$
+
+i.e. assuming that $\beta_4 = \beta_5 = \beta_7$ from the earlier model are all set to zero.
+
+This is basically equivalent to the reduced design model.
+The exception being that the reduced design is estimating $\alpha_3$, the effect of duration following one-stage revision specifically.
+The full design would by default estimate the effect of duration using data from all surgery types, $\beta_3$, assuming that the effect is constant across types, or additionally could target surgery specific interactions.
+
+Why do we only consider the reduced design? 
+Presumably, this is because of the results from other studies that DAIR with 6 weeks is inferior to DAIR with 12 weeks and that in two-stage revision, 6 weeks is considered inferior to 12 weeks.
+We are investigating 6w vs 12w for one-stage under the assumption that there is effect heterogenity of duration conditional on surgery type.
+So, inferiority of 6w amongst DAIR/two-stage is insufficient evidence to assume inferiority of 6w in one-stage.
 
 ## Associational effects
 
+One of the questions that has been raised relates to how it is that the surgical and duration domain are effectively coupled by design thereby necessitating a perspective on combined interventional strategies.
+To understand this it is worth stepping back for a moment and thinking about the structure and implications of the models we are using and how they are used to characterise measures of association.
+
 Start by thinking about the representation of a linear regression versus a logistic regression and what they are aiming to achieve.
-This is easiest via an example so assume we have two independent factors that are predictive of independent continuous and binary outcomes.
+This is easiest way to do so via an example so assume we have two independent factors that are predictive of independent continuous and binary outcomes.
 Assume that we are interested in the effect of `A` but `B` is still predictive of the outcome.
-In other words, assume something analogous to a randomised clinical trial setup where `A` corresponds to our set (here just control vs test) of randomised interventions and `B` is some prognostic baseline characteristic (age, sex etc).
+In other words, assume something analogous to a randomised clinical trial setup where `A` corresponds to our randomised intervention set (here just control vs test) and `B` is some prognostic baseline characteristic (age, sex etc).
 For a continuous outcome, adopt a linear model of the form $\mathbb{E}[Y | A,B] = \mu = \alpha_0 + \alpha_1 A + \alpha_2 B$ with $Y$ normally distributed.
 This model encapsulates our assumptions (unknowable in real life) for the data generating process.
 For the binary outcome adopt a logistic model of the form $g(\mathbb{E}[W | A,B]) = \eta = \beta_0 + \beta_1 A + \beta_2 B$ with $W$ is bernoulli $\eta$ being log-odds of response and $g$ being the logit link function such that the conditional mean of the response is now given by applying the inverse link $\mathbb{E}[W | A,B] = g^{-1}(\beta_0 + \beta_1 A + \beta_2 B)$ with $g^{-1}(z) = \frac{1}{1+\exp(-z)} = \frac{\exp(z)}{1 + \exp(z)} = \text{expit}(z)$.
@@ -38,8 +224,7 @@ $$
 
 In other words, the conditional mean equates to the conditional probability; $\mathbb{E}[W | A, B] = g^{-1}(\beta_0 + \beta_1 A + \beta_2 B) = Pr(W = 1 | A, B)$.
 
-A reminder about odds ratios - consider the model of the above logistic regression.
-However, instead of `B` mapping to the presence/absence of a baseline characteristic, think of it as a second set of interventions so that we are now describing a factorial setup (conveniently ignoring the possibility of interactions).
+Now, instead of `B` mapping in the logistic regression relating to the presence/absence of a baseline characteristic, think of it as a second set of interventions so that we are now describing a factorial setup (conveniently ignoring the possibility of interactions).
 Both `A` and `B` remain independent dichotomous random variables.
 In a complete factorial experiment we would randomise units to all combinations of `A` and `B` and usually take parameter estimates as the effects (e.g. log-odds-ratios or odds ratios) of interest.
 The exponentiated $\beta_1$ is the multiplicative change in the odds of response associated with moving from the control to the intervention group, with the important caveat that we are holding all other terms constant.
@@ -72,15 +257,15 @@ All of the above should be comfortably familiar, but the point was to be explici
 
 Now imagine a situation where we remove the secondary intervention factor (`B`) for one level of the primary intervention factor (`A`).
 This is analogous to a simplified version of the current roadmap design where `A` is representing the surgical domain and `B` the duration domain.
-I have whittled things down so that we are only thinking about dair vs one-stage revision for the surgical interventions and 12 vs 6 weeks duration following surgery for those having the one-stage procedure.
+Here we are only thinking about dair vs one-stage revision for the surgical interventions and 12 vs 6 weeks duration following surgery, but only for those having the one-stage procedure.
 
-Given the above scenario, we might choose to model the groups independently as we do not intervene on antibiotic duration for the dair group and therefore the system has a distinct data generation processes for each group.
+Given the above setup, we might choose to model the groups independently as we do not intervene on antibiotic duration for the dair group and therefore the system has a distinct data generation processes for each group.
 
-For dair we could simply model and estimate the log-odds of response, say $\theta$ estimated from the cohort that receive dair.
+For dair we could model and estimate the log-odds of response in isolation, say $\theta$ estimated from the cohort that receive dair.
 We take it for granted that the dair intervention is well defined in all its supportive components, which may include some flexibility in the duration of antibiotics received but it isn't something we have control over via randomisation.
 Based on the literature it seems like there might be variation in the response under dair conditional on duration but again we are putting that thought on hold for now.
 
-For the one-stage group, we could have
+For the one-stage group, we might model
 
 $$
 \begin{aligned}
@@ -97,7 +282,7 @@ $$
 \end{aligned}
 $$
 
-The above means that we need to make some decision on what to do with `B` since it hasn't dropped out of the calculations as it did under the complete design setup discussed previously.
+Clearly, we are left with the situation where we need to make some decision on what to do with `B` since it hasn't dropped out of the calculations as it did under the complete design setup discussed previously.
 Specifically, if we set `B = 0` then we get one answer for the effect of one-stage vs dair, namely $\gamma_0 - \theta$ and if we set `B = 1` then we get another answer $\gamma_0+\gamma_1 - \theta$.
 Furthermore, it doesn't matter whether we use independent models or one large joint model, you still have to make a decision or an assumption about how to handle `B`.
 We haven't got a single parameter to represent the odds-ratio and if such a parameter existed it would probably have a fairly unusual interpretation.
@@ -107,7 +292,7 @@ This necessitates some assumption regarding the distribution of `B`.
 In a complete factorial 2x2 design where `A` and `B` are randomised 1:1, the distribution of `B` is known. 
 However, this probably doesn't reflect the distribution of `B` in the population.
 
-## Adjustment
+## Consequences of adjustment
 
 Another thing to be aware of is the concept of collapsibility.
 Formally, measures of association are said to be collapsible if the marginal view equates to a weighted average of the strata specific effects.
@@ -261,11 +446,11 @@ Returning to the current simplified roadmap setup where we have dair vs one-stag
 + one + 6 wks: $Y(1,1)$
 
 $Y(0,1)$ is an impossibility by design even though it exists in principle.
-This looks somewhat like a violation in the positivity assumption.
+This looks somewhat like a violation in the positivity assumption but arguably we can work around it.
 Additionally, $Y(0,0)$ is actually never formally assigned to any unit.
-What we actually have is $Y(0,U)$ where $U$ denotes whatever usual practice is, or perhaps a recommendation of usual practice.
+What we have is $Y(0,U)$ where $U$ denotes whatever usual practice is, or perhaps a recommendation of usual practice.
 While we expect (and might assume) that $Y(0,U) := Y(0,0)$ but that does not appear to be guaranteed.
-We can potentially make assumptions that might help us with all of the above within the context of a model but I am currently uncertain as to whether the causal interpretation can truly be resolved under the present specification.
+Again, we can potentially make assumptions that might help us with all of the above within the context of a model but I am currently uncertain as to whether the causal interpretation can truly be resolved under the present specification.
 
 The above simplification is obviously (and purposefully a bit inaccurate) as we currently specify that the surgical domain randomises dair vs revision where the revision intervention is then selected to be either one-stage or two-stage by a clinician based on unobserved variables.
 
@@ -274,16 +459,15 @@ Recall that consistency connects the potential outcome with the observed data.
 It is defined as $Y_i = Y_i(x)$ if $x = x_i$; in words - the observed outcome for a unit equals the potential outcome for that unit with the intervention level set to the exposure that the unit received.
 However, given that what we observe under revision is consequence of either a one-stage or two-stage procedure, then there are two distinct values that singular $Y_i(1)$ could take on, either $Y_{one}$, the observed outcome under a one-stage revision or $Y_{two}$, the observed outcome under a two-stage revision.
 The argument against this would be that the meaning of revision simply maps to a one or two-stage procedure and the distinction does not matter.
-I am still not sure if this is completely reasonable.
 
-# Note
+## Summary
 
-I think, at best, we have multiple, quite distinct, experiments running that have differing goals.
-For example, one concerns a surgical intervention and the duration of antibiotics following the first stage operation and the choice of an antibiotic is conceptually relevant to all surgical interventions and units with the correct bacterial profile.
-Another concerns a surgical intervention, the duration of antibiotics following the first stage operation and the duration of antibiotics following the second stage operation and is relevant only to the population that are exposed to a two-stage procedure and so on.
+These notes are an attempt to provide some background and clarifications as well as formalise some of the thinking.
+Hopefully they can provide something of a common understanding in relation to some of the unusual aspects of the design.
 
-One thing I am really stuck on is finding a clear representation of the potential outcomes that is applicable to a design as in a form that would address the research questions.
-One possibility might be along the lines of $Y(a, b_1, b_2, c)$ where $a$, $b_1$, $b_2$ and $c$ denote the factors (with duration split as detailed above) that takes a factorial perspective, but in the context of dair and one-stage revision, obviously some of the elements are not applicable.
+
+
+
 
 
 

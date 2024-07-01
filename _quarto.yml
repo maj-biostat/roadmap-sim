@@ -17,7 +17,7 @@ website:
     search: true
     contents:
       - index.qmd
-      - section: "Design"
+      - section: "Assumptions and setup"
         contents:
         - notebooks/population-structure.qmd
         - notebooks/model-spec.qmd
@@ -26,14 +26,23 @@ website:
         - notebooks/trial-data.qmd
         - notebooks/model-implementation.qmd
         - notebooks/example-trials.qmd
+      - section: "Simulations"
+        contents:
         - notebooks/sim-design1-results.qmd
         - notebooks/sim-design3-results.qmd
-        - notebooks/design-notes.qmd
+      - section: "Design notes"
+        contents:
+        - notebooks/design-notes-01.qmd
+        - notebooks/design-notes-02.qmd
+        - notebooks/design-notes-03.qmd
+        - notebooks/design-notes-04.qmd
+        - notebooks/design-notes-05.qmd
         - notebooks/misc-notes.qmd
       - notebooks/about.qmd
           
 format:
   html:
+    # include-in-header: etc/mathjax.html
     theme:
       - sketchy
     toc: true
@@ -64,6 +73,7 @@ format:
       body-width: 900px
       margin-width: 200px
       gutter-width: 1.5rem
+    embed-resources: true
 
  
     

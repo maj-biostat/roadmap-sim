@@ -1,0 +1,149 @@
+---
+title: "Design discussion (part 2)"
+date: 2024-05-29
+execute: 
+  message: false
+  warning: false
+---
+
+## Notes on Bernard 2021
+
+The DATIPO study investigated non-inferiority of 6 weeks vs 12 weeks in PJI patients. The primary outcome was persistent infection within 2 years after the completion of antibiotic therapy. Surgery type was not randomised, but most events occurred in patients who received DAIR.
+
+Just from a cursory read, if this were the only information I had available to me (and the only thing I cared about was "persistent infection at 2 years"), 
+I would be wanting 12 weeks of AB duration not 6 weeks, irrespective of the type of surgery I was getting or the affected joint.
+Given how few events occurred in anyone who received one-stage, and assuming there is some level of homogeneity over surgery types, 
+I wouldn't have a different opinion for the one-stage group in particular. 
+But this wouldn't be a very strong belief given the small number of events in the trial overall.
+It would more so be a default simplification in the absence of any other information or experience, just this trial in isolation.
+
+In the AB duration DSA they write:
+
+> This demonstrated that shorter course therapy was not non-inferior (I'd say that it "showed" it was inferior, not just not non-inferior) to longer course therapy. Interestingly this finding was consistent amongst patients treated with Debridement, antibiotics and implant retention (DAIR) and 2-stage revision. However, for single stage revisions, there was no meaningful difference between the 6 weeks and 12 weeks of antibiotics on the outcome of treatment success, though the study was underpowered for subgroup analyses (n=150 for one-stage revisions)... a larger trial is needed to confirm the findings in DATIPO that 6 weeks is non-inferior to 12 weeks in terms of treatment success.
+
+So, it seems the opinion is that 6 weeks is (not non-)inferior to 12 weeks for DAIR and two-stage, but is possibly non-inferior (but perhaps not better) for one-stage.
+I don't think the paper provides sufficient reason to think that the duration effect would differ by surgery type (but also not that it wouldn't), but perhaps there are other justifications for why it might.
+If not willing to assume homogeneity of effect, to properly inform the duration decision in all surgery groups, you would probably want to assign 6/12 in all groups.
+
+But generally, I can see where they are coming from, I see the difficulty in willingly assigning DAIR patients to 6 weeks over 12 weeks despite the uncertainties.
+The one-stage group is the less informed one, but if I were a patient who was to get a one-stage revision, I would want 12 weeks not 6 weeks if all I had was the information from that trial.
+They don't mention any other studies, have you seen any others looking at the same kind of question?
+
+
+```{r}
+#| label: setup-data
+library(dplyr)
+library(marginaleffects)
+
+dat <- tribble(
+  ~ type, ~ x, ~ n, ~ y,
+  "DAIR", 0, 76, 11,
+  "DAIR", 1, 75, 23,
+  "Two", 0, 41, 2,
+  "Two", 1, 40, 6,
+  "One", 0, 71, 2,
+  "One", 1, 75, 3
+)
+
+fit1 <- glm(cbind(y, n - y) ~ type * x, data = dat, family = binomial())
+fit2 <- glm(cbind(y, n - y) ~ type + x, data = dat, family = binomial())
+```
+
+
+```{r}
+#| label: model-comparisons
+print(avg_comparisons(fit1, variables = "x", by = "type"), digits = 1)
+print(comparisons(fit1, variables = "x", by = "type", comparison = "lnor"), digits = 2)
+print(comparisons(fit1, variables = "x", by = "type", comparison = "lnor", hypothesis = "revpairwise"), digits = 2)
+anova(fit1, fit2)
+AIC(fit1, fit2)
+```
+
+The differences in differences of log-odds are very uncertain as expected given the small numbers available in the subgroups:
+
+Standard model choice metrics would prefer the model in which the effect of duration is assumed constant across surgery types, and so has 6 weeks inferior to 12 weeks irrespective of surgery type.
+
+
+## Ramble
+
+Maybe going too in depth, but I think one issue we are having is getting across the difference between what is being compared and what is being assumed in the model. 
+Depending on the model assumptions, some of the strategies might be assumed to be equal anyway and there might only be one decision/comparison in that sense. 
+But it's helpful to keep separate the model assumptions from the comparisons we are trying to make. 
+When we say "revision vs DAIR", that only defines a comparison if we think all revisions have equal effect or we are happy to completely ignore any varying effects. 
+But that's not what we believe (if we did, why would we bother looking at different A/B durations following revision?). 
+As soon as we think A/B duration has a varying effect that we want to estimate, there is no "revision vs DAIR" there is only "revision + duration vs DAIR + duration".
+But we are only assigning people to "revision + duration", for DAIR, there is just one version "DAIR" with duration unspecified (but presumably 12 weeks).
+So long as duration is constant across revision and DAIR (at least the first-stage of revision), they think that the effect of "revision vs DAIR" will be the same.
+So, for them, we only need to compare one version of revision to DAIR (the one with 12-weeks duration following first-stage of revision).
+
+In terms of the model, this is how I think about it...
+
+If I recall correctly, they think that ~ 70% participants will probably refuse or be ineligible for participation in the duration domain. 
+So, just thinking about the late-acute silo, ignoring everything else: amongst those who do not (or cannot) participate in duration, we have a comparison of some version of "DAIR vs revision" which we think is DAIR + 12 weeks, or revision with first-stage followed by 12 weeks and second-stage (if two-stage) followed by some short duration. 
+This might include ~ 70% of late acute participants. 
+Amongst those who do participate in duration, we have a comparison of some version of "DAIR vs revision + specified duration" where again, we think DAIR is with 12 weeks A/B duration, but is technically unspecified. 
+This might be ~ 30%. 
+
+At the one extreme, we could just assume duration has no effect whatsoever, then we would obtain an effect of revision in those who do and those who do not participate in the duration domain. 
+Say we might have a model assuming things are just additive on the log-odds.
+
+log-odds(y) = (b0 + b1 * r) + (a0 + a1 * r) * p, where p just denotes participation in the duration domain, and r assignment to revision.
+
+We'd have an effect of "DAIR vs. revision" amongst those who participate in duration assignment, b1, and one amongst those who do not, a1. 
+We could choose to assume (model) b1 = a1, in which case there's really just one effect of "DAIR vs. revision" which we think applies to everyone, or we could assume the effects might be different and consider both b1 and a1 as effects of "DAIR vs revision" in two different populations. 
+If being Bayesian we could also do something in between, where b1 - a1 ~ Normal(0, s^2) for some small s. 
+In this case, b1 ~= a1 unless we see some extreme difference, so a decision in one group would probably imply the same decision in the other. 
+But irrespective of whether we assume a1 = b1 or not, we are making two comparisons/decisions: one for those who participate in A/B duration and one for those who do not.
+
+Just in the context of this model, there are then two in-trial decisions we might want to make: is b1 > 0 and is a1 > 0. 
+If b1 > 0, then for those who cannot participate in duration domain, we think revision is better, and might drop DAIR for that group.
+If a1 > 0, then for those who can participate in duration domain, we think revision is better, and might drop DAIR for that group.
+If we assume in the model that a1 = b1, then we would drop DAIR or revision in both groups (duration participants and non-participants) at the same time. 
+If we think a1 ~= b1, we will probably drop DAIR or revision in both groups or neither group but unlikely to make opposite decisions in groups. 
+If we think |a1 - b1| could be large, then we might make different decisions in each group. 
+But generally, sounds like we probably think |a1 - b1| is small, so we would expect to make the same decision for both groups. 
+But the only way to certainly make the same decision (in the context of the model) in both groups is if we enforce a1 = b1.
+Sounds to me as though they would think a1 = b1.
+
+We could also think of all the above as 
+
+(b0 + b1 * E[r1|p=0] + b2 * E[r2|p=0]) + (a0 + a1 * E[r1|p=1] + a2 * E[r2|p=1]) * p
+
+where r1 is one-stage and r2 is two-stage, but we don't really care about any of these selection differences for the comparison we are making.
+
+---
+
+The above ignores duration altogether.
+Alternatively, we think duration has some effect that we want to estimate, and we don't want to ignore it altogether. 
+To get to the heart of it, say that everyone who is assigned to revision gets a one-stage revision.
+Also, suppose that we did vary duration for both DAIR and revision participants.
+So for those who participate in duration domain, our model might be
+
+a0 + a1*r1 + a2*d1 + a3*r1*d1
+
+where r1 = 1 if one-stage revision, and d1 = 1 if 6 weeks duration. 
+r1 = 0 if DAIR and d1 = 0 if 12-weeks duration.
+In their mind, they already "know" that a2  = a3.
+So, revision + 12w vs DAIR + 12w effect is a1, and equivalently, revision + 6w vs DAIR + 6w effect is also a1 (because a3 - a2 = 0).
+Given they "know" a2 = a3, we are not assigning anyone to DAIR + 6w duration, instead we are only assigning DAIR + 12w, one-stage + 12w, one-stage + 6w.
+So our model is just a0 + a1*r1 + a3*r1*d1.
+Only two comparisons are of interest: DAIR + 12w vs one-stage + 12w (a1) and one-stage + 12w vs one-stage + 6w (a3).
+We don't care about DAIR + 12w vs one-stage + 6w because we think if we shortened the DAIR duration to 6w this would be equivalent to DAIR + 12w vs one-stage + 12w.
+
+
+Of course, not all revisions are one-stage, so we have to allow for varying revision types given duration depends on revision type.
+We need to use the more general model (amongst those who choose to participate):
+
+(b0 + b1 * r) + (a0 + E[r1|p=1](a1 + a3 * d1) + E[r2|p=1] * (a2 + a4 * d2) * p
+
+where, say, d1 indicates 6 weeks after one-stage and d2 indicates short duration after two-stage. 
+The reference is assumed to be the 12 week option for both revision types.
+But again, it now sounds to me like we only care about one-stage + 12w, two-stage + short vs DAIR, we aren't interested in comparing one-stage + 6w, two-stage + whatever vs DAIR, because they believe if they also shortened A/B following DAIR the effect would be the same.
+There is still a question of the effect in participants and non-participants.
+Seems like we might think that b1 ~= E[r1](a1) + E[r2] * (a2), so if make a decision for one group, would happily apply that to both groups (A/B duration participants and non-participants).
+But more formally, could encode that in prior.
+
+Big picture we are still comparing a bunch of different strategies, it's just in their model they choose to assume they all have the same equal effect so choosing one type of "revision" as better than DAIR implies choosing all types of revision are better than DAIR in all groups.
+Because of this, as noted above, it sounds to me like when we are considering "revision vs DAIR" they really only care about the version of revision where "one-stage with 12 weeks A/B duration or two-stage with first-stage 12 A/B weeks and second-stage short duration (<24 hours)".
+So that may be the only comparison we bother to make.
+To them, that effect would be the same as long as A/B duration following DAIR was equal to A/B duration following first-stage.

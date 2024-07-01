@@ -23,11 +23,17 @@ Intercurrent event (unit level events that occur after randomisation that alter 
 The specification of the treatment regimen is critical in understanding what constitutes an IE.
 
 The components of an estimand are: treatment condition, population, outcome, intercurrent event handling and summary measure.
-In English, these correspond to "what is the trial comparing?", "what people/condition are we trying to help?", "what is being measured?", "how do we intend to handle treatment events that disrupt the existence or interpretation of the outcome?" and "what statistical measure is going to be used?"
+In English, these correspond to 
+
+1. treatment condition $:=$ "what is the trial comparing?"
+2. population $:=$ "what people/condition are we trying to help?"
+3. outcome $:=$ "what is being measured?"
+4. ie handling $:=$ "how do we intend to handle treatment related events that disrupt the existence or interpretation of the outcome?" and 
+5. summary measure $:=$ "what statistical measure is going to be used?"
 
 Even though the estimand framework never refers to it directly, it has causal inference very much in mind and therefore the notation used by the potential outcomes framework is a natural way to define the causal effects that are being targeted by the estimands.
 
-As a way to give some insight into the concepts and notation inherent in the estimand perspective, consider a simple two-arm randomised trial.
+As a way to give some insight into the concepts and notation implicit in the specification of an estimand, consider a simple two-arm randomised trial.
 The trial has units $i = 1 \dots n$ where each can be assigned to either control $a=0$ or test $a = 1$.
 Take $Y_i$ to denote an observable binary response variable of interest and $M_i$ to denote a binary IE such as discontinuation due to availability of treatment ($m=1$ being discontinued, $m = 0$ completed).
 We expect that the IE to encode characteristics $U_i$ of the unit $i$ as well as the treatment.
@@ -40,7 +46,7 @@ Each unit has potential outcomes for the outcome:
 + $Y(1,0)$ the outcome under test without discontinuation
 + $Y(1,1)$ the outcome under test with discontinuation
 
-Explicitly:
+Additionally:
 
 + $M_i(a=1)$ is the potential outcome for the IE when unit $i$ is assigned to the test group
 + $Y_i(a, m = 0)$ is the potential outcome for the response when intervening intervening with $a$ and $m=0$ (assuming that intervening on $m$ is somehow possible, i.e. it is a hypothetical world)
@@ -69,9 +75,7 @@ If IEs are thought of as mediators of treatment, then the ITT effect aligns with
 One way to implement ITT is to include all randomised units and all their outcomes ignoring post-randomisation changes in treatment, protocol violations, non-adherence etc.
 The implied treatment regimen is therefore the offer of the assigned treatment with potential for discontinuation of that treatment and/or the use of any other treatment at any time without restriction.
 Under this formulation, IEs may break the link between assignment and received treatment and this can make the results less relevant for some applications.
-In the estimand framework, *treatment policy* is aligned with ITT.
-
-Under randomised treatment we have:
+In the estimand framework, *treatment policy* is aligned with ITT and under randomised treatment is identified (converted from a causal quantity to a statistical quantity) via:
 
 $$
 \begin{aligned}
@@ -87,15 +91,13 @@ A per-protocol analysis aims at offering a specific perspective on the trial res
 However, a traditional per-protocol analysis simply subsets the trial data to those units that have adhered and performs the primary analysis (unchanged) on that part of the data.
 This is insufficient to define a causal effect.
 
-Say we are interested in a per protocol perspective but we would like to be as clear as possible about what we want this effect to represent.
-Firstly, we need to account for how post-randomisation events (intercurrent events - IEs) such as discontinuation, treatment switching (non-compliance), toxicity, AEs might impact the results.
-To do this there are various strategies.
-One option that might be relevant is the hypothetical setting where we make believe that the IE didn't occur.
-Clearly, this assumes that such a counterfactual reality is possible.
-For example, if the IE were discontinuation due to toxicity, it might not be reasonble to conceive a scenario where we could somehow make the intervention less toxic.
-
-To construct an estimand of interest using potential outcomes, we will use a simple example.
-
+First we need to identify the relevant IEs and we need to determine how these (discontinuation, treatment switching (non-compliance), rescue medication, toxicity, AEs etc) might impact the existence or interpretation of the outcome.
+We should also think about how likely each of these events are and document that.
+Then, let's say we are interested in the effect of received treatment when used as intended with no need for variation or additional medication or intervention.
+We might be able to use the *hypothetical strategy* here. 
+This approach imagines an idealised world where the IE does not occur, assuming that such a counterfactual reality is possible and applicable, which isn't always the case.
+For example, if the outcome were just treatment success (i.e. imagine we were not using a composite outcome) then trying to use a hypothetical strategy to address the IE of death would not make sense as it would effectively disregard the most serious consequence of the interventions.
+However, it may well be reasonable to use the hypothetical strategy to address an IE of extended use of some therapy beyond what is defined in the protocol.
 
 For the hypothetical strategy, if we let $m = 0$ represent the absence the IE, then the estimand could be specified as:
 
@@ -133,6 +135,7 @@ $$
 
 and so we can produce an estimate of the causal effect of the hypothetical situation where the IE does not occur.
 Of course, this still comes at the cost of assumptions that we cannot entirely verify and we therefore need to be cautious in the reporting.
+There are also other ways that we might approach this.
 
 Below is a simple simulation to show the difference between the ITT, the naive per protocol approach and the hypothetical estimand obtained from standardisation over the distribution of $U$.
 It assumes the following setup
@@ -237,19 +240,20 @@ ggplot(d_rd, aes(x = value, group = variable)) +
   facet_grid(variable ~.)
 ```
 
-So far, only a single IE has been discussed, which isn't realistic, but it gives some intuition into what is already a well known characteristic of a naive per-protocol analyses.
+So far, only a single IE has been discussed, which isn't realistic, but it is just intended to give some intuition into what is already a well known characteristic of a naive per-protocol analyses.
 In practice, we (1) need to think through the implications of the multiple IEs that exist in the study and (2) need multiple variables to account for the IE.
 
-In some settings a hypothetical estimand might be appropriate but in another it might not.
+As noted above, in some settings a hypothetical estimand might be appropriate but in another it might not.
 For example, in roadmap (thinking about the surgical domain in isolation, forgetting the other domains for now) we might have $U$ corresponding to a loose joint and as such treatment switching could be inevitable and it would be difficult to conceive of a world where this did not happen given the loose joint.
-The hypothetical strategy would probably not be suitable here but an effect that focuses on the strata of the population might be.
-Here, a principal stratum strategy might be more relevant where the IE might be thought of as a specific form of non-compliance (represented as a binary indicator for simplicity and treating compliance and adherence as equivalent).
+The hypothetical strategy would possible not be suitable here but an effect that focuses on the strata of the population might be and this might direct us towards a principal stratum strategy.
+This approach attemtps to target causal effects in specific strata.
+For example, if a patient with an intact joint (not loose) was particularly frail then the surgeon might decide that assignment to revision was not warranted, whereas a loose joint would perhaps always lead to revision irrespective of the randomised treatment.
 
-One formulation under the principal stratum strategy is to let $M$ denote the treatment actually received; $M=0$ for control and $M=1$ representing that test was received.
-This leads to strata $S_i = (M_i(0), M_i(1))$ where $M_i(0)$ and $M_i(1)$ are the received treatment under control and test assignment respectively.
-This defines four strata $S_i \in \{ (0,0), (0,1), (1,0), (1,1)\}$ which are usually given the names *never takers*, *compliers*, *defiers* and *always takers* which are all with reference to the test group, although this setup could be varied based on the particular situation.
-For a principal stratum strategy we are interested in the causal effect within one (or a combination) of these strata. Here, assume that interest is in the *compliers*.
-For this setup, the estimand could be specified as
+To give some insight into the principal stratum approach, let $M$ denote the treatment actually received with $M=0$ representing that control was received and $M=1$ representing that test was received.
+We can then define a strata as $S_i = (M_i(0), M_i(1))$ where $M_i(0)$ and $M_i(1)$ are the received treatment when assigned to control and test respectively.
+This gives us four combinations: $S_i \in \{ (0,0), (0,1), (1,0), (1,1)\}$ and these are usually described as *never takers*, *compliers*, *defiers* and *always takers*.
+For example, in the $S_i = (0, 0)$ strata, the members take control when assigned to that arm and when assigned to the test arm, i.e. they never take the treatment.
+For a principal stratum strategy we are interested in the causal effect within one (or a combination) of these strata, usually the *compliers* and so the estimand could be specified as
 
 $$
 \begin{aligned}
@@ -271,24 +275,8 @@ To overcome these, the common assumptions are:
 however, there are actually a lot of different perspectives and approaches.
 Anyway, the point is that after making various assumptions, some principal strata are, in principle, identifiable.
 
-For roadmap, all of the above is a gross over-simplification.
-In the first instance, there are multiple domains, all of which will likely have domain specific IEs.
-In the surgery domain, treatment switching may be common, 
 
-Collapse into equivalent groups as necessary
 
-+ Death (handled via composite)
-+ Treatment repeated (surgery) (handled via composite)
-+ Treatment interruption (or multiple)
-+ Extension of treatment 
-+ Treatment discontinuation due to admin reasons
-+ Treatment discontinuation due to efficacy concerns
-+ Use of protocol prohibited interventions
-+ Switch over
-+ Occurrence of AE - be specific
-+ Non-compliance (insufficient dose, wrong procedure?)
-+ Non-adherence never receives treatment for some reason other than death
-+ Withdrawal from study
 
 
 
