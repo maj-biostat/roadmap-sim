@@ -44,22 +44,25 @@ Further detail is provided below on the construction of the revision effects.
 
 Parameter  |  Domain  |  Joint  |  Prior  |  Note
 ---------|---------|---------|---------|---------
-$\beta_{[d1(one),-1;jnt]}$ | Surgery (one-stage) | knee,hip | $N(0, 1)$                                | Non-entry into surgery domain
-$\beta_{[d1(one), 0;jnt]}$ | Surgery (one-stage) | knee,hip | $N(0, 1)$                                | Randomised, surgery couldn't proceed
-$\beta_{[d1(one), 1;jnt]}$ | Surgery (one-stage) | knee,hip | 0                                        | DAIR (ref)
-$\beta_{[d1(one), 2;jnt]}$ | Surgery (one-stage) | knee,hip | $N(\mu_{[d1,rev;jnt]}, \sigma_{[d1,rev]})$ | Revision (one-stage selected)
-$\beta_{[d1(two),-1;jnt]}$ | Surgery (two-stage) | knee,hip | $N(0, 1)$                                | Non-entry into surgery domain
-$\beta_{[d1(two), 0;jnt]}$ | Surgery (two-stage) | knee,hip | $N(0, 1)$                                | Randomised, surgery couldn't proceed
-$\beta_{[d1(two), 1;jnt]}$ | Surgery (two-stage) | knee,hip | 0                                        | DAIR (ref)
-$\beta_{[d1(two), 2;jnt]}$ | Surgery (two-stage) | knee,hip | $N(\mu_{[d1,rev;jnt]}, \sigma_{[d1,rev]})$ | Revision (two-stage selected)
-$\mu_{[d1,rev;jnt]}$       | Surgery (rev)       | knee,hip | $N(\mu_{[d1,rev]}, \tau_{[d1,rev]})$       | Mean one/two stage effect by joint
-$\mu_{[d1,rev]}$           | Surgery (rev)       |          | $N(0, 1)$                                | Mean one/two stage effect
-$\tau_{[d1,rev]}$          | Surgery (rev)       |          | $Exp(1)$                                 | SD within joint
-$\sigma_{[d1,rev]}$        | Surgery (rev)       |          | $Exp(1)$                                 | SD across joint
+$\beta_{[d1,1;jnt]}$ | Surgery | knee,hip | $N(0, 1)$ | Non-entry into surgery domain (dair received)
+$\beta_{[d1,2;jnt]}$ | Surgery | knee,hip | $N(0, 1)$ | Non-entry into surgery domain (one-stage received)
+$\beta_{[d1,3;jnt]}$ | Surgery | knee,hip | $N(0, 1)$ | Non-entry into surgery domain (two-stage received)
+$\beta_{[d1,4;jnt]}$ | Surgery | knee,hip | 0 | Randomised DAIR (ref for rand comparisons)
+$\beta_{[d1,5;jnt]}$ | Surgery | knee,hip | $N(\mu_{[d1,rev;jnt]}, \sigma_{[d1,rev]})$ | Randomised REV (one-stage selected)
+$\beta_{[d1,6;jnt]}$ | Surgery | knee,hip | $N(\mu_{[d1,rev;jnt]}, \sigma_{[d1,rev]})$ | Randomised REV (two-stage selected)
+$\mu_{[d1,rev;jnt]}$ | Surgery | knee,hip | $N(\mu_{[d1,rev]}, \tau_{[d1,rev]})$       | Mean revision effect by joint
+$\mu_{[d1,rev]}$ | Surgery | knee,hip | $N(0, 1)$       | Overall mean of revision effect
+$\tau_{[d1,rev]}$ | Surgery |          | $\text{Student}(3,0,2)$ | SD between joint
+$\sigma_{[d1,rev]}$ | Surgery |          | $\text{Student}(3,0,2)$ | SD within joint
 
 : Parameters and priors {.striped .hover}
 :::
 
+The idea is to produce the following structure:
+
+![Revision effects](../fig/revision-effects.jpg){width=80%}
+
+with the idea that if there were more groups, you would be able to estimate the variance components and achieve some adaptive shrinkage.
 
 ## Parameter specification/generation
 
@@ -83,9 +86,10 @@ get_par <- function(seed = 1){
   # baseline surgical pref
   l$b_u_d1 <- c(0, rnorm(2, 0, 1))
   
+  # removed, think this is redundant.
   # main effect of hip/knee
   # hip (1), knee (2) make knee worse than hip
-  l$b_j <- c(0, -0.2)
+  # l$b_j <- c(0, -0.2)
   
   # surgery domain - 
   # averge effect of surgery
@@ -130,7 +134,7 @@ get_data <- function(
       m1 <- cbind(s, j)
       m2 <- cbind(i_d1, j)
       
-      eta = par$b0 + par$b_s[m1] + par$b_j[j] + par$b_u_d1[u_d1] +
+      eta = par$b0 + par$b_s[m1] + par$b_u_d1[u_d1] +
         par$b_d1[m2] 
         
       eta
@@ -196,8 +200,8 @@ get_data <- function(
   d  
 }
 
-set.seed(22)
-d <- get_data(N = 2000)
+set.seed(432)
+d <- get_data(N = 2500)
 ```
 
 Model implementation
@@ -207,9 +211,6 @@ Model implementation
 #| code-summary: Logistic regression 
 ```
 
-Multi-level structure per the figure below:
-
-![Revision effects](../fig/revision-effects.jpg){width=80%}
 
 
 ```{r}
@@ -229,7 +230,7 @@ f1 <- m1$sample(
     parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F,
     max_treedepth = 10)
 
-# quick work - but estimates will likely be rough
+# quick work - but estimates will be rough, variance very rough
 # snk <- capture.output(
 #       f1 <- m1$pathfinder(ld, num_paths=20, single_path_draws=200,
 #                              history_size=50, max_lbfgs_iters=100,
@@ -251,7 +252,7 @@ Comparing parameter estimates with parameters used to simulate the data.
 
 par <- get_par()
 d_fig <- data.table(f1$summary(variables = c(
-  "b0", "b_s", "b_u_d1", "b_j", 
+  "b0", "b_s", "b_u_d1", 
   "mu_d1", "s_mu_d1", "mu_d1_j", "s_b_d1",
   "b_d1"
 )))
