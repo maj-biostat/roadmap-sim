@@ -1,0 +1,464 @@
+---
+title: "Multi-level model"
+date: today
+date-modified: last-modified
+---
+
+```{r, echo = F}
+#| label: setup
+#| code-summary: Setup
+
+source("./R/init.R")
+log_info("Called design-notes-06 notebook")
+
+cmdstanr::register_knitr_engine()
+```
+
+
+The following starts on restructuring the linear predictor into a multi-level form.
+The revision effects are constructed from a overall, joint and assignment level effects.
+The backbone duration will follow a similar template.
+
+Below we consider parameters that characterise variation in the linear predictor due to:
+
++ $s$ silo (early, late, chronic)
++ $j$ joint (hip, knee)
++ $u_{d1}$ baseline surgical preference (dair, one, two) 
++ $d1$ surgical domain
+
+$$
+\begin{aligned}
+\text{logit}(p) &= \beta_0 + \beta_{s,j} + \\
+  &\beta_{u_{d1}} + \beta_{d1,j} 
+\end{aligned}
+$$ 
+
++ $\beta_0$ baseline log-odds of treatment success
++ $\beta_{s,j}$ silo and joint specific change
++ $\beta_{u_{d1}}$ change associated with baseline preference
++ $\beta_{d1,j}$ joint specific revision effects
+
+Further detail is provided below on the construction of the revision effects.
+
+::: {.column width="100%"}
+
+Parameter  |  Domain  |  Joint  |  Prior  |  Note
+---------|---------|---------|---------|---------
+$\beta_{[d1(one),-1;jnt]}$ | Surgery (one-stage) | knee,hip | $N(0, 1)$                                | Non-entry into surgery domain
+$\beta_{[d1(one), 0;jnt]}$ | Surgery (one-stage) | knee,hip | $N(0, 1)$                                | Randomised, surgery couldn't proceed
+$\beta_{[d1(one), 1;jnt]}$ | Surgery (one-stage) | knee,hip | 0                                        | DAIR (ref)
+$\beta_{[d1(one), 2;jnt]}$ | Surgery (one-stage) | knee,hip | $N(\mu_{[d1,rev;jnt]}, \sigma_{[d1,rev]})$ | Revision (one-stage selected)
+$\beta_{[d1(two),-1;jnt]}$ | Surgery (two-stage) | knee,hip | $N(0, 1)$                                | Non-entry into surgery domain
+$\beta_{[d1(two), 0;jnt]}$ | Surgery (two-stage) | knee,hip | $N(0, 1)$                                | Randomised, surgery couldn't proceed
+$\beta_{[d1(two), 1;jnt]}$ | Surgery (two-stage) | knee,hip | 0                                        | DAIR (ref)
+$\beta_{[d1(two), 2;jnt]}$ | Surgery (two-stage) | knee,hip | $N(\mu_{[d1,rev;jnt]}, \sigma_{[d1,rev]})$ | Revision (two-stage selected)
+$\mu_{[d1,rev;jnt]}$       | Surgery (rev)       | knee,hip | $N(\mu_{[d1,rev]}, \tau_{[d1,rev]})$       | Mean one/two stage effect by joint
+$\mu_{[d1,rev]}$           | Surgery (rev)       |          | $N(0, 1)$                                | Mean one/two stage effect
+$\tau_{[d1,rev]}$          | Surgery (rev)       |          | $Exp(1)$                                 | SD within joint
+$\sigma_{[d1,rev]}$        | Surgery (rev)       |          | $Exp(1)$                                 | SD across joint
+
+: Parameters and priors {.striped .hover}
+:::
+
+
+## Parameter specification/generation
+
+```{r}
+#| label: par-1
+#| code-summary: Parameter specification
+
+
+get_par <- function(seed = 1){
+  
+  set.seed(seed)
+  
+  l <- list()
+  l$b0 <- qlogis(0.6205)
+  
+  # silo by joint
+  l$b_s <- matrix(
+    c(0.02, 0.4, -0.2) + rnorm(6, 0, 0.01),
+    ncol = 2)
+  
+  # baseline surgical pref
+  l$b_u_d1 <- c(0, rnorm(2, 0, 1))
+  
+  # main effect of hip/knee
+  # hip (1), knee (2) make knee worse than hip
+  l$b_j <- c(0, -0.2)
+  
+  # surgery domain - 
+  # averge effect of surgery
+  l$mu_d1_rev <- 0.4
+  # between joint variation
+  l$tau_d1_rev <- 0.1
+  # joint level means
+  l$mu_d1_rev_jnt <- rnorm(2, l$mu_d1_rev, l$tau_d1_rev)
+  # within joint variation
+  l$s_d1_rev <- 0.1
+  # trt effects, 
+  # idx 1:3 non-rand (dair, one-stage, two-stage)
+  # idx 4: rand, reference group (dair)
+  # idx 5: rand rev (one-stage)
+  # idx 6: rand rev (two-stage)
+  # may add:
+  # idx ?: rand, not delivered/revealed (probably redundant, left out for now)
+  l$b_d1 <- matrix(NA, nrow = 6, ncol = 2)
+  l$b_d1[1:3, ] <- rnorm(6, 0, 1)
+  l$b_d1[4, ] <- 0
+  l$b_d1[5, ] <- rnorm(2, l$mu_d1_rev_jnt, l$s_d1_rev)
+  l$b_d1[6, ] <- rnorm(2, l$mu_d1_rev_jnt, l$s_d1_rev)
+  
+  l
+  
+}
+
+
+```
+
+## Data simulation
+
+```{r}
+#| label: data-gen-1
+#| code-summary: Data generation function
+
+
+get_data <- function(
+    N = 2000, 
+    ff = function(par, s, j, d1, u_d1, i_d1, d2, d3, u_d4, d4){
+      
+      m1 <- cbind(s, j)
+      m2 <- cbind(i_d1, j)
+      
+      eta = par$b0 + par$b_s[m1] + par$b_j[j] + par$b_u_d1[u_d1] +
+        par$b_d1[m2] 
+        
+      eta
+      
+    }){
+  
+  # strata
+  d <- data.table()
+  d[, s := sample(1:3, size = N, replace = T, prob = c(0.3, 0.5, 0.2))]
+  
+  # joint - there is bound to be some relation b/w joint and pref towards surg
+  d[, j := as.numeric(NA)]
+  d[s == 1, j := sample(1:2, size = .N, replace = T, prob = c(0.6, 0.4))]
+  d[s == 2, j := sample(1:2, size = .N, replace = T, prob = c(0.3, 0.7))]
+  d[s == 3, j := sample(1:2, size = .N, replace = T, prob = c(0.5, 0.5))]
+  
+  # rand and non-randomised surgery recorded (1 dair, 2:3 rev)  
+  d[, d1 := as.numeric(NA)]
+  d[s == 1, d1 := -1]
+  d[s == 1, u_d1 := sample(1:3, size = .N, replace = T, prob = c(0.9, 0.1, 0))]
+  d[s == 2, d1 := rbinom(.N, 1, 0.5)]
+  # late only has probs for 2:3 but really this should be split up into 
+  # preference overall and preference given revision
+  d[s == 2, u_d1 := sample(1:3, size = .N, replace = T, prob = c(0, 0.3, 0.7))]
+  d[s == 3, d1 := -1]
+  d[s == 3, u_d1 := sample(1:3, size = .N, replace = T, prob = c(0.2, 0.2, 0.6))]
+  
+  # indices for surgery
+  d[, i_d1 := as.numeric(NA)]
+  d[s == 1, i_d1 := u_d1]
+  d[s == 2 & d1 == 0, i_d1 := 4]
+  d[s == 2 & d1 == 1 & u_d1 == 2, i_d1 := 5]
+  d[s == 2 & d1 == 1 & u_d1 == 3, i_d1 := 6]
+  d[s == 3, i_d1 := u_d1]
+  # table(d$s, d$i_d1)
+  
+  # some backbone dose b/w 0 and 12 wks
+  # based on surg recvd, e.g dair
+  d[u_d1 == 1, d2 := -1]
+  # recvd one
+  d[u_d1 == 2, d2 := rbinom(.N, 1, 0.5)]
+  # recvd two
+  d[u_d1 == 3, d2 := -1]
+  
+  
+  # ext proph
+  # based on surg recvd, e.g. dair
+  d[u_d1 == 1, d3 := -1]
+  # recvd one
+  d[u_d1 == 2, d3 := -1]
+  # recvd two
+  d[u_d1 == 3, d3 := rbinom(.N, 1, 0.5)]
+  
+  # choice - 60% pop enter
+  d[, u_d4 := rbinom(.N, 1, 0.6)]
+  d[u_d4 == 1, d4 := rbinom(.N, 1, 0.5)]
+  d[u_d4 == 0, d4 := -1]
+  
+  d[, eta := ff(par = get_par(), s, j, d1, u_d1, i_d1, d2, d3, u_d4, d4)]
+  
+  d[, y := rbinom(.N, 1, plogis(eta))]
+  
+  d  
+}
+
+set.seed(22)
+d <- get_data(N = 2000)
+```
+
+Model implementation
+
+```{stan output.var="ex1", code=readLines('stan/logistic-demo-04.stan')}
+#| label: model-1
+#| code-summary: Logistic regression 
+```
+
+Multi-level structure per the figure below:
+
+![Revision effects](../fig/revision-effects.jpg){width=80%}
+
+
+```{r}
+#| label: mod-fit-1
+#| code-summary: Fit model to simulated data
+
+m1 <- cmdstanr::cmdstan_model("stan/logistic-demo-04.stan")
+
+ld <- list(
+  N = nrow(d), 
+  y = d$y, silo = d$s, jnt = d$j,
+  u_d1 = d$u_d1, i_d1 = d$i_d1
+)
+
+f1 <- m1$sample(
+    ld, iter_warmup = 1000, iter_sampling = 1000,
+    parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F,
+    max_treedepth = 10)
+
+# quick work - but estimates will likely be rough
+# snk <- capture.output(
+#       f1 <- m1$pathfinder(ld, num_paths=20, single_path_draws=200,
+#                              history_size=50, max_lbfgs_iters=100,
+#                              refresh = 0, draws = 2000)
+#     )
+```
+
+Comparing parameter estimates with parameters used to simulate the data.
+
+```{r}
+#| label: fig-par-1
+#| code-summary: Parameter estimates vs true values
+#| fig-cap: "Parameter estimates vs true values"
+#| fig-cap-location: bottom
+#| fig-height: 6
+#| fig-width: 5
+#| out-width: 90%
+
+
+par <- get_par()
+d_fig <- data.table(f1$summary(variables = c(
+  "b0", "b_s", "b_u_d1", "b_j", 
+  "mu_d1", "s_mu_d1", "mu_d1_j", "s_b_d1",
+  "b_d1"
+)))
+d_fig <- d_fig[, .(variable, mean, q5, q95)]
+d_fig[, par_tru := unlist(par)]
+d_fig[, variable := factor(d_fig$variable, levels = d_fig$variable)]
+
+ggplot(d_fig, aes(x = variable, y = mean)) +
+  geom_linerange(aes(ymin = q5, ymax = q95)) +
+  geom_point(size = 0.5) +
+  geom_point(aes(x = variable, y = par_tru), col = 2, size = 0.8) +
+  scale_x_discrete("Parameter", limits=rev) +
+  coord_flip()
+```
+
+Estimating the log-odds of response averaged across the sample, comparing observed vs model.
+
+```{r}
+#| label: fig-par-2
+#| code-summary: Log-odds response (surgery)
+#| fig-cap: "Estimated log-odds of treatment success vs true"
+#| fig-cap-location: bottom
+#| fig-height: 6
+#| fig-width: 5
+#| out-width: 90%
+
+d_post <- data.table(f1$draws(variables = c("eta"), format = "matrix"))
+d_post <- melt(d_post, measure.vars = names(d_post))
+d_post[, i := gsub("eta[","",variable,fixed=T)]
+d_post[, i := as.numeric(gsub("]","",i,fixed=T))]
+
+d_fig <- copy(d)
+d_fig[, i := 1:.N]
+
+d_post <- merge(d_post, d_fig, by = "i")
+
+# create a new variable to indicate what was received
+d_post[, s_d1 := copy(u_d1)]
+# set all that assigned to dair to have recvd dair
+d_post[s == 2 & d1 == 0, s_d1 := 1]
+
+d_fig <- d_post[
+  , .(mu = mean(value), eta = mean(eta)), keyby = .(s,j,d1,s_d1)]
+
+d_fig[, s := factor(s, labels = c("early", "late", "chronic"))]
+d_fig[, j := factor(j, labels = c("hip", "knee"))]
+d_fig[, s_d1 := factor(s_d1, labels = c("dair", "one", "two"))]
+d_fig[, d1 := factor(d1, labels = c("not-rand", "rand-dair", "rand-rev"))]
+
+
+ggplot(d_fig, aes(x = d1, y = mu, col = s_d1)) + 
+  geom_point(aes(x = d1, y = eta, col = s_d1), pch = 3, size= 2) +
+  geom_point(size = 1) +
+  scale_x_discrete("Assigned/selected trt arm") +
+  scale_y_continuous("log-odds response") +
+  scale_color_discrete("Selected surgery") +
+  facet_grid(j ~ s, scales = "free_x")
+```
+
+Decomposition of revision effects into group means, within group means and effects.
+Prior and posterior view on group variation - what you can take from this is that the variance components are poorly informed by the data, i.e. there isn't going to be any pooling because there are not enough groups to learn from.
+
+```{r}
+#| label: fig-par-3
+#| code-summary: Variance components (revision)
+#| fig-cap: "Between and within SD"
+#| fig-cap-location: bottom
+#| fig-height: 4
+#| fig-width: 6
+#| out-width: 90%
+
+d_fig <- data.table(
+  f1$draws(variables = c("s_mu_d1", "s_b_d1"), 
+           format = "matrix"))
+d_fig <- melt(d_fig, measure.vars = names(d_fig))
+
+ggplot(d_fig, aes(x = value, group = variable)) + 
+  geom_density() +
+  stat_function(fun = fGarch::dstd, 
+                args = list(nu = 3, mean = 0, sd = 2), 
+                col = 2, lty = 2) +
+  facet_wrap(~variable)
+```
+
+
+```{r}
+#| label: fig-par-4
+#| code-summary: Revision effects
+#| fig-cap: "Revision effects, between, within and assignment level means"
+#| fig-cap-location: bottom
+#| fig-height: 5
+#| fig-width: 7
+#| out-width: 90%
+
+# effects
+d_fig <- data.table(
+  f1$draws(variables = c("b_d1[5,1]", "b_d1[6,1]",
+                         "b_d1[5,2]", "b_d1[6,2]"), 
+           format = "matrix"))
+d_fig <- melt(d_fig, measure.vars = names(d_fig))
+d_fig <- d_fig[, .(
+  mu_b_d1 = mean(value)), keyby = variable]
+
+# overall mean
+d_fig <- cbind(
+  d_fig, 
+  data.table(
+    f1$draws(variables = c("mu_d1"), 
+             format = "matrix"))[, .(mu_d1_rev = mean(mu_d1))]
+  )
+
+# joint level mean
+d_post <- data.table(f1$draws(variables = c("mu_d1_j"), format = "matrix"))
+
+d_fig[, mu_d1_rev_jnt := rep(colMeans(d_post), each = 2)]
+
+# joint
+d_fig[, j := gsub("b_d1\\[[5-6],", "", variable)]
+d_fig[, j := gsub("\\],", "", j)]
+d_fig[, j := factor(j, labels = c("hip", "knee"))]
+
+# rev type (one/two)
+d_fig[, type := gsub("b_d1\\[", "", variable)]
+d_fig[, type := substr(type, 1, 1)]
+d_fig[, type := factor(type, labels = c("one", "two"))]
+
+# on any given small sample, probably isn't going to be that close.
+# d_fig[, tru_mu_d1_rev := par$mu_d1_rev]
+# d_fig[j == "hip", tru_mu_d1_rev_j := par$mu_d1_rev_jnt[1]]
+# d_fig[j == "knee", tru_mu_d1_rev_j := par$mu_d1_rev_jnt[2]]
+
+ggplot(d_fig, aes(x = variable, y = mu_b_d1)) + 
+  geom_point() +
+  geom_hline(aes(yintercept = mu_d1_rev)) +
+  geom_hline(aes(yintercept = mu_d1_rev_jnt), lty = 2) +
+  # geom_hline(aes(yintercept = tru_mu_d1_rev), col = 2) +
+  # geom_hline(aes(yintercept = tru_mu_d1_rev_j), lty = 2, col = 2) +
+  scale_x_discrete("Assigned/selected trt arm") +
+  scale_y_continuous("log-odds ratio") +
+  facet_wrap(j + type ~., nrow = 1, scales = "free_x")
+```
+
+## Extend to other domains
+
+
+
+
+## Rough work
+
+
+```{r, eval = F}
+odds <- function(p){
+  p[p == 0] <- 0.0001
+  p[p == 1] <- 0.9999
+  p/(1-p)
+}
+
+
+# population/strata assumptions
+d_strat <- data.table(
+  silo = c("e", "e", "l", "l", "c", "c"),
+  joint = c("k", "h", "k", "h", "k", "h"),
+  w_s_j = c(0.4, 0.6, 0.7, 0.3, 0.5, 0.5),
+  w_s = c(0.3, 0.3, 0.5, 0.5, 0.2, 0.2),
+  pr_y = c(0.65, 0.75, 0.55, 0.6, 0.6, 0.65)
+)
+d_p_s <- d_strat[, .(pr_y_s = sum(w_s_j * pr_y)), keyby = .(silo)]
+d_pop <- merge(
+  d_strat[, .(pr_y_s = sum(w_s_j * pr_y)), keyby = .(silo)],
+  d_strat[, .(w_s = unique(w_s)), keyby = silo],
+  by = "silo"
+)
+# should see treatment success around in assumed pop
+p0 <- d_pop[, .(pr_y = sum(w_s * pr_y_s))][[1]]
+
+
+set.seed(1)
+# intercept
+b0 <- qlogis(p0)
+
+# silo level variation
+d_p_s[, lo := qlogis(pr_y_s)]
+d_p_s[, b_s := lo - b0]
+b_s <- d_p_s$b_s
+names(b_s) <- d_p_s$silo
+
+exp(b_s)
+
+mu_d1_rev <- 0.4
+tau_d1_rev <- 0.1
+s_d1_rev <- 0.1
+
+# knee/hip
+mu_d1_rev_jnt <- rnorm(2, mu_d1_rev, tau_d1_rev)
+
+# one-stage knee/hip
+b_d1_one_2_jnt <- rnorm(2, mu_d1_rev_jnt, s_d1_rev)
+# two-stage knee/hip
+b_d1_two_2_jnt <- rnorm(2, mu_d1_rev_jnt, s_d1_rev)
+
+
+N <- 2000
+N_s <- N*c(0.3, 0.5, 0.2)
+names(N_s) <- c("e", "l", "c")
+
+s <- sample(1:3, size = N, replace = T, prob = c(0.3, 0.5, 0.2))
+
+```
+
+
