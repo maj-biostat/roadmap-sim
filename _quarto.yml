@@ -37,6 +37,8 @@ website:
         - notebooks/design-notes-03.qmd
         - notebooks/design-notes-04.qmd
         - notebooks/design-notes-05.qmd
+        - notebooks/design-notes-06.qmd
+        - notebooks/design-notes-07.qmd
         - notebooks/misc-notes.qmd
       - notebooks/about.qmd
           
