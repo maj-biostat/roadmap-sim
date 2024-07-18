@@ -1,0 +1,633 @@
+---
+title: "Orthonormal design matrix"
+date: today
+date-modified: last-modified
+---
+
+
+
+```{r, echo = F}
+#| label: setup
+#| code-summary: Setup
+
+source("./R/init.R")
+log_info("Called design-notes-09 notebook")
+
+cmdstanr::register_knitr_engine()
+
+```
+
+With classic ANOVA, a sum to zero constraint is usually applied for identifiability.
+
+Consider the standard two factor factorial setup where we have a grand mean (as in the mean of the factor level means) and deviations for main effects and interactions:
+
+$$
+\begin{aligned}
+\eta = 1^\top \mu + X_a \alpha + X_b \beta + X_c \gamma
+\end{aligned}
+$$ 
+
+where $X_a$ and $X_b$ being the design matrices for the main effect and $X_c$ being for the interaction.
+
+The rank (number of linearly independent rows or columns) of the design matrix is important as it relates to the identifiability of the parameters in linear models.
+While it might be tempting setup a design matrix with a column for every parameter, this is generally not a good idea.
+For one thing, the OLS solution involves inverting $X^\top X$ which you cannot do as the rank of $X$ is less than the number of columns in $X$:
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+X <- cbind(1, diag(3))
+# in ols, the estimator involves inverting the design matrix
+tryCatch(
+  {
+    solve(t(X)%*%X)
+  } ,
+  error = function(z){
+    message(z, "\n")
+  }
+  
+)
+
+```
+
+but if we use the intercept as the reference group (or introduce a sum to zero constraint) then we are fine
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+X <- cbind(1, diag(3)[,2:3])
+# in ols, the estimator involves inverting the design matrix
+solve(t(X)%*%X)
+```
+
+[Contrasts](https://en.wikipedia.org/wiki/Contrast_(statistics)) give you specific linear combinations of parameters which influences what parameters are produced.
+When [treatment contrasts](https://cran.r-project.org/web/packages/faux/vignettes/contrasts.html) are adopted the corresponding design matrix for $a$ with 3 levels and $b$ with 2 levels design would be 
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+a <- factor(1:3)
+b <- factor(1:2)
+d <- CJ(a, b)
+X <- model.matrix(~a * b, data = d)
+X
+```
+
+for deviation contrasts, which is what would be used for the anova setup, it would look like
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+a <- factor(1:3)
+b <- factor(1:2)
+contrasts(d$a) <- contr.sum(3)
+contrasts(d$b) <- contr.sum(2)
+X <- model.matrix(~a * b, data = d)
+X
+```
+
+For treatment contrasts the intercept represents the mean of the reference group, taken to be when $a$ and $b$ are both at their first level.
+For deviation contrasts (also known as sum to zero and as is used in anova) the intercept becomes the grand mean which equates to the mean of the group means (**not** the mean value of the outcome in the dataset).
+
+When using the treatment contrasts, the second and third levels of $a$ are explicit in the design matrix whereas for the deviation contrasts, the first and second levels appear.
+A quick example where I consider a single factor model will make the mechanics a bit clearer:
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+K_a <- 4
+# means at levels of a
+b_a <- c(-1, 3, 2, 1)
+N <- 1e6
+a <- sample(1:K_a, size = N, replace = T, prob = c(0.3, 0.2, 0.4, 0.1))
+d <- data.table(a = factor(a))
+d[, mu := b_a[a]]
+d[, y := rnorm(.N, mu, 1)]
+
+# sum to zero/deviation contrasts as used for anova
+contrasts(d$a) <- contr.sum(K_a)
+f1 <- lm(y ~ a, data = d)
+```
+
+The coefficients include an intercept and deviations for the first three levels of $a$
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+coef(f1)
+```
+
+For the deviation contrasts, the mean for the first level of $a$ is computed as the grand mean, plus the first parameter estimate and similarly for the second and third.
+The mean for the last level of $a$ is implied as the grand mean minus the sum of the first three terms, hence *sum to zero*.
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+d_new <- CJ(a = factor(1:K_a))
+contrasts(d_new$a) <-  contr.sum(K_a)
+X <- model.matrix(~a, data = d_new)
+X
+```
+
+and $\sum_{i=1}^{K_a} \alpha_i = 0$ which we can show empirically by calculating the all `K_a` group means, subtracting the grand mean from each and taking the sum:
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+(mu_a_hat <- t(model.matrix(~a, data = d_new) %*% coef(f1)))
+round(sum(mu_a_hat - coef(f1)[1]), 5)
+```
+
+However, the above creates an inconvenient situation for the Bayesian who would like to (i) play frequentist in their insistence with differentiating fixed from random effects and (ii) place equal prior weights to each group of parameters.
+While we could (and often do) respond to this by fixing the reference parameter at zero to overcome the identification issue, that also puts a different prior weight on this reference parameter in relation to the other parameters within the group.
+
+An alternative to arbitrarily fixing one of the group parameters for a factor to zero is to project the $K_a$ dimension parameter space associated with the first factor into a $K_a - 1$ dimensional space which enforces the marginal prior on all $K_a$ terms to be the same.
+The way that the sum-to-zero constraint is achieved is by placing a prior that has a negative correlation across the effects:
+
+$$
+\begin{aligned}
+\Sigma_a = \mathbb{I}_a - J_a / K_a
+\end{aligned}
+$$ 
+
+where $J_a$ is a matrix of ones of dimension $K_a \times K_a$, leading to, for example, a covariance matrix such as the following (there are others that would also do the job):
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+# group levels
+K_a <- 3
+J <- matrix(1, K_a, K_a)
+S_a <- diag(K_a) - J / K_a
+# cov2cor(S_a)
+S_a
+```
+
+where we are again just considering a single factor at the moment.
+Now, if we generate draws from a multivariate normal distribution using this covariance matrix, we find that they will miraculously sum to zero:
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+u <- mvtnorm::rmvnorm(3, rep(0, K_a), S_a)
+# final column is the sum of the draws:
+round(cbind(u, rowSums(u)), 3)
+```
+
+$\Sigma_a$ is not full rank, but because we have a matrix where the off diagonal are all equal we can make it full rank with no loss of information by using eigen decomposition.
+To do so we represent $\Sigma_a$ as the product of $Q_a$ and $\mathbb{I}_{K_a - 1}$ where $Q_a$ is a matrix formed from $K_a - 1$ eigenvectors that correspond to the **non-zero** eigenvalues of $\Sigma_a$.
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+# for symmetric matrices, svd equiv to eigen
+# eigen values are sorted in decreasing order so we drop the last one
+svd_S_a <- svd(S_a)
+# eigen vectors
+Q_a <- svd_S_a$v
+Q_a <- Q_a[, 1:(K_a - 1)]
+# original setup for S_a
+Q_a %*% diag(K_a - 1) %*% t(Q_a)
+```
+
+This allows us to define a new vector of $K_a - 1$ parameters $\alpha^*$:
+
+$$
+\begin{aligned}
+\alpha^* = Q_a^\top \alpha
+\end{aligned}
+$$ 
+
+from which we have explicit sum-to-zero constraints
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+round(t(Q_a), 3)
+```
+
+this $Q_a$ represents the contrasts that we will use which are orthonormal and allow us to identify the $K_a - 1$ parameters.
+
+Armed with the above, we can now take our original tempting setup for the design matrix (i.e. with a column for every parameter) and convert it to a new design matrix such that we will have equal marginal prior weight on all of the group level parameters:
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+(X <- diag(K_a) )
+(X_star <- cbind(X %*% Q_a))
+```
+
+
+```{r}
+#| echo: true
+#| code-fold: false
+
+get_data <- function(
+    N = 100,
+    K_a = 3,
+    mu = c(1, 1, 1)
+    ){
+  
+  a = sample(1:K_a, size = N, replace = T)
+  d <- data.table(a)
+  d[, y := rbinom(N, 1, plogis(mu[a]))]
+  
+  # saturated design matrix
+  X_a <- matrix(0, N, K_a)
+  X_a[cbind(1:N, d$a)] <- 1
+
+  # correlation matrix to enforce sum to zero
+  J <- matrix(1, K_a, K_a)
+  S_a <- diag(K_a) - J / K_a 
+  
+  # decomposition
+  # eigen vectors
+  Q_a <- eigen(S_a)$vector[, 1:(K_a - 1)]
+
+  # full rank design
+  X_a_star <- X_a %*% Q_a
+  # prediction design matrix (to get back to group means)
+  X_a_pred <- diag(K_a) %*% Q_a
+  
+  list(
+    d = d, mu = mu, K_a = K_a, 
+    X_a = X_a, X_a_star = X_a_star, X_a_pred = X_a_pred,
+    S_a = S_a, Q_a = Q_a
+  )
+}
+```
+
+
+```{stan output.var="ex1", code=readLines('stan/note-09-logistic.stan')}
+#| label: model-1
+#| code-summary: Logistic regression
+
+```
+
+```{r}
+#| echo: true
+#| code-fold: true
+
+m1 <- cmdstanr::cmdstan_model("stan/note-09-logistic.stan")
+
+l1 <- get_data(
+  N = 1e4, K_a = 5, mu = c(-2, -1, 0, 1, 2))
+
+# would be more efficient to transform into a binomial likelihood
+# but keeping bernoulli for now since it allows me to think about
+# unit level data (not sure if that will be necessary though)
+ld <- list(
+  N = nrow(l1$X_a_star),
+  P = ncol(l1$X_a_star),
+  y = l1$d$y,
+  X = l1$X_a_star,
+  s = rep(1, ncol(l1$X_a_star)),
+  prior_only = 1
+)
+
+f1 <- m1$sample(
+  ld, iter_warmup = 1000, iter_sampling = 3000,
+    parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F,
+    max_treedepth = 10)
+
+f1$summary(variables = c("mu", "b"))
+
+```
+
+To transform the parameter estimates back to the group means that we are interested in, we need to compute the product of the parameters and the unique entries from the design matrix.
+
+In theory, these should all have the same prior weight, which appears to be the case as shown in @fig-pri1
+
+```{r}
+#| label: fig-pri1
+#| code-summary: Priors on group means
+#| fig-cap: "Priors on group means"
+#| fig-cap-location: bottom
+#| fig-height: 7
+#| fig-width: 6
+#| out-width: 70%
+
+m_post_star <- f1$draws(variables = c("mu", "b"), format = "matrix")
+post_mu <- m_post_star %*% t(cbind(1, l1$X_a_pred))
+
+d_fig <- data.table(post_mu)
+d_fig <- melt(d_fig, measure.vars = names(d_fig))
+d_fig[, variable := factor(
+  variable, 
+  levels = paste0("V", 1:(l1$K_a)))]
+
+ggplot(d_fig, aes(x = value, group = variable)) +
+  geom_density(lwd = 0.2) +
+  facet_wrap(~variable, ncol = 1) 
+```
+
+So, let's run the model to see if we get close to the known (true) parameters although they won't be immediately apparent from the summary:
+
+```{r}
+#| echo: true
+#| code-fold: true
+
+ld$prior_only <- 0
+
+f1 <- m1$sample(
+  ld, iter_warmup = 1000, iter_sampling = 2000,
+    parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F,
+    max_treedepth = 10)
+
+f1$summary(variables = c("mu", "b"))
+```
+
+Obviously, the results won't align exactly with the true values, but they should be somewhere close, see @fig-den1:
+
+```{r}
+#| label: fig-den1
+#| code-summary: Parameter posterior density
+#| fig-cap: "Parameter estimates for group level means"
+#| fig-cap-location: bottom
+#| fig-height: 7
+#| fig-width: 6
+#| out-width: 70%
+
+
+m_post_star <- f1$draws(variables = c("mu", "b"), format = "matrix")
+post_mu <- m_post_star %*% t(cbind(1, l1$X_a_pred))
+
+d_fig <- data.table(post_mu)
+d_fig <- melt(d_fig, measure.vars = names(d_fig))
+d_fig[, variable := factor(
+  variable, 
+  levels = paste0("V", 1:(l1$K_a)))]
+
+d_tru <- data.table(
+  variable = factor(paste0("V", 1:(l1$K_a))),
+  mu = l1$mu
+)
+
+ggplot(d_fig, aes(x = value, group = variable)) +
+  geom_density(lwd = 0.2) +
+  geom_vline(data = d_tru, 
+             aes(xintercept = mu), col = 2,
+             lwd = 0.3) +
+  facet_wrap(~variable, ncol = 1) +
+  scale_x_continuous(breaks = seq(-3, 3, by = 0.5))
+```
+
+
+
+```{r}
+# N = 1000
+# K_a = 3
+# K_b = 2
+# mu_ab = matrix(
+#   c(-2, 1,
+#      0, 2,
+#      1, 1), 3, 2, byrow = T
+# )
+
+get_data <- function(
+    N = 100,
+    K_a = 3,
+    K_b = 2,
+    mu_ab = matrix(
+      c(-2, 1,
+         0, 2,
+         1, 1), 3, 2, byrow = T 
+    )
+    ){
+  
+  a = sample(1:K_a, size = N, replace = T)
+  b = sample(1:K_b, size = N, replace = T)
+  d <- data.table(a, b)
+  d[, eta := mu_ab[cbind(d$a, d$b)]]
+  d[, y := rbinom(N, 1, plogis(eta))]
+  # d[, qlogis(mean(y)), keyby = .(a, b)]
+  
+  # saturated design matrix
+  X_a <- matrix(0, N, K_a)
+  X_a[cbind(1:N, d$a)] <- 1
+  
+  X_b <- matrix(0, N, K_b)
+  X_b[cbind(1:N, d$b)] <- 1
+  
+  # presumably there is an intelligent way to do this that I am 
+  # not seeing.
+  X_c <- matrix(0, N, K_a * K_b)
+  X_c[cbind(1:N, d$a + (K_a * (d$b-1)))] <- 1
+
+  # correlation matrix to enforce sum to zero
+  S_a <- diag(K_a) - (1 / K_a )
+  S_b <- diag(K_b) - (1 / K_b )
+  S_c <- diag(K_a * K_b) - (1 / (K_a * K_b))
+  
+  # decomposition
+  # eigen vectors
+  Q_a <- eigen(S_a)$vector[, 1:(K_a - 1)]
+  Q_b <- eigen(S_b)$vector[, 1:(K_b - 1)]
+  # think this is correct - need to check
+  Q_c <- kronecker(Q_a, Q_b)
+
+  # full rank design
+  X_a_s <- X_a %*% Q_a
+  X_b_s <- X_b %*% Q_b
+  X_c_s <- X_c %*% Q_c
+  
+  # prediction design matrix (to get back to group means)
+  X_a_p <- kronecker(rep(1, K_b), diag(K_a)) %*% Q_a
+  X_b_p <- kronecker(diag(K_b), rep(1, K_a)) %*% Q_b
+  X_c_p <- diag(K_a * K_b) %*% Q_c
+  
+
+  list(
+    d = d, mu = mu_ab, K_a = K_a, K_b = K_b, 
+    X_a = X_a, X_a_s = X_a_s, X_a_p = X_a_p,  
+    X_b = X_b, X_b_s = X_b_s, X_b_p = X_b_p, 
+    X_c = X_c, X_c_s = X_c_s, X_c_p = X_c_p, 
+    
+    S_a = S_a, S_b = S_b, S_c = S_c, 
+    Q_a = Q_a, Q_b = Q_b, Q_c = Q_c 
+  )
+}
+```
+
+
+
+
+```{r}
+#| echo: true
+#| code-fold: true
+
+m1 <- cmdstanr::cmdstan_model("stan/note-09-logistic.stan")
+
+l1 <- get_data(
+  N = 1e4, 
+  K_a = 3, 
+  K_b = 2,
+  mu_ab = matrix(
+      c(-2, 1,
+         0, 2,
+         1, 1), 3, 2, byrow = T 
+    )
+  )
+
+X_s <- cbind(l1$X_a_s, l1$X_b_s, l1$X_c_s)
+
+ld <- list(
+  N = nrow(X_s),
+  P = ncol(X_s),
+  y = l1$d$y,
+  X = X_s,
+  s = rep(1, ncol(X_s)),
+  prior_only = 1
+)
+
+f1 <- m1$sample(
+  ld, iter_warmup = 1000, iter_sampling = 3000,
+    parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F,
+    max_treedepth = 10)
+
+f1$summary(variables = c("mu", "b"))
+```
+
+
+```{r}
+#| label: fig-pri2
+#| code-summary: Priors on group means
+#| fig-cap: "Priors on group means"
+#| fig-cap-location: bottom
+#| fig-height: 7
+#| fig-width: 6
+#| out-width: 70%
+
+m_post_s <- f1$draws(variables = c("mu", "b"), format = "matrix")
+X_p <- cbind(l1$X_a_p, l1$X_b_p, l1$X_c_p)
+post_mu <- m_post_s %*% t(cbind(1, X_p))
+
+d_fig <- data.table(post_mu)
+d_fig <- melt(d_fig, measure.vars = names(d_fig))
+d_fig[, variable := factor(
+  variable, 
+  levels = paste0("V", 1:(l1$K_a * l1$K_b)))]
+
+ggplot(d_fig, aes(x = value, group = variable)) +
+  geom_density(lwd = 0.2) +
+  facet_wrap(~variable, ncol = 1) 
+```
+
+
+
+```{r}
+#| echo: true
+#| code-fold: true
+
+ld$prior_only <- 0
+
+f1 <- m1$sample(
+  ld, iter_warmup = 1000, iter_sampling = 2000,
+    parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F,
+    max_treedepth = 10)
+
+f1$summary(variables = c("mu", "b"))
+```
+
+
+```{r}
+#| label: fig-den2
+#| code-summary: Parameter posterior density
+#| fig-cap: "Parameter estimates for group level means"
+#| fig-cap-location: bottom
+#| fig-height: 7
+#| fig-width: 6
+#| out-width: 70%
+
+m_post_s <- f1$draws(variables = c("mu", "b"), format = "matrix")
+X_p <- cbind(l1$X_a_p, l1$X_b_p, l1$X_c_p)
+post_mu <- m_post_s %*% t(cbind(1, X_p))
+
+colMeans(post_mu)
+d_fig <- data.table(post_mu)
+d_fig <- melt(d_fig, measure.vars = names(d_fig))
+d_fig[, variable := factor(
+  variable, 
+  levels = paste0("V", 1:(l1$K_a * l1$K_b)))]
+
+d_fig[, .(mu = mean(value)), keyby = variable]
+
+d_tru <- data.table(
+  variable = factor(paste0("V", 1:(l1$K_a * l1$K_b))),
+  mu = as.numeric(l1$mu)
+)
+
+ggplot(d_fig, aes(x = value, group = variable)) +
+  geom_density(lwd = 0.2) +
+  geom_vline(data = d_tru,
+             aes(xintercept = mu), col = 2,
+             lwd = 0.3) +
+  facet_wrap(~variable, ncol = 1)
+```
+
+
+
+```{r}
+m_post_s <- f1$draws(variables = c("b[1]", "b[2]"), format = "matrix")
+# just need parts of design matrix relevant to main effects of a
+X_a_p <- diag(l1$K_a) %*% l1$Q_a
+post_mu <- m_post_s %*% t(X_a_p)
+
+# round(sum(colMeans(post_mu)), 4)
+d_fig <- data.table(post_mu)
+d_fig <- melt(d_fig, measure.vars = names(d_fig))
+d_fig[, variable := factor(
+  variable, 
+  levels = paste0("V", 1:(l1$K_a)))]
+
+d_fig[, .(mu = mean(value)), keyby = variable]
+
+
+ggplot(d_fig, aes(x = value, group = variable)) +
+  geom_density(lwd = 0.2) +
+  facet_wrap(~variable, ncol = 1)
+```
+
+**TODO**
+
+Question - setup data generation to be based on individual a and b's and interactions and then recover those parameters separately along with the overall means,....
+
+
+```{r}
+
+N <- 1e6
+
+a <- sample(1:3, size = N, replace = T)
+b <- sample(1:2, size = N, replace = T)
+
+mu_ab <- cbind(
+  c(2, 1, -2),
+  c(1, -1, 0)
+)
+
+d <- data.table(a, b)
+d[, mu := mu_ab[cbind(a, b)]]
+d[, y := rnorm(.N, mu, 0.2)]
+d[, a := factor(a)]
+d[, b := factor(b)]
+
+contrasts(d$a) <- contr.sum(3)
+contrasts(d$b) <- contr.sum(2)
+
+f2 <- lm(y ~ a*b, data = d)
+summary(f2)
+```
+
