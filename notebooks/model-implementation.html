@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2024-07-15">
+<meta name="dcterms.date" content="2024-07-22">
 
 <title>Model implementation – ROADMAP - design notes and simulations</title>
 <style>
@@ -4739,7 +4739,7 @@ vertical-align: -.125em;
     "search-label": "Search"
   }
 }</script>
-<script>!function(){"use strict";var s={"scripts/annotator.bundle.js":"scripts/annotator.bundle.js?7aab13","styles/annotator.css":"styles/annotator.css?7e54d5","styles/annotator.css.map":"styles/annotator.css.map?4029d2","styles/highlights.css":"styles/highlights.css?6b4ebd","styles/highlights.css.map":"styles/highlights.css.map?241350","styles/katex.min.css":"styles/katex.min.css?58e394","styles/katex.min.css.map":"styles/katex.min.css.map?1785d7","styles/pdfjs-overrides.css":"styles/pdfjs-overrides.css?c95edf","styles/pdfjs-overrides.css.map":"styles/pdfjs-overrides.css.map?1d8ac6","styles/sidebar.css":"styles/sidebar.css?6e77d0","styles/sidebar.css.map":"styles/sidebar.css.map?4a7d6a","styles/ui-playground.css":"styles/ui-playground.css?a64b5a","styles/ui-playground.css.map":"styles/ui-playground.css.map?b90c88","scripts/sidebar.bundle.js":"scripts/sidebar.bundle.js?47cb58","scripts/ui-playground.bundle.js":"scripts/ui-playground.bundle.js?b34d4f","scripts/annotator.bundle.js.map":"scripts/annotator.bundle.js.map?0ba6b4","scripts/sidebar.bundle.js.map":"scripts/sidebar.bundle.js.map?7e2cb0","scripts/ui-playground.bundle.js.map":"scripts/ui-playground.bundle.js.map?9e9cbc"};function t(s){s.setAttribute("data-hypothesis-asset","")}function e(s,e){var n=s.createElement("link");n.rel="stylesheet",n.type="text/css",n.href=e,t(n),s.head.appendChild(n)}function n(s,e){var n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:{},r=n.esModule,o=void 0===r||r,i=n.forceReload,a=void 0!==i&&i,l=s.createElement("script");o&&(l.type="module"),a&&(e+="#ts=".concat(Date.now())),l.src=e,l.async=!1,t(l),s.head.appendChild(l)}function r(s,e,n,r){var o=s.createElement("link");o.rel=e,o.href=r,o.type="application/annotator+".concat(n),t(o),s.head.appendChild(o)}function o(s,e,n){var r=s.createElement("link");r.rel="preload",r.as=e,r.href=n,"fetch"===e&&(r.crossOrigin="anonymous"),t(r),s.head.appendChild(r)}function i(s,t){return s.assetRoot+"build/"+s.manifest[t]}function a(s){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:document;if(-1===s.indexOf("{"))return s;var e=function(){var s,t,e=(arguments.length>0&&void 0!==arguments[0]?arguments[0]:document).currentScript;return e?(s=e.src,(t=s.match(/(https?):\/\/([^:/]+)/))?{protocol:t[1],hostname:t[2]}:null):null}(t);if(!e)throw new Error("Could not process URL template because script origin is unknown");return s=(s=s.replace("{current_host}",e.hostname)).replace("{current_scheme}",e.protocol)}if(function(){var s=[function(){return Object.fromEntries([])},function(){return new URL(document.location.href)},function(){return new Request("https://hypothes.is")},function(){return Element.prototype.attachShadow},function(){return CSS.supports("display: grid")},function(){return document.evaluate("/html/body",document,null,XPathResult.ANY_TYPE,null),!0}];try{return s.every((function(s){return s()}))}catch(s){return!1}}()){var l=function(s){for(var t={},e=s.querySelectorAll("script.js-hypothesis-config"),n=0;n<e.length;n++){var r=void 0;try{r=JSON.parse(e[n].textContent||"")}catch(s){console.warn("Could not parse settings from js-hypothesis-config tags",s),r={}}Object.assign(t,r)}return t}(document),c=a(l.assetRoot||"https://cdn.hypothes.is/hypothesis/1.1504.0/");if(document.querySelector("hypothesis-app")){!function(s,t){o(s,"fetch",t.apiUrl),o(s,"fetch",t.apiUrl+"links");for(var r=0,a=["scripts/sidebar.bundle.js"];r<a.length;r++)n(s,i(t,a[r]),{esModule:!0});for(var l=0,c=["styles/katex.min.css","styles/sidebar.css"];l<c.length;l++)e(s,i(t,c[l]))}(document,{assetRoot:c,manifest:s,apiUrl:l.apiUrl})}else{var p=function(){var s;return null===(s=(arguments.length>0&&void 0!==arguments[0]?arguments[0]:window).chrome)||void 0===s||null===(s=s.runtime)||void 0===s?void 0:s.id}();if(p&&!function(s){return!!(arguments.length>1&&void 0!==arguments[1]?arguments[1]:document).querySelector("script.js-hypothesis-config[data-extension-id=".concat(s,"]"))}(p))throw new Error("Could not start Hypothesis extension as configuration is missing");var u=l,d=a(u.notebookAppUrl||"https://hypothes.is/notebook"),h=a(u.profileAppUrl||"https://hypothes.is/user-profile"),y=a(u.sidebarAppUrl||"https://hypothes.is/app.html");!function(s,t){if(!s.querySelector('link[type="application/annotator+html"]')){r(s,"sidebar","html",t.sidebarAppUrl),r(s,"notebook","html",t.notebookAppUrl),r(s,"profile","html",t.profileAppUrl),o(s,"style",i(t,"styles/annotator.css")),r(s,"hypothesis-client","javascript",t.assetRoot+"build/boot.js");for(var a=0,l=["scripts/annotator.bundle.js"];a<l.length;a++)n(s,i(t,l[a]),{esModule:!1});var c=[];void 0!==window.PDFViewerApplication&&c.push("styles/pdfjs-overrides.css"),c.push("styles/highlights.css");for(var p=0,u=c;p<u.length;p++)e(s,i(t,u[p]))}}(document,{assetRoot:c,manifest:s,notebookAppUrl:d,profileAppUrl:h,sidebarAppUrl:y})}}else console.warn("The Hypothesis annotation tool is not supported in this browser. See https://web.hypothes.is/help/which-browsers-are-supported-by-hypothesis/.")}();
+<script>!function(){"use strict";var s={"scripts/annotator.bundle.js":"scripts/annotator.bundle.js?f6a1be","styles/annotator.css":"styles/annotator.css?3ac8ac","styles/annotator.css.map":"styles/annotator.css.map?5ca841","styles/highlights.css":"styles/highlights.css?6b4ebd","styles/highlights.css.map":"styles/highlights.css.map?241350","styles/katex.min.css":"styles/katex.min.css?58e394","styles/katex.min.css.map":"styles/katex.min.css.map?1785d7","styles/pdfjs-overrides.css":"styles/pdfjs-overrides.css?c95edf","styles/pdfjs-overrides.css.map":"styles/pdfjs-overrides.css.map?1d8ac6","styles/sidebar.css":"styles/sidebar.css?261245","styles/sidebar.css.map":"styles/sidebar.css.map?e52aa6","styles/ui-playground.css":"styles/ui-playground.css?b4bc1d","styles/ui-playground.css.map":"styles/ui-playground.css.map?900a54","scripts/annotator.bundle.js.map":"scripts/annotator.bundle.js.map?327f04","scripts/ui-playground.bundle.js":"scripts/ui-playground.bundle.js?52153d","scripts/sidebar.bundle.js":"scripts/sidebar.bundle.js?638129","scripts/ui-playground.bundle.js.map":"scripts/ui-playground.bundle.js.map?37658c","scripts/sidebar.bundle.js.map":"scripts/sidebar.bundle.js.map?59f1e3"};function t(s){s.setAttribute("data-hypothesis-asset","")}function e(s,e){var n=s.createElement("link");n.rel="stylesheet",n.type="text/css",n.href=e,t(n),s.head.appendChild(n)}function n(s,e){var n=arguments.length>2&&void 0!==arguments[2]?arguments[2]:{},r=n.esModule,o=void 0===r||r,i=n.forceReload,a=void 0!==i&&i,l=s.createElement("script");o&&(l.type="module"),a&&(e+="#ts=".concat(Date.now())),l.src=e,l.async=!1,t(l),s.head.appendChild(l)}function r(s,e,n,r){var o=s.createElement("link");o.rel=e,o.href=r,o.type="application/annotator+".concat(n),t(o),s.head.appendChild(o)}function o(s,e,n){var r=s.createElement("link");r.rel="preload",r.as=e,r.href=n,"fetch"===e&&(r.crossOrigin="anonymous"),t(r),s.head.appendChild(r)}function i(s,t){return s.assetRoot+"build/"+s.manifest[t]}function a(s){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:document;if(-1===s.indexOf("{"))return s;var e=function(){var s,t,e=(arguments.length>0&&void 0!==arguments[0]?arguments[0]:document).currentScript;return e?(s=e.src,(t=s.match(/(https?):\/\/([^:/]+)/))?{protocol:t[1],hostname:t[2]}:null):null}(t);if(!e)throw new Error("Could not process URL template because script origin is unknown");return s=(s=s.replace("{current_host}",e.hostname)).replace("{current_scheme}",e.protocol)}if(function(){var s=[function(){return Object.fromEntries([])},function(){return new URL(document.location.href)},function(){return new Request("https://hypothes.is")},function(){return Element.prototype.attachShadow},function(){return CSS.supports("display: grid")},function(){return document.evaluate("/html/body",document,null,XPathResult.ANY_TYPE,null),!0}];try{return s.every((function(s){return s()}))}catch(s){return!1}}()){var l=function(s){for(var t={},e=s.querySelectorAll("script.js-hypothesis-config"),n=0;n<e.length;n++){var r=void 0;try{r=JSON.parse(e[n].textContent||"")}catch(s){console.warn("Could not parse settings from js-hypothesis-config tags",s),r={}}Object.assign(t,r)}return t}(document),c=a(l.assetRoot||"https://cdn.hypothes.is/hypothesis/1.1506.0/");if(document.querySelector("hypothesis-app")){!function(s,t){o(s,"fetch",t.apiUrl),o(s,"fetch",t.apiUrl+"links");for(var r=0,a=["scripts/sidebar.bundle.js"];r<a.length;r++)n(s,i(t,a[r]),{esModule:!0});for(var l=0,c=["styles/katex.min.css","styles/sidebar.css"];l<c.length;l++)e(s,i(t,c[l]))}(document,{assetRoot:c,manifest:s,apiUrl:l.apiUrl})}else{var p=function(){var s;return null===(s=(arguments.length>0&&void 0!==arguments[0]?arguments[0]:window).chrome)||void 0===s||null===(s=s.runtime)||void 0===s?void 0:s.id}();if(p&&!function(s){return!!(arguments.length>1&&void 0!==arguments[1]?arguments[1]:document).querySelector("script.js-hypothesis-config[data-extension-id=".concat(s,"]"))}(p))throw new Error("Could not start Hypothesis extension as configuration is missing");var u=l,d=a(u.notebookAppUrl||"https://hypothes.is/notebook"),h=a(u.profileAppUrl||"https://hypothes.is/user-profile"),y=a(u.sidebarAppUrl||"https://hypothes.is/app.html");!function(s,t){if(!s.querySelector('link[type="application/annotator+html"]')){r(s,"sidebar","html",t.sidebarAppUrl),r(s,"notebook","html",t.notebookAppUrl),r(s,"profile","html",t.profileAppUrl),o(s,"style",i(t,"styles/annotator.css")),r(s,"hypothesis-client","javascript",t.assetRoot+"build/boot.js");for(var a=0,l=["scripts/annotator.bundle.js"];a<l.length;a++)n(s,i(t,l[a]),{esModule:!1});var c=[];void 0!==window.PDFViewerApplication&&c.push("styles/pdfjs-overrides.css"),c.push("styles/highlights.css");for(var p=0,u=c;p<u.length;p++)e(s,i(t,u[p]))}}(document,{assetRoot:c,manifest:s,notebookAppUrl:d,profileAppUrl:h,sidebarAppUrl:y})}}else console.warn("The Hypothesis annotation tool is not supported in this browser. See https://web.hypothes.is/help/which-browsers-are-supported-by-hypothesis/.")}();
 </script>
 <script>
   window.document.addEventListener("DOMContentLoaded", function (_event) {
@@ -5075,7 +5075,19 @@ window.Quarto = {
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="../notebooks/design-notes-07.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Approaches to missingness</span></a>
+ <span class="menu-text">Missingness considerations</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../notebooks/design-notes-08.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">MLM vs static regularisation</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="../notebooks/design-notes-09.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Orthonormal contrasts</span></a>
   </div>
 </li>
           <li class="sidebar-item">
@@ -5123,7 +5135,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">July 15, 2024</p>
+      <p class="date">July 22, 2024</p>
     </div>
   </div>
   
@@ -5452,12 +5464,12 @@ Note
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 1 finished in 1.6 seconds.
-Chain 2 finished in 1.7 seconds.
+Chain 1 finished in 1.4 seconds.
+Chain 2 finished in 1.5 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 1.6 seconds.
-Total execution time: 1.8 seconds.</code></pre>
+Mean chain execution time: 1.5 seconds.
+Total execution time: 1.7 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
