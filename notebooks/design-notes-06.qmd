@@ -70,7 +70,7 @@ However, to estimate the variance components well, you will need multiple groups
 ## Example - large number of groups and exposure levels
 
 For the sake of an example, assume you have a setting with 8 treatment arms to which patients are randomised and within each treatment arm are a mix of participants with respect to some characteristic that could influence the response.
-I am only using this many because it makes things clearer.
+I am only using this many treatment arms because it allows us to see a clear difference between the different analysis approaches.
 We are interested in the overall treatment effect and heterogeneity due to some membership to a group.
 
 Within this setting there are multiple levels of variation.
@@ -85,6 +85,26 @@ We could adopt a range of assumptions to model the responses for each combinatio
 
 Plus variations on these themes.
 All of the variance partition approaches require that there are sufficient groups to informed the variance parameters.
+
+Here I assume the following represents the true model
+
+$$
+\begin{aligned}
+y_{ijk} &\sim \text{Bernoulli}(\text{logit}^{-1}(\nu_{jk})) \\
+\nu_{jk} &\sim \text{Normal}(\delta_j, \tau) \\
+\delta_j &\sim \text{Normal}(\mu, \sigma)
+\end{aligned}
+$$
+
+and adopt hyper priors and hyper parameters
+
+$$
+\begin{aligned}
+\mu &\sim \text{Normal}(0, 1) \\
+\tau &\sim \text{Student-t}(\text{df} = 3,0, \text{scale} = 2) \\
+\sigma &\sim \text{Student-t}(3,0,2) \\
+\end{aligned}
+$$
 
 ## Parameter specification/generation
 
@@ -175,6 +195,7 @@ get_data <- function(
 
 Generate data assuming the parameters below with the underlying truth shown in @fig-par-1-true.
 The dashed line shows the overall mean response, the crosses show the treatment arm means and the points show the subgroup heterogeneity around the treatment arm means.
+Within this first setup, all the treatment arms have the same response and none of the subgroups show any treatment effect either.
 
 ```{r}
 #| label: fig-par-1-true
@@ -187,17 +208,28 @@ The dashed line shows the overall mean response, the crosses show the treatment 
 
 
 set.seed(1)
-par <- get_par(n_grp = 5, n_trt = 8, mu = 1, s = 0.0, s_j = 0.5)
+par <- get_par(n_grp = 5, n_trt = 8, mu = 1, s = 0.0, s_j = 0)
 d <- get_data(N = 3000, par)
 
 
 d_fig_2 <- unique(par$d_par[, .(mu_j, j)])
 d_fig_2[1, label := "Treatment mean"]
        
+d_fig_3 <- copy(par$d_par)
+d_fig_3[6, label := "Subgroup mean"]
 
-p_fig <- ggplot(par$d_par, aes(x = j, y = mu_j_k, col = k)) +
-  geom_point() +
+
+p_fig <- ggplot(d_fig_3, aes(x = j, y = mu_j_k, col = k)) +
+  geom_jitter(width = 0.2, height = 0.01) +
   geom_hline(yintercept = par$mu, lwd = 0.25, lty = 2) +
+  geom_text_repel(
+    aes(label = label),
+                  nudge_x = 0.5,
+                  nudge_y = -0.2,
+                  segment.curvature = -0.1,
+                  segment.ncp = 3,
+                  segment.angle = 20,
+                  box.padding = 2, max.overlaps = Inf, col = 1) +
   geom_text_repel(
     data = data.table(
       x = 2.5, y = par$mu, label = "Overall mean"
@@ -225,9 +257,9 @@ p_fig <- ggplot(par$d_par, aes(x = j, y = mu_j_k, col = k)) +
   scale_x_discrete("Treatment type") +
   scale_y_continuous("Odds of success (log-odds)", 
                      breaks = seq(
-                       round(min(par$d_par$mu_j_k), 1), 
-                       round(max(par$d_par$mu_j_k), 1), 
-                       by = 0.1)) +
+                       0.5, 
+                       1.5, 
+                       by = 0.1), limits = c(0.5, 1.5)) +
   scale_color_discrete("Subgroup membership")
 
 suppressWarnings(print(p_fig))
@@ -236,9 +268,7 @@ suppressWarnings(print(p_fig))
 
 ## Parameter estimation
 
-The first model produces independent estimates of the means.
-
-
+Below are models that provide the observed, ML, unpooled and partially pooled estimates.
 
 ```{r}
 #| label: mod-fit-1
@@ -277,7 +307,6 @@ d_lm_j_k <- melt(d_lm_j_k, id.vars = c("j", "k"))
 d_lm_j_k[, `:=`(j = factor(j), k = factor(k))]
 # d_lm_j_k[, .(q5 = quantile(value, prob =0.05), 
 #            q95 = quantile(value, prob = 0.95)), keyby = .(k,j)]
-
 d_lm[, eta_hat := predict(f0)]
 
 # bayes
@@ -312,24 +341,17 @@ f3 <- m3$sample(
     max_treedepth = 10)
 ```
 
-@fig-means-1a shows the estimated treatment arm means, and treatment arm by subgroup means for each of the combinations.
-
-Patterns:
-
-1. The observed and modelled overall mean are very similar.
-2. The MLE and the no-pooling models produce similar estimates - they tend to reflect the observed response
-3. The treatment arm means estimated using MLE and no-pooling are more influenced by outliers when compared to the estimates for the treatment arm means under the partially pooled models.
-4. 
-
+@fig-means-1a shows the estimated treatment arm means.
+The mlm correctly identifies the absence of between treatment variation and as a result, the means are pulled towards the grand mean.
 
 ```{r}
 #| label: fig-means-1a
 #| code-summary: Parameter estimates vs true values
 #| fig-cap: "Parameter estimates vs true values"
 #| fig-cap-location: bottom
-#| fig-height: 7
-#| fig-width: 7
-#| out-width: 90%
+#| fig-height: 6
+#| fig-width: 6
+#| out-width: 70%
 
 
 d_1 <- data.table(t(f1$draws(variables = "eta", format = "matrix")))
@@ -361,26 +383,6 @@ d_mu_j <- rbind(
       q5 = quantile(mu, prob = 0.05), 
       q95 = quantile(mu, prob = 0.95)), keyby = j]
 )
-
-# d_mu_j <- rbind(
-#   data.table(f2$summary(variables = c(
-#     "mu_j"
-#     )))[, .(desc = "partial pool (trt)", variable, mean, q5, q95)],
-#   data.table(f3$summary(variables = c(
-#     "mu_j"
-#     )))[, .(desc = "partial pool (trt+subgrp)", variable, mean, q5, q95)], 
-#   fill = T)
-# d_mu_j[, j := gsub("mu_j[", "", variable, fixed = T)]
-# d_mu_j[, j := gsub("]", "", j, fixed = T)]
-
-# d_mu_j <- rbind(
-#   d_mu_j,
-#   d_1[, .(mu = mean(value)), keyby = .(j, i_draw)][
-#   , .(desc = "no pooling", 
-#       mean = mean(mu), 
-#       q5 = quantile(mu, prob = 0.05), 
-#       q95 = quantile(mu, prob = 0.95)), keyby = j],
-#   fill = T)
   
 
 # MLE
@@ -416,30 +418,11 @@ d_mu_j <- rbind(
 
 
 d_mu_j[, desc := factor(desc, levels = c(
-  "observed", "mle", "no pooling", "partial pool (trt)", "partial pool (trt+subgrp)"
+  "observed", "mle", "no pooling", 
+  "partial pool (trt)", "partial pool (trt+subgrp)"
 ))]
-
-# Grand mean
-# d_mu <- rbind(
-#   data.table(f2$summary(variables = c(
-#     "mu"
-#     )))[, .(desc = "partial pool (trt)", variable, mean, q5, q95)],
-#   data.table(f3$summary(variables = c(
-#     "mu"
-#     )))[, .(desc = "partial pool (trt+subgrp)", variable, mean, q5, q95)]
-# )
   
 
-# Same deal with grand mean, you need to weight the individual level
-# contributions in order to align with the model estimates
-
-# d_mu <- rbind(
-#   d_mu, 
-#   d[, .(mu = qlogis(mean(y)), 
-#         w = .N/nrow(d)), keyby = .(j, k)][
-#           , .(desc = "observed", mean = sum(mu * w))], 
-#   fill = T
-# )  
 
 d_mu <- d[, .(mu = qlogis(mean(y)), 
          w = .N/nrow(d)), keyby = .(j, k)][
@@ -465,9 +448,9 @@ suppressWarnings(print(p_fig))
 ```
 
 
-
-
-
+@fig-means-2a shows the estimated treatment by subgroup means.
+Similar to above, the mlm has determined that the within group variance is negligible and has pulled the subgroup estimates towards the treatment means.
+In contrast, the ML and independent models follow the data leading to suggest some material subgroup effects.
 
 ```{r}
 #| label: fig-means-2a
@@ -476,7 +459,7 @@ suppressWarnings(print(p_fig))
 #| fig-cap-location: bottom
 #| fig-height: 8
 #| fig-width: 7
-#| out-width: 90%
+#| out-width: 80%
 
 
 # Posterior
@@ -557,14 +540,11 @@ p_fig <- ggplot(d_mu_j_k, aes(x = k, y = mean, group = desc, col = desc)) +
 suppressWarnings(print(p_fig))
 ```
 
-
-
-
-
 The mlm partitions the variance into a between treatment variance part that characterises the variation in the treatment arms and a within treatment variance that characterises the variation due to the subgroups.
 
-The prior is shown as the dashed line and the posterior the black solid line.
-Clearly, something has been learnt about the variation from the data; the between group variation (variation due to treatment) is large relative to the within group variation (variation due to subgroups).
+In @fig-var-1a shows the prior (red) and the posterior (black) for the variance components (actually the standard deviations).
+Given the differentiation between the prior and posterior, it is clear that something has been learnt about the variation in the data and the posterior is well identified, although not fully concentrated on the true value of zero.
+Moreover, both the between group variation (variation due to treatment) and within group variation (variation due to subgroups) are small which leads to the dynamic shrinkage as shown in the subgroup level means.
 
 ```{r}
 #| label: fig-var-1a
@@ -574,8 +554,6 @@ Clearly, something has been learnt about the variation from the data; the betwee
 #| fig-height: 5
 #| fig-width: 5
 #| out-width: 80%
-
-
 
 d_fig <- rbind(
   cbind(desc = "partial pool (trt)",
@@ -607,11 +585,6 @@ p_fig <- ggplot(d_fig, aes(x = value, group = variable)) +
     data = d_pri, 
     aes(x = x, y = y), col = 2, lwd = 0.2
   ) +
-  # geom_vline(data = d_smry,  
-  #            aes(xintercept = mu), col = 2, lwd = 0.3) +
-  # stat_function(fun = fGarch::dstd, 
-  #               args = list(nu = 3, mean = 0, sd = 1), 
-  #               col = 3, lty = 2) +
   scale_x_continuous("Standard deviation") +
   scale_y_continuous("Density") +
   facet_wrap(desc+label~., ncol = 2)
@@ -620,15 +593,14 @@ suppressWarnings(print(p_fig))
 ```
 
 
-
 ## Example - small number of groups and exposure levels
 
-
+Now repeat the same exercise with a small number of groups and exposure levels, again we simulate the data assuming no effects are present.
 
 
 ```{r}
 set.seed(1)
-par <- get_par(n_grp = 2, n_trt = 2, mu = 1, s = 0.0, s_j = 0.5)
+par <- get_par(n_grp = 2, n_trt = 2, mu = 1, s = 0.0, s_j = 0.0)
 d <- get_data(N = 3000, par)
 ```
 
@@ -715,7 +687,7 @@ f3 <- m3$sample(
 #| fig-cap-location: bottom
 #| fig-height: 7
 #| fig-width: 7
-#| out-width: 90%
+#| out-width: 70%
 
 
 d_1 <- data.table(t(f1$draws(variables = "eta", format = "matrix")))
@@ -813,17 +785,14 @@ suppressWarnings(print(p_fig))
 
 
 
-
-
-
 ```{r}
 #| label: fig-means-2b
 #| code-summary: Parameter estimates vs true values
 #| fig-cap: "Parameter estimates vs true values"
 #| fig-cap-location: bottom
-#| fig-height: 8
+#| fig-height: 5
 #| fig-width: 7
-#| out-width: 90%
+#| out-width: 70%
 
 
 
@@ -893,9 +862,8 @@ p_fig <- ggplot(d_mu_j_k, aes(x = k, y = mean, group = desc, col = desc)) +
 suppressWarnings(print(p_fig))
 ```
 
-
-
-
+The posterior estimates for the variance components are now poorly informed by the data and therefore highly uncertain.
+Accordingly, the prior is having a much greater influence under this scenario.
 
 ```{r}
 #| label: fig-var-1b
@@ -904,9 +872,322 @@ suppressWarnings(print(p_fig))
 #| fig-cap-location: bottom
 #| fig-height: 5
 #| fig-width: 5
-#| out-width: 80%
+#| out-width: 70%
+
+d_fig <- rbind(
+  cbind(desc = "partial pool (trt)",
+        data.table(f2$draws(variables = c("s_j"), format = "matrix"))),
+  cbind(desc = "partial pool (trt+subgrp)",
+        data.table(f3$draws(variables = c("s", "s_j"), format = "matrix"))  
+  ), fill = T
+)
+d_fig <- melt(d_fig, id.vars = "desc")
+d_fig[variable == "s", label := "variation b/w"]
+d_fig[variable == "s_j", label := "variation w/in"]
+
+d_pri <- CJ(
+  variable = c("s", "s_j"),
+  desc = c("partial pool (trt)", "partial pool (trt+subgrp)"),
+  x = seq(min(d_fig$value, na.rm = T), 
+          max(d_fig$value, na.rm = T), len = 500)
+)
+d_pri[, y := fGarch::dstd(x, nu = 3, mean = 0, sd = 2)]
+d_pri[variable == "s", label := "variation b/w"]
+d_pri[variable == "s_j", label := "variation w/in"]
+d_pri[desc == "partial pool (trt)" & variable == "s", y := NA]
+
+p_fig <- ggplot(d_fig, aes(x = value, group = variable)) + 
+  geom_density() +
+  geom_line(
+    data = d_pri, 
+    aes(x = x, y = y), col = 2, lwd = 0.2
+  ) +
+  scale_x_continuous("Standard deviation") +
+  scale_y_continuous("Density") +
+  facet_wrap(desc+label~., ncol = 2)
+
+suppressWarnings(print(p_fig))
+```
+
+Based on the above, it is unclear whether the additional complexity of an mlm is warranted when only two groups are available since the results are basically analogous to those of simpler approaches.
+
+The results are also somewhat unsatisfying when assuming non-zero effects between treatments and within subgroups as shown below.
+
+```{r}
+set.seed(2)
+par <- get_par(n_grp = 2, n_trt = 2, mu = 1, s = 0.4, s_j = 0.2)
+d <- get_data(N = 3000, par)
+```
 
 
+```{r}
+#| label: mod-fit-3
+#| code-summary: Fit model to simulated data
+
+# mle - reference point
+d_lm <- copy(d)
+d_lm[, `:=`(j = factor(j), k = factor(k))]
+f0 <- glm(y ~ j*k, data = d_lm, family = binomial)
+X <- model.matrix(f0)
+# CI
+n_sim <- 1000
+d_lm_j <- matrix(NA, nrow = par$n_trt, ncol = n_sim)
+d_lm_j_k <- matrix(NA, nrow = par$n_trt * par$n_grp, ncol = n_sim)
+for(i in 1:n_sim){
+  ix <- sort(sample(1:nrow(d_lm), replace = T))
+  f_boot <- glm(y ~ j*k, data = d_lm[ix], family = binomial)
+  d_tmp_p <- cbind(
+    d_lm[ix],
+    mu = predict(f_boot)
+  )
+  d_lm_j[, i] <- d_tmp_p[, .(mean = mean(mu)), keyby = j][, mean]
+  d_lm_j_k[, i] <- d_tmp_p[, .(mean = mean(mu)), keyby = .(k, j)][, mean]
+}
+# bootstrapped intervals for means on j and within group means
+d_lm_j <- data.table(d_lm_j)
+d_lm_j[, j := 1:.N]
+d_lm_j <- melt(d_lm_j, id.vars = "j")
+d_lm_j[, j := factor(j)]
+# d_lm_j[, .(q5 = quantile(value, prob =0.05), 
+#            q95 = quantile(value, prob = 0.95)), keyby = j]
+
+d_lm_j_k <- data.table(d_lm_j_k)
+d_lm_j_k <- cbind(CJ(k = 1:par$n_grp, j = 1:par$n_trt), d_lm_j_k)
+d_lm_j_k <- melt(d_lm_j_k, id.vars = c("j", "k"))
+d_lm_j_k[, `:=`(j = factor(j), k = factor(k))]
+# d_lm_j_k[, .(q5 = quantile(value, prob =0.05), 
+#            q95 = quantile(value, prob = 0.95)), keyby = .(k,j)]
+
+d_lm[, eta_hat := predict(f0)]
+
+# bayes
+m1 <- cmdstanr::cmdstan_model("stan/mlm-ex-01.stan")
+m2 <- cmdstanr::cmdstan_model("stan/mlm-ex-02.stan")
+m3 <- cmdstanr::cmdstan_model("stan/mlm-ex-03.stan")
+
+ld <- list(
+  N = nrow(d), 
+  y = d$y, 
+  J = length(unique(d$j)), K = length(unique(d$k)),
+  j = d$j, # intervention
+  k = d$k, # subgroup
+  P = ncol(X),
+  X = X,
+  s = 3,
+  s_j = 3, # for the indep means offsets
+  prior_only = 0
+)
+
+f1 <- m1$sample(
+    ld, iter_warmup = 1000, iter_sampling = 1000,
+    parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F,
+    max_treedepth = 10)
+f2 <- m2$sample(
+    ld, iter_warmup = 1000, iter_sampling = 1000,
+    parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F,
+    max_treedepth = 10)
+f3 <- m3$sample(
+    ld, iter_warmup = 1000, iter_sampling = 1000,
+    parallel_chains = 2, chains = 2, refresh = 0, show_exceptions = F,
+    max_treedepth = 10)
+```
+
+For the treatment group means, the multi-level model produces estimates that are again basically equivalent to those of the simpler modelling approaches.
+
+```{r}
+#| label: fig-means-1c
+#| code-summary: Parameter estimates vs true values
+#| fig-cap: "Parameter estimates vs true values"
+#| fig-cap-location: bottom
+#| fig-height: 7
+#| fig-width: 7
+#| out-width: 70%
+
+
+d_1 <- data.table(t(f1$draws(variables = "eta", format = "matrix")))
+d_1 <- cbind(d, d_1)
+d_1 <- melt(d_1, id.vars = c("j", "k", "eta", "y"), variable.name = "i_draw")
+
+d_2 <- data.table(t(f2$draws(variables = "eta", format = "matrix")))
+d_2 <- cbind(d, d_2)
+d_2 <- melt(d_2, id.vars = c("j", "k", "eta", "y"), variable.name = "i_draw")
+
+d_3 <- data.table(t(f3$draws(variables = "eta", format = "matrix")))
+d_3 <- cbind(d, d_3)
+d_3 <- melt(d_3, id.vars = c("j", "k", "eta", "y"), variable.name = "i_draw")
+
+d_mu_j <- rbind(
+  d_1[, .(mu = mean(value)), keyby = .(j, i_draw)][
+  , .(desc = "no pooling", 
+      mean = mean(mu), 
+      q5 = quantile(mu, prob = 0.05), 
+      q95 = quantile(mu, prob = 0.95)), keyby = j],
+  d_2[, .(mu = mean(value)), keyby = .(j, i_draw)][
+  , .(desc = "partial pool (trt)", 
+      mean = mean(mu), 
+      q5 = quantile(mu, prob = 0.05), 
+      q95 = quantile(mu, prob = 0.95)), keyby = j],
+  d_3[, .(mu = mean(value)), keyby = .(j, i_draw)][
+  , .(desc = "partial pool (trt+subgrp)", 
+      mean = mean(mu), 
+      q5 = quantile(mu, prob = 0.05), 
+      q95 = quantile(mu, prob = 0.95)), keyby = j]
+)
+
+  
+
+# MLE
+d_mle <- cbind(
+  desc = "mle", 
+  d_lm[, .(mean = mean(eta_hat)), keyby = .(j)])
+d_mle <- merge(
+  d_mle, 
+  d_lm_j[, .(q5 = quantile(value, prob =0.05),
+           q95 = quantile(value, prob = 0.95)), keyby = j], 
+  by = "j"
+)
+
+d_mu_j <- rbind(d_mu_j, d_mle, fill = T)
+
+# Observed
+# Due to the imbalance between the subgroups, need to weight the
+# contributions to align (approx) with mle.
+# Easy here because only one other variable that we need to average
+# over.
+d_obs <- merge(
+  d[, .(N_j = .N), keyby = .(j)],
+  d[, .(mu = qlogis(mean(y)), .N), keyby = .(j, k)],
+  by = "j"
+)
+d_mu_j <- rbind(
+  d_mu_j,
+  d_obs[, .(
+    desc = "observed", 
+    mean = sum(mu * N / N_j)), keyby = j]
+  , fill = T
+  )
+
+
+d_mu_j[, desc := factor(desc, levels = c(
+  "observed", "mle", "no pooling", 
+  "partial pool (trt)", "partial pool (trt+subgrp)"
+))]
+
+
+
+d_mu <- d[, .(mu = qlogis(mean(y)), 
+         w = .N/nrow(d)), keyby = .(j, k)][
+           , .(desc = "observed", mean = sum(mu * w))]
+
+
+p_fig <- ggplot(d_mu_j, aes(x = j, y = mean, group = desc, col = desc)) +
+  geom_point(position = position_dodge(width = 0.6)) +
+  geom_linerange(aes(ymin=q5, ymax=q95), position = position_dodge2(width = 0.6)) +
+  geom_hline(data = d_mu,
+             aes(yintercept = mean, lty = desc),
+             lwd = 0.3, col = 1) +
+  scale_x_discrete("Treatment arm") +
+  scale_y_continuous("log-odds treatment success", breaks = seq(-3, 3, by = 0.2))  +
+  scale_color_discrete("") +
+  scale_linetype_discrete("") +
+  geom_text(data = d[, .N, keyby = .(j)],
+            aes(x = j, y = min(d_mu_j$q5, na.rm = T) - 0.1, 
+                label = N), inherit.aes = F) +
+  theme(legend.position="bottom", legend.box="vertical", legend.margin=margin())
+
+suppressWarnings(print(p_fig))  
+```
+
+For the subgroups, the estimates were shrunk towards the treatment group means for the data set simulated here.
+
+```{r}
+#| label: fig-means-2c
+#| code-summary: Parameter estimates vs true values
+#| fig-cap: "Parameter estimates vs true values"
+#| fig-cap-location: bottom
+#| fig-height: 5
+#| fig-width: 7
+#| out-width: 70%
+
+
+
+# Manually calculate intervals for independent model
+d_mu_j_k <- rbind(
+  # d_mu_j_k,
+  d_1[, .(mu = mean(value)), keyby = .(k, j, i_draw)][
+  , .(desc = "no pooling", 
+      mean = mean(mu), 
+      q5 = quantile(mu, prob = 0.05), 
+      q95 = quantile(mu, prob = 0.95)), keyby = .(k, j)],
+  d_2[, .(mu = mean(value)), keyby = .(k, j, i_draw)][
+  , .(desc = "partial pool (trt)", 
+      mean = mean(mu), 
+      q5 = quantile(mu, prob = 0.05), 
+      q95 = quantile(mu, prob = 0.95)), keyby = .(k, j)],
+  d_3[, .(mu = mean(value)), keyby = .(k, j, i_draw)][
+  , .(desc = "partial pool (trt+subgrp)", 
+      mean = mean(mu), 
+      q5 = quantile(mu, prob = 0.05), 
+      q95 = quantile(mu, prob = 0.95)), keyby = .(k, j)]
+  )
+
+# MLE
+d_mle <- cbind(
+  desc = "mle", 
+  d_lm[, .(mean = mean(eta_hat)), keyby = .(k, j)])
+d_mle <- merge(
+  d_mle, 
+  d_lm_j_k[, .(q5 = quantile(value, prob =0.05),
+               q95 = quantile(value, prob = 0.95)), keyby = .(k,j)], 
+  by = c("j","k")
+)
+
+d_mu_j_k <- rbind(d_mu_j_k, d_mle, fill = T)
+
+# Observed
+d_mu_j_k <- rbind(
+  d_mu_j_k, 
+  d[, .(desc = "observed", mean = qlogis(mean(y))), keyby = .(k, j)],
+  fill = T)
+
+
+d_mu_j_k[, desc := factor(desc, levels = c(
+  "observed", "mle", "no pooling", 
+  "partial pool (trt)", "partial pool (trt+subgrp)"
+))]
+
+# 
+d_mu_obs <- d[, .(mu = qlogis(mean(y)))]
+d_mu_mod <- data.table(f3$summary(variables = c(
+    "mu"
+    )))[, .(model = "no pooling", variable, mean, q5, q95)]
+
+p_fig <- ggplot(d_mu_j_k, aes(x = k, y = mean, group = desc, col = desc)) +
+  geom_point(position = position_dodge(width = 0.6)) +
+  geom_linerange(aes(ymin=q5, ymax=q95), position = position_dodge2(width = 0.6)) +
+  scale_x_discrete("Subgroup") +
+  scale_y_continuous("log-odds treatment success", breaks = seq(-3, 3, by = 0.2)) +
+  geom_hline(data = d_mu_j[desc == "observed"],
+             aes(yintercept = mean, group = desc),
+             lwd = 0.3, col = 1) +
+  geom_text(data = d[, .N, keyby = .(j, k)],
+            aes(x = k, y = min(d_mu_j_k$q5, na.rm = T) - 0.1, label = N), 
+            inherit.aes = F) +
+  facet_wrap(~paste0("Treatment ", j)) 
+
+suppressWarnings(print(p_fig))
+```
+
+However, while the variance is indicated as being possibly small, it is poorly informed by the data and therefore our uncertainty regarding these parameters is high.
+
+```{r}
+#| label: fig-var-1c
+#| code-summary: Variance components (revision)
+#| fig-cap: "Between and within SD"
+#| fig-cap-location: bottom
+#| fig-height: 5
+#| fig-width: 5
+#| out-width: 70%
 
 d_fig <- rbind(
   cbind(desc = "partial pool (trt)",
@@ -938,11 +1219,6 @@ p_fig <- ggplot(d_fig, aes(x = value, group = variable)) +
     data = d_pri, 
     aes(x = x, y = y), col = 2, lwd = 0.2
   ) +
-  # geom_vline(data = d_smry,  
-  #            aes(xintercept = mu), col = 2, lwd = 0.3) +
-  # stat_function(fun = fGarch::dstd, 
-  #               args = list(nu = 3, mean = 0, sd = 1), 
-  #               col = 3, lty = 2) +
   scale_x_continuous("Standard deviation") +
   scale_y_continuous("Density") +
   facet_wrap(desc+label~., ncol = 2)
@@ -950,9 +1226,7 @@ p_fig <- ggplot(d_fig, aes(x = value, group = variable)) +
 suppressWarnings(print(p_fig))
 ```
 
-Based on two subgroups and two exposure levels, it is not clear to me what would motivate the use of the mlm as the results will be very similar to the independent groups assumption and the latter is more arguably more transparent.
-The approach that I think seems reasonable is to adopt a fixed regularising prior that where the aim was to modulate extreme parameter estimates.
-
-
+We could certainly use a multi-level approach for ROADMAP, but given the small number of groups available, a fixed regularising prior might be more defensible and conceptually reasonable than a dynamic prior.
+The challenge would be to specify hyper-parameters such that are sufficiently informative to moderate extreme parameter estimates.
 
 
