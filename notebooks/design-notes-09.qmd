@@ -455,10 +455,22 @@ ggplot(d_fig, aes(x = value, group = variable)) +
 ## Two-factor setup
 
 Here we have two main effects and their associated interactions.
+I have kept this first implementation as a record of my initial mistake on columnwise vs rowwise specification of the interaction parameters.
+The implementation in the final section is the correct approach.
 
 ```{r, eval = T}
 #| code-summary: Revised data generation function
 
+
+N = 100
+K_a = 3
+K_b = 2
+b0 = 1
+# effects are sum to zero
+b_a = c(0, -1, 1)
+b_b = c(-0.6, 0.6)
+b_ab = c(-0.05, 0.15, -0.1, 0.05, -0.15,  0.1)
+# b_ab = c(-0.05, 0.05, 0.15, -0.15,  0.1, -0.1)
 
 get_data <- function(
     N = 100,
@@ -469,6 +481,7 @@ get_data <- function(
     b_a = c(0, -1, 1),
     b_b = c(-0.6, 0.6),
     b_ab = c(-0.05, 0.15, -0.1, 0.05, -0.15,  0.1)
+    # b_ab = c(-0.05, 0.05, 0.15, -0.15,  0.1, -0.1)
     ){
   
   stopifnot(all.equal(0, sum(b_a), 
@@ -480,9 +493,9 @@ get_data <- function(
   
   # cols and rows should sum to zero otherwise following will not work
   b_ab_matrix <- matrix(b_ab, nrow = K_a, ncol = K_b)
-  stopifnot(all.equal(colSums(b_ab_matrix), rep(0, K_b), 
+  stopifnot(all.equal(colSums(b_ab_matrix), rep(0, K_b),
                       tolerance = sqrt(.Machine$double.eps)))
-  stopifnot(all.equal(rowSums(b_ab_matrix), rep(0, K_a), 
+  stopifnot(all.equal(rowSums(b_ab_matrix), rep(0, K_a),
                       tolerance = sqrt(.Machine$double.eps)))
   
   # we could go down this avenue but the original parameters would never be 
@@ -1278,8 +1291,9 @@ knitr::kable(rbind(
 
 ## What is it with `kronecker(Q_a, Q_b)`?
 
-Here I change the approach to computing the interaction part of the design matrix and simply use `kronecker(Q_a, Q_b)`.
-This doesn't seem to recover the parameters correctly even though the approach makes more sense.
+The problem with `kronecker(Q_a, Q_b)` was that I was using a column wise definition for the interaction parameters.
+However, `kronecker(Q_a, Q_b)` varies `b` first rather than `a` which is incompatible with the specification of the interaction parameters.
+
 
 ```{r, eval = T}
 #| code-summary: Revised data generation function
@@ -1293,7 +1307,8 @@ get_data_alt <- function(
     # effects are sum to zero
     b_a = c(0, -1, 1),
     b_b = c(-0.6, 0.6),
-    b_ab = c(-0.05, 0.15, -0.1, 0.05, -0.15,  0.1)
+    # rowwise
+    b_ab = c(-0.05, 0.05, 0.15, -0.15, -0.1, 0.1)
     ){
   
   stopifnot(all.equal(0, sum(b_a), 
@@ -1304,10 +1319,10 @@ get_data_alt <- function(
                       tolerance = sqrt(.Machine$double.eps)))
   
   # cols and rows should sum to zero otherwise following will not work
-  b_ab_matrix <- matrix(b_ab, nrow = K_a, ncol = K_b)
-  stopifnot(all.equal(colSums(b_ab_matrix), rep(0, K_b), 
+  b_ab_matrix <- matrix(b_ab, nrow = K_a, ncol = K_b, byrow = T)
+  stopifnot(all.equal(colSums(b_ab_matrix), rep(0, K_b),
                       tolerance = sqrt(.Machine$double.eps)))
-  stopifnot(all.equal(rowSums(b_ab_matrix), rep(0, K_a), 
+  stopifnot(all.equal(rowSums(b_ab_matrix), rep(0, K_a),
                       tolerance = sqrt(.Machine$double.eps)))
   
   a = sample(1:K_a, size = N, replace = T)
@@ -1317,12 +1332,15 @@ get_data_alt <- function(
   d[, b0 := b0]
   d[, b_a := b_a[a]]
   d[, b_b := b_b[b]]
-  d[, ix_b_ab := a + (K_a * (b - 1))]
+  # column wise indexing into b_ab
+  # d[, ix_b_ab := a + (K_a * (b - 1))]
+  # rowwise indexing into b_ab
+  d[, ix_b_ab := ((a - 1) * K_b) + b]
   d[, b_ab := b_ab[ix_b_ab]]
   d[, eta := b0 + b_a + b_b + b_ab]
 
   # e.g.  
-#   > unique(d[order(b, a)])
+  unique(d[order(b, a)])
 #        a     b    b0   b_a   b_b  b_ab   eta
 #    <int> <int> <num> <num> <num> <num> <num>
 # 1:     1     1     1     0  -0.6  -0.2   0.2
@@ -1358,20 +1376,6 @@ get_data_alt <- function(
   Q_b <- eigen(S_b)$vector[, 1:(K_b - 1)]
   Q_ab <- kronecker(Q_a, Q_b)
   
-  # Ok, Q_ab as defined above will not allow me to recover the original
-  # paramters. Why this is I do not know. The following is a workaround.
-  
-  # All we are doing is building a matrix that will sum up the 
-  # columns and the rows of the interaction parameters.
-  # We will then set that to zero and solve (i.e. compute the
-  # null space).
-  # C_ab <- construct_C_ab(K_a, K_b)
-  # 
-  # # Calculate the null space of C_ab
-  # # Nullspace of C_ab gives the set of vectors st each vector
-  # # in Q_ab results in C_ab v = 0
-  # Q_ab <- pracma::nullspace(C_ab)
-  
   # transformed pars
   b_a_s <- t(Q_a) %*% b_a
   b_b_s <- t(Q_b) %*% b_b
@@ -1382,6 +1386,15 @@ get_data_alt <- function(
   X_b_s <- X_b %*% Q_b
   X_ab_s <- X_ab %*% Q_ab
   
+ 
+  # Check
+  stopifnot(all.equal(as.numeric(X_a_s %*% b_a_s), b_a, 
+                      tolerance = sqrt(.Machine$double.eps)))
+  stopifnot(all.equal(as.numeric(X_b_s %*% b_b_s), b_b, 
+                      tolerance = sqrt(.Machine$double.eps)))
+  stopifnot(all.equal(as.numeric(X_ab_s %*% b_ab_s), b_ab, 
+                      tolerance = sqrt(.Machine$double.eps)))
+  
   
   
   # build the design matrix up incrementally
@@ -1391,18 +1404,13 @@ get_data_alt <- function(
   )
   for(j in 1:(K_b-1)){
     for(i in 1:(K_a-1)){
-      X_full_s <- cbind(X_full_s, 
+      X_full_s <- cbind(X_full_s,
                         X_full_s[, i]  * X_full_s[, ((K_a - 1) + j)])
-    }  
+    }
   }
-  # X_full_s
+  X_full_s
   # round(X_full_s, 3)
   
-  # rbind(
-  #   b_ab,
-  #   as.numeric(X_ab_s %*% b_ab_s)
-  # )
-
   list(
     d = d, b0 = b0, 
     b_a = b_a, b_b = b_b, b_ab = b_ab, 
@@ -1422,11 +1430,11 @@ get_data_alt <- function(
 
 ```{r, eval = T}
 l1 <- get_data_alt(
-  N = 1e6, K_a = 5, K_b = 2, 
+  N = 1e6, K_a = 3, K_b = 2, 
   b0 = 1,   
-  b_a = create_sum_zero_vec(5, seed = 22),
+  b_a = create_sum_zero_vec(3, seed = 22),
   b_b = create_sum_zero_vec(2, seed = 23),
-  b_ab = as.numeric(create_sum_zero_matrix(5, 2, seed = 24))
+  b_ab = as.numeric(c(t(create_sum_zero_matrix(3, 2, seed = 24))))
 )
 
 d_smry <- l1$d[, .(y = sum(y), n = .N), keyby = .(b, a)]
@@ -1434,7 +1442,11 @@ d_smry <- l1$d[, .(y = sum(y), n = .N), keyby = .(b, a)]
 
 ld <- list(
   N = nrow(d_smry), y = d_smry$y, n = d_smry$n, 
-  trt = cbind(d_smry$a, d_smry$b, d_smry$a + (l1$K_a * (d_smry$b - 1))),
+  # columnwise
+  # trt = cbind(d_smry$a, d_smry$b, d_smry$a + (l1$K_a * (d_smry$b - 1))),
+  
+  # rowwise
+  trt = cbind(d_smry$a, d_smry$b, ((d_smry$a - 1) * l1$K_b) + d_smry$b),
   
   nrXades = nrow(l1$X_a_s), ncXades = ncol(l1$X_a_s), 
   Xades = l1$X_a_s, sa = rep(1, ncol(l1$X_a_s)),
@@ -1490,3 +1502,6 @@ knitr::kable(rbind(
 
 
 ```
+
+
+
