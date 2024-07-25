@@ -20,29 +20,49 @@ The primary outcome is treatment success at 12 months post platform entry, defin
 
 referred to as 'treatment success'.
 
-## Early infection
+## Silos
 
-Patients with early stage infection are not revealed^[Dependent on how the randomisation process is designed and implemented, they might not even be randomised.] to the surgical domain.
-The surgical intervention will usually be dair for which 12 weeks of antibiotics are recommended.
-There are, however, instances where early stage infection patients will receive a surgical intervention and these patients will therefore be able to enter the duration domain and receive randomised antibiotic duration.
-These patients will also enter the choice domain.
+Different cohorts enter inform different parts of the experiment.
 
-## Late infection
+### Early infection
 
-Patients with late infection enter all domains, but with some restrictions.
+Patients with early stage infection are not revealed to the surgical domain.
+The surgical intervention will usually be dair for which 12 weeks of backbone antibiotics are recommended.
+There are, however, instances where early stage infection patients will receive either one-stage or two-stage revision. These patients will be able to enter the randomised backbone duration domain (one-stage, but not two-stage) and the extended prophylaxis domain (two-stage, but not one-stage).
+Early silo patients will also enter the choice domain if they are eligible to do so.
+
+### Late infection
+
+Patients with late infection can enter all domains with some restrictions.
 They are randomised to dair vs revision in the surgical domain. 
-Patients allocated to revision will receive a one or two-stage procedure.
+Patients allocated to revision will receive a one or two-stage procedure based on self-selection.
 Both the planned surgery (one-stage/two-stage) and the surgery actually performed should be captured -- the former should be recorded at the time of randomisation.
-These patients will also enter the choice domain.
+Patients receiving one-stage receive randomised backbone antibiotics.
+Patients receiving two-stage receive randomised extended prophylaxis.
+Late silo patients will also enter the choice domain if they are eligible to do so.
 
-## Chronic infection
+### Chronic infection
 
-Patients with chronic stage infection are not randomised into the surgical domain, but they can enter into the duration domain based on the type of surgery they receive.
-These patients will also enter the choice domain.
+Patients with chronic stage infection are not randomised into the surgical domain.
+Like the early silo cohort, they can enter into the antibiotic backbone domain and the extended prophylaxis domain based on the type of surgery they receive.
+Chronic silo patients will also enter the choice domain if they are eligible to do so.
 
 ## Causal structure
 
-We assume the following DAG, which is a simplified causal representation of how patients reach their treatment status across the domains:
+The treatment options and outcome status are minimally dependent on silo membership, randomisation and self selection.
+We assume the following SWIGs as a simplified representation of how patients reach their treatment status across the domains.
+
+Figre @fig-late-silo shows the SWIGs applicable to the late silo with each showing a different counterfactual world.
+The SWIGs make clear the variables on which we intervene and all other variables and allow us to read the presence of exchangeability directly from the graph.
+The vertical line in the split nodes blocks paths and thus indicates, for example, that a treatment is independent of the potential outcome for all levels of the treatment.
+
+![Late silo SWIGs](../fig/swig-late-01.png){width=100% #fig-late-silo}
+
+
+![Early/chronic silo SWIGs](../fig/swig-early-01.png){width=100%}
+
+
+
 
 ```{mermaid}
 %%| label: fig-modspec-1
@@ -103,12 +123,22 @@ where the following definitions apply:
 
 ## Research questions
 
-The questions of interest are:
+The questions of interest are as follows:
 
-+ Surg Domain – Early Silo – Revision is superior to DAIR (reference group)
-+ AB Duration – One-stage revision – 6 weeks (short) is non-inferior to 12 weeks (long) (reference group)
-+ AB Duration – Two-stage revision – 12 weeks (long) is superior to 7 days (short) (reference group)
-+ AB Choice – All silos combined – Rifampicin is superior to no-rifampicin (reference group)
+For the surgical domain we evaluate whether revision is superior to dair and futility for superiority.
+This applies only to the late silo cohort.
+
+For the backbone duration domain, we evaluate whether short duration (6 wk) is non-inferior to long duration (12 wk) antibiotic treatment.
+This is applicable only to participants that receive one-stage revision.
+We also evaluate whether the non-inferiority decision is futile in the sense that it appears unlikely that non-inferiority will ever be established.
+
+For ethe extended prophylaxis domain, we evaluate whether a long duration (12 wk) is superior to a short duration (7 days) of treatment.
+This is applicable only to participants that receive two-stage revision (the extended prophylaxis follows the second operation).
+We also evaluate whether the superiority decision is futile in the sense that it appears unlikely that superiority will ever be established.
+
+For the choice domain we evaluate whether rifampicin is superior to no rifampicin.
+This is applicable to the participants that are enter into the choice domain.
+We also evaluate whether the superiority decision is futile in the sense that it appears unlikely that superiority will ever be established.
 
 ## Model specification {#sec-model-spec}
 
