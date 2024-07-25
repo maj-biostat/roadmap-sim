@@ -50,19 +50,7 @@ Chronic silo patients will also enter the choice domain if they are eligible to 
 ## Causal structure
 
 The treatment options and outcome status are minimally dependent on silo membership, randomisation and self selection.
-We assume the following SWIGs as a simplified representation of how patients reach their treatment status across the domains.
-
-Figre @fig-late-silo shows the SWIGs applicable to the late silo with each showing a different counterfactual world.
-The SWIGs make clear the variables on which we intervene and all other variables and allow us to read the presence of exchangeability directly from the graph.
-The vertical line in the split nodes blocks paths and thus indicates, for example, that a treatment is independent of the potential outcome for all levels of the treatment.
-
-![Late silo SWIGs](../fig/swig-late-01.png){width=100% #fig-late-silo}
-
-
-![Early/chronic silo SWIGs](../fig/swig-early-01.png){width=100%}
-
-
-
+We assume the following DAGs as a simplified representation of how patients reach their treatment status across the domains.
 
 ```{mermaid}
 %%| label: fig-modspec-1
@@ -146,55 +134,17 @@ For each silo $l$ and site of infection $j$ we therefore simulate and model the 
 
 $$
 \begin{aligned}
-\mathbb{E}[Y|Q; \alpha,  \beta,\lambda] &=  \text{expit}( \alpha_0 + \\ 
-  &\quad \lambda_1 \mathbb{I}(L = 1) + \lambda_2 \mathbb{I}(L = 2) + \\
-  &\quad (\beta_1 + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\ 
-  &\quad (\beta_4 \mathbb{I}(S_{R_P} = 1) + \beta_5 \mathbb{I}(S_{R_P} = 2) )R E_R + \\
-  &\quad \beta_6 (1-E_D) + \\
-  &\quad (\beta_{7} \mathbb{I}(S_{R_P} = 1) + \beta_{8} \mathbb{I}(S_{R_P} = 2))D E_D + \\
-  &\quad \beta_{9} (1-E_F) + \beta_{10} F E_F )
+\text{logit}(\pi) &=  \mu + \lambda_s + \rho_j + \sum_{d=1}^{D} x_d^\top \vec{\beta_d} + \zeta_{r,v} + \tau_t + z^\top \vec{\omega}
 \end{aligned}
 $$ {#eq-mod-spec-1}
 
-where the $Q$, $\alpha$, $\lambda$ and $\beta$ denote the terms and parameters included in the model and specifically
-
-+ $\alpha_0$ denotes the baseline log-odds of treatment success 
-+ $\lambda_1$ change associated with membership of the late silo
-+ $\lambda_2$ change associated with membership of the chronic silo
-+ $\beta_{1}$ change under non-randomised surgical treatment relative to randomised surgical treatment
-+ $\beta_{2}$ relative change under non-randomised surgical treatment (receiving one-stage)
-+ $\beta_{3}$ relative change under non-randomised surgical treatment (receiving two-stage)
-+ $\beta_{4}$ change under randomised surgical treatment (revision) where one-stage procedure occurred
-+ $\beta_{5}$ change under randomised surgical treatment (revision) where two-stage procedure occurred
-+ $\beta_{6}$ change under non-randomised duration treatment
-+ $\beta_{7}$ change for randomised duration treatment (short duration) when one-stage surgical procedure occurred
-+ $\beta_{8}$ change for randomised duration treatment (long duration) when two-stage surgical procedure occurred
-+ $\beta_{9}$ change under non-randomised choice treatment
-+ $\beta_{10}$ change for randomised choice treatment (rif)
-
-In order to easily evaluate the duration effects, we to make the reference arm 12-weeks (long) in the case of one-stage revision and 7-days (short) in the case of two-stage revision.
-
-In the full model, there would be additional terms to capture time trends, site variation, prognostic covariates and joint (knee/hip) effects.
-
-$\beta_1$, $\beta_2$ and $\beta_3$ are required because there will be some patients who are not randomised to revision and yet will still receive either a one-stage or two-stage surgical procedure. 
-These patients may be eligible to enter into the duration domain and therefore the duration domain effects are informed by patients receiving randomised and non-randomised surgical treatment.
-The $\beta_1$, $\beta_2$ and $\beta_3$ parameters provide adjustment for non-randomised surgical treatment and $\beta_4$ and $\beta_5$ provide adjustment for the patients that did.
-
-Notice that $E_D = 0$ generally implies $S_{R_P} \notin \{1, 2\}$ such that $1-E_D$ is some linear function of the other terms in the model.
-This can lead to estimation problems that might necessitate model re-parameterisation and it is for this reason that the simulation model drops the $(1 - E_D)$ term and re-index the $\beta$ parameters:
-
-
-$$
-\begin{aligned}
-\mathbb{E}[Y|Q; \alpha,  \beta,\lambda] &=  \text{expit}( \alpha_0 + \\ 
-  &\quad \lambda_1 \mathbb{I}(L = 1) + \lambda_2 \mathbb{I}(L = 2) + \\
-  &\quad (\beta_1 + \beta_2 \mathbb{I}(S_{R_P} = 1) + \beta_3 \mathbb{I}(S_{R_P} = 2) ) (1-E_R) +\\ 
-  &\quad (\beta_4 \mathbb{I}(S_{R_P} = 1) + \beta_5 \mathbb{I}(S_{R_P} = 2) )R E_R + \\
-  &\quad (\beta_{6} \mathbb{I}(S_{R_P} = 1) + \beta_{7} \mathbb{I}(S_{R_P} = 2))D E_D + \\
-  &\quad \beta_{8} (1-E_F) + \beta_{9} F E_F )
-\end{aligned}
-$$ {#eq-mod-spec-2}
-
++ $\mu$ grand mean log-odds of treatment success
++ $\lambda_s$ change associated with membership silo $s$
++ $\rho_j$ change associated with site of infection (joint) $j$
++ $\vec{\beta_d}$ change associated treatment allocation with domain $d$
++ $\zeta_{r,v}$ change associated with site $v$ nested within region $r$
++ $\tau_t$ change associated with randomisation period $t$
++ $\omega$ parameters associated with baseline factors
 
 ## Examples
 

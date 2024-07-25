@@ -1,5 +1,5 @@
 ---
-title: "Simulation setup"
+title: "Data generation assumptions"
 date: today
 date-modified: last-modified
 ---

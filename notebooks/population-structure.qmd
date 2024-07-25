@@ -1,5 +1,5 @@
 ---
-title: "Population structure"
+title: "Data generation assumptions"
 date: today
 date-modified: last-modified
 ---
@@ -9,14 +9,11 @@ source("./R/init.R")
 log_info("Called population-structure notebook")
 ```
 
-The following provides some detail on the assumptions relating to important design variables.
-The outcome model is specified separately.
+Detail on the assumptions relating to design variables.
 
+## Silo membership
 
-## Silo
-
-The total sample size is divided across the silos in proportion to the values described in the table below.
-Each simulated dataset will vary somewhat from these proportions due to the stochastic nature of the data generation process.
+The probability of silo membership is shown below.
 
 ::: {.column width="50%"}
 
@@ -32,7 +29,7 @@ Each simulated dataset will vary somewhat from these proportions due to the stoc
 
 ## Site of infection (joint)
 
-Each silo comprises patients assumed to have primary infection in either knee or hip (not both).
+Each silo comprises patients with either a knee or hip infection.
 The assumed proportion of infections for each joint and for each silo are shown below.
 
 ::: {.column width="70%"}
@@ -49,76 +46,118 @@ chronic |hip |  0.5 |
 : Site of infection ($\pi$ denotes probability of site infection conditional on silo membership) {.striped .hover}
 :::
 
-## Randomisation into surgery domain (A)
 
-Only the late-stage infection cohort has randomisation options for surgery type.
-Other silos are assigned by clinician/patient preference.
+## Surgery domain
 
-## Surgery domain (A)
-
-Only late stage patients enter the surgery domain and are randomised 1:1 to DAIR/revision.
-The clinician selects what type of revision to perform.
-
-Early stage patients do not receive randomisation and are assumed to mostly receive DAIR, although they may have any form of surgery.
-Chronic stage patients do not receive randomisation and are assumed to receive DAIR, one-stage and two-stage based on clinician assessment.
-
-## Intended surgery
-
-The planned surgery will be based on a range of factors including clinician preference, hospital protocols etc.
-
-For early stage infection patients, we assume the proportion of dair, one and two-stage surgery to be 90%, 10% and 0%.
-
+Late stage patients enter for randomised surgery and are allocated 1:1 to DAIR/revision.
+The clinician selects the specific type of revision (one-stage or two-stage) to be performed.
 For late stage infection patients randomised to revision, we assume that the preferences for one and two-stage are 30% and 70%.
 For late stage infection patients randomised to dair, we assume that the preferences for dair, one and two-stage are 20%, 24% and 56%.
 
+Early stage patients do not receive randomisation and are assumed to mostly receive DAIR, although they may have any form of surgery.
+We assume the proportion of dair, one and two-stage surgery to be 90%, 10% and 0%.
+
+Chronic stage patients do not receive randomisation and are assumed to receive DAIR, one-stage and two-stage based on clinician assessment.
 For chronic stage infection patients, we assume that the preferences for dair, one and two-stage are 20%, 20% and 60%.
 
-## Randomisation into duration domain (B)
+## Antibiotic backbone duration domain
 
-Entry into domain B is dependent on the surgery that was actually received.
+Entry into antibiotic backbone duration domain is dependent on the surgery that was received.
+Specifically, this domain only applies for patients receiving one-stage revision.
 
-Surgery received is dependent on whether surgery was randomised (as in late infection patients) and what the surgical preference is (as in chronic infection patients).
+Within the antibiotic backbone duration domain, allocation is to 12 weeks vs 6 weeks duration.
 
-The surgery received may deviate from the original randomised allocation or preferred approach (in the case where randomisation was not applicable).
+Patients receiving DAIR and two-stage revision are assumed to have 12 wk duration (not randomised).
 
-## Duration domain (B)
+## Extended prophylaxis domain
 
-Within the duration domain, allocation is to long vs short duration, the meaning of which differs under one and two-stage surgery.
-Patients receiving DAIR are assumed to have 12 wk duration (not randomised).
-The default randomisation is 1:1 for long vs short within surgery type.
+Entry into extended prophylaxis domain is dependent on the surgery that was received.
+Specifically, this domain only applies for patients receiving two-stage revision.
 
-## Randomisation into antibiotic choice domain (C)
+Within the extended prophylaxis domain, allocation is to 12 weeks vs 7 days duration following the second stage of the revision.
 
-The data generating process assumes that 60% of the total sample enter into this domain at random, unrelated to risk factors.
- 
-## Antibiotic choice domain (C)
+Patients receiving DAIR and one-stage revision are assumed to not receive any extended prophylaxis.
 
-The treatment options and allocation probabilities for domain C are 1:1.
 
-## Encoded specification
+## Randomisation into antibiotic choice domain
 
-The above specification is bundled into an R package (`roadmap.data`) for consistent data generation for ROADMAP.
+Entry into antibiotic choice is primarily indicated by microbiology.
+For simplicity, the data generating process assumes that 60% of the total sample enter into this domain at random, unrelated to risk factors, irrespective of surgery type, silo and site of infection.
+
+## Baseline response
+
+The baseline probability/log-odds of treatment success is assumed to vary by silo and site of infection as detailed below.
+
+::: {.column width="50%"}
+
+| Silo |  Joint   | Pr(trt success) | log-odds
+|------|----------|-----------|---------------|
+| early |  knee   | 0.65      | 0.62              
+| early |  hip    | 0.75      | 1.10
+| late  |   knee  | 0.55      | 0.20
+| late  |   hip   | 0.6       | 0.41
+| chronic | knee  | 0.6       | 0.41
+| chronic |   hip | 0.65      | 0.62
+
+: Baseline probability of treatment success by silo and site of infection {.striped .hover}
+:::
+
+## Accrual
+
+Accrual is assumed to follow a non-homogeneous Poisson process event times with ramp up over the first 12 months of enrolment and then enrolment of around 1.5 per day.
 
 ```{r}
-#| code-fold: false
-roadmap.data::get_pop_spec()
+#| label: fig-accrual1
+#| fig-cap: 'Expected accrual'
+#| fig.height: 5
+#| fig.width: 5
+#| out-width: 70%
+
+# events per day
+lambda = 1.52
+# ramp up over 12 months 
+rho = function(t) pmin(t/360, 1)
+
+d_fig <- data.table(
+  t = 0:(5 * 365),
+  # expected number enrolled
+  n = c(0, nhpp.mean(lambda, rho, t1 = 5 * 365, num.points = 5 * 365))
+)
+
+ggplot(d_fig, aes(x = t/365, y = n)) +
+  geom_line() +
+  scale_x_continuous("Year") +
+  scale_y_continuous("E[Accrual]", breaks = seq(0, 2500, by = 500))
 ```
 
-The following function simulates the design matrix.
 
-```{r}
-#| code-fold: false
+```{r, echo = F, eval = F}
+Nsim <- 1000
 
-roadmap.data::get_design
+lsim <- list()
+for(i in 1:Nsim){
+  lsim[[i]] <- c(0, nhpp.event.times(lambda, 2499, rho))
+}
+tt <- colMeans(do.call(rbind, lsim))
+
+d_fig <- data.table(
+  id = 1:2500,
+  t0 = tt
+)
+
+ggplot(d_fig, aes(x = t0/375, y = id)) +
+  geom_line() +
+  scale_x_continuous("Year") +
+  scale_y_continuous("Accrual", breaks = seq(0, 2500, by = 500))
+
 ```
 
-The data generation assumptions imply unique patient groups on which we would observe the outcome.
-The outcome is known to be heterogenous across these groups and yet the stated goal is to aggregate measures of effect (odds ratios) across all these groups, e.g. no rif vs rif.
+## Missingness
 
-```{r}
-#| code-fold: false
+Missingness is not implemented.
 
-d <- roadmap.data::get_design()
-head(d)
-```
+## Non-differential follow-up
+
+To avoid artifacts associated with non-differential follow-up (e.g. early vs late deaths), participants will be included in the analyses only when they reach the primary endpoints (12 months) irrespective of whether they experienced treatment failure before that time.
+
 
