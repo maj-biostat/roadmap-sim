@@ -127,15 +127,15 @@ get_sim_data <- function(
   # early - non-randomised
   
   # pref for one-stage or two stage if forced to have revision
-  d[silo == 1, pref := sample(1:2, size = .N, replace = T, prob = g_pr_e_pref[2,2:3])]
+  d[silo == 1, pref := 99]
   # selected surgical assignment dair vs rev, which is basically just taking 
   # the preference probabilities and aggregating them appropriately
-  d[silo == 1, d1 := sample(c(-98, -99), size = .N, replace = T, prob = g_pr_e_surg)]
+  d[silo == 1, d1 := sample(1:3, size = .N, replace = T, prob = g_pr_e_pref[1,])]
   # selection surgical type dair (1), one(2), two(3)
   # dair is fixed
-  d[silo == 1 & d1 == -98, d1 := 1]
-  # under revision, d1 is now preference, i.e. preference influences assignment.
-  d[silo == 1 & d1 == -99, d1 := pref + 1]
+  # d[silo == 1 & d1 == -98, d1 := 1]
+  # # under revision, d1 is now preference, i.e. preference influences assignment.
+  # d[silo == 1 & d1 == -99, d1 := pref + 1]
   
   # late - randomised
   # pref for one-stage or two stage if forced to have revision
@@ -151,18 +151,22 @@ get_sim_data <- function(
   
   # chronic
   # pref for one-stage or two stage if forced to have revision
-  d[silo == 3, pref := sample(1:2, size = .N, replace = T, prob = g_pr_c_pref[2, 2:3])]
+  # d[silo == 3, pref := sample(1:2, size = .N, replace = T, prob = g_pr_c_pref[2, 2:3])]
+  d[silo == 3, pref := 99]
   # selected surgical assignment dair vs rev (not-rand dair (1), not-rand rev (2))
-  d[silo == 3, d1 := sample(c(-98, -99), size = .N, replace = T, prob = g_pr_c_surg)]
+  # d[silo == 3, d1 := sample(c(-98, -99), size = .N, replace = T, prob = g_pr_c_surg)]
+  d[silo == 3, d1 := sample(1:3, size = .N, replace = T, prob = g_pr_c_pref[1,])]
   # selection surgical type dair (1), one(2), two(3)
   # dair is fixed
-  d[silo == 3 & d1 == -98, d1 := 1]
-  # under revision, d1 is preference
-  d[silo == 3 & d1 == -99, d1 := pref + 1]
+  # d[silo == 3 & d1 == -98, d1 := 1]
+  # # under revision, d1 is preference
+  # d[silo == 3 & d1 == -99, d1 := pref + 1]
   
   # Outcome
   # d[, eta := mu + b_silo[silo] + b_jnt[jnt] + b_pref[pref] + b_d1[d1]]
-  d[, eta := mu + b_silo[silo] + b_jnt[jnt] + b_pref[pref] + b_d1[d1] ]
+  d[silo %in% c(1, 3), eta := mu + b_silo[silo] + b_jnt[jnt] + b_d1[d1] ]
+  d[silo %in% c(2), eta := mu + b_silo[silo] + b_jnt[jnt] + b_pref[pref] + b_d1[d1] ]
+  # d[, eta := mu + b_silo[silo] + b_jnt[jnt] + b_pref[pref] + b_d1[d1] ]
   d[, y := rbinom(N, 1, plogis(eta))]
 
   # Convert design to lower dim
@@ -266,7 +270,16 @@ main <- function(){
   dtmp
 
   ld <- list(
-    N = nrow(d_mod), y = d_mod$y, n = d_mod$n, 
+    N = nrow(d_mod), 
+    N1 = nrow(d_mod[silo == 1]), 
+    N2 = nrow(d_mod[silo == 2]),
+    N3 = nrow(d_mod[silo == 3]),
+    ix1 = d_mod[silo == 1, which = T], 
+    ix2 = d_mod[silo == 2, which = T], 
+    ix3 = d_mod[silo == 3, which = T], 
+    
+    y = d_mod$y, 
+    n = d_mod$n, 
     silo = d_mod$silo, 
     jnt = d_mod$jnt,
     pref = d_mod$pref,
@@ -353,7 +366,7 @@ sim <- function(){
   b_pref = c(0.2, -0.2)
   # non-rand dair, non-rand rev(one), non-rand rev(two), 
   # rand dair, rand rev(one), rand rev(two), 
-  b_d1 = c(0, 0, 0,  0, -1, 1)
+  b_d1 = c(0,  -1, 0,  0, 0, 1)
   # ab backbone duration 
   # non-rand (received dair), non-rand (received one), non-rand (received two),
   # 6wk, 12wk
@@ -373,7 +386,16 @@ sim <- function(){
       
       
       ld <- list(
-        N = nrow(d_mod), y = d_mod$y, n = d_mod$n, 
+        N = nrow(d_mod), 
+        N1 = nrow(d_mod[silo == 1]), 
+        N2 = nrow(d_mod[silo == 2]),
+        N3 = nrow(d_mod[silo == 3]),
+        ix1 = d_mod[silo == 1, which = T], 
+        ix2 = d_mod[silo == 2, which = T], 
+        ix3 = d_mod[silo == 3, which = T], 
+        
+        y = d_mod$y, 
+        n = d_mod$n, 
         silo = d_mod$silo, 
         jnt = d_mod$jnt,
         pref = d_mod$pref,
