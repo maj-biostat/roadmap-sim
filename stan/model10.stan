@@ -12,7 +12,6 @@ data{
   array[N] int d1;
   array[N] int d2;
   array[N] int g1;
-  array[N] int g2;
 
   // design matrices
   // silo
@@ -48,12 +47,11 @@ data{
   matrix[nrXd2, ncXd2] Xd2des;
   vector[ncXd2] sd2;
   
-  // silo by domain 2 interaction - 
-  // target surg specific effects for d2 not an average effect
-  int ncXg2;
-  int nrXg2;
-  matrix[nrXg2, ncXg2] Xg2des;
-  vector[ncXg2] sg2;
+  int nrp;
+  int ncp;
+  matrix[nrp, ncp] Xp1;
+  matrix[nrp, ncp] Xp2;
+  array[nrp] int nd2;
   
   int prior_only;
 }
@@ -67,7 +65,6 @@ transformed data{
   // indexes the relevant col in the design matrix
   matrix[N, ncXg1] Xg1 = Xg1des[g1,];
   matrix[N, ncXd2] Xd2 = Xd2des[d2,];
-  matrix[N, ncXg2] Xg2 = Xg2des[g2,];
 
 }
 parameters{
@@ -78,10 +75,17 @@ parameters{
   vector[ncXd1] bd1;
   vector[ncXd2] bd2;
   vector[ncXg1] bg1;
-  vector[ncXg2] bg2;
 }
 transformed parameters{
-  vector[N] eta = mu + Xs*bs + Xj*bj + Xp*bp + Xd1*bd1 + Xd2*bd2 + Xg1*bg1 + Xg2*bg2 ;
+  vector[N] eta = mu + Xs*bs + Xj*bj + Xp*bp + Xd1*bd1 + Xd2*bd2 + Xg1*bg1 ;
+  vector[ncXs + ncXj + ncXp + ncXd1 + ncXd2 + ncXg1] b;
+  b[1:ncXs] = bs;
+  b[(ncXs + 1):(ncXs+ncXj)] = bj;
+  b[(ncXs+ncXj + 1):(ncXs+ncXj+ncXp)] = bp;
+  b[(ncXs+ncXj+ncXp + 1):(ncXs+ncXj+ncXp+ncXd1)] = bd1;
+  b[(ncXs+ncXj+ncXp+ncXd1 + 1):(ncXs+ncXj+ncXp+ncXd1+ncXd2)] = bd2;
+  b[(ncXs+ncXj+ncXp+ncXd1+ncXd2 + 1):(ncXs+ncXj+ncXp+ncXd1+ncXd2+ncXg1)] = bg1;
+  
 } 
 model{
   target += logistic_lpdf(mu | 0, 1);
@@ -92,7 +96,6 @@ model{
   target += normal_lpdf(bd2 | 0, sd2);
   
   target += normal_lpdf(bg1 | 0, sg1);
-  target += normal_lpdf(bg2 | 0, sg2);
   
   if(!prior_only){
     target += binomial_logit_lpmf(y | n, eta);  
@@ -100,4 +103,13 @@ model{
 
 }
 generated quantities{
+  vector[N] wgts1 = dirichlet_rng(to_vector(n));  
+  vector[nrp] wgts2 = dirichlet_rng(to_vector(nd2));     
+  vector[nrp] eta_d2 = mu + Xp1 * b;
+  vector[nrp] eta_d3 = mu + Xp2 * b;
+  
+  real mu_pop = wgts1' * eta;
+  real bd2_2 = wgts2' * eta_d2 - mu_pop  ;
+  real bd2_3 = wgts2' * eta_d3 - mu_pop  ;  
+
 }
