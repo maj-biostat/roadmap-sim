@@ -10,7 +10,9 @@ data{
   array[N] int jnt;
   array[N] int pref;
   array[N] int d1;
+  array[N] int d2;
   array[N] int g1;
+  array[N] int g2;
 
   // design matrices
   // silo
@@ -40,6 +42,19 @@ data{
   matrix[nrXg1, ncXg1] Xg1des;
   vector[ncXg1] sg1;
   
+  // domain 2 
+  int nrXd2;
+  int ncXd2;
+  matrix[nrXd2, ncXd2] Xd2des;
+  vector[ncXd2] sd2;
+  
+  // silo by domain 2 interaction - 
+  // target surg specific effects for d2 not an average effect
+  int ncXg2;
+  int nrXg2;
+  matrix[nrXg2, ncXg2] Xg2des;
+  vector[ncXg2] sg2;
+  
   int prior_only;
 }
 transformed data{
@@ -49,9 +64,10 @@ transformed data{
   matrix[N, ncXj] Xj = Xjdes[jnt,];
   matrix[N, ncXj] Xp = Xpdes[pref,];
   matrix[N, ncXd1] Xd1 = Xd1des[d1,];
-
   // indexes the relevant col in the design matrix
   matrix[N, ncXg1] Xg1 = Xg1des[g1,];
+  matrix[N, ncXd2] Xd2 = Xd2des[d2,];
+  matrix[N, ncXg2] Xg2 = Xg2des[g2,];
 
 }
 parameters{
@@ -60,10 +76,12 @@ parameters{
   vector[ncXj] bj;
   vector[ncXp] bp;
   vector[ncXd1] bd1;
+  vector[ncXd2] bd2;
   vector[ncXg1] bg1;
+  vector[ncXg2] bg2;
 }
 transformed parameters{
-  vector[N] eta = mu + Xs*bs + Xj*bj + Xp*bp + Xd1*bd1 + Xg1*bg1  ;
+  vector[N] eta = mu + Xs*bs + Xj*bj + Xp*bp + Xd1*bd1 + Xd2*bd2 + Xg1*bg1 + Xg2*bg2 ;
 } 
 model{
   target += logistic_lpdf(mu | 0, 1);
@@ -71,7 +89,10 @@ model{
   target += normal_lpdf(bj | 0, sj);
   target += normal_lpdf(bp | 0, sp);
   target += normal_lpdf(bd1 | 0, sd1);
+  target += normal_lpdf(bd2 | 0, sd2);
+  
   target += normal_lpdf(bg1 | 0, sg1);
+  target += normal_lpdf(bg2 | 0, sg2);
   
   if(!prior_only){
     target += binomial_logit_lpmf(y | n, eta);  
