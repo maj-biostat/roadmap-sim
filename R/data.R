@@ -45,7 +45,7 @@ b_jnt = c(-0.4, 0.4)
 
 b_pref = c(0.2, -0.2)
 # non rand surg
-b_g1 = c(0, 0, 0)
+b_g1 = c(0.1, 0, -0.1)
 # rand surg
 b_d1 = c(-1, 0, 1)
 # ab backbone duration 
@@ -62,31 +62,17 @@ get_sim_data <- function(
     N = 1000,
     
     mu = 0,
-    
-    # all effects are sum to zero
-    
-    # silo (e, c, l)
     b_silo = c(0.5, -0.3, -0.2),
-    
-    # jnt (knee, hip)
     b_jnt = c(-0.4, 0.4),
-    
-    # domains:
-    # surgery 
-    # preference effects under randomised revision
-    # pref one, pref two
     b_pref = c(0.2, -0.2),
-    # non-rand dair, non-rand rev(one), non-rand rev(two), 
-    # rand dair, rand rev(one), rand rev(two), 
-    b_g1 = c(0, 0, 0),
-    b_d1 = c(-1, 0, 1),
-    # ab backbone duration 
-    # non-rand (received dair), non-rand (received one), non-rand (received two),
-    # 6wk, 12wk
+    b_d1 = c(0.2, -0.1, -0.1), 
+    b_g1 = rbind(
+      c(-0.80,  0.00,  0.80),
+      c( 0.40, -0.20, -0.20),
+      c( 0.40,  0.20, -0.60)
+    ),
     b_d2 = c(-0.2, -0.4, 0.6),
-    # ext proph duration (non-rand, 12wk, 7day)
     b_d3 = c(-0.4, 0.1, 0.3),
-    # ab choice (non-rand, no-rif, rif)
     b_d4 = c(0.3, -0.1, -0.2)
     ){
   
@@ -94,6 +80,12 @@ get_sim_data <- function(
   stopifnot(all.equal(0, sum(b_jnt), tol = sqrt(.Machine$double.eps)))
   stopifnot(all.equal(0, sum(b_g1), tol = sqrt(.Machine$double.eps)))
   stopifnot(all.equal(0, sum(b_d1), tol = sqrt(.Machine$double.eps)))
+
+  stopifnot(all.equal(colSums(b_g1), rep(0, ncol(b_g1)),
+                      tolerance = sqrt(.Machine$double.eps)))
+  stopifnot(all.equal(rowSums(b_g1), rep(0, nrow(b_g1)),
+                      tolerance = sqrt(.Machine$double.eps)))
+  
   stopifnot(all.equal(0, sum(b_d2), tol = sqrt(.Machine$double.eps)))
   stopifnot(all.equal(0, sum(b_d3), tol = sqrt(.Machine$double.eps)))
   stopifnot(all.equal(0, sum(b_d4), tol = sqrt(.Machine$double.eps)))
@@ -102,13 +94,14 @@ get_sim_data <- function(
   K_s <- length(b_silo)
   K_j <- length(b_jnt)
   K_p <- length(b_pref)
-  K_g1 <- length(b_g1)
   K_d1 <- length(b_d1)
+  
+  K_g1 <- K_s * K_d1
+  
   K_d2 <- length(b_d2)
   K_d3 <- length(b_d3)
   K_d4 <- length(b_d4)
   
-
   d <- data.table()
   
   # Stratification
@@ -125,18 +118,18 @@ get_sim_data <- function(
   # early - non-randomised
   # preference is collinear with treatment selection
   d[silo == 1, pref_rev := sample(1:2, size = .N, replace = T, prob = g_pr_e_pref[2, 2:3])]
-  d[silo == 1, g1 := sample(c(-98, -99), size = .N, replace = T, prob = g_pr_e_surg)]
-  d[silo == 1 & g1 == -98, g1 := 1]
+  d[silo == 1, d1 := sample(c(-98, -99), size = .N, replace = T, prob = g_pr_e_surg)]
+  d[silo == 1 & d1 == -98, d1 := 1]
   # under revision, d1 has high probability of being the preference
-  d[silo == 1 & g1 == -99 & pref_rev == 1, g1 := sample(2:3, .N, replace = T, prob = c(0.95, 0.05))]
-  d[silo == 1 & g1 == -99 & pref_rev == 2, g1 := sample(2:3, .N, replace = T, prob = c(0.05, 0.95))]
+  d[silo == 1 & d1 == -99 & pref_rev == 1, d1 := sample(2:3, .N, replace = T, prob = c(0.95, 0.05))]
+  d[silo == 1 & d1 == -99 & pref_rev == 2, d1 := sample(2:3, .N, replace = T, prob = c(0.05, 0.95))]
 
   d[silo == 2, pref_rev := sample(1:2, size = .N, replace = T, prob = g_pr_c_pref[2, 2:3])]
-  d[silo == 2, g1 := sample(c(-98, -99), size = .N, replace = T, prob = g_pr_c_surg)]
-  d[silo == 2 & g1 == -98, g1 := 1]
+  d[silo == 2, d1 := sample(c(-98, -99), size = .N, replace = T, prob = g_pr_c_surg)]
+  d[silo == 2 & d1 == -98, d1 := 1]
   # under revision, d1 has high probability of being the preference
-  d[silo == 2 & g1 == -99 & pref_rev == 1, g1 := sample(2:3, .N, replace = T, prob = c(0.95, 0.05))]
-  d[silo == 2 & g1 == -99 & pref_rev == 2, g1 := sample(2:3, .N, replace = T, prob = c(0.05, 0.95))]
+  d[silo == 2 & d1 == -99 & pref_rev == 1, d1 := sample(2:3, .N, replace = T, prob = c(0.95, 0.05))]
+  d[silo == 2 & d1 == -99 & pref_rev == 2, d1 := sample(2:3, .N, replace = T, prob = c(0.05, 0.95))]
   
   # late acute is a randomised assignment for surgical domain
   d[silo == 3, pref_rev := sample(1:2, size = .N, replace = T, prob = g_pr_l_pref[2, 2:3])]
@@ -152,33 +145,37 @@ get_sim_data <- function(
   
   # Antibiotic backbone duration - only applicable to units recv one-stage
   
-  d[g1 == 1 | d1 == 1, d2 := 1]
-  d[g1 == 3 | d1 == 3, d2 := 1]
-  d[g1 == 2 | d1 == 2, d2 := sample(2:3, size = .N, replace = T)]
+  d[d1 == 1, d2 := 1]
+  d[d1 == 3, d2 := 1]
+  d[d1 == 2, d2 := sample(2:3, size = .N, replace = T)]
   
   
   # Extended prophylaxis - only applicable to units recv two-stage
   
-  d[g1 == 1 | d1 == 1, d3 := 1]
-  d[g1 == 2 | d1 == 2, d3 := 1]
-  d[g1 == 3 | d1 == 3, d3 := sample(2:3, size = .N, replace = T)]
-  
-  
-  
+  d[d1 == 1, d3 := 1]
+  d[d1 == 2, d3 := 1]
+  d[d1 == 3, d3 := sample(2:3, size = .N, replace = T)]
+
   # Outcome
-  d[silo %in% 1:2, eta := mu + b_silo[silo] + b_jnt[jnt] + b_pref[pref_rev] + 
-      b_g1[g1] + b_d2[d2]  ]
-  d[silo %in% 3, eta := mu + b_silo[silo] + b_jnt[jnt] + b_pref[pref_rev] + 
-      b_d1[d1] + b_d2[d2]  ]
-  d[, y := rbinom(N, 1, plogis(eta))]
+  d[, mu := mu]
+  d[, b_silo := b_silo[silo]]
+  d[, b_jnt := b_jnt[jnt]]
+  d[, b_pref := b_pref[pref_rev]]
+  d[, b_d1 := b_d1[d1]]
+  d[, b_g1 := b_g1[cbind(d$silo, d$d1)]]
+  d[, eta := mu + b_silo + b_jnt + b_pref + b_d1 + b_g1    ]
+
+  d[, y := rbinom(.N, 1, plogis(eta))]
 
   # Convert design to lower dim
   
   X_s <- diag(K_s)
   X_j <- diag(K_j)
   X_p <- diag(K_p)
-  X_g1 <- diag(K_g1)
   X_d1 <- diag(K_d1)
+  
+  X_g1 <- diag(K_g1)
+  
   X_d2 <- diag(K_d2)
   X_d3 <- diag(K_d3)
   X_d4 <- diag(K_d4)
@@ -187,8 +184,10 @@ get_sim_data <- function(
   S_s <- X_s - (1 / K_s )
   S_j <- X_j - (1 / K_j )
   S_p <- X_p - (1 / K_p )
-  S_g1 <- X_g1 - (1 / K_g1 )
   S_d1 <- X_d1 - (1 / K_d1 )
+  
+  S_g1 <- kronecker(S_s, S_d1)
+  
   S_d2 <- X_d2 - (1 / K_d2 )
   S_d3 <- X_d3 - (1 / K_d3 )
   S_d4 <- X_d4 - (1 / K_d4 )
@@ -197,8 +196,10 @@ get_sim_data <- function(
   Q_s <- eigen(S_s)$vector[, 1:(K_s - 1)]
   Q_j <- eigen(S_j)$vector[, 1:(K_j - 1)]
   Q_p <- eigen(S_p)$vector[, 1:(K_p - 1)]
-  Q_g1 <- eigen(S_g1)$vector[, 1:(K_g1 - 1)]
   Q_d1 <- eigen(S_d1)$vector[, 1:(K_d1 - 1)]
+  
+  Q_g1 <- kronecker(Q_s, Q_d1)
+  
   Q_d2 <- eigen(S_d2)$vector[, 1:(K_d2 - 1)]
   Q_d3 <- eigen(S_d3)$vector[, 1:(K_d3 - 1)]
   Q_d4 <- eigen(S_d4)$vector[, 1:(K_d4 - 1)]
@@ -207,8 +208,10 @@ get_sim_data <- function(
   b_s_s <- t(Q_s) %*% b_silo
   b_j_s <- t(Q_j) %*% b_jnt
   b_p_s <- t(Q_p) %*% b_pref
-  b_g1_s <- t(Q_g1) %*% b_g1
   b_d1_s <- t(Q_d1) %*% b_d1
+  
+  b_g1_s <- t(Q_g1) %*% as.numeric(b_g1)
+  
   b_d2_s <- t(Q_d2) %*% b_d2
   b_d3_s <- t(Q_d3) %*% b_d3
   b_d4_s <- t(Q_d4) %*% b_d4
@@ -217,13 +220,17 @@ get_sim_data <- function(
   X_s_s <- X_s %*% Q_s
   X_j_s <- X_j %*% Q_j
   X_p_s <- X_p %*% Q_p
-  X_g1_s <- X_g1 %*% Q_g1
   X_d1_s <- X_d1 %*% Q_d1
+  
+  X_g1_s <- X_g1 %*% Q_g1
+  
   X_d2_s <- X_d2 %*% Q_d2
   X_d3_s <- X_d3 %*% Q_d3
   X_d4_s <- X_d4 %*% Q_d4
   
-  
+  # round(as.numeric(X_g1_s %*% b_g1_s), 3)
+  # as.numeric(b_g1)
+
   # d_grid <- CJ(silo = 1:K_s, jnt = 1:K_j, d1 = 1:K_d1 )
   # # irrelevant combinations
   # # no randomisation within surgical domain
@@ -266,6 +273,12 @@ get_sim_data <- function(
 
 
 main <- function(){
+  mu = 1
+  
+  b_silo = c(0.5, -0.3, -0.2)
+  b_jnt = c(-0.4, 0.4)
+  b_pref = c(0.2, -0.2)
+  
   b_g1 = c(-0.25, 0.25, 0)
   b_d1 = c(-1, 0, 1)
   # 6wk, 12wk
@@ -275,65 +288,50 @@ main <- function(){
   # ab choice (non-rand, no-rif, rif)
   b_d4 = c(0.3, -0.1, -0.2)
   
-  m1 <- cmdstanr::cmdstan_model("stan/model09.stan")
+  m1 <- cmdstanr::cmdstan_model("stan/model10.stan")
   ll <- get_sim_data(
     N = 1e6, 
-    b_g1 = c(-0.25, 0.25, 0),
-    b_d1 = c(-1, 0, 1),
+    b_silo = b_silo, b_jnt = b_jnt, b_pref = b_pref,
+    b_g1 = b_g1, b_d1 = b_d1,
     # 6wk, 12wk
-    b_d2 = c(-0.2, -0.4, 0.6),
+    b_d2 = b_d2,
     # ext proph duration (non-rand, 12wk, 7day)
-    b_d3 = c(-0.4, 0.1, 0.3),
+    b_d3 = b_d3,
     # ab choice (non-rand, no-rif, rif)
-    b_d4 = c(0.3, -0.1, -0.2)
+    b_d4 = b_d4
     )
   
-  d_mod1 <- ll$d[silo %in% 1:2, .(y = sum(y), n = .N), 
-                 keyby = .(silo, jnt, pref_rev, g1, d2)]
+  d_mod1 <- ll$d[, .(y = sum(y), n = .N, eta = round(unique(eta), 3)), 
+                 keyby = .(silo, jnt, pref_rev, d1)]
+  d_mod1[, eta_obs := round(qlogis(y / n), 3)]
   d_mod1[, p_obs := y / n]
-  d_mod1[, eta_obs := qlogis(p_obs)]
   d_mod1
   
-  d_mod2 <- ll$d[silo %in% 3, .(y = sum(y), n = .N), 
-                 keyby = .(silo, jnt, pref_rev, d1, d2)]
-  d_mod2[, p_obs := y / n]
-  d_mod2[, eta_obs := qlogis(p_obs)]
-  d_mod2
+  Xg1 <- matrix(NA, nrow(d_mod1), ncol = 3)
+  ix <- d_mod1[silo == 3, which = T]
+  Xg1[ix, 1:3] <- 0
+  ix <- d_mod1[silo != 3, which = T]
+  Xg1[cbind(ix, d_mod1[ix, d1])] <- 1
+  Xg1[is.na(Xg1)] <- 0
   
   ld <- list(
-    N = nrow(d_mod1) + nrow(d_mod2), 
-    N1 = nrow(d_mod1[silo == 1]), 
-    N2 = nrow(d_mod1[silo == 2]),
-    N3 = nrow(d_mod2),
+    N = nrow(d_mod1), 
+
+    y = d_mod1[, y], 
+    n = d_mod1[, n], 
     
-    ixs1 = d_mod1[silo == 1, which = T], 
-    ixs2 = d_mod1[silo == 2, which = T], 
-    ixs3 = d_mod2[silo == 3, which = T],  
-    
-    y = c(d_mod1[, y], d_mod2[, y]), 
-    n = c(d_mod1[, n], d_mod2[, n]), 
-    
-    silo_1 = d_mod1[, silo], 
-    jnt_1 = d_mod1[, jnt],
-    pref_1 = d_mod1[, pref_rev],
-    g1_1 = d_mod1[, g1],
-    d2_1 = d_mod1[, d2],
-    # d3_1 = d_mod1[, d3],
-    
-    silo_2 = d_mod2[, silo], 
-    jnt_2 = d_mod2[, jnt], 
-    pref_2 = d_mod2[, pref_rev],
-    d1_2 = d_mod2[, d1],
-    d2_2 = d_mod2[, d2],
-    # d3_2 = d_mod2[, d3],
+    silo = d_mod1[, silo], 
+    jnt = d_mod1[, jnt],
+    pref = d_mod1[, pref_rev],
+    d1 = d_mod1[, d1],
     
     nrXs = nrow(ll$X_s_s), ncXs = ncol(ll$X_s_s), Xsdes = ll$X_s_s, ss = rep(1, ncol(ll$X_s_s)),
     nrXj = nrow(ll$X_j_s), ncXj = ncol(ll$X_j_s), Xjdes = ll$X_j_s, sj = rep(1, ncol(ll$X_j_s)),
     nrXp = nrow(ll$X_p_s), ncXp = ncol(ll$X_p_s), Xpdes = ll$X_p_s, sp = rep(1, ncol(ll$X_p_s)),
     nrXg1 = nrow(ll$X_g1_s), ncXg1 = ncol(ll$X_g1_s), Xg1des = ll$X_d1_s, sg1 = rep(1, ncol(ll$X_g1_s)),
     nrXd1 = nrow(ll$X_d1_s), ncXd1 = ncol(ll$X_d1_s), Xd1des = ll$X_d1_s, sd1 = rep(1, ncol(ll$X_d1_s)),
-    nrXd2 = nrow(ll$X_d2_s), ncXd2 = ncol(ll$X_d2_s), Xd2des = ll$X_d2_s, sd2 = rep(1, ncol(ll$X_d2_s)),
-    # nrXd3 = nrow(ll$X_d3_s), ncXd3 = ncol(ll$X_d3_s), Xd3des = ll$X_d3_s, sd3 = rep(1, ncol(ll$X_d3_s)),
+    
+    Xg1 = Xg1,
     
     prior_only = 0
   )
@@ -376,7 +374,7 @@ main <- function(){
   
   # 
   m_post_s <- f1$draws(variables = c("bg1"), format = "matrix")
-  post_mu <- m_post_s %*% t(cbind(ll$X_g1_s))
+  post_mu <- m_post_s %*% diag(3)
   rbind(
     par = ll$b_g1,
     post_mu = colMeans(post_mu)
@@ -390,21 +388,7 @@ main <- function(){
     post_mu = colMeans(post_mu)
   )
   
-  #
-  m_post_s <- f1$draws(variables = c("bd2"), format = "matrix")
-  post_mu <- m_post_s %*% t(cbind(ll$X_d2_s))
-  rbind(
-    par = ll$b_d2,
-    post_mu = colMeans(post_mu)
-  )
   
-  #
-  # m_post_s <- f1$draws(variables = c("bd3"), format = "matrix")
-  # post_mu <- m_post_s %*% t(cbind(ll$X_d3_s))
-  # rbind(
-  #   par = ll$b_d3,
-  #   post_mu = colMeans(post_mu)
-  # )
   
 }
 
@@ -413,27 +397,20 @@ main <- function(){
 sim <- function(){
   
   
-  m1 <- cmdstanr::cmdstan_model("stan/model09.stan")
+  m1 <- cmdstanr::cmdstan_model("stan/model10.stan")
   
   mu = 1
-  # all effects are sum to zero
-  # silo (e, l, c)
   b_silo = c(0.5, -0.3, -0.2)
-  # jnt (knee, hip)
   b_jnt = c(-0.4, 0.4)
-  # surgery 
-  # preference effects under randomised revision
-  # pref one, pref two
   b_pref = c(0.2, -0.2)
-  # non-rand dair, non-rand rev(one), non-rand rev(two), 
-  # rand dair, rand rev(one), rand rev(two), 
-  b_g1 = c(-0.25, 0.25, 0)
-  b_d1 = c(-1, 0, 1)
-  # 6wk, 12wk
+  b_d1 = c(0.3, -0.2, -0.1)
+  b_g1 = rbind(
+    c(-0.60,  0.20,  0.40),
+    c( 0.20,  0.00, -0.20),
+    c( 0.40, -0.20, -0.20)
+  )
   b_d2 = c(-0.2, -0.4, 0.6)
-  # ext proph duration (non-rand, 12wk, 7day)
   b_d3 = c(-0.4, 0.1, 0.3)
-  # ab choice (non-rand, no-rif, rif)
   b_d4 = c(0.3, -0.1, -0.2)
   
   n_sim <- 1000
@@ -441,56 +418,40 @@ sim <- function(){
     
     ll <- get_sim_data(
       N = 2.5e3, 
-      mu = 1,
-      b_g1 = c(-0.25, 0.25, 0),
-      b_d1 = c(-1, 0, 1),
-      # 6wk, 12wk
-      b_d2 = c(-0.2, -0.4, 0.6),
-      # ext proph duration (non-rand, 12wk, 7day)
-      b_d3 = c(-0.4, 0.1, 0.3),
-      # ab choice (non-rand, no-rif, rif)
-      b_d4 = c(0.3, -0.1, -0.2)
+      mu = mu,
+      b_silo = b_silo,
+      b_jnt = b_jnt,
+      b_pref = b_pref,
+      b_d1 = b_d1,
+      b_g1 = b_g1,
+      b_d2 = b_d2,  # 6wk, 12wk
+      b_d3 = b_d3,   # ext proph duration (non-rand, 12wk, 7day)
+      b_d4 = b_d4   # ab choice (non-rand, no-rif, rif)
     )
     
-    d_mod1 <- ll$d[silo %in% 1:2, .(y = sum(y), n = .N), 
-                   keyby = .(silo, jnt, pref_rev, g1, d2)]
-    d_mod2 <- ll$d[silo %in% 3, .(y = sum(y), n = .N), 
-                   keyby = .(silo, jnt, pref_rev, d1, d2)]
+    d_mod1 <- ll$d[, .(y = sum(y), n = .N, eta = round(unique(eta), 3)), 
+                   keyby = .(silo, jnt, pref_rev, d1)]
+    d_mod1[, eta_obs := round(qlogis(y / n), 3)]
+    d_mod1[, p_obs := y / n]
+    
     
     ld <- list(
-      N = nrow(d_mod1) + nrow(d_mod2), 
-      N1 = nrow(d_mod1[silo == 1]), 
-      N2 = nrow(d_mod1[silo == 2]),
-      N3 = nrow(d_mod2),
+      N = nrow(d_mod1), 
       
-      ixs1 = d_mod1[silo == 1, which = T], 
-      ixs2 = d_mod1[silo == 2, which = T], 
-      ixs3 = d_mod2[silo == 3, which = T],  
+      y = d_mod1[, y], 
+      n = d_mod1[, n], 
       
-      y = c(d_mod1[, y], d_mod2[, y]), 
-      n = c(d_mod1[, n], d_mod2[, n]), 
-      
-      silo_1 = d_mod1[, silo], 
-      jnt_1 = d_mod1[, jnt],
-      pref_1 = d_mod1[, pref_rev],
-      g1_1 = d_mod1[, g1],
-      d2_1 = d_mod1[, d2],
-      # d3_1 = d_mod1[, d3],
-      
-      silo_2 = d_mod2[, silo], 
-      jnt_2 = d_mod2[, jnt], 
-      pref_2 = d_mod2[, pref_rev],
-      d1_2 = d_mod2[, d1],
-      d2_2 = d_mod2[, d2],
-      # d3_2 = d_mod2[, d3],
+      silo = d_mod1[, silo], 
+      jnt = d_mod1[, jnt],
+      pref = d_mod1[, pref_rev],
+      d1 = d_mod1[, d1],
+      g1 = ((d_mod1$silo - 1) * ll$K_d1) + d_mod1$d1,
       
       nrXs = nrow(ll$X_s_s), ncXs = ncol(ll$X_s_s), Xsdes = ll$X_s_s, ss = rep(1, ncol(ll$X_s_s)),
       nrXj = nrow(ll$X_j_s), ncXj = ncol(ll$X_j_s), Xjdes = ll$X_j_s, sj = rep(1, ncol(ll$X_j_s)),
       nrXp = nrow(ll$X_p_s), ncXp = ncol(ll$X_p_s), Xpdes = ll$X_p_s, sp = rep(1, ncol(ll$X_p_s)),
-      nrXg1 = nrow(ll$X_g1_s), ncXg1 = ncol(ll$X_g1_s), Xg1des = ll$X_d1_s, sg1 = rep(1, ncol(ll$X_g1_s)),
+      nrXg1 = nrow(ll$X_g1_s), ncXg1 = ncol(ll$X_g1_s), Xg1des = ll$X_g1_s, sg1 = rep(1, ncol(ll$X_g1_s)),
       nrXd1 = nrow(ll$X_d1_s), ncXd1 = ncol(ll$X_d1_s), Xd1des = ll$X_d1_s, sd1 = rep(1, ncol(ll$X_d1_s)),
-      nrXd2 = nrow(ll$X_d2_s), ncXd2 = ncol(ll$X_d2_s), Xd2des = ll$X_d2_s, sd2 = rep(1, ncol(ll$X_d2_s)),
-      # nrXd3 = nrow(ll$X_d3_s), ncXd3 = ncol(ll$X_d3_s), Xd3des = ll$X_d3_s, sd3 = rep(1, ncol(ll$X_d3_s)),
       
       prior_only = 0
     )
@@ -520,19 +481,19 @@ sim <- function(){
     v_out <- c(v_out,  colMeans(post_mu))
     
     #
-    m_post_s <- f1$draws(variables = c("bg1"), format = "matrix")
-    post_mu <- m_post_s %*% t(cbind(ll$X_g1_s))
-    v_out <- c(v_out,  colMeans(post_mu))
-    
-    #
     m_post_s <- f1$draws(variables = c("bd1"), format = "matrix")
     post_mu <- m_post_s %*% t(cbind(ll$X_d1_s))
     v_out <- c(v_out,  colMeans(post_mu))
     
     #
-    m_post_s <- f1$draws(variables = c("bd2"), format = "matrix")
-    post_mu <- m_post_s %*% t(cbind(ll$X_d2_s))
+    m_post_s <- f1$draws(variables = c("bg1"), format = "matrix")
+    post_mu <- m_post_s %*% t(cbind(ll$X_g1_s))
     v_out <- c(v_out,  colMeans(post_mu))
+    
+    #
+    # m_post_s <- f1$draws(variables = c("bd2"), format = "matrix")
+    # post_mu <- m_post_s %*% t(cbind(ll$X_d2_s))
+    # v_out <- c(v_out,  colMeans(post_mu))
     
     #
     # m_post_s <- f1$draws(variables = c("bd3"), format = "matrix")
@@ -543,9 +504,10 @@ sim <- function(){
                       paste0("bs",seq_along(ll$b_silo)),
                       paste0("bj",seq_along(ll$b_jnt)),
                       paste0("bp",seq_along(ll$b_pref)),
-                      paste0("bg1",seq_along(ll$b_g1)),
                       paste0("bd1",seq_along(ll$b_d1)),
-                      paste0("bd2",seq_along(ll$b_d2))
+                      paste0("bg1",seq_along(ll$b_g1))
+                      # ,
+                      # paste0("bd2",seq_along(ll$b_d2))
                       # ,
                       # paste0("bd3",seq_along(ll$b_d3))
                       )
@@ -559,9 +521,10 @@ sim <- function(){
                                                   paste0("bs",seq_along(b_silo)),
                                                   paste0("bj",seq_along(b_jnt)),
                                                   paste0("bp",seq_along(b_pref)),
-                                                  paste0("bg1",seq_along(b_g1)),
                                                   paste0("bd1",seq_along(b_d1)),
-                                                  paste0("bd2",seq_along(b_d2))
+                                                  paste0("bg1",seq_along(b_g1))
+                                                  # ,
+                                                  # paste0("bd2",seq_along(b_d2))
                                                   # ,
                                                   # paste0("bd3",seq_along(b_d3))
                                                   )
@@ -573,9 +536,10 @@ sim <- function(){
                  paste0("bs",seq_along(b_silo)),
                  paste0("bj",seq_along(b_jnt)),
                  paste0("bp",seq_along(b_pref)),
-                 paste0("bg1",seq_along(b_g1)),
                  paste0("bd1",seq_along(b_d1)),
-                 paste0("bd2",seq_along(b_d2))
+                 paste0("bg1",seq_along(b_g1))
+                 # ,
+                 # paste0("bd2",seq_along(b_d2))
                  # ,
                  # paste0("bd3",seq_along(b_d3))
                  ),
@@ -584,9 +548,10 @@ sim <- function(){
       b_silo,
       b_jnt,
       b_pref,
-      b_g1,
       b_d1,
-      b_d2
+      as.numeric(t(b_g1))
+      # ,
+      # b_d2
       # ,
       # b_d3
     )
@@ -595,9 +560,10 @@ sim <- function(){
                                                   paste0("bs",seq_along(b_silo)),
                                                   paste0("bj",seq_along(b_jnt)),
                                                   paste0("bp",seq_along(b_pref)),
-                                                  paste0("bg1",seq_along(b_g1)),
                                                   paste0("bd1",seq_along(b_d1)),
-                                                  paste0("bd2",seq_along(b_d2))
+                                                  paste0("bg1",seq_along(b_g1))
+                                                  # ,
+                                                  # paste0("bd2",seq_along(b_d2))
                                                   # ,
                                                   # paste0("bd3",seq_along(b_d3))
                                                   ))]
