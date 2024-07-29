@@ -32,32 +32,6 @@ g_pr_c_pref <- rbind(
 )
 
 
-
-N = 1e5
-mu = 0
-# all effects are sum to zero
-# silo (e, l, c)
-b_silo = c(0.5, -0.3, -0.2)
-# jnt (knee, hip)
-b_jnt = c(-0.4, 0.4)
-# domains:
-# surgery 
-
-b_pref = c(0.2, -0.2)
-# non rand surg
-b_g1 = c(0.1, 0, -0.1)
-# rand surg
-b_d1 = c(-1, 0, 1)
-# ab backbone duration 
-# non-rand (received dair), non-rand (received one), non-rand (received two),
-# 6wk, 12wk
-b_d2 = c(-0.2, -0.4, 0.6)
-# ext proph duration (non-rand, 12wk, 7day)
-b_d3 = c(-0.4, 0.1, 0.3)
-# ab choice (non-rand, no-rif, rif)
-b_d4 = c(0.3, -0.1, -0.2)
-
-
 get_sim_data <- function(
     N = 1000,
     
@@ -166,7 +140,7 @@ get_sim_data <- function(
   d[, b_d1 := b_d1[d1]]
   d[, b_g1 := b_g1[cbind(d$silo, d$d1)]]
   d[, b_d2 := b_d2[d2]]
-  d[, eta := mu + b_silo + b_jnt + b_pref + b_d1 + b_d2    ]
+  d[, eta := mu + b_silo + b_jnt + b_pref + b_d1 + b_d2     ]
 
   d[, y := rbinom(.N, 1, plogis(eta))]
 
@@ -226,24 +200,6 @@ get_sim_data <- function(
   # round(as.numeric(X_g1_s %*% b_g1_s), 3)
   # as.numeric(b_g1)
 
-  # d_grid <- CJ(silo = 1:K_s, jnt = 1:K_j, jnt = 1:p, d1 = 1:K_d1, d2 = 1:K_d2 )
-  # irrelevant combinations
-  # no randomisation within surgical domain
-  # d_grid <- d_grid[! (silo == 1 & d1 %in% 4:6)]
-  # d_grid <- d_grid[! (silo == 3 & d1 %in% 4:6)]
-
-  # X_full_s <- matrix(NA, nrow(d_grid), 4)
-  # for(i in 1:nrow(d_grid)){
-  # 
-  #   X_full_s[i, ] <- c(
-  #     X_s_s[d_grid[i, silo], ],
-  #     X_j_s[d_grid[i, jnt], ],
-  #     # X_p_s[d_grid[i, p], ],
-  #     X_d1_s[d_grid[i, d1], ]
-  #     )
-  # }
-  
-  
   list(
     d = d, 
     
@@ -402,11 +358,25 @@ sim <- function(){
     c( 0.20,  0.00, -0.20),
     c( 0.40, -0.20, -0.20)
   )
-  b_d2 = c(-0.2, 0.3, -0.1)
+  b_d2 = c(0, 0, 0)
   b_d3 = c(-0.4, 0.1, 0.3)
   b_d4 = c(0.3, -0.1, -0.2)
   
-  n_sim <- 1000
+  labs <- c("mu", 
+            paste0("bs",seq_along(b_silo)),
+            paste0("bj",seq_along(b_jnt)),
+            paste0("bp",seq_along(b_pref)),
+            paste0("bd1",seq_along(b_d1)),
+            # ,
+            "bd1_1", "bd1_2", "bd1_3",
+            
+            # paste0("bg1",seq_along(b_g1)),
+            paste0("bd2",seq_along(b_d2)),
+            "bd2_2", "bd2_3"
+            # paste0("bd3",seq_along(b_d3))
+  )
+  
+  n_sim <- 500
   d_res <- data.table(do.call(rbind, mclapply(1:n_sim, FUN = function(ii){
     
     ll <- get_sim_data(
@@ -426,54 +396,72 @@ sim <- function(){
                    keyby = .(silo, jnt, pref_rev, d1, d2)]
     d_mod1[, eta_obs := round(qlogis(y / n), 3)]
     d_mod1[, p_obs := y / n]
-    d_mod1
+    # d_mod1
     
+    # only late silo (silo = 3) get rand surgery
+    d_tmp <- d_mod1[silo == 3]
+    X_pred_d1_1 <- matrix(NA, nrow(d_tmp), 2 + 1 + 1 + 2 + 2)
+    X_pred_d1_2 <- matrix(NA, nrow(d_tmp), 2 + 1 + 1 + 2 + 2)
+    X_pred_d1_3 <- matrix(NA, nrow(d_tmp), 2 + 1 + 1 + 2 + 2)
+    for(i in 1:nrow(d_tmp)){
+
+      X_pred_d1_1[i, ] <- c(
+        ll$X_s_s[d_tmp[i, silo], ],      # 2
+        ll$X_j_s[d_tmp[i, jnt], ],       # 1
+        ll$X_p_s[d_tmp[i, pref_rev], ],  # 1
+        # when I set this to 1 (dair)
+        ll$X_d1_s[1, ],                  # 2
+        # then anything other than d2 = 1 is not permitted.
+        ll$X_d2_s[1, ]        # 2
+      )
+
+      X_pred_d1_2[i, ] <- c(
+        ll$X_s_s[d_tmp[i, silo], ],      # 2
+        ll$X_j_s[d_tmp[i, jnt], ],       # 1
+        ll$X_p_s[d_tmp[i, pref_rev], ],  # 1
+        # when I set this to 2 (one-stage)
+        ll$X_d1_s[2, ],                  # 2
+        # then d2 is permitted
+        ll$X_d2_s[1, ]        # 2
+      )
+
+      X_pred_d1_3[i, ] <- c(
+        ll$X_s_s[d_tmp[i, silo], ],      # 2
+        ll$X_j_s[d_tmp[i, jnt], ],       # 1
+        ll$X_p_s[d_tmp[i, pref_rev], ],  # 1
+        # when I set this to 3 (two-stage)
+        ll$X_d1_s[3, ],                  # 2
+        # then anything other than d2 = 1 is not permitted.
+        ll$X_d2_s[1, ]        # 2
+      )
+    }
+    nd1p <- d_tmp$n
+     
+    # 
     # only one-stage (d1 = 2) get rand ab backbone duration (d2)
     d_tmp <- d_mod1[d1 == 2]
-    g1 <- ((d_tmp$silo - 1) * ll$K_d1) + d_tmp$d1
     X_pred_d2_2 <- matrix(NA, nrow(d_tmp), 2 + 1 + 1 + 2 + 2)
     X_pred_d2_3 <- matrix(NA, nrow(d_tmp), 2 + 1 + 1 + 2 + 2)
     for(i in 1:nrow(d_tmp)){
-      
+
       X_pred_d2_2[i, ] <- c(
         ll$X_s_s[d_tmp[i, silo], ],      # 2
         ll$X_j_s[d_tmp[i, jnt], ],       # 1
         ll$X_p_s[d_tmp[i, pref_rev], ],  # 1
         ll$X_d1_s[d_tmp[i, d1], ],       # 2
-        # 6wks
-        ll$X_d2_s[2, ]
-        # ,       # 2
-        # ll$X_g1_s[g1[i], ]             # 4
+
+        ll$X_d2_s[2, ]                   # 2
       )
-      
+
       X_pred_d2_3[i, ] <- c(
         ll$X_s_s[d_tmp[i, silo], ],      # 2
         ll$X_j_s[d_tmp[i, jnt], ],       # 1
         ll$X_p_s[d_tmp[i, pref_rev], ],  # 1
         ll$X_d1_s[d_tmp[i, d1], ],       # 2
-        # 12wks
-        ll$X_d2_s[3, ]
-        # ,       # 2
-        # ll$X_g1_s[g1[i], ]             # 4
+        ll$X_d2_s[3, ]                   # 2
       )
     }
-    
-    # X_full_s <- matrix(NA, nrow(d_mod1), 2 + 1 + 1 + 2 + 2 + 4)
-    # g1 <- ((d_mod1$silo - 1) * ll$K_d1) + d_mod1$d1
-    # for(i in 1:nrow(d_mod1)){
-    #   
-    #   X_full_s[i, ] <- c(
-    #     ll$X_s_s[d_mod1[i, silo], ],      # 2
-    #     ll$X_j_s[d_mod1[i, jnt], ],       # 1
-    #     ll$X_p_s[d_mod1[i, pref_rev], ],  # 1
-    #     ll$X_d1_s[d_mod1[i, d1], ],       # 2
-    #     # 6wks
-    #     ll$X_d2_s[d_mod1[i, d2], ],       # 2
-    #     ll$X_g1_s[g1[i], ]             # 4
-    #   )
-    # }
-    
-    
+    nd2p <- d_tmp$n
     
     
     ld <- list(
@@ -497,10 +485,13 @@ sim <- function(){
       nrXd1 = nrow(ll$X_d1_s), ncXd1 = ncol(ll$X_d1_s), Xd1des = ll$X_d1_s, sd1 = rep(1, ncol(ll$X_d1_s)),
       nrXd2 = nrow(ll$X_d2_s), ncXd2 = ncol(ll$X_d2_s), Xd2des = ll$X_d2_s, sd2 = rep(1, ncol(ll$X_d2_s)),
       
-      # nrXg1 = nrow(ll$X_g1_s), ncXg1 = ncol(ll$X_g1_s), Xg1des = ll$X_g1_s, sg1 = rep(1, ncol(ll$X_g1_s)),
-      
-      nrp = nrow(X_pred_d2_2), ncp = ncol(X_pred_d2_2), Xp1 = X_pred_d2_2, Xp2 = X_pred_d2_3,
-      nd2 = d_tmp$n,
+      nrd1p = nrow(X_pred_d1_1), ncd1p = ncol(X_pred_d1_1),
+      Xd1p1 = X_pred_d1_1, Xd1p2 = X_pred_d1_2, Xd1p3 = X_pred_d1_3,
+      nd1p = nd1p,
+      # 
+      nrd2p = nrow(X_pred_d2_2), ncd2p = ncol(X_pred_d2_2),
+      Xd2p1 = X_pred_d2_2, Xd2p2 = X_pred_d2_3,
+      nd2p = nd2p,
       
       prior_only = 0
     )
@@ -511,7 +502,7 @@ sim <- function(){
                           refresh = 0, draws = 2000)
       )
     
-    m_post_s <- f1$draws(variables = c("mu"), format = "matrix")
+    m_post_s <- f1$draws(variables = c("mu_pop"), format = "matrix")
     v_out <- c(colMeans(m_post_s))
     
     #
@@ -534,77 +525,47 @@ sim <- function(){
     post_mu <- m_post_s %*% t(cbind(ll$X_d1_s))
     v_out <- c(v_out,  colMeans(post_mu))
     
-    #
-    # m_post_s <- f1$draws(variables = c("bg1"), format = "matrix")
-    # post_mu <- m_post_s %*% t(cbind(ll$X_g1_s))
-    # v_out <- c(v_out,  colMeans(post_mu))
     
-    #
+    m_post_s <- f1$draws(variables = c("bd1_1"), format = "matrix")
+    v_out <- c(v_out,  colMeans(m_post_s))
+    m_post_s <- f1$draws(variables = c("bd1_2"), format = "matrix")
+    v_out <- c(v_out,  colMeans(m_post_s))
+    m_post_s <- f1$draws(variables = c("bd1_3"), format = "matrix")
+    v_out <- c(v_out,  colMeans(m_post_s))
+    # 
+    # #
+    # # m_post_s <- f1$draws(variables = c("bg1"), format = "matrix")
+    # # post_mu <- m_post_s %*% t(cbind(ll$X_g1_s))
+    # # v_out <- c(v_out,  colMeans(post_mu))
+    # 
+    # #
     m_post_s <- f1$draws(variables = c("bd2"), format = "matrix")
     post_mu <- m_post_s %*% t(cbind(ll$X_d2_s))
     v_out <- c(v_out,  colMeans(post_mu))
-    
+    # 
     m_post_s <- f1$draws(variables = c("bd2_2"), format = "matrix")
     v_out <- c(v_out,  colMeans(m_post_s))
     m_post_s <- f1$draws(variables = c("bd2_3"), format = "matrix")
     v_out <- c(v_out,  colMeans(m_post_s))
-    # form grid out of data
     
-    
-    
-    
-    #
-    # m_post_s <- f1$draws(variables = c("bd3"), format = "matrix")
-    # post_mu <- m_post_s %*% t(cbind(ll$X_d3_s))
-    # v_out <- c(v_out,  colMeans(post_mu))
-    
-    names(v_out) <- c("mu", 
-                      paste0("bs",seq_along(ll$b_silo)),
-                      paste0("bj",seq_along(ll$b_jnt)),
-                      paste0("bp",seq_along(ll$b_pref)),
-                      paste0("bd1",seq_along(ll$b_d1)),
-                      # paste0("bg1",seq_along(ll$b_g1)),
-                      paste0("bd2",seq_along(ll$b_d2)) ,
-                      "bd2_2", "bd2_3"
-                      # paste0("bd3",seq_along(ll$b_d3))
-                      )
+    names(v_out) <- labs
     
     v_out
       
     }, mc.cores = 6)))
   
   d_res <- melt(d_res, measure.vars = names(d_res))
-  d_res[, variable := factor(variable, levels = c("mu", 
-                                                  paste0("bs",seq_along(b_silo)),
-                                                  paste0("bj",seq_along(b_jnt)),
-                                                  paste0("bp",seq_along(b_pref)),
-                                                  paste0("bd1",seq_along(b_d1)),
-                                                  # paste0("bg1",seq_along(b_g1)),
-                                                  paste0("bd2",seq_along(b_d2)) ,
-                                                  "bd2_2", "bd2_3"
-                                                  # ,
-                                                  # paste0("bd3",seq_along(b_d3))
-                                                  )
-                             )
-        ]
+  d_res[, variable := factor(variable, levels = labs)]
   
   d_tru <- data.table(
-    variable = c("mu", 
-                 paste0("bs",seq_along(b_silo)),
-                 paste0("bj",seq_along(b_jnt)),
-                 paste0("bp",seq_along(b_pref)),
-                 paste0("bd1",seq_along(b_d1)),
-                 # paste0("bg1",seq_along(b_g1)),
-                 paste0("bd2",seq_along(b_d2)) ,
-                 "bd2_2", "bd2_3"
-                 # ,
-                 # paste0("bd3",seq_along(b_d3))
-                 ),
+    variable = labs,
     value = c(
       mu,
       b_silo,
       b_jnt,
       b_pref,
+      b_d1,
+      # ,
       b_d1,
       # as.numeric(t(b_g1)),
       b_d2,
@@ -613,17 +574,7 @@ sim <- function(){
       # b_d3
     )
   )
-  d_tru[, variable := factor(variable, levels = c("mu", 
-                                                  paste0("bs",seq_along(b_silo)),
-                                                  paste0("bj",seq_along(b_jnt)),
-                                                  paste0("bp",seq_along(b_pref)),
-                                                  paste0("bd1",seq_along(b_d1)),
-                                                  # paste0("bg1",seq_along(b_g1)),
-                                                  paste0("bd2",seq_along(b_d2)) ,
-                                                  "bd2_2", "bd2_3"
-                                                  # ,
-                                                  # paste0("bd3",seq_along(b_d3))
-                                                  ))]
+  d_tru[, variable := factor(variable, levels = labs)]
   
   ggplot(d_res, aes(x = value, group = variable)) +
     geom_density() +
@@ -633,6 +584,6 @@ sim <- function(){
                aes(xintercept = value), col = 2, lwd = 0.3, lty = 2) +
     facet_wrap(~variable, scales = "free_x")
   
-  
+  d_res[, .(mu = mean(value)), keyby = variable]
   
 }

@@ -34,24 +34,24 @@ data{
   int ncXd1;
   matrix[nrXd1, ncXd1] Xd1des;
   vector[ncXd1] sd1;
-  // silo by domain 1 interaction - 
-  // target silo specific effects for surgery not an average effect
-  // int ncXg1;
-  // int nrXg1;
-  // matrix[nrXg1, ncXg1] Xg1des;
-  // vector[ncXg1] sg1;
-  
   // domain 2 
   int nrXd2;
   int ncXd2;
   matrix[nrXd2, ncXd2] Xd2des;
   vector[ncXd2] sd2;
   
-  int nrp;
-  int ncp;
-  matrix[nrp, ncp] Xp1;
-  matrix[nrp, ncp] Xp2;
-  array[nrp] int nd2;
+  // g-comp setup  
+  int nrd1p;
+  int ncd1p;
+  matrix[nrd1p, ncd1p] Xd1p1;
+  matrix[nrd1p, ncd1p] Xd1p2;
+  array[nrd1p] int nd1p;
+  // 
+  int nrd2p;
+  int ncd2p;
+  matrix[nrd2p, ncd2p] Xd2p1;
+  matrix[nrd2p, ncd2p] Xd2p2;
+  array[nrd2p] int nd2p;
   
   int prior_only;
 }
@@ -62,8 +62,6 @@ transformed data{
   matrix[N, ncXj] Xj = Xjdes[jnt,];
   matrix[N, ncXj] Xp = Xpdes[pref,];
   matrix[N, ncXd1] Xd1 = Xd1des[d1,];
-  // indexes the relevant col in the design matrix
-  // matrix[N, ncXg1] Xg1 = Xg1des[g1,];
   matrix[N, ncXd2] Xd2 = Xd2des[d2,];
 
 }
@@ -74,10 +72,11 @@ parameters{
   vector[ncXp] bp;
   vector[ncXd1] bd1;
   vector[ncXd2] bd2;
-  // vector[ncXg1] bg1;
 }
 transformed parameters{
-  vector[N] eta = mu + Xs*bs + Xj*bj + Xp*bp + Xd1*bd1 + Xd2*bd2  ;
+  vector[N] eta = mu + Xs*bs + Xj*bj + Xp*bp + Xd1*bd1 + Xd2*bd2 ;
+  // vector[N] eta = mu + Xs*bs + Xj*bj + Xp*bp + Xd1*bd1 + Xd2*bd2  ;
+  // vector[ncXs + ncXj + ncXp + ncXd1 + ncXd2] b;
   vector[ncXs + ncXj + ncXp + ncXd1 + ncXd2] b;
   b[1:ncXs] = bs;
   b[(ncXs + 1):(ncXs+ncXj)] = bj;
@@ -94,21 +93,30 @@ model{
   target += normal_lpdf(bd1 | 0, sd1);
   target += normal_lpdf(bd2 | 0, sd2);
   
-  // target += normal_lpdf(bg1 | 0, sg1);
-  
   if(!prior_only){
     target += binomial_logit_lpmf(y | n, eta);  
   }
 
 }
 generated quantities{
-  vector[N] wgts1 = dirichlet_rng(to_vector(n));  
-  vector[nrp] wgts2 = dirichlet_rng(to_vector(nd2));     
-  vector[nrp] eta_d2 = mu + Xp1 * b;
-  vector[nrp] eta_d3 = mu + Xp2 * b;
-  
+  vector[N] wgts1 = dirichlet_rng(to_vector(n));
+  vector[nrd1p] wgtsd1 = dirichlet_rng(to_vector(nd1p));
+  vector[nrd2p] wgtsd2 = dirichlet_rng(to_vector(nd2p));
+  // 
+  vector[nrd1p] eta_d1_1 = mu + Xd1p1 * b;
+  vector[nrd1p] eta_d1_2 = mu + Xd1p2 * b;
+  vector[nrd1p] eta_d1_3 = mu + Xd1p2 * b;
+  // 
+  vector[nrd2p] eta_d2_2 = mu + Xd2p1 * b;
+  vector[nrd2p] eta_d2_3 = mu + Xd2p2 * b;
+  // 
   real mu_pop = wgts1' * eta;
-  real bd2_2 = wgts2' * eta_d2 - mu_pop  ;
-  real bd2_3 = wgts2' * eta_d3 - mu_pop  ;  
+  // 
+  real bd1_1 = wgtsd1' * eta_d1_1 - mu_pop  ;
+  real bd1_2 = wgtsd1' * eta_d1_2 - mu_pop  ;
+  real bd1_3 = wgtsd1' * eta_d1_3 - mu_pop  ;
+  // 
+  real bd2_2 = wgtsd2' * eta_d2_2 - mu_pop  ;
+  real bd2_3 = wgtsd2' * eta_d2_3 - mu_pop  ;
 
 }
