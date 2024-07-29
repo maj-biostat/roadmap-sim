@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/simulation-pars.html</loc>
-    <lastmod>2024-04-11T01:39:53.877Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/design-notes-09.html</loc>
+    <lastmod>2024-07-23T01:16:43.504Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/design-notes-08.html</loc>
-    <lastmod>2024-07-16T06:46:58.509Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/trial-data.html</loc>
+    <lastmod>2024-07-29T00:53:34.056Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/about.html</loc>
-    <lastmod>2024-02-28T11:40:28.199Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/sim-design3-results.html</loc>
+    <lastmod>2024-04-15T07:10:38.956Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/decision-rules.html</loc>
-    <lastmod>2024-04-15T11:14:27.132Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/example-trials.html</loc>
+    <lastmod>2024-04-05T07:38:26.950Z</lastmod>
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/sim-design1-results.html</loc>
@@ -37,40 +37,36 @@
     <lastmod>2024-07-01T06:50:55.321Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/model-spec.html</loc>
-    <lastmod>2024-04-15T06:50:13.945Z</lastmod>
-  </url>
-  <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/backup/trial-data.html</loc>
-    <lastmod>2024-04-11T01:46:05.136Z</lastmod>
-  </url>
-  <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/backup/design-notes-06.html</loc>
-    <lastmod>2024-07-09T10:59:23.939Z</lastmod>
-  </url>
-  <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/index.html</loc>
-    <lastmod>2024-07-01T07:03:41.081Z</lastmod>
-  </url>
-  <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/etc/readme.html</loc>
-    <lastmod>2024-02-25T13:50:49.424Z</lastmod>
-  </url>
-  <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/backup/tmp.html</loc>
-    <lastmod>2024-07-11T12:26:14.714Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/design-notes-02.html</loc>
+    <lastmod>2024-07-01T06:49:24.126Z</lastmod>
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/backup/design-notes-02-orig.html</loc>
     <lastmod>2024-06-02T07:50:29.406Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/design-notes-02.html</loc>
-    <lastmod>2024-07-01T06:49:24.126Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/backup/tmp.html</loc>
+    <lastmod>2024-07-11T12:26:14.714Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/population-structure.html</loc>
-    <lastmod>2024-04-11T01:28:49.420Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/etc/readme.html</loc>
+    <lastmod>2024-02-25T13:50:49.424Z</lastmod>
+  </url>
+  <url>
+    <loc>https://maj-biostat.github.io/roadmap-sim/index.html</loc>
+    <lastmod>2024-07-01T07:03:41.081Z</lastmod>
+  </url>
+  <url>
+    <loc>https://maj-biostat.github.io/roadmap-sim/backup/design-notes-06.html</loc>
+    <lastmod>2024-07-09T10:59:23.939Z</lastmod>
+  </url>
+  <url>
+    <loc>https://maj-biostat.github.io/roadmap-sim/backup/trial-data.html</loc>
+    <lastmod>2024-04-11T01:46:05.136Z</lastmod>
+  </url>
+  <url>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/model-spec.html</loc>
+    <lastmod>2024-07-25T04:21:52.646Z</lastmod>
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/design-notes-01.html</loc>
@@ -82,26 +78,26 @@
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/design-notes-07.html</loc>
-    <lastmod>2024-07-16T02:07:28.765Z</lastmod>
+    <lastmod>2024-07-29T01:29:06.182Z</lastmod>
   </url>
   <url>
     <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/design-notes-06.html</loc>
     <lastmod>2024-07-16T03:09:49.865Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/example-trials.html</loc>
-    <lastmod>2024-04-05T07:38:26.950Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/population-assumptions.html</loc>
+    <lastmod>2024-07-25T06:41:47.800Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/sim-design3-results.html</loc>
-    <lastmod>2024-04-15T07:10:38.956Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/decision-rules.html</loc>
+    <lastmod>2024-04-15T11:14:27.132Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/trial-data.html</loc>
-    <lastmod>2024-04-11T01:46:05.136Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/about.html</loc>
+    <lastmod>2024-02-28T11:40:28.199Z</lastmod>
   </url>
   <url>
-    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/design-notes-09.html</loc>
-    <lastmod>2024-07-23T01:16:43.504Z</lastmod>
+    <loc>https://maj-biostat.github.io/roadmap-sim/notebooks/design-notes-08.html</loc>
+    <lastmod>2024-07-16T06:46:58.509Z</lastmod>
   </url>
 </urlset>
