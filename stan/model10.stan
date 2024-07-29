@@ -75,8 +75,6 @@ parameters{
 }
 transformed parameters{
   vector[N] eta = mu + Xs*bs + Xj*bj + Xp*bp + Xd1*bd1 + Xd2*bd2 ;
-  // vector[N] eta = mu + Xs*bs + Xj*bj + Xp*bp + Xd1*bd1 + Xd2*bd2  ;
-  // vector[ncXs + ncXj + ncXp + ncXd1 + ncXd2] b;
   vector[ncXs + ncXj + ncXp + ncXd1 + ncXd2] b;
   b[1:ncXs] = bs;
   b[(ncXs + 1):(ncXs+ncXj)] = bj;
