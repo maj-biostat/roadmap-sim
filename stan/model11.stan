@@ -111,9 +111,9 @@ generated quantities{
   
   // no bd2 for d1 = 1
   vector[nrd1p] eta_d1_1 = mu + bs[d1_s] + bj[d1_j] + bp[d1_p] + bd1[1] ; 
-  // allow bd2 to be what was observed
-  vector[nrd1p] eta_d1_2 = mu + bs[d1_s] + bj[d1_j] + bp[d1_p] + bd1[2] + bd2[d1_d2];
-  vector[nrd1p] eta_d1_3 = mu + bs[d1_s] + bj[d1_j] + bp[d1_p] + bd1[3] + bd2[d1_d2];
+  // d2 is logically constrained from d1
+  vector[nrd1p] eta_d1_2 = mu + bs[d1_s] + bj[d1_j] + bp[d1_p] + bd1[2] + bd2[1];
+  vector[nrd1p] eta_d1_3 = mu + bs[d1_s] + bj[d1_j] + bp[d1_p] + bd1[3] + bd2[1];
   
   vector[nrd2p] eta_d2_2 = mu + bs[d2_s] + bj[d2_j] + bp[d2_p] + bd1[d2_d1] + bd2[2];
   vector[nrd2p] eta_d2_3 = mu + bs[d2_s] + bj[d2_j] + bp[d2_p] + bd1[d2_d1] + bd2[3];
