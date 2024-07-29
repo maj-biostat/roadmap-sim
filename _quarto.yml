@@ -19,10 +19,9 @@ website:
       - index.qmd
       - section: "Assumptions and setup"
         contents:
-        - notebooks/population-structure.qmd
+        - notebooks/population-assumptions.qmd
         - notebooks/model-spec.qmd
         - notebooks/decision-rules.qmd
-        - notebooks/simulation-pars.qmd
         - notebooks/trial-data.qmd
         - notebooks/model-implementation.qmd
         - notebooks/example-trials.qmd

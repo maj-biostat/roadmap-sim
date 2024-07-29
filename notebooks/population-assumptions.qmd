@@ -1,5 +1,5 @@
 ---
-title: "Data generation assumptions"
+title: "Population assumptions"
 date: today
 date-modified: last-modified
 ---
@@ -49,13 +49,13 @@ chronic |hip |  0.5 |
 
 ## Surgery domain
 
+Early stage patients do not receive randomisation and are assumed to mostly receive DAIR, although they may have any form of surgery.
+We assume the proportion of dair, one and two-stage surgery to be 85%, 10% and 5%.
+
 Late stage patients enter for randomised surgery and are allocated 1:1 to DAIR/revision.
 The clinician selects the specific type of revision (one-stage or two-stage) to be performed.
-For late stage infection patients randomised to revision, we assume that the preferences for one and two-stage are 30% and 70%.
 For late stage infection patients randomised to dair, we assume that the preferences for dair, one and two-stage are 20%, 24% and 56%.
-
-Early stage patients do not receive randomisation and are assumed to mostly receive DAIR, although they may have any form of surgery.
-We assume the proportion of dair, one and two-stage surgery to be 90%, 10% and 0%.
+For late stage infection patients randomised to revision, we assume that the preferences for one and two-stage are 30% and 70%.
 
 Chronic stage patients do not receive randomisation and are assumed to receive DAIR, one-stage and two-stage based on clinician assessment.
 For chronic stage infection patients, we assume that the preferences for dair, one and two-stage are 20%, 20% and 60%.
