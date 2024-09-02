@@ -455,8 +455,12 @@ ggplot(d_fig, aes(x = value, group = variable)) +
 ## Two-factor setup
 
 Here we have two main effects and their associated interactions.
+
 I have kept this first implementation as a record of my initial mistake on columnwise vs rowwise specification of the interaction parameters.
-The implementation in the final section is the correct approach.
+
+If you look at the argument for `b_ab` you will see that the original values were `-0.05, 0.05, 0.15, ...` but now they have been revised to `-0.05, 0.15, -0.1, ...` with the original being rowwise and the corrected approach being columnwise.
+
+So, the implementation in the final section (see `get_data_alt` right at the end of this note), which uses `kronecker` rather than `construct_C_ab` is the correct/preferred way to do this.
 
 ```{r, eval = T}
 #| code-summary: Revised data generation function
@@ -1291,9 +1295,10 @@ knitr::kable(rbind(
 
 ## What is it with `kronecker(Q_a, Q_b)`?
 
-The problem with `kronecker(Q_a, Q_b)` was that I was using a column wise definition for the interaction parameters.
-However, `kronecker(Q_a, Q_b)` varies `b` first rather than `a` which is incompatible with the specification of the interaction parameters.
-
+The problem with `kronecker(Q_a, Q_b)` was that I was using a columnwise definition for the interaction argument passed to the data generation function.
+However, `kronecker(Q_a, Q_b)` varies `b` first rather than `a` and that is incompatible with the original specification of the interaction argument.
+After fixing that up, I can use `kronecker` as shown below.
+Also note that I now transform the return values from the `create_sum_zero_matrix` function so that the matrix will flatten with `c` in the correct way.
 
 ```{r, eval = T}
 #| code-summary: Revised data generation function
