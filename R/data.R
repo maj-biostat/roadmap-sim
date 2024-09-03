@@ -236,7 +236,9 @@ get_sim_02_data <- function(
     b_silo = c(0, -0.3, -0.2),
     b_jnt = c(0, 0.4),
     b_pref = c(0, -0.2),
+    # dair, one, two-stage
     b_d1 = c(0, -0.1, -0.1),
+    # 
     b_d2 = c(0, -0.4, 0.6),
     b_d3 = c(0, 0.1, 0.3),
     b_d4 = c(0, -0.1, -0.2)
@@ -305,8 +307,9 @@ get_sim_02_data <- function(
   # d[silo == 3 , g1 := 2]
   
   # Antibiotic backbone duration - only applicable to units recv one-stage
-  # all others just get set to the reference index
-  
+  # all others just get set to the reference index.
+  # Comparisons are made directly via the full linear predictor rather than
+  # relying on specific parameters.
   d[d1 == 1, d2 := 1]
   d[d1 == 3, d2 := 1]
   
