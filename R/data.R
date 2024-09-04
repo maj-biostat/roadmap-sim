@@ -1,3 +1,6 @@
+# date 4/9/2024 - the focus is on sim_02.
+
+
 source("./R/init.R")
 
 
