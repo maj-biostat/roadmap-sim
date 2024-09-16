@@ -1,11 +1,14 @@
 // group all your data up first
 // instructions:
 data{ 
+  
+  // full model setup
   int N;
   
   array[N] int y;
   array[N] int n;
   
+  // total indexes per covariate
   int K_silo;
   int K_jnt;
   int K_pref;
@@ -22,6 +25,10 @@ data{
   array[N] int d3;
   array[N] int d4;
   
+  // subset to specific parts of the sample in order to focus on 
+  // the comparisons of interest, e.g. surgical is based on the 
+  // late-acute group only and the effect of interest is obtained 
+  // via g-computation
   int N_d1;
   array[N_d1] int d1_s;
   array[N_d1] int d1_j;
@@ -31,6 +38,45 @@ data{
   array[N_d1] int d1_d3;
   array[N_d1] int d1_d4;
   array[N_d1] int n_d1;
+  int N_d1_p1;
+  int N_d1_p2;
+  array[N_d1_p1] int ix_d1_p1;
+  array[N_d1_p2] int ix_d1_p2;
+  array[N_d1_p1] int n_d1_p1;
+  array[N_d1_p2] int n_d1_p2;
+  
+  // d2 is evaluated for those receiving one-stage revision
+  int N_d2;
+  array[N_d2] int d2_s;
+  array[N_d2] int d2_j;
+  array[N_d2] int d2_p;
+  array[N_d2] int d2_d1;
+  array[N_d2] int d2_d2;
+  array[N_d2] int d2_d3;
+  array[N_d2] int d2_d4;
+  array[N_d2] int n_d2;
+  
+  // d3 is evaluated for those receiving two-stage revision
+  int N_d3;
+  array[N_d3] int d3_s;
+  array[N_d3] int d3_j;
+  array[N_d3] int d3_p;
+  array[N_d3] int d3_d1;
+  array[N_d3] int d3_d2;
+  array[N_d3] int d3_d3;
+  array[N_d3] int d3_d4;
+  array[N_d3] int n_d3;
+  
+  // d4 is evaluated for those receiving two-stage revision
+  int N_d4;
+  array[N_d4] int d4_s;
+  array[N_d4] int d4_j;
+  array[N_d4] int d4_p;
+  array[N_d4] int d4_d1;
+  array[N_d4] int d4_d2;
+  array[N_d4] int d4_d3;
+  array[N_d4] int d4_d4;
+  array[N_d4] int n_d4;
   
   int prior_only;
 }
@@ -79,13 +125,13 @@ transformed parameters{
 } 
 model{
   target += logistic_lpdf(mu | 0, 1);
-  target += normal_lpdf(bs_raw | 0, 10);
-  target += normal_lpdf(bj_raw | 0, 10);
-  target += normal_lpdf(bp_raw | 0, 10);
-  target += normal_lpdf(bd1_raw | 0, 10);
-  target += normal_lpdf(bd2_raw | 0, 10);
-  target += normal_lpdf(bd3_raw | 0, 10);
-  target += normal_lpdf(bd4_raw | 0, 10);
+  target += normal_lpdf(bs_raw | 0, 2);
+  target += normal_lpdf(bj_raw | 0, 2);
+  target += normal_lpdf(bp_raw | 0, 2);
+  target += normal_lpdf(bd1_raw | 0, 2);
+  target += normal_lpdf(bd2_raw | 0, 2);
+  target += normal_lpdf(bd3_raw | 0, 2);
+  target += normal_lpdf(bd4_raw | 0, 2);
   
   if(!prior_only){
     target += binomial_logit_lpmf(y | n, eta);  
@@ -93,38 +139,149 @@ model{
 
 }
 generated quantities{
-  vector[K_d1-1] bd1_delta;
-  real bd2_delta;
-  real bd3_delta;
-  real bd4_delta;
-
-  bd1_delta[1] = bd1[2] - bd1[1];
-  bd1_delta[2] = bd1[3] - bd1[1];
-  bd2_delta = bd2[3] - bd2[2];
-  bd3_delta = bd3[3] - bd3[2];
-  bd4_delta = bd4[3] - bd4[2];
+  // vector[K_d1-1] bd1_delta;
+  // real bd2_delta;
+  // real bd3_delta;
+  // real bd4_delta;
+  // 
+  // bd1_delta[1] = bd1[2] - bd1[1];
+  // bd1_delta[2] = bd1[3] - bd1[1];
+  // bd2_delta = bd2[3] - bd2[2];
+  // bd3_delta = bd3[3] - bd3[2];
+  // bd4_delta = bd4[3] - bd4[2];
   
-  vector[N_d1] wgtsd1 = dirichlet_rng(to_vector(n_d1)); 
   
+//   I've had a brief look, just up to the null case example.
+// One thing that jumps out at me is  the calculations of cond_p1 and cond_p2.
+// You have:
+// 
+//   // one
+//   cond_p1 = inv_logit(a0 + b1[1] + X2*b2 +         X4*b4); 
+//   // two
+//   cond_p2 = inv_logit(a0 + b1[2] + X2*b2 + X3*b3 + X4*b4);      
+// 
+// If we are just "intervening" on surgery type, i.e. assigning patients to either DAIR or revision,
+// then cond_p1 would only apply to patients who would receive a one-stage if assigned to revision.
+// Similarly, cond_p2 would only apply to patients who would receive a two-stage if assigned to revision.
+// 
+// It seems like you give everyone a one-stage and then give everyone a two-stage irrespective of preferences.
+// Instead, if "revision" is the intervention, then only individuals for whom a one-stage was preferred would have gotten a one-stage 
+// if assigned to "revision" instead of DAIR similarly for two-stage.
+// 
+// For mine, this would be something like (just doing it in R), for individual risks
+// 
+// p_dair_i <- plogis(a0 + X2 %*% b2)
+// id_one <- which(X2[, 1] == 0) # X2[, 1] is preferred surgery type, 0 for one-stage
+// p_one_i <- plogis(a0 + b1[1] + cbind(X2, X4)[id_one, ] %**% c(b2, b4))
+// id_two <-  which(X2[, 1] == 1)# X2[, 1] is preferred surgery type, 1 for two-stage
+// p_two_i <- plogis(a0 + b1[2] + cbind(X2, X3, X4)[id_two, ] %**% c(b2, b3, b4))
+// 
+// Weighted-risks then being
+// 
+// p_dair <- mean(p_dair_i)
+// p_one <- sum(d_s[id_one, n] * p_one_i / sum(d_s[id_one, n]))
+// p_two <- sum(d_s[id_two, n] * p_two_i / sum(d_s[id_two, n]))
+// 
+// And the risk under revision (the intervention)
+// 
+// p_rev <- sum(d_s[id_one, n]) / sum(d_s[, n]) * p_one + (1 - sum(d_s[id_one, n]) / sum(d_s[, n])) * p_two
+// 
+// Does this make sense?
+  
+  // Surgery domain (D1) comparisons of interest are revision relative to dair
+  // restricted to the late acute group. Here I just compute the direct 
+  // one-stage relative to dair 
+  // two-stage relative to dair
+  // comparisons are those are the ones that can be validated directly relative to
+  // the data generation process.
+  vector[N_d1] wgtsd1 = dirichlet_rng(to_vector(n_d1));  
+  vector[N_d1_p1] wgtsd1_p1 = dirichlet_rng(to_vector(n_d1_p1));  
+  vector[N_d1_p2] wgtsd1_p2 = dirichlet_rng(to_vector(n_d1_p2));  
   // First level of bd2 selected since this is the only comparison that 
   // applies to all. First level is reference, i.e. equals zero.
   // Similarly, first level of bd3 selected since this is the only comparison 
   // that applies to all. Again, first level is reference, i.e. equals zero.  
-  vector[N_d1] eta_d1_1 = mu + bs[d1_s] + bj[d1_j] + bp[d1_p] + bd1[1] + 
-    bd2[1] + bd3[1] + bd4[d1_d4];
-  vector[N_d1] eta_d1_2 = mu + bs[d1_s] + bj[d1_j] + bp[d1_p] + bd1[2] + 
-    bd2[1] + bd3[1] + bd4[d1_d4];
-  vector[N_d1] eta_d1_3 = mu + bs[d1_s] + bj[d1_j] + bp[d1_p] + bd1[3] + 
-    bd2[1] + bd3[1] + bd4[d1_d4];                                              
-                                         
+  vector[N_d1] eta_d1_1 = mu + bs[d1_s] + bj[d1_j] + bp[d1_p] + bd1[1] + bd2[1] + bd3[1] + bd4[d1_d4];
+  
+  // assignment to revision will either end up being one or two-stage.
+  // those that had the preference for one get one and those that had pref for
+  // two get two. Thus we use different weights (since these are subsets of 
+  // our late acute cohort).
+  vector[N_d1_p1] eta_d1_2 = mu + 
+    bs[d1_s[ix_d1_p1]] + bj[d1_j[ix_d1_p1]] + bp[1] + 
+    bd1[2] + bd2[1] + bd3[1] + bd4[d1_d4[ix_d1_p1]];
+  vector[N_d1_p2] eta_d1_3 = mu + 
+    bs[d1_s[ix_d1_p2]] + bj[d1_j[ix_d1_p2]] + bp[2] + 
+    bd1[3] + bd2[1] + bd3[1] + bd4[d1_d4[ix_d1_p2]];                                              
   real nu_d1_1 = wgtsd1' * eta_d1_1   ;           
-  real nu_d1_2 = wgtsd1' * eta_d1_2   ;           
-  real nu_d1_3 = wgtsd1' * eta_d1_3   ;           
-                                                
-  vector[K_d1-1] bd1_gamma;                   
-                                                
-  bd1_gamma[1] = nu_d1_2 - nu_d1_1;                 
-  bd1_gamma[2] = nu_d1_3 - nu_d1_1;                 
+  real nu_d1_2 = wgtsd1_p1' * eta_d1_2   ;           
+  real nu_d1_3 = wgtsd1_p2' * eta_d1_3   ; 
+  // log-or - there are only two comparisons of interest                                          
+  vector[2] gbd1;   
+  // effects - one-stage relative to dair
+  gbd1[1] = nu_d1_2 - nu_d1_1;                 
+  // effects - two-stage relative to dair
+  gbd1[2] = nu_d1_3 - nu_d1_1; 
+  
+  // effect of interest is the weight sum of the revision effects (wgts being 
+  // the observed proportion of preferring each type) relative to dair
+  // multiplication by 1.0 is required to cast to float.
+  real bd1_delta = ((N_d1_p1 * 1.0/N_d1) * nu_d1_2) + ((N_d1_p2 * 1.0/N_d1) * nu_d1_3) - nu_d1_1;
+  
+  
+  // alternative perspective - 
+  // weight the unit level expected values for Y and then convert the result to 
+  // log-odds giving an expected value for the potential outcomes under each 
+  // treatment
+  // real p_d1_1 = wgtsd1' * inv_logit(eta_d1_1)   ;           
+  // real p_d1_2 = wgtsd1' * inv_logit(eta_d1_2)  ;           
+  // real p_d1_3 = wgtsd1' * inv_logit(eta_d1_3)   ; 
+  // vector[2] hbd1;    
+  // hbd1[1] = logit(p_d1_2) - logit(p_d1_1);                 
+  // hbd1[2] = logit(p_d1_3) - logit(p_d1_1);      
+  
+  // This could be obtained directly from the parameters but am using
+  // g-comp across all comparisons of interest as a standardised approach to
+  // ease of maintenance/thinking.
+  
+  // AB duration domain (D2) comparisons of interest are 6 wks relative to 12 wks
+  // for those that have one-stage revision
+  vector[N_d2] wgtsd2 = dirichlet_rng(to_vector(n_d2)); 
+  // d1 needs to be 2 here for all units (corresponding to one-stage), similarly
+  // d3 needs to be 1 here for all units (corresponding to non-rand)
+  vector[N_d2] eta_d2_2 = mu + bs[d2_s] + bj[d2_j] + bp[d2_p] + bd1[d2_d1] + bd2[2] + bd3[d2_d3] + bd4[d2_d4];
+  vector[N_d2] eta_d2_3 = mu + bs[d2_s] + bj[d2_j] + bp[d2_p] + bd1[d2_d1] + bd2[3] + bd3[d2_d3] + bd4[d2_d4];                    
+  real nu_d2_2 = wgtsd2' * eta_d2_2   ;           
+  real nu_d2_3 = wgtsd2' * eta_d2_3   ; 
+  // there are only two comparisons of interest                                          
+  real gbd2;                   
+  gbd2 = nu_d2_3 - nu_d2_2;     
+  
+  // Ext prophylaxis domain (D3) comparisons of interest are 12 wks relative to none
+  // for those that have two-stage revision
+  vector[N_d3] wgtsd3 = dirichlet_rng(to_vector(n_d3)); 
+  // d1 needs to be 2 here for all units (corresponding to one-stage), similarly
+  // d3 needs to be 1 here for all units (corresponding to non-rand)
+  vector[N_d3] eta_d3_2 = mu + bs[d3_s] + bj[d3_j] + bp[d3_p] + bd1[d3_d1] + bd2[d3_d2] + bd3[2] + bd4[d3_d4];
+  vector[N_d3] eta_d3_3 = mu + bs[d3_s] + bj[d3_j] + bp[d3_p] + bd1[d3_d1] + bd2[d3_d2] + bd3[3] + bd4[d3_d4];                    
+  real nu_d3_2 = wgtsd3' * eta_d3_2   ;           
+  real nu_d3_3 = wgtsd3' * eta_d3_3   ; 
+  // there are only two comparisons of interest                                          
+  real gbd3;                   
+  gbd3 = nu_d3_3 - nu_d3_2;  
+   
+  // Ab choice domain (D4) comparisons of interest are rif to none
+  // for those that have two-stage revision
+  vector[N_d4] wgtsd4 = dirichlet_rng(to_vector(n_d4)); 
+  // d1 needs to be 2 here for all units (corresponding to one-stage), similarly
+  // d3 needs to be 1 here for all units (corresponding to non-rand)
+  vector[N_d4] eta_d4_2 = mu + bs[d4_s] + bj[d4_j] + bp[d4_p] + bd1[d4_d1] + bd2[d4_d2] + bd3[d4_d3] + bd4[2];
+  vector[N_d4] eta_d4_3 = mu + bs[d4_s] + bj[d4_j] + bp[d4_p] + bd1[d4_d1] + bd2[d4_d2] + bd3[d4_d3] + bd4[3];                    
+  real nu_d4_2 = wgtsd4' * eta_d4_2   ;           
+  real nu_d4_3 = wgtsd4' * eta_d4_3   ; 
+  // there are only two comparisons of interest                                          
+  real gbd4;                   
+  gbd4 = nu_d4_3 - nu_d4_2; 
    
   
 }

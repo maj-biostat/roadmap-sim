@@ -241,6 +241,7 @@ get_sim_02_data <- function(
     b_pref = c(0, -0.2),
     # dair, one, two-stage
     b_d1 = c(0, -0.1, -0.1),
+    # b_d1_ex = c(0, -0.1, -0.1, -0.1),
     # 
     b_d2 = c(0, -0.4, 0.6),
     b_d3 = c(0, 0.1, 0.3),
@@ -283,6 +284,12 @@ get_sim_02_data <- function(
   d[silo == 1 & d1 == -99 & pref_rev == 1, d1 := sample(2:3, .N, replace = T, prob = c(0.95, 0.05))]
   d[silo == 1 & d1 == -99 & pref_rev == 2, d1 := sample(2:3, .N, replace = T, prob = c(0.05, 0.95))]
   
+  # don't think this kind of approach (trying to adjust for non-randomised)
+  # would work as the silos are entirely collinear
+  # d[silo == 1 & d1 == 1, d1_ex := 2]
+  # d[silo == 1 & d1 == 2, d1_ex := 3]
+  # d[silo == 1 & d1 == 3, d1_ex := 4]
+  
   # exactly same approach for chronic silo but using different probabilities
   d[silo == 2, pref_rev := sample(1:2, size = .N, replace = T, prob = g_pr_c_pref[2, 2:3])]
   d[silo == 2, d1 := sample(c(-98, -99), size = .N, replace = T, prob = g_pr_c_surg)]
@@ -313,15 +320,16 @@ get_sim_02_data <- function(
   # all others just get set to the reference index.
   # Comparisons are made directly via the full linear predictor rather than
   # relying on specific parameters.
-  d[d1 == 1, d2 := 1]
-  d[d1 == 3, d2 := 1]
+  d[d1 %in% c(1, 3), d2 := 1]
   
-  # We have to have some small group with d1 = 2 and d2 = 1 otherwise there will be
-  # an identification problem and that would mean that we could not recover the true
-  # parameters and our results would thus be biased.
-  # Here we assume that of those receiving one-stage revision,
-  # 70% enter into the duration domain
-  d[d1 == 2, d2 := sample(1:3, size = .N, replace = T, prob = c(0.3, 0.35, 0.35))]
+  # We have to have some small group with d1 = 2 and d2 = 1, i.e. just receiving 
+  # the hospital/surgeon select duration and therefore not receiving either
+  # of the specific randomised treatment arms (6wk vs 12wk). If we do not make this
+  # assumption we will hit an identification problem and that would mean that we 
+  # could not recover the true parameters and our results without fairly major bias.
+  # We assume that of those receiving one-stage revision,
+  # 70% enter into the duration domain (the remainder being assigned to the ref index)
+  d[d1 %in% c(2), d2 := sample(1:3, size = .N, replace = T, prob = c(0.3, 0.35, 0.35))]
   
   # indicator of entry into d2
   # d[d1 %in% c(1, 3), g2 := 1]
@@ -333,14 +341,14 @@ get_sim_02_data <- function(
   
   # Extended prophylaxis - only applicable to units recv two-stage
   
-  d[d1 == 1, d3 := 1]
-  d[d1 == 2, d3 := 1]
-  # We have to have some small group with d1 = 3 and d2 = 1 otherwise we have
+  d[d1 %in% c(1, 2), d3 := 1]
+  
+  # Again, we have to have some small group with d1 = 3 and d2 = 1 otherwise we have
   # an identification problem that would mean that we cannot recover the true
   # parameters and our results will be biased.
   # Here we assume that of those receiving two-stage revision,
   # 90% enter into the Extended prophylaxis domain
-  d[d1 == 3, d3 := sample(1:3, size = .N, replace = T, prob = c(0.1, 0.45, 0.45))]
+  d[d1 %in% c(3), d3 := sample(1:3, size = .N, replace = T, prob = c(0.1, 0.45, 0.45))]
   
   # indicator of entry into d3
   # d[d1 %in% c(1, 2), g3 := 1]
@@ -864,38 +872,64 @@ sim_02 <- function(){
   mu = 1
   b_silo = c(0, -0.3, 0.2)
   b_jnt = c(0, -0.4)
-  b_pref = c(0, -0.2)
-  # assume that everyone gets one of dair, one or two. 
-  # i.e. there is no-one that gets nothing wrt the surgical domain
-  # however, we may want to differentiate between the effect of rand vs 
-  # non-rand treatment which would be done via the inclusion of more entries for
-  # b_d1
-  b_d1 = c(0, 0.8, 0.25)
+  b_pref = c(0, -0.5)
+  
+  # For the intervention parameters the way that they enter the model is 
+  # somewhat irrelevant in that all the comparisons of interest are derived
+  # via g-computation where we are making a prediction on each unit and 
+  # then averaging over these for the comparisons we need to report.
+  
+  # Assume that everyone gets either dair, one or two (no-one gets no surgery). 
+  # Within d1 we do not differentiate between randomised and non-randomised 
+  # assignment on the assumption that revision preference and additional 
+  # covariates in the model would give us exchangeable groups.
+  # It isn't entirely clear (to me) how we will adjust for non-randomised 
+  # intervention in the present setup given that non-randomised surgical treatment
+  # is collinear with silo membership, i.e. after accounting for silo, there is 
+  # no further variance to account for (not under our current data generation 
+  # assumptions anyway).
+  # In the final model we may attempt this by including another vector of 
+  # parameters for d1 to 
+  # adjust for all of non-rand dair, one, two.
+  # In the g-comp for other domains, e.g. d2, you would incl this parameter set 
+  # on a unit by unit basis.
+  # This would be setup as a vector with four entries, the first being set to zero
+  # corresponding to randomised treatment and the subsequent being adjustment 
+  # for non-randomised dair, one and two respectively.
+  # However, I am skeptical as to whether this would work and am not 
+  # investigating it further.
+  
+  # Note the bias we are seeing at the moment is purely a function of the sample
+  # size and the small number of simulations. If you increase the sample size 
+  # you get consistency and unbiasedness. The problem with small sample sizes
+  # is that you get a lot of extremes where the observed/empircal log-odds 
+  # would be infinite in a number of the covariate groups.
+  
+  b_d1 = c(0, 0.8, 0.8)
+  # non-randomised surgical intervention adj
+  # b_d1_ex = c(0, 0.1, -0.3, 0.25)
+  # non-randomised entries correspond to reference level
   b_d2 = c(0, -0.5, 2)
   b_d3 = c(0, 0.1, -0.3)
   b_d4 = c(0, 0.1, -0.2)
   #
   
   labs <- c(
-    "bd1_delta_2_1",
-    "bd1_delta_3_1",
-    "bd1_gcomp_2_1",
-    "bd1_gcomp_3_1",
-    "bd2_delta_3_2",
-    "bd3_delta_3_2",
-    "bd4_delta_3_2",
-    paste0("b_d1_", seq_along(b_d1)),
-    paste0("b_d2_", seq_along(b_d2)),
-    paste0("b_d3_", seq_along(b_d3)),
-    paste0("b_d4_", seq_along(b_d4))
+    "gbd1_2_1",
+    "gbd1_3_1",
+    "gbd2_3_2",
+    "gbd3_3_2",
+    "gbd4_3_2"
   )
   
-  n_sim <- 2000
+  n_sim <- 1000
   
   d_res <- data.table(do.call(rbind, mclapply(1:n_sim, FUN = function(ii){
   
     ll <- get_sim_02_data(
-      N = 2.5e3, 
+      # N = 2.5e3,
+      # 
+      N = 1e6,
       mu = mu,
       b_silo = b_silo,
       b_jnt = b_jnt,
@@ -906,69 +940,161 @@ sim_02 <- function(){
       b_d4 = b_d4   # ab choice (non-rand, no-rif, rif)
     )
     
-    d_mod1 <- ll$d[, .(y = sum(y), n = .N, eta = round(unique(eta), 3)), 
+    # convert from binary representation to binomial (successes/trials)
+    d_mod <- ll$d[, .(y = sum(y), n = .N, eta = round(unique(eta), 3)), 
                    keyby = .(silo, jnt, pref_rev, d1, d2, d3, d4)]
-    d_mod1[, eta_obs := round(qlogis(y / n), 3)]
-    d_mod1[, p_obs := y / n]
+    d_mod[, eta_obs := round(qlogis(y / n), 3)]
+    d_mod[, p_obs := y / n]
+    
+    # really don't need to do this for all of the domains but it provides
+    # a uniform approach for generating the parameters of interest
     
     # restrict to silo 3 (which I have set to be the late acute silo) for gcomp
-    # for d1 comparisons
-    d_mod1_pred_d1 <- d_mod1[silo == 3]
+    # for d1 randomised comparisons
+    d_mod_d1 <- d_mod[silo == 3]
+    
+    # restrict to one-stage for gcomp
+    # for d2 randomised comparisons
+    d_mod_d2 <- d_mod[d1 == 2]
+    
+    # restrict to two-stage for gcomp
+    # for d3 randomised comparisons
+    d_mod_d3 <- d_mod[d1 == 3]
+    
+    # restrict to d4 randomised group 
+    d_mod_d4 <- d_mod[d4 %in% 2:3]
     
     ld <- list(
-      N = nrow(d_mod1), 
+      N = nrow(d_mod), 
       
-      y = d_mod1[, y], 
-      n = d_mod1[, n], 
+      y = d_mod[, y], 
+      n = d_mod[, n], 
       
       K_silo = ll$K_s, K_jnt = ll$K_j, K_pref = ll$K_p, 
       K_d1 = ll$K_d1, K_d2 = ll$K_d2, K_d3 = ll$K_d3, K_d4 = ll$K_d4, 
-      silo = d_mod1[, silo], 
-      jnt = d_mod1[, jnt],
-      pref = d_mod1[, pref_rev],
-      d1 = d_mod1[, d1],
-      d2 = d_mod1[, d2],
-      d3 = d_mod1[, d3],
-      d4 = d_mod1[, d4],
+      silo = d_mod[, silo], 
+      jnt = d_mod[, jnt],
+      pref = d_mod[, pref_rev],
+      d1 = d_mod[, d1],
+      d2 = d_mod[, d2],
+      d3 = d_mod[, d3],
+      d4 = d_mod[, d4],
+      
+      # cohort for surgical domain g-comp complicated due to one-stage/two-stage
+      # considerations
+      N_d1 = nrow(d_mod_d1),
+      d1_s = d_mod_d1[, silo], d1_j = d_mod_d1[, jnt], d1_p = d_mod_d1[, pref_rev],
+      # all d1 assignments
+      d1_d1 = d_mod_d1[, d1], 
+      d1_d2 = d_mod_d1[, d2],
+      d1_d3 = d_mod_d1[, d3],
+      d1_d4 = d_mod_d1[, d4],
+      # number of trials within each strata
+      n_d1 = d_mod_d1[, n],
+      # sample size of those where preference is for one-stage
+      N_d1_p1 = d_mod_d1[pref_rev == 1, .N],
+      # sample size of those where preference is for two-stage
+      N_d1_p2 = d_mod_d1[pref_rev == 2, .N],
+      # indexes for those with preference for one-stage
+      ix_d1_p1 = d_mod_d1[pref_rev == 1, which = T],
+      # indexes for those with preference for two-stage
+      ix_d1_p2 = d_mod_d1[pref_rev == 2, which = T],
+      # number of trials within each of these subsets
+      n_d1_p1 = d_mod_d1[pref_rev == 1, n],
+      n_d1_p2 = d_mod_d1[pref_rev == 2, n],
       
       
-      N_d1 = nrow(d_mod1_pred_d1),
-      d1_s = d_mod1_pred_d1[, silo],
-      d1_j = d_mod1_pred_d1[, jnt],
-      d1_p = d_mod1_pred_d1[, pref_rev],
-      d1_d1 = d_mod1_pred_d1[, d1],
-      d1_d2 = d_mod1_pred_d1[, d2],
-      d1_d3 = d_mod1_pred_d1[, d3],
-      d1_d4 = d_mod1_pred_d1[, d4],
-      n_d1 = d_mod1_pred_d1[, n],
+      N_d2 = nrow(d_mod_d2),
+      d2_s = d_mod_d2[, silo], d2_j = d_mod_d2[, jnt], d2_p = d_mod_d2[, pref_rev],
+      d2_d1 = d_mod_d2[, d1], 
+      d2_d2 = d_mod_d2[, d2],
+      d2_d3 = d_mod_d2[, d3],
+      d2_d4 = d_mod_d2[, d4],
+      n_d2 = d_mod_d2[, n],
+      
+      N_d3 = nrow(d_mod_d3),
+      d3_s = d_mod_d3[, silo], d3_j = d_mod_d3[, jnt], d3_p = d_mod_d3[, pref_rev],
+      d3_d1 = d_mod_d3[, d1], 
+      d3_d2 = d_mod_d3[, d2],
+      d3_d3 = d_mod_d3[, d3],
+      d3_d4 = d_mod_d3[, d4],
+      n_d3 = d_mod_d3[, n],
+      
+      N_d4 = nrow(d_mod_d4),
+      d4_s = d_mod_d4[, silo], d4_j = d_mod_d4[, jnt], d4_p = d_mod_d4[, pref_rev],
+      d4_d1 = d_mod_d4[, d1], 
+      d4_d2 = d_mod_d4[, d2],
+      d4_d3 = d_mod_d4[, d3],
+      d4_d4 = d_mod_d4[, d4],
+      n_d4 = d_mod_d4[, n],
       
       prior_only = 0
     )
     
-    snk <- capture.output(
-      f1 <- m1$pathfinder(ld, num_paths=20, single_path_draws=200,
-                          history_size=50, max_lbfgs_iters=100,
-                          refresh = 0, draws = 2000)
+    # pathfinder is actually a bit biased for logistic but for quick and 
+    # dirty ballpark it is ok.
+    # snk <- capture.output(
+    #   f1 <- m1$pathfinder(ld, num_paths=20, single_path_draws=200,
+    #                       history_size=50, max_lbfgs_iters=100,
+    #                       refresh = 0, draws = 2000)
+    # )
+    
+    f1 <- m1$sample(
+      ld, iter_warmup = 1000, iter_sampling = 2000,
+      parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F, 
+      max_treedepth = 13)
+    
+    
+    
+    p_bd1 <- data.table(f1$draws(variables = c("bd1"), format = "matrix"))
+    p_gbd1 <- data.table(f1$draws(variables = c("gbd1"), format = "matrix"))
+    p_bd1_delta <- data.table(f1$draws(variables = c("bd1_delta"), format = "matrix"))
+    # p_hbd1 <- data.table(f1$draws(variables = c("hbd1"), format = "matrix"))
+
+    p_bd1[, bd1_2_1 := `bd1[2]` - `bd1[1]`]
+    p_bd1[, bd1_3_1 := `bd1[3]` - `bd1[1]`]
+
+
+    d_fig <- data.table(
+      bd1_2_1 = p_bd1$bd1_2_1, bd1_3_1 = p_bd1$bd1_3_1,
+      gbd1_2_1 = p_gbd1$`gbd1[1]`, gbd1_3_1 = p_gbd1$`gbd1[2]`,
+      p_bd1_delta
+      # ,
+      # hbd1_2_1 = p_hbd1$`hbd1[1]`, hbd1_3_1 = p_hbd1$`hbd1[2]`
     )
     
-    m_post_s <- f1$draws(variables = c("bd1_delta"), format = "matrix")
+
+    d_fig <- melt(d_fig, measure.vars = names(d_fig))
+    ggplot(d_fig, aes(x = value, group = variable, col = variable)) +
+      geom_density() +
+      facet_wrap(~variable, scales = "free")
+    
+    
+    ll$d[d1 %in% 2:3 & silo == 3, mean(eta)] - ll$d[d1 %in% 1 & silo == 3, mean(eta)]
+    
+
+    qlogis(ll$d[d1 %in% c(2,3) & silo == 3, mean(y)]) - qlogis(ll$d[d1 == 1 & silo == 3, mean(y)])
+    
+    m_post_s <- f1$draws(variables = c("gbd1"), format = "matrix")
     v_out <- c(colMeans(m_post_s))
-    
-    # will be exactly the same as bd1_delta
-    m_post_s <- f1$draws(variables = c("bd1_gamma"), format = "matrix")
+    m_post_s <- f1$draws(variables = c("gbd2"), format = "matrix")
     v_out <- c(v_out,  colMeans(m_post_s))
+    m_post_s <- f1$draws(variables = c("gbd3"), format = "matrix")
+    v_out <- c(v_out,  colMeans(m_post_s))
+    m_post_s <- f1$draws(variables = c("gbd4"), format = "matrix")
+    v_out <- c(v_out,  colMeans(m_post_s))
+    # # 
+    # m_post_s <- f1$draws(variables = c("bd2_delta"), format = "matrix")
+    # v_out <- c(v_out,  colMeans(m_post_s))
+    # #
+    # m_post_s <- f1$draws(variables = c("bd3_delta"), format = "matrix")
+    # v_out <- c(v_out,  colMeans(m_post_s))
+    # #
+    # m_post_s <- f1$draws(variables = c("bd4_delta"), format = "matrix")
+    # v_out <- c(v_out,  colMeans(m_post_s))
     # 
-    m_post_s <- f1$draws(variables = c("bd2_delta"), format = "matrix")
-    v_out <- c(v_out,  colMeans(m_post_s))
-    #
-    m_post_s <- f1$draws(variables = c("bd3_delta"), format = "matrix")
-    v_out <- c(v_out,  colMeans(m_post_s))
-    #
-    m_post_s <- f1$draws(variables = c("bd4_delta"), format = "matrix")
-    v_out <- c(v_out,  colMeans(m_post_s))
-    
-    m_post_s <- f1$draws(variables = c("bd1", "bd2", "bd3", "bd4"), format = "matrix")
-    v_out <- c(v_out,  colMeans(m_post_s))
+    # m_post_s <- f1$draws(variables = c("bd1", "bd2", "bd3", "bd4"), format = "matrix")
+    # v_out <- c(v_out,  colMeans(m_post_s))
     
     names(v_out) <- c(labs)
     
@@ -983,16 +1109,27 @@ sim_02 <- function(){
     variable = c(labs),
     value = c(
       b_d1[2] - b_d1[1], 
-      b_d1[3] - b_d1[1],
-      b_d1[2] - b_d1[1], 
       b_d1[3] - b_d1[1], 
-      b_d2[3] - b_d2[2],
-      b_d3[3] - b_d3[2],
-      b_d4[3] - b_d4[2],
-      b_d1, b_d2, b_d3, b_d4
+      b_d2[3] - b_d2[2], 
+      b_d3[3] - b_d3[2], 
+      b_d4[3] - b_d4[2]
+      # ,
+      # b_d1[2] - b_d1[1], 
+      # b_d1[3] - b_d1[1], 
+      # b_d2[3] - b_d2[2],
+      # b_d3[3] - b_d3[2],
+      # b_d4[3] - b_d4[2],
+      # b_d1, b_d2, b_d3, b_d4
     )
   )
   d_tru[, variable := factor(variable, levels = c(labs))]
+  
+  dtmp <- merge(
+    d_res[, .(mu = mean(value)), keyby = variable], 
+    d_tru, by = "variable")
+  
+  dtmp[, bias := 100*(mu - value)/value]
+  dtmp
   
   ggplot(d_res, aes(x = value, group = variable)) +
     geom_density() +
@@ -1139,6 +1276,7 @@ sim_03 <- function(){
                           history_size=50, max_lbfgs_iters=100,
                           refresh = 0, draws = 2000)
     )
+
     
     
     
