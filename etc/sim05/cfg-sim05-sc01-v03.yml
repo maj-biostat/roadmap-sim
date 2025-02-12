@@ -1,0 +1,24 @@
+default:
+  desc: "Moderate (OR 1.75) surgical revision effect (one-stage only)"
+  nsim: 250
+  mc_cores: 40
+  N_pt: [500, 1000, 1500, 2000, 2500]
+  cov:
+    mu: 0 # reference level from which all others deviate
+    silo: [0, -0.3, -0.2] # early, late, chronic
+    jnt: [0, 0.4] # knee, hip
+    pref: [0, -0.2] # pref one-stage, pref two-stage
+  d1: [0, 0.5596, 0] # dair, rev1, rev2
+  d2: [0, 0, 0] # non-rand, 12wk, 6wk
+  d3: [0, 0, 0] # non-rand, none, 12wk
+  d4: [0, 0, 0] # non-rand, none, rif
+  dec_ref:
+    delta_sup: 0
+    delta_sup_fut: 0.05
+    delta_ni: -0.03
+    delta_ni_fut: 0.02
+  dec_probs:
+    thresh_sup: 0.98
+    thresh_ni: 0.98
+    thresh_fut_sup: 0.25
+    thresh_fut_ni: 0.25
