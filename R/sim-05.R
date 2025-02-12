@@ -13,7 +13,7 @@ args = commandArgs(trailingOnly=TRUE)
 if (length(args)<1) {
   log_info("Setting default run method (does nothing)")
   args[1] = "run_none_sim_05"
-  args[2] = "./sim05/cfg-sim05-sc01-v01.yml"
+  args[2] = "./sim05/cfg-sim05-sc01-v05.yml"
 } else {
   log_info("Run method ", args[1])
   log_info("Scenario config ", args[2])
@@ -56,7 +56,14 @@ run_trial <- function(
     # 
     b_d2 = c(0, -0.4, 0.6),
     b_d3 = c(0, 0.1, 0.3),
-    b_d4 = c(0, -0.1, -0.2)
+    b_d4 = c(0, -0.1, -0.2),
+    l_prior = list(
+      pri_mu = c(0, 0.47),
+      pri_b_silo = c(0, 1),
+      pri_b_jnt = c(0, 1),
+      pri_b_prf = c(0, 1),
+      pri_b_trt = c(0, 1)
+    )
     ){
   
   log_info("Entered  run_trial for trial ", ix)
@@ -260,6 +267,12 @@ run_trial <- function(
     # create stan data format based on the relevant subsets of pt
     lsd <- get_stan_data_all_int(d_all)
     
+    lsd$ld$pri_mu <- l_prior$pri_mu
+    lsd$ld$pri_b_silo <- l_prior$pri_b_silo
+    lsd$ld$pri_b_jnt <- l_prior$pri_b_jnt
+    lsd$ld$pri_b_prf <- l_prior$pri_b_prf
+    lsd$ld$pri_b_trt <- l_prior$pri_b_trt
+    
     # fit model - does it matter that I continue to fit the model after the
     # decision is made...?
     snk <- capture.output(
@@ -291,11 +304,29 @@ run_trial <- function(
       ),   # risk scale
       format = "matrix"))
     
+    # These should produce the same answers as the generated quantities
+    # outputs.
+    # d_post_chk <- data.table(f_1$draws(
+    #   variables = c(
+    #     
+    #     "bd1", "bd2", "bd3", "bd4"
+    #     
+    #   ),   # risk scale
+    #   format = "matrix"))
+    # 
+    # rbind(
+    #   d_post_chk[, .(mean(`bd2[3]` - `bd2[2]`), sd(`bd2[3]` - `bd2[2]`))],
+    #   d_post_chk[, .(mean(`bd3[3]` - `bd3[2]`), sd(`bd3[3]` - `bd3[2]`))],
+    #   d_post_chk[, .(mean(`bd4[3]` - `bd4[2]`), sd(`bd4[3]` - `bd4[2]`))]
+    #   )
+    
     d_post_long <- melt(d_post, measure.vars = names(d_post))
     d_post_long[variable %like% "d1", domain := 1]
     d_post_long[variable %like% "d2", domain := 2]
     d_post_long[variable %like% "d3", domain := 3]
     d_post_long[variable %like% "d4", domain := 4]
+    
+    # d_post_long[variable %like% "lor", .(mu = mean(value), sd = sd(value)), keyby = variable]
   
     d_post_smry_1[id_analys == ii, 
                   mu := d_post_long[, mean(value), 
@@ -545,7 +576,100 @@ run_trial <- function(
   )
 }
 
-
+prior_pred <- function(){
+  
+  dec_sup = list(
+    surg = NA,
+    ext_proph = NA,
+    ab_choice = NA
+  )
+  dec_ni = list(
+    ab_dur = NA
+  )
+  dec_sup_fut = list(
+    surg = NA,
+    ext_proph = NA,
+    ab_choice = NA
+  )
+  dec_ni_fut = list(
+    ab_dur = NA
+  )
+  
+  mu <- g_cfgsc$cov$mu
+  b_silo <- unlist(g_cfgsc$cov$silo)
+  b_jnt <- unlist(g_cfgsc$cov$jnt)
+  b_pref <- unlist(g_cfgsc$cov$pref)
+  # dair, one, two-stage, we compare avg of one and two stage rev to dair
+  b_d1 <- unlist(g_cfgsc$d1)
+  # always ref, 12wk, 6wk as we are assessing if 6wk ni to 12wk
+  b_d2 <- unlist(g_cfgsc$d2)
+  # always ref, 0, 12wk as we are assessing if 12wk sup to none
+  b_d3 <- unlist(g_cfgsc$d3)
+  # always ref, none, rif as we are assessing if rif is sup to none
+  b_d4 <- unlist(g_cfgsc$d4)
+  
+  l_new <- get_trial_data_int(
+    N = 2500, 
+    
+    # reference level log odds of response
+    mu = mu,
+    # silo effects
+    # silo 1 as the one for late acute
+    # silo 2 as the one for late acute
+    # silo 3 is LATE ACUTE
+    b_silo = b_silo,
+    b_jnt = b_jnt,
+    b_pref = b_pref,
+    # dair, one, two-stage
+    b_d1 = b_d1,
+    b_d2 = b_d2,
+    b_d3 = b_d3,
+    b_d4 = b_d4,
+    
+    dec_sup = dec_sup,
+    dec_ni = dec_ni,
+    dec_sup_fut = dec_sup_fut,
+    dec_ni_fut = dec_ni_fut,
+    
+    idx_s = 1,
+    t0 = rep(1, 2500),
+    id_analys = 1
+  )
+  
+  # create stan data format based on the relevant subsets of pt
+  lsd <- get_stan_data_all_int(l_new$d)
+  lsd$ld$prior_only <- 1
+  lsd$ld$pri_mu <- c(0, 0.47)
+  lsd$ld$pri_b_silo <- c(0, 1)
+  lsd$ld$pri_b_jnt <- c(0, 1)
+  lsd$ld$pri_b_prf <- c(0, 1)
+  lsd$ld$pri_b_trt <- c(0, 1)
+  
+  
+  f_1 <- m1$sample(
+      lsd$ld, iter_warmup = 1000, iter_sampling = 10000,
+      parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
+      max_treedepth = 11)
+  
+  # extract posterior - marginal probability of outcome by group
+  # dair vs rev
+  d_post <- data.table(f_1$draws(
+    variables = c(
+      "p_hat_pred"
+    ),   
+    format = "matrix"))
+  
+  
+  d_fig <- cbind(
+    copy(l_new$d),
+    p_hat_pred = d_post$p_hat_pred
+  )
+  
+  ggplot(d_fig, aes(x = p_hat_pred)) + 
+    geom_density() +
+    facet_grid(~d1)
+  
+}
 
 
 run_sim_05 <- function(){
@@ -571,6 +695,15 @@ run_sim_05 <- function(){
   b_d3 <- unlist(g_cfgsc$d3)
   # always ref, none, rif as we are assessing if rif is sup to none
   b_d4 <- unlist(g_cfgsc$d4)
+  
+  l_prior <- list(
+    pri_mu = c(0, 0.47),
+    pri_b_silo = c(0, 1),
+    pri_b_jnt = c(0, 1),
+    pri_b_prf = c(0, 1),
+    pri_b_trt = c(0, 1)
+  )
+  
   
   log_info("Starting simulation with following parameters:");
   log_info("N: ", paste0(g_cfgsc$N_pt, collapse = ", "));
@@ -618,7 +751,8 @@ run_sim_05 <- function(){
           b_d1 = b_d1,
           b_d2 = b_d2,
           b_d3 = b_d3,
-          b_d4 = b_d4
+          b_d4 = b_d4,
+          l_prior = l_prior
           )
       },
       error=function(e) {
@@ -750,7 +884,7 @@ run_sim_05 <- function(){
     )
   
   toks <- unlist(tstrsplit(args[2], "[-.]"))
-  fname <- paste0("data/sim05/sim05-", toks[3], "-", toks[4], "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs")
+  fname <- paste0("data/sim05/sim05-", toks[4], "-", toks[5], "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs")
   
   log_info("Saving results file ", fname)
   

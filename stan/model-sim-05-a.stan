@@ -79,6 +79,13 @@ data{
   array[N_d4] int d4_d4;
   array[N_d4] int n_d4;
   
+  // priors
+  vector[2] pri_mu;
+  vector[2] pri_b_silo;
+  vector[2] pri_b_jnt;
+  vector[2] pri_b_prf;
+  vector[2] pri_b_trt;
+  
   int prior_only;
 }
 transformed data{
@@ -125,14 +132,14 @@ transformed parameters{
 
 } 
 model{
-  target += logistic_lpdf(mu | 0, 1);
-  target += normal_lpdf(bs_raw | 0, 2);
-  target += normal_lpdf(bj_raw | 0, 2);
-  target += normal_lpdf(bp_raw | 0, 2);
-  target += normal_lpdf(bd1_raw | 0, 2);
-  target += normal_lpdf(bd2_raw | 0, 2);
-  target += normal_lpdf(bd3_raw | 0, 2);
-  target += normal_lpdf(bd4_raw | 0, 2);
+  target += logistic_lpdf(mu | pri_mu[1], pri_mu[2]);
+  target += normal_lpdf(bs_raw | pri_b_silo[1], pri_b_silo[2]);
+  target += normal_lpdf(bj_raw | pri_b_jnt[1], pri_b_jnt[2]);
+  target += normal_lpdf(bp_raw | pri_b_prf[1], pri_b_prf[2]);
+  target += normal_lpdf(bd1_raw | pri_b_trt[1], pri_b_trt[2]);
+  target += normal_lpdf(bd2_raw | pri_b_trt[1], pri_b_trt[2]);
+  target += normal_lpdf(bd3_raw | pri_b_trt[1], pri_b_trt[2]);
+  target += normal_lpdf(bd4_raw | pri_b_trt[1], pri_b_trt[2]);
   
   if(!prior_only){
     target += binomial_logit_lpmf(y | n, eta);  
@@ -140,6 +147,14 @@ model{
 
 }
 generated quantities{
+  
+  array[N] real y_pred;
+  real p_hat_pred;
+
+  for (i in 1:N) {
+    y_pred[i] = bernoulli_logit_rng(eta[i]);
+  }
+  p_hat_pred = mean(y_pred);
 
   // Surgery domain (D1) comparisons of interest are revision relative to dair
   // restricted to the late acute group. Here I just compute the direct 
