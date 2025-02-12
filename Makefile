@@ -92,3 +92,24 @@ sim04:
 	Rscript $(R_OPTS) ./R/sim-04.R run_sim_04 cfg-sim04-sc01-v06.yml
 	Rscript $(R_OPTS) ./R/sim-04.R run_sim_04 cfg-sim04-sc01-v07.yml
 
+# 30/Jan/2025
+# sequential design sim-05.R 
+.PHONY: sim05
+sim05:
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v01.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v02.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v03.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v04.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v05.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v06.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v07.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v08.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v09.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v10.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v11.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v12.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v13.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v14.yml
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v15.yml
+
+
