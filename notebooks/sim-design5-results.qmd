@@ -658,7 +658,7 @@ ggplot(data = d_fig,
 
 Notes
 
-1. This plot focuses on the risk difference, and suggests that the odds ratios translate to effects in the order of 10-20% on the risk scale, dependent on the silo, domain etc. For example, if the baseline log-odds of response was -0.5 and you are contemplating an odds ratio of 2.5 this translates to a risk difference of about 0.23 but if your baseline log-odds of response is 0.2 then, with the same OR, this translates to a risk difference of about 0.2.
+1. This plot focuses on the risk difference, and suggests that the odds ratios translate to effects in the order of 10-20% on the risk scale, dependent on the silo, domain etc. This is due to the non-linearity in the inverse logit transform. For example, if the baseline log-odds of response was -0.5 and you are contemplating an odds ratio of 2.5 this translates to a risk difference of about 0.23 but if your baseline log-odds of response is 0.2 then, with the same OR, this translates to a risk difference of about 0.2.
 
 ```{r}
 #| label: fig-expected-rd
@@ -680,7 +680,7 @@ d_fig[, domain := factor(domain,
                          levels = 1:4, 
                          labels = c("Surgical", "AB Duration", "AB Ext-proph", "AB Choice"))]
 
-d_tbl_3[scenario == 8, range(lor)]
+# d_tbl_3[scenario == 8, range(lor)]
 
 ggplot(data = d_fig,  
        aes(x = N, y = rd)) +
