@@ -1,6 +1,6 @@
 default:
   desc: "Large (OR 2.5) surgical revision effect (one-stage only)"
-  nsim: 250
+  nsim: 1000
   mc_cores: 40
   N_pt: [500, 1000, 1500, 2000, 2500]
   cov:
@@ -12,6 +12,12 @@ default:
   d2: [0, 0, 0] # non-rand, 12wk, 6wk
   d3: [0, 0, 0] # non-rand, none, 12wk
   d4: [0, 0, 0] # non-rand, none, rif
+  pri:
+    mu: [0, 0.47] # mean, scale for each par set
+    b_silo: [0, 1]
+    b_jnt: [0, 1]
+    b_prf: [0, 1]
+    b_trt: [0, 1]
   dec_ref:
     delta_sup: 0
     delta_sup_fut: 0.05

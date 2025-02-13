@@ -155,6 +155,11 @@ generated quantities{
     y_pred[i] = bernoulli_logit_rng(eta[i]);
   }
   p_hat_pred = mean(y_pred);
+  
+  vector[N] log_lik;
+  for (i in 1:N) {
+    log_lik[i] = binomial_logit_lpmf(y[i] | n[i], eta[i]);
+  }
 
   // Surgery domain (D1) comparisons of interest are revision relative to dair
   // restricted to the late acute group. Here I just compute the direct 

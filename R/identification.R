@@ -643,7 +643,16 @@ sim_01 <- function(){
 # based on the fixed reference level parameterisation
 sim_02 <- function(){
   
-  m1 <- cmdstanr::cmdstan_model("stan/model11.stan")
+  m11 <- cmdstanr::cmdstan_model("stan/model11.stan")
+  
+  mc_cores <- 1
+  if(unname(Sys.info()[1]) == "Darwin"){
+    log_info("On mac, reset cores to 5")
+    mc_cores <- 5
+  } else if (unname(Sys.info()[1]) == "Linux"){
+    log_info("On linux, reset cores to 40")
+    mc_cores <- 40
+  }
   
   mu = 1
   b_silo = c(0, -0.3, 0.2)
@@ -699,7 +708,7 @@ sim_02 <- function(){
     "gbd4"
   )
   
-  n_sim <- 2000
+  n_sim <- 5000
   
   d_res <- data.table(do.call(rbind, mclapply(1:n_sim, FUN = function(ii){
   
@@ -822,66 +831,40 @@ sim_02 <- function(){
     #                       refresh = 0, draws = 2000)
     # )
     
-    f1 <- m1$sample(
+    f1 <- m11$sample(
       ld, iter_warmup = 1000, iter_sampling = 2000,
       parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F, 
       max_treedepth = 13)
+    
+    d_post <- data.table(f1$draws(variables = c("lor_d1", "lor_d2", "lor_d3", "lor_d4"), format = "matrix"))
+    colMeans(d_post)
 
-    m_post_s <- f1$draws(variables = c("gbd1"), format = "matrix")
-    v_out <- c(colMeans(m_post_s))
-    m_post_s <- f1$draws(variables = c("gbd2"), format = "matrix")
-    v_out <- c(v_out,  colMeans(m_post_s))
-    m_post_s <- f1$draws(variables = c("gbd3"), format = "matrix")
-    v_out <- c(v_out,  colMeans(m_post_s))
-    m_post_s <- f1$draws(variables = c("gbd4"), format = "matrix")
-    v_out <- c(v_out,  colMeans(m_post_s))
     
-    names(v_out) <- c(labs)
-    
-    v_out
-    
-  }, mc.cores = 6)))
+  }, mc.cores = mc_cores)))
   
   
   message("Done - up to here...", Sys.time())
   # 
   
   d_fig <- melt(d_res, measure.vars = names(d_res))
-  d_fig[, variable := factor(variable, levels = c(labs))]
-  # 
-  # d_tru <- data.table(
-  #   variable = c(labs),
-  #   value = c(
-  #     b_d1[2] - b_d1[1], 
-  #     b_d1[3] - b_d1[1], 
-  #     b_d2[3] - b_d2[2], 
-  #     b_d3[3] - b_d3[2], 
-  #     b_d4[3] - b_d4[2]
-  #     # ,
-  #     # b_d1[2] - b_d1[1], 
-  #     # b_d1[3] - b_d1[1], 
-  #     # b_d2[3] - b_d2[2],
-  #     # b_d3[3] - b_d3[2],
-  #     # b_d4[3] - b_d4[2],
-  #     # b_d1, b_d2, b_d3, b_d4
-  #   )
-  # )
-  # d_tru[, variable := factor(variable, levels = c(labs))]
-  # 
-  # dtmp <- merge(
-  #   d_res[, .(mu = mean(value)), keyby = variable], 
-  #   d_tru, by = "variable")
-  # 
-  # dtmp[, bias := 100*(mu - value)/value]
-  # dtmp
-  # 
+  d_tru <- data.table(
+    variable = paste0("lor_d", 1:4),
+    value = c(
+      b_d1[3],
+      b_d2[3] - b_d2[2],
+      b_d3[3] - b_d3[2],
+      b_d4[3] - b_d4[2]
+    )
+  )
+  
   ggplot(d_fig, aes(x = value, group = variable)) +
     geom_density() +
-    # geom_vline(data = d_res[, .(value = mean(value)), keyby = variable],
-    #            aes(xintercept = value), col = 1, lwd = 0.3) +
-    # geom_vline(data = d_tru,
-    #            aes(xintercept = value), col = 2, lwd = 0.3, lty = 2) +
+    geom_vline(data = d_fig[, .(value = mean(value)), keyby = variable],
+               aes(xintercept = value, group = variable)) +
+    geom_vline(data = d_tru, aes(xintercept = value, group = variable), col = 2) +
     facet_wrap(~variable, scales = "free_x")
+  
+  
   
   
   

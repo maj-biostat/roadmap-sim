@@ -304,6 +304,14 @@ run_trial <- function(
       ),   # risk scale
       format = "matrix"))
     
+    # d_log_lik <- data.table(f_1$draws(
+    #   variables = c(
+    #     
+    #     "log_lik"
+    #     
+    #   ),   # risk scale
+    #   format = "matrix"))
+    
     # These should produce the same answers as the generated quantities
     # outputs.
     # d_post_chk <- data.table(f_1$draws(
@@ -576,6 +584,143 @@ run_trial <- function(
   )
 }
 
+model_consistency_check <- function(){
+  
+  mc_cores <- 1
+  if(unname(Sys.info()[1]) == "Darwin"){
+    log_info("On mac, reset cores to 5")
+    mc_cores <- 5
+    N_sim <- 500
+  } else if (unname(Sys.info()[1]) == "Linux"){
+    log_info("On linux, reset cores to 40")
+    mc_cores <- 40
+    N_sim <- 5000
+  }
+  
+  dec_sup = list(
+    surg = NA,
+    ext_proph = NA,
+    ab_choice = NA
+  )
+  dec_ni = list(
+    ab_dur = NA
+  )
+  dec_sup_fut = list(
+    surg = NA,
+    ext_proph = NA,
+    ab_choice = NA
+  )
+  dec_ni_fut = list(
+    ab_dur = NA
+  )
+  
+  mu <- 0
+  b_silo <- c(0.0, -0.3, -0.2)
+  b_jnt <- c(0, 0.4)
+  b_pref <- c(0.0, -0.2)
+  
+  # dair, one, two-stage, we compare avg of one and two stage rev to dair
+  b_d1 <- c(0, 1, 1)
+  # always ref, 12wk, 6wk as we are assessing if 6wk ni to 12wk
+  b_d2 <- c(0, -0.25, 0.5)
+  # always ref, 0, 12wk as we are assessing if 12wk sup to none
+  b_d3 <- c(0, -0.25, 0.5)
+  # always ref, none, rif as we are assessing if rif is sup to none
+  b_d4 <- c(0, -0.25, 0.5)
+  N <- 2500
+  
+  
+  r <- parallel::mclapply(
+    X=1:N_sim, mc.cores = mc_cores, FUN=function(ix) {
+      
+      l_new <- get_trial_data_int(
+        N = N, 
+        
+        # reference level log odds of response
+        mu = mu,
+        # silo effects
+        # silo 1 as the one for late acute
+        # silo 2 as the one for late acute
+        # silo 3 is LATE ACUTE
+        b_silo = b_silo,
+        b_jnt = b_jnt,
+        b_pref = b_pref,
+        # dair, one, two-stage
+        b_d1 = b_d1,
+        b_d2 = b_d2,
+        b_d3 = b_d3,
+        b_d4 = b_d4,
+        
+        dec_sup = dec_sup,
+        dec_ni = dec_ni,
+        dec_sup_fut = dec_sup_fut,
+        dec_ni_fut = dec_ni_fut,
+        
+        idx_s = 1,
+        t0 = rep(1, N),
+        id_analys = 1
+      )
+      
+      # create stan data format based on the relevant subsets of pt
+      lsd <- get_stan_data_all_int(l_new$d)
+      lsd$ld$pri_mu <- c(0, 0.47)
+      lsd$ld$pri_b_silo <- c(0, 1)
+      lsd$ld$pri_b_jnt <- c(0, 1)
+      lsd$ld$pri_b_prf <- c(0, 1)
+      lsd$ld$pri_b_trt <- c(0, 1)
+      
+      # dtmp <- lsd$d_mod_d2[d2 %in% c(2, 3), .(y = sum(y), n = sum(n)), keyby = d2]
+      # dtmp[, p_obs := y/n]
+      # dtmp[, lo_obs := log(p_obs / (1-p_obs))]
+      # dtmp
+      # dtmp[d2 == 3, lo_obs] - dtmp[d2 == 2, lo_obs]
+      
+      f_1 <- m1$sample(
+        lsd$ld, iter_warmup = 1000, iter_sampling = 3000,
+        parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
+        max_treedepth = 11)
+      
+      d_post <- data.table(f_1$draws(
+        variables = c(
+          
+          "lor_d1", 
+          "lor_d2",
+          "lor_d3",
+          "lor_d4"
+          
+        ),   
+        format = "matrix"))
+      
+      colMeans(d_post)
+      
+    })
+  
+  d_r <- data.table(do.call(rbind, r))
+  
+  d_fig <- melt(d_r, measure.vars = names(d_r))
+  
+  d_tru <- data.table(
+    variable = paste0("lor_d", 1:4),
+    value = c(
+      b_d1[3],
+      b_d2[3] - b_d2[2],
+      b_d3[3] - b_d3[2],
+      b_d4[3] - b_d4[2]
+    )
+  )
+  
+  ggplot(d_fig, aes(x = value, group = variable)) +
+    geom_density() +
+    geom_vline(data = d_fig[, .(value = mean(value)), keyby = variable],
+               aes(xintercept = value), col = 1, lwd = 0.3) +
+    geom_vline(data = d_tru,
+               aes(xintercept = value), col = 2, lwd = 0.3, lty = 2) +
+    facet_wrap(~variable, scales = "free_x")
+  
+  d_fig[, .(mu = mean(value)), keyby = variable]
+  
+}
+
 prior_pred <- function(){
   
   dec_sup = list(
@@ -696,14 +841,31 @@ run_sim_05 <- function(){
   # always ref, none, rif as we are assessing if rif is sup to none
   b_d4 <- unlist(g_cfgsc$d4)
   
-  l_prior <- list(
-    pri_mu = c(0, 0.47),
-    pri_b_silo = c(0, 1),
-    pri_b_jnt = c(0, 1),
-    pri_b_prf = c(0, 1),
-    pri_b_trt = c(0, 1)
+  list(
+    mu = mu,
+    b_silo = b_silo,
+    b_jnt = b_jnt,
+    b_pref = b_pref,
+    # dair, one, two-stage, we compare avg of one and two stage rev to dair
+    b_d1 = b_d1,
+    # always ref, 12wk, 6wk as we are assessing if 6wk ni to 12wk
+    b_d2 = b_d2,
+    # always ref, 0, 12wk as we are assessing if 12wk sup to none
+    b_d3 = b_d3,
+    # always ref, none, rif as we are assessing if rif is sup to none
+    b_d4 = b_d4
   )
   
+  
+  
+  l_prior <- list(
+    pri_mu = unlist(g_cfgsc$pri$mu),
+    pri_b_silo = unlist(g_cfgsc$pri$b_silo) ,
+    pri_b_jnt = unlist(g_cfgsc$pri$b_jnt) ,
+    pri_b_prf = unlist(g_cfgsc$pri$b_prf) ,
+    pri_b_trt = unlist(g_cfgsc$pri$b_trt) 
+  )
+  l_prior
   
   log_info("Starting simulation with following parameters:");
   log_info("N: ", paste0(g_cfgsc$N_pt, collapse = ", "));
