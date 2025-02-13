@@ -564,7 +564,7 @@ g_tbl
 
 Notes
 
-1. This is the total number of enrolments that have occurred and not how many are contributing to the inference in a given domain.
+1. This is the total number of enrolments that have occurred, not how many are contributing to the inference in a given domain.
 
 ```{r}
 #| label: tbl-sim05-stopn
