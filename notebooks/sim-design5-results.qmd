@@ -66,7 +66,7 @@ for(i in 1:length(flist)){
 
 ## Notes 
 
-Updated: 14/Feb/2025 - 16:35
+Updated: 14/Feb/2025 - 17:15
 
 This set of results is based on a modification to the simulation decision processes whereby the model outputs are first converted to the probability scale and then used to assess decisions on the basis of risk difference thresholds.
 The approach is motivated by the sense that the results on the log-odds scale had limited interpretability for clinical users and is inconsistent in absolute terms across strata with varying baseline rates.
@@ -1006,6 +1006,9 @@ p_d4
 ```
 
 :::
+
+
+
 
 @fig-dec shows the knowledge transitions based on the decisions made for each domain by sample size.
 
