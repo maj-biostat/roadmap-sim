@@ -561,7 +561,7 @@ run_trial <- function(
     }
   }
   
-  list(
+  l_ret <- list(
     # data collected in the trial
     d_all = d_all[, .(y = sum(y), .N), keyby = .(id_analys, silo, jnt, d1, d2, d3, d4)],
     
@@ -582,6 +582,11 @@ run_trial <- function(
     
     stop_at = stop_at
   )
+  
+  # 
+  
+  
+  return(l_ret)
 }
 
 model_consistency_check <- function(){
@@ -924,14 +929,48 @@ run_sim_05 <- function(){
 
       ll
     })
+  
+  
+  
+  log_info("Length of result set ", length(r))
+  
+  for(i in 1:length(r)){
+    log_info("Element at index ",i, " is class ", class(r[[i]]))
+    log_info("Element at index ",i, " has names ", 
+             paste0(names(r[[i]]), collapse = ", "))
+  }
+  
+  
+  d_pr_sup <- data.table()
+  for(i in 1:length(r)){
+    
+    log_info("Appending pr_sup for result ", i)
+    
+    if(is.recursive(r[[i]])){
+      d_pr_sup <- rbind(
+        d_pr_sup,
+        cbind(
+          sim = i, analys = as.integer(rownames(r[[i]]$pr_sup)), r[[i]]$pr_sup
+        ) 
+      )  
+    } else {
+      log_info("Value for r at this index is not recursive ", i)
+      log_info("r[[i]] ", r[[i]])
+      stop(paste0("Stopping due to non-recursive element "))
+    }
+    
+    
+  }
+  
 
   # put results into data.tables
   # quantifying evidence for superiority/non-inf etc.
-  d_pr_sup <- data.table(
-    do.call(rbind, lapply(1:length(r), function(i){ 
-      cbind(
-        sim = i, analys = as.integer(rownames(r[[i]]$pr_sup)), r[[i]]$pr_sup) 
-      } )))
+  # d_pr_sup <- data.table(
+  #   do.call(rbind, lapply(1:length(r), function(i){ 
+  #     cbind(
+  #       sim = i, analys = as.integer(rownames(r[[i]]$pr_sup)), r[[i]]$pr_sup
+  #       ) 
+  #     } )))
 
   d_pr_ni <- data.table(
     do.call(rbind, lapply(1:length(r), function(i){ 
