@@ -1,8 +1,20 @@
 ---
-title: "Simulation results 4"
+title: "Simulation results 5"
 subtitle: "Sequential design with early stopping (restricted action set) - risk based"
 date: today
 date-modified: last-modified
+sidebar: false
+navbar: false
+theme: cosmo
+# this is necessary to remove an unwanted boarder around a tabset
+include-in-header:
+  - text: |
+      <style>
+      .panel-tabset > .nav-tabs,
+      .panel-tabset > .tab-content {
+        border: none;
+      }
+      </style>
 ---
 
 
@@ -40,12 +52,12 @@ names(g_lor_lab) <- paste0("v0", 1:7)
 # Load all the files into a single list.
 
 # files of interest
-flist <- list.files("data/sim05-03", pattern = "sim05")
+flist <- list.files("data/sim05-04", pattern = "sim05")
 toks <- list()
 l <- list()
 i <- 1
 for(i in 1:length(flist)){
-  l[[i]] <- qs::qread(file.path("data/sim05-03", flist[i]))
+  l[[i]] <- qs::qread(file.path("data/sim05-04", flist[i]))
   toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
 }
 
@@ -54,23 +66,24 @@ for(i in 1:length(flist)){
 
 ## Notes 
 
-Updated: 13/Feb/2025 - 15:30
+Updated: 14/Feb/2025 - 16:35
 
 This set of results is based on a modification to the simulation decision processes whereby the model outputs are first converted to the probability scale and then used to assess decisions on the basis of risk difference thresholds.
-The approach is motivated by the sense that the results on the log-odds scale had limited interpretability for clinical users and I wanted to explore what a absolute perspective on effectiveness translated to in terms of operating characteristics.
-While all the simulation parameters are still expressed as log-odds-ratios, the results have been converted to a risk scale to give us a better insight into the magnitude of effects we are actually contemplating.
+The approach is motivated by the sense that the results on the log-odds scale had limited interpretability for clinical users and is inconsistent in absolute terms across strata with varying baseline rates.
+I also wanted to explore what an absolute perspective on effectiveness translated to in terms of operating characteristics.
+All the simulation parameters are still expressed as log-odds-ratios, but now the results have been presented on both the odds and risk scale to give us a better insight into the magnitude of effects we are actually contemplating and determine if these are reasonable assumptions.
 
 Overall, the design functions as was previously discussed.
-At each interim, we assess the posterior and if a decision threshold is met, then we act.
+We have a single, large, conditional model.
+At each interim, we assess the posterior and if a decision threshold is met, we act.
 For example, if a superiority decision is reached in one of the domains for which this decision type is relevant, then we consider that domain dealt with and all subsequent participants are assigned to receive the superior intervention.
 We can (and presently do) continue to update the posterior inference in that comparison in subsequent interim analyses until all questions have been answered, at which point the trial stops.
 
 The summaries below do not propagate parameter estimates from earlier analyses as this would potential propagate bias from early stopping.
-Additionally, time of first stopping is now conditioned on domain as stopping rules are domain specific.
+The time of first stopping is conditioned on domain as stopping rules are domain specific.
 For example, we do not have a non-inferiority rule for stopping in the surgical domain.
-This fixes an error in the previous processing.
 
-From the previous simulation, it was noted that the variation on the posterior summaries was high and so a tighter prior specification has been adopted here in an attempt to regularise small cell size estimates.
+From the previous simulation, it was noted that the variation on the posterior summaries was extremely high and so a tighter prior specification has been adopted here in an attempt to regularise small cell size estimates.
 The priors were as follows:
 
 + Reference log-odds of response: logistic distribution, mean `r l[[1]]$cfg$pri$mu[[1]]` and scale `r l[[1]]$cfg$pri$mu[[2]]`
@@ -392,12 +405,14 @@ The futility of a superiority decision is included in each cell in parentheses.
 
 Notes:
 
-1. The 'average' surgical revision effect reaches about 70% when both one-stage and two-stage have an effect, i.e. both increase the log-odds or response by $\log(1.75)$. When one one-stage or two-stage show an effect (the other having a zero effect) the weighted average effect of revision is lower and hence the power is lower. The decisions are currently based on the overall effect of revision (randomised) and not the clinician selected mode of revision.
+1. The 'average' surgical revision effect reaches about 70% when both one-stage and two-stage have an effect, i.e. both increase the log-odds or response by the same $\log(1.75)$.
+When one one-stage or two-stage show an effect (the other having a zero effect) the weighted average effect of revision is lower and hence the power is lower.
+The decisions are currently based on the overall effect of revision (randomised) and not the clinician selected mode of revision.
 2. AB extended prophylaxis receives entrants from acute, late and chronic silos and hence has more data to work with, leading to a higher overall cumulative probability of stopping. Ditto with the AB choice domain.
 
 ```{r}
 #| label: tbl-sim05-cumprobsup
-#| tbl-cap: 'Cumulative probability of superiority (futility in parentheses) decision at each interim (shown by sample size at each interim)'
+#| tbl-cap: 'Cumulative probability of superiority (futility in parentheses) decision at each interim (shown by total enrolment by interim)'
 #| column: page
 #| out-width: 70%
 
@@ -474,16 +489,17 @@ g_tbl
 
 ```
 
-@tbl-sim05-cumprobni shows the cumulative probability of a non-inferiority decision with futility shown in parentheses as above.
+@tbl-sim05-cumprobni shows the cumulative probability of a non-inferiority decision with futility shown in parentheses.
 The results are only shown for the domains for which non-inferiority is evaluated.
 
 Notes:
 
-1. The type-I error sees a bit high so we may need to revise the reference value and/or the probability threshold that needs to be reached to conclude NI.
+1. In the current configuration, you need a substantial effect size before we will start to claim NI.
+2. I think that the higher power in the scenario where all domains have an effect arises because the surgical domain does not get shut down so you have more participants entering this AB duration domain.
 
 ```{r}
 #| label: tbl-sim05-cumprobni
-#| tbl-cap: 'Cumulative probability of NI (futility in parentheses) decision at each interim (shown by sample size at each interim)'
+#| tbl-cap: 'Cumulative probability of NI (futility in parentheses) decision at each interim (shown by total enrolment by interim)'
 #| column: page
 #| out-width: 70%
 
@@ -564,7 +580,7 @@ g_tbl
 
 Notes
 
-1. This is the total number of enrolments that have occurred, not how many are contributing to the inference in a given domain.
+1. This is the total number of enrolments that are expected to have occurred, not how many are contributing to the inference in a given domain.
 
 ```{r}
 #| label: tbl-sim05-stopn
@@ -611,19 +627,31 @@ g_tbl <- d_tbl_2_cur |>
 g_tbl
 ```
 
+
+::: {.panel-tabset  .nav-pills}
+
+
+## Treatment effects - odds ratios
+
 @fig-expected-or shows the median value and 95% quantiles for the posterior means obtained from the simulations for each domain and scenario.
 
 Notes
 
-1. The first analysis has very large variance.
+1. The first analysis has very large variance, especially in the AB duration domain. 
 
 
 ```{r}
 #| label: fig-expected-or
 #| fig-cap: 'Expected value of posterior means for odds-ratio treatment effects by domain and simulation scenario'
-#| fig-cap-location: margin
-#| fig-height: 11
+#| fig-height: 10
 #| fig-width: 6
+#| column: page-right
+
+# ggplot2::theme_update(text = element_text(size = 8))
+# ggplot2::theme_update(legend.position = "bottom")
+# # ggplot2::theme_update(legend.title = element_blank())
+# ggplot2::theme_update(axis.text.x = element_text(size = 8))
+# ggplot2::theme_update(axis.text.y = element_text(size = 8))
 
 d_fig <- d_tbl_3[,
                  .(or = median(exp(lor)),
@@ -640,32 +668,39 @@ d_fig[, domain := factor(domain,
 
 ggplot(data = d_fig,  
        aes(x = N, y = or)) +
-  geom_line(lwd = 0.3) +
-  geom_linerange(aes(ymin = q_025, ymax = q_975), lwd = 0.3) +
+  geom_line(lwd = 0.25) +
+  geom_linerange(aes(ymin = q_025, ymax = q_975), lwd = 0.25) +
   scale_x_continuous("") +
   scale_y_continuous("OR") +
   facet_grid(desc ~ domain , 
              labeller = labeller(desc = label_wrap_gen(15)), scales = "free_y") +
-  theme(strip.text.y.right = element_text(angle = 0),
-        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  theme_minimal() +
+  theme(text = element_text(size = 6),
+        strip.text.y.right = element_text(angle = 0, size = 5),
+        strip.text.x = element_text(angle = 0, size = 5),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
+        axis.text.y = element_text(size = 5))
 
 
 
 ```
+
+## Treatment effects - risk difference
 
 
 @fig-expected-rd shows the median value and 95% quantiles for the posterior means obtained from the simulations for each domain and scenario.
 
 Notes
 
-1. This plot focuses on the risk difference, and suggests that the odds ratios translate to effects in the order of 10-20% on the risk scale, dependent on the silo, domain etc. This is due to the non-linearity in the inverse logit transform. For example, if the baseline log-odds of response was -0.5 and you are contemplating an odds ratio of 2.5 this translates to a risk difference of about 0.23 but if your baseline log-odds of response is 0.2 then, with the same OR, this translates to a risk difference of about 0.2.
+1. This plot focuses on the risk difference, and suggests that the odds ratios translate to effects in the order of 10-20% on the risk scale, dependent on the silo, domain etc. This variation is to be expected due to the non-linearity in the inverse logit transform. For example, if the baseline log-odds of response was -0.5 and you are contemplating an odds ratio of 2.5 this translates to a risk difference of about 0.23 but if your baseline log-odds of response is 0.2 then, with the same OR, this translates to a risk difference of about 0.2.
 
 ```{r}
 #| label: fig-expected-rd
 #| fig-cap: 'Expected value of posterior means for risk difference treatment effects by domain and simulation scenario'
 #| fig-cap-location: margin
-#| fig-height: 11
+#| fig-height: 10
 #| fig-width: 6
+#| column: page-right
 
 
 
@@ -684,14 +719,18 @@ d_fig[, domain := factor(domain,
 
 ggplot(data = d_fig,  
        aes(x = N, y = rd)) +
-  geom_line(lwd = 0.3) +
-  geom_linerange(aes(ymin = q_025, ymax = q_975), lwd = 0.3) +
+  geom_line(lwd = 0.25) +
+  geom_linerange(aes(ymin = q_025, ymax = q_975), lwd = 0.25) +
   scale_x_continuous("") +
   scale_y_continuous("Risk difference") +
   facet_grid(desc ~ domain , 
              labeller = labeller(desc = label_wrap_gen(15)), scales = "free_y") +
-  theme(strip.text.y.right = element_text(angle = 0),
-        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  theme_minimal() +
+  theme(text = element_text(size = 6),
+        strip.text.y.right = element_text(angle = 0, size = 5),
+        strip.text.x = element_text(angle = 0, size = 5),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
+        axis.text.y = element_text(size = 5))
 
 
 
@@ -700,3 +739,397 @@ ggplot(data = d_fig,
 
 
 
+:::
+
+
+
+@fig-d1-n through to @fig-d4-n show sample size for domains for example trial from scenario 7 (Moderate (OR 1.75) antibiotic choice rifampacin effect).
+
+```{r, echo = FALSE}
+#| label: ex1-dat
+#| code-summary: Cumulative probability of each decision type
+
+
+
+# > names(l[[7]])
+#  [1] "cfg"           "d_pr_sup"      "d_pr_ni"       "d_pr_sup_fut"  "d_pr_ni_fut"   "d_decision"   
+#  [7] "d_post_smry_1" "d_all"         "d_n_units"     "d_n_assign" 
+
+# extract the decision matrix - sim, analysis, quantity, domain level decision
+
+
+d_N <- data.table(
+  analys = 0:5,
+  N = seq(0, 2500, by = 500)
+)
+
+idx = 3452
+
+l_cfg <- copy(l[[7]]$cfg)
+d_dat <- copy(l[[7]]$d_all[sim == idx])
+d_mod <- copy(l[[7]]$d_post_smry_1[sim == idx])
+d_dec <- copy(l[[7]]$d_decision[sim == idx])
+d_pr_sup <- copy(l[[7]]$d_pr_sup[sim == idx])
+d_pr_sup_fut <- copy(l[[7]]$d_pr_sup_fut[sim == idx])
+d_pr_ni <- copy(l[[7]]$d_pr_ni[sim == idx])
+d_pr_ni_fut <- copy(l[[7]]$d_pr_ni_fut[sim == idx])
+
+# observed data
+setnames(d_dat, "id_analys", "analys")
+setnames(d_mod, "id_analys", "analys")
+
+d_mod <- merge(d_mod, d_N, by = "analys")
+
+d_pr_sup <- merge(d_pr_sup, d_N, by = "analys")
+d_pr_sup <- melt(d_pr_sup[, .(analys, d1, d3, d4, N)], 
+                 id.vars = c("analys", "N"), variable.name = "domain")
+d_pr_sup[, domain := as.numeric(gsub("d", "", domain))]
+d_pr_sup[, quant := "sup"]
+
+d_pr_sup_fut <- merge(d_pr_sup_fut, d_N, by = "analys")
+d_pr_sup_fut <- melt(d_pr_sup_fut[, .(analys, d1, d3, d4, N)], 
+                 id.vars = c("analys", "N"), variable.name = "domain")
+d_pr_sup_fut[, domain := as.numeric(gsub("d", "", domain))]
+d_pr_sup_fut[, quant := "sup_fut"]
+
+d_pr_ni <- merge(d_pr_ni, d_N, by = "analys")
+d_pr_ni <- melt(d_pr_ni[, .(analys, d2, N)], 
+                 id.vars = c("analys", "N"), variable.name = "domain")
+d_pr_ni[, domain := as.numeric(gsub("d", "", domain))]
+d_pr_ni[, quant := "ni"]
+
+d_pr_ni_fut <- merge(d_pr_ni_fut, d_N, by = "analys")
+d_pr_ni_fut <- melt(d_pr_ni_fut[, .(analys, d2, N)], 
+                 id.vars = c("analys", "N"), variable.name = "domain")
+d_pr_ni_fut[, domain := as.numeric(gsub("d", "", domain))]
+d_pr_ni_fut[, quant := "ni_fut"]
+
+d_pr_dec <- rbind(d_pr_sup, d_pr_sup_fut, d_pr_ni, d_pr_ni_fut  )
+d_pr_dec[domain %in% c(1, 3, 4), question := "Superiority"]
+d_pr_dec[domain %in% c(2), question := "Non-inferiority"]
+
+# domain 1 relates only to the late acute silo
+d_dat_d1 <- d_dat[, .(y = sum(y), n = sum(N)), keyby = .(silo, analys, d1)]
+d_dat_d1[, `:=`(cy = cumsum(y), cn = cumsum(n)), keyby = .(silo, d1)]
+d_dat_d1[, p_obs := cy/cn]
+d_dat_d1[, d1 := factor(d1, labels = c("DAIR", "One-stage", "Two-stage"))]
+
+# domain 2 relates only to the group that receive one-stage
+d_dat_d2 <- d_dat[d1 == 2, .(y = sum(y), n = sum(N)), keyby = .(silo, analys, d2)]
+d_dat_d2[, `:=`(cy = cumsum(y), cn = cumsum(n)), keyby = .(silo, d2)]
+d_dat_d2[, p_obs := cy/cn]
+d_dat_d2[, d2 := factor(d2, labels = c("Selected", "12wk", "6wk"))]
+
+
+# domain 3 relates only to the group that receive two-stage
+d_dat_d3 <- d_dat[d1 == 3, .(y = sum(y), n = sum(N)), keyby = .(silo, analys, d3)]
+d_dat_d3[, `:=`(cy = cumsum(y), cn = cumsum(n)), keyby = .(silo, d3)]
+d_dat_d3[, p_obs := cy/cn]
+d_dat_d3[, d3 := factor(d3, labels = c("Selected", "6wk", "12wk"))]
+
+# domain 4 relates only to the group that receive two-stage
+d_dat_d4 <- d_dat[, .(y = sum(y), n = sum(N)), keyby = .(silo, analys, d4)]
+d_dat_d4[, `:=`(cy = cumsum(y), cn = cumsum(n)), keyby = .(silo, d4)]
+d_dat_d4[, p_obs := cy/cn]
+d_dat_d4[, d4 := factor(d4, labels = c("Selected", "no-rif", "rif"))]
+
+
+d_dec <- melt(d_dec, measure.vars = paste0("d", 1:4), variable.name = "domain")
+d_dec[, domain := as.numeric(gsub("d", "", domain))]
+d_dec <- rbind(
+  d_dec[domain %in% c(1, 3, 4) & quant %in% c("sup", "fut_sup")],
+  d_dec[domain %in% c(2) & quant %in% c("ni", "fut_ni")]
+)
+
+
+d_dec_thres <- data.table(
+  quant = c("sup", "sup_fut", "ni", "ni_fut"),
+  threshold = c(
+    l_cfg$dec_probs$thresh_sup,
+    l_cfg$dec_probs$thresh_fut_sup,
+    l_cfg$dec_probs$thresh_ni,
+    l_cfg$dec_probs$thresh_fut_ni
+  )  ,
+  question = c(
+    "Superiority", "Superiority", "Non-inferiority", "Non-inferiority"
+  )
+)
+
+
+
+## State transition through the different states of knowledge based on decisions
+
+d_dec_timeline <- merge(
+  CJ(domain = 1:4, analys = 0:5),
+  d_N, by = "analys", all.y = T
+)
+setorder(d_dec_timeline, domain, analys)
+d_dec_timeline[domain %in% c(1, 3, 4), question := "Superiority"]
+d_dec_timeline[domain %in% c(2), question := "Non-inferiority"]
+d_dec_timeline[N == 0, decision := "Indeterminate"]
+
+
+i <- j <- 1
+for(i in 1:4){
+  for(j in 1:5){
+    
+    if(i %in% c(1, 3, 4)){
+      
+      
+      if(d_dec[domain == i & analys == j & quant == "sup", value])  {
+        d_dec_timeline[domain == i & analys == j, decision := "Superior"] 
+      } else if (d_dec[domain == i & analys == j & quant == "fut_sup", value]) {
+        d_dec_timeline[domain == i & analys == j, decision := "Futile (sup)"] 
+      } else {
+        d_dec_timeline[domain == i & analys == j, decision := "Indeterminate"] 
+      }
+      
+    } else {
+      
+      if(d_dec[domain == i & analys == j & quant == "ni", value])  {
+        d_dec_timeline[domain == i & analys == j, decision := "NI"] 
+      } else if (d_dec[domain == i & analys == j & quant == "fut_ni", value]) {
+        d_dec_timeline[domain == i & analys == j, decision := "Futile (NI)"] 
+      } else {
+        d_dec_timeline[domain == i & analys == j, decision := "Indeterminate"] 
+      }
+      
+    }
+    
+  }
+  
+}
+
+d_dec_timeline[, decision := factor(decision, levels = c(
+  "Indeterminate", "Superior", "Futile (sup)", "NI", "Futile (NI)"
+))]
+
+
+
+
+
+```
+
+
+::: {.panel-tabset  .nav-pills}
+
+
+## Domain 1: Sample size
+
+```{r}
+#| label: fig-d1-n
+#| fig-cap: "Domain 1: Surgical sample size"
+
+
+p_d1 <- ggplot(d_dat_d1, aes(x = d1, y = cn)) +
+  geom_point(size = 0.5) +
+  scale_x_discrete("") +
+  scale_y_continuous("Sample size") +
+  facet_grid(silo ~ analys, labeller = label_both) +
+  theme_minimal() +
+  theme(text = element_text(size = 6),
+        strip.text.y.right = element_text(angle = 0, size = 6),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 6),
+        axis.text.y = element_text(size = 6)) 
+
+p_d1
+
+```
+
+
+## Domain 2: Sample size
+
+
+```{r}
+#| label: fig-d2-n
+#| fig-cap: "Domain 2: AB Duration sample size"
+
+
+p_d2 <- ggplot(d_dat_d2, aes(x = d2, y = cn)) +
+  geom_point(size = 0.5) +
+  scale_x_discrete("") +
+  scale_y_continuous("Sample size") +
+  facet_grid(silo ~ analys, labeller = label_both) +
+  theme_minimal() +
+  theme(text = element_text(size = 6),
+        strip.text.y.right = element_text(angle = 0, size = 6),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 6),
+        axis.text.y = element_text(size = 6)) 
+
+p_d2
+```
+
+
+## Domain 3: Sample size
+
+
+```{r}
+#| label: fig-d3-n
+#| fig-cap: "Domain 3: AB Expt-proph sample size"
+
+
+p_d3 <- ggplot(d_dat_d3, aes(x = d3, y = cn)) +
+  geom_point(size = 0.5) +
+  scale_x_discrete("") +
+  scale_y_continuous("Sample size") +
+  facet_grid(silo ~ analys, labeller = label_both) +
+  theme_minimal() +
+  theme(text = element_text(size = 6),
+        strip.text.y.right = element_text(angle = 0, size = 6),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 6),
+        axis.text.y = element_text(size = 6)) 
+
+p_d3
+```
+
+
+## Domain 4: Sample size
+
+
+```{r}
+#| label: fig-d4-n
+#| fig-cap: "AB Choice sample size"
+
+
+p_d4 <- ggplot(d_dat_d4, aes(x = d4, y = cn)) +
+  geom_point(size = 0.5) +
+  scale_x_discrete("") +
+  scale_y_continuous("Sample size") +
+  facet_grid(silo ~ analys, labeller = label_both) +
+  theme_minimal() +
+  theme(text = element_text(size = 6),
+        strip.text.y.right = element_text(angle = 0, size = 6),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 6),
+        axis.text.y = element_text(size = 6))
+p_d4
+
+```
+
+:::
+
+@fig-dec shows the knowledge transitions based on the decisions made for each domain by sample size.
+
+```{r}
+#| label: fig-dec
+#| fig-cap: "Decision timeline"
+
+
+ggplot(d_dec_timeline, aes(x = N, y = decision)) +
+  geom_point() +
+  scale_y_discrete("", drop=FALSE) +
+  facet_wrap(domain ~ question, labeller = label_both)
+```
+
+
+::: {.panel-tabset  .nav-pills}
+
+
+## Posterior odds-ratio summary
+
+@fig-post-or shows the posterior odds-ratios for the randomised comparisons by domain and enrolment progression.
+
+```{r}
+#| label: fig-post-or
+#| fig-cap: "Posterior summary measures"
+
+
+d_d1_n <- d_dat[silo == 2, 
+                .(n = sum(N), domain = 1), keyby = .(analys, d1)]
+setnames(d_d1_n, "d1", "trt")
+d_d2_n <- d_dat[d1 == 2 & d2 %in% 2:3, 
+                .(n = sum(N), domain = 2), keyby = .(analys, d2)]
+setnames(d_d2_n, "d2", "trt")
+d_d3_n <- d_dat[d1 == 3 & d3 %in% 2:3, 
+                .(n = sum(N), domain = 3), keyby = .(analys, d3)]
+setnames(d_d3_n, "d3", "trt")
+d_d4_n <- d_dat[d4 %in% 2:3, 
+                .(n = sum(N), domain = 4), keyby = .(analys, d4)]
+setnames(d_d4_n, "d4", "trt")
+
+d_n_trt <- rbind(
+  d_d1_n, d_d2_n, d_d3_n, d_d4_n
+)
+d_n_trt <- merge(
+  d_n_trt,
+  d_N[analys != 0],
+  by = "analys"
+)
+
+d_n_trt <- d_n_trt[, .(n = sum(n)), keyby = .(N, domain)]
+d_n_trt[, n := cumsum(n), keyby = domain]
+
+ggplot(d_mod[par == "lor"], aes(x = N, y = exp(med))) +
+  geom_point() +
+  geom_linerange(aes(ymin = exp(q_025), ymax = exp(q_975)), lwd = 0.25) +
+  geom_text(
+    data = d_n_trt, 
+    aes(x = N, y = -0.5, label = n), col = 2, size = 2
+  ) +
+  scale_x_continuous("") +
+  scale_y_continuous("OR") +
+  facet_wrap(domain ~ ., labeller = label_both)
+
+```
+
+
+## Posterior risk-difference summary
+
+@fig-post-rd shows the posterior risk differences for the randomised comparisons by domain and enrolment progression.
+
+```{r}
+#| label: fig-post-rd
+#| fig-cap: "Posterior summary measures"
+
+ggplot(d_mod[par == "rd"], aes(x = N, y = med)) +
+  geom_point() +
+  geom_linerange(aes(ymin = q_025, ymax = q_975), lwd = 0.25) +
+  scale_x_continuous("") +
+  scale_y_continuous("Risk difference") +
+  facet_wrap(domain ~ ., labeller = label_both)
+```
+
+
+:::
+
+@fig-pr-dec shows the evolution of the probability associated with each decision type for the randomised comparisons by domain and enrolment progression.
+These are showing, for domain 1 for example, the probability of revision being superior to DAIR based on the relevant reference level, which has to above a specified decision threshold in order for action to occur.
+
+Note:
+
+1. The futility probabilities are based on being below a given threshold (rather than above).
+
+```{r}
+#| label: fig-pr-dec
+#| fig-cap: "Probability decision summaries"
+#| fig-height: 5
+
+
+d_fig_1 <- copy(d_pr_dec)
+d_fig_1[, quant := factor(quant, levels = c("sup", "sup_fut", "ni", "ni_fut"),
+                           labels = c("Superior", "Superior (futile)", 
+                                      "NI", "NI (futile)"))]
+d_fig_2 <- copy(d_dec_thres)
+d_fig_2[, quant := factor(quant, levels = c("sup", "sup_fut", "ni", "ni_fut"),
+                           labels = c("Superior", "Superior (futile)",
+                                      "NI", "NI (futile)"))]
+
+d_fig_2 <- merge(
+  d_fig_2, 
+  unique(d_fig_1[, .(domain, quant, question)]),
+  by = c("quant", "question")
+)
+
+
+ggplot(d_fig_1, aes(x = N, y = value)) +
+  geom_point(aes(col=quant), position = position_dodge2(width = 100), size = 0.6) + 
+  geom_linerange(aes(ymin = 0, ymax = value, col=quant), 
+                 position = position_dodge2(width = 100), lwd = 0.25)+
+  geom_hline(
+    data = d_fig_2,
+    aes(yintercept = threshold, col=quant), lwd = 0.25
+  ) +
+  scale_x_continuous("") +
+  scale_y_continuous("Decision probability") +
+  scale_color_discrete("") +
+  facet_wrap(domain ~ question, labeller = label_both)
+```
