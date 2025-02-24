@@ -1,4 +1,3 @@
-# ab choice - effect of rifampacin
 default:
   desc: "Moderate (OR 1.75) antibiotic choice rifampacin effect"
   nsim: 1000
@@ -22,8 +21,8 @@ default:
   dec_ref:
     delta_sup: 0
     delta_sup_fut: 0.05
-    delta_ni: -0.03
-    delta_ni_fut: 0.02
+    delta_ni: -0.05
+    delta_ni_fut: 0.00
   dec_probs:
     thresh_sup: 0.98
     thresh_ni: 0.98
