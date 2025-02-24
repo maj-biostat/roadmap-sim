@@ -352,6 +352,33 @@ get_design_int <- function(N = 2500, pop_spec = NULL, idx_s = 1){
   D
 }
 
+
+get_mvn_test_data <- function(N = 30, n_time = 2, 
+                    b_trt = 2, rho = 0.5, s_id = c(1, 1), s_e = 1){
+  total_obs <- N * n_time
+  
+  cov_mat <- matrix(c(s_id[1]^2, 
+                      s_id[1] * s_id[2] * rho, 
+                      s_id[1] * s_id[2] * rho, 
+                      s_id[2]^2), nrow = 2)
+  
+  d <- data.table(
+    rbind(
+      rmvnorm(N, mean = c(0, 0), sigma = cov_mat),
+      rmvnorm(N, mean = c(0, b_trt), sigma = cov_mat)
+    )
+  )
+  d[, id := 1:(2*N)]
+  d[, trt := rep(c(0, 1), each = N)]
+  d <- melt(d, measure.vars = c("V1", "V2"))
+  d[variable == "V1", time := 0]
+  d[variable == "V2", time := 1]
+  d[, y := value + s_e]
+  d[, variable := NULL]
+  setkey(d, id, time)
+  d
+}
+
 # Generates trial data for cohort size specified by N along with pop_spec and
 # sim_spec (if provided otherwise defaults used) according to linear predictor
 # specified in g.
@@ -942,6 +969,8 @@ get_stan_data_all_int <- function(d_all){
     n_d1_p1 = d_mod_d1[pref_rev == 1, n],
     n_d1_p2 = d_mod_d1[pref_rev == 2, n],
     
+    prop_p1 = d_all[, .(wgt = .N/nrow(d_all)), keyby = pref_rev][pref_rev == 1, wgt],
+    prop_p2 = d_all[, .(wgt = .N/nrow(d_all)), keyby = pref_rev][pref_rev == 2, wgt],
     
     N_d2 = nrow(d_mod_d2),
     d2_s = d_mod_d2[, silo], d2_j = d_mod_d2[, jnt], d2_p = d_mod_d2[, pref_rev],
