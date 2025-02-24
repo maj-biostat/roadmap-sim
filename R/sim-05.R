@@ -32,13 +32,6 @@ stopifnot("Config is null" = !is.null(g_cfgsc))
 ix <- 1
 m1 <- cmdstanr::cmdstan_model("stan/model-sim-05-a.stan")
 
-# m1 <- cmdstanr::cmdstan_model("stan/model-sim-05-surgical.stan")
-# m2 <- cmdstanr::cmdstan_model("stan/model-sim-05-ab-dur.stan")
-# m3 <- cmdstanr::cmdstan_model("stan/model-sim-05-ext-proph.stan")
-# m4 <- cmdstanr::cmdstan_model("stan/model-sim-05-ab-choice.stan")
-
-
-
 # Main trial loop.
 run_trial <- function(
     ix,
@@ -63,7 +56,8 @@ run_trial <- function(
       pri_b_jnt = c(0, 1),
       pri_b_prf = c(0, 1),
       pri_b_trt = c(0, 1)
-    )
+    ),
+    return_posterior = F
     ){
   
   log_info("Entered  run_trial for trial ", ix)
@@ -113,7 +107,9 @@ run_trial <- function(
   d_post_smry_1[, med := NA_real_]
   d_post_smry_1[, q_025 := NA_real_]
   d_post_smry_1[, q_975 := NA_real_]
- 
+  
+  
+  d_post_smry_2 <- data.table()
 
   # superiority probs
   pr_sup <- array(
@@ -151,17 +147,7 @@ run_trial <- function(
     dim = c(N_analys, 4),
     dimnames = list(1:N_analys, paste0("d", 1:4))
   )
-  
-  # units actually assigned to each treatment level 
-  n_assign <- array(
-    NA, 
-    # num analysis x num trt arms (for now there is just three in all domains so 
-    # we can get away with this) x num domains x num silos
-    dim = c(N_analys, 3, 4, 3),
-    dimnames = list(1:N_analys, paste0("b", 1:3), 
-                    paste0("d", 1:4), paste0("s", 1:3))
-  )
-  
+ 
   # decisions
   g_dec_type <- c("sup", 
                   "ni", 
@@ -196,6 +182,10 @@ run_trial <- function(
   dec_ni_fut = list(
     ab_dur = NA
   )
+  
+  if(return_posterior){
+    l_post <- list()
+  }
   
   
   
@@ -304,29 +294,10 @@ run_trial <- function(
       ),   # risk scale
       format = "matrix"))
     
-    # d_log_lik <- data.table(f_1$draws(
-    #   variables = c(
-    #     
-    #     "log_lik"
-    #     
-    #   ),   # risk scale
-    #   format = "matrix"))
     
-    # These should produce the same answers as the generated quantities
-    # outputs.
-    # d_post_chk <- data.table(f_1$draws(
-    #   variables = c(
-    #     
-    #     "bd1", "bd2", "bd3", "bd4"
-    #     
-    #   ),   # risk scale
-    #   format = "matrix"))
-    # 
-    # rbind(
-    #   d_post_chk[, .(mean(`bd2[3]` - `bd2[2]`), sd(`bd2[3]` - `bd2[2]`))],
-    #   d_post_chk[, .(mean(`bd3[3]` - `bd3[2]`), sd(`bd3[3]` - `bd3[2]`))],
-    #   d_post_chk[, .(mean(`bd4[3]` - `bd4[2]`), sd(`bd4[3]` - `bd4[2]`))]
-    #   )
+    if(return_posterior){
+      l_post[[ii]] <- copy(d_post)
+    }
     
     d_post_long <- melt(d_post, measure.vars = names(d_post))
     d_post_long[variable %like% "d1", domain := 1]
@@ -348,6 +319,31 @@ run_trial <- function(
     d_post_smry_1[id_analys == ii, 
                   q_975 := d_post_long[, quantile(value, prob = 0.975), 
                                     keyby = .(domain, variable)]$V1]
+
+    # These should produce the same answers as the generated quantities
+    # outputs.
+    d_post_chk <- data.table(f_1$draws(
+      variables = c(
+        
+        "bd1", "bd2", "bd3", "bd4"
+        
+      ),   # risk scale
+      format = "matrix"))
+    d_post_chk <- melt(d_post_chk, measure.vars = names(d_post_chk))
+    d_post_chk[variable %like% "d1", domain := 1]
+    d_post_chk[variable %like% "d2", domain := 2]
+    d_post_chk[variable %like% "d3", domain := 3]
+    d_post_chk[variable %like% "d4", domain := 4]
+    
+    d_post_smry_2 <- rbind(
+      d_post_smry_2,
+      d_post_chk[, .(analys = ii,
+                     mu = mean(value),
+                     med = median(value),
+                     q_025 = quantile(value, prob = 0.025),
+                     q_975 = quantile(value, prob = 0.975)),
+                 keyby = .(variable, domain)]
+    )
     
     log_info("Trial ", ix, " extracted posterior ", ii)
 
@@ -358,36 +354,6 @@ run_trial <- function(
       sum(lsd$ld$n_d3),
       sum(lsd$ld$n_d4)
     )
-      
-    # this is the assignment of units by trt (cumulative) by interim
-    # Each domain (currently) has three parameter levels, accounting for
-    # non-rand, trt1 and trt2 to which a unit might be assigned.
-    # These are listed under b1, b2, b3
-    # 
-    n_assign[ii, , , "s1"] <-   
-      cbind(
-        lsd$d_mod[silo == 1, sum(n), keyby = d1]$V1, 
-        lsd$d_mod[silo == 1, sum(n), keyby = d2]$V1,
-        lsd$d_mod[silo == 1, sum(n), keyby = d3]$V1,
-        lsd$d_mod[silo == 1, sum(n), keyby = d4]$V1
-      )
-    
-    n_assign[ii, , , "s2"] <-   
-      cbind(
-        lsd$d_mod[silo == 2, sum(n), keyby = d1]$V1, 
-        lsd$d_mod[silo == 2, sum(n), keyby = d2]$V1,
-        lsd$d_mod[silo == 2, sum(n), keyby = d3]$V1,
-        lsd$d_mod[silo == 2, sum(n), keyby = d4]$V1
-      )
-    
-    n_assign[ii, , , "s3"] <-   
-      cbind(
-        lsd$d_mod[silo == 3, sum(n), keyby = d1]$V1, 
-        lsd$d_mod[silo == 3, sum(n), keyby = d2]$V1,
-        lsd$d_mod[silo == 3, sum(n), keyby = d3]$V1,
-        lsd$d_mod[silo == 3, sum(n), keyby = d4]$V1
-      )
-    
     
     # superiority is implied by a high probability that the risk diff 
     # greater than zero
@@ -457,7 +423,6 @@ run_trial <- function(
     
     # superiority decisions apply to domains 1, 3 and 4
     if(any(decision[ii, , "sup"])){
-      
       # since there are only two treatments per cell, if a superiority decision 
       # is made then we have answered all the questions and we can stop 
       # enrolling into that cell. if there were more than two treatments then
@@ -484,7 +449,6 @@ run_trial <- function(
     }
     # stop enrolling if futile wrt superiority decision
     if(any(decision[ii, , "fut_sup"])){
-      
       if(decision[ii, "d1", "fut_sup"]){
         dec_sup_fut$surg <- 3
       }
@@ -501,7 +465,6 @@ run_trial <- function(
     # if short is ni to long then stop enrolment
     # for this randomised comparison
     if(any(decision[ii, , "ni"])){
-      
       if(decision[ii, "d2", "ni"]){
         dec_ni$ab_dur <- 3
       }
@@ -566,12 +529,10 @@ run_trial <- function(
     d_all = d_all[, .(y = sum(y), .N), keyby = .(id_analys, silo, jnt, d1, d2, d3, d4)],
     
     d_post_smry_1 = d_post_smry_1,
+    d_post_smry_2 = d_post_smry_2,
     
     # number of units used in g-computation by domain
     n_units = n_units,
-    
-    # number of units assigned to each trt level
-    n_assign = n_assign, 
     
     decision = decision,
     
@@ -583,10 +544,134 @@ run_trial <- function(
     stop_at = stop_at
   )
   
+  if(return_posterior){
+    l_ret$l_post <- l_post
+  }
   # 
   
   
   return(l_ret)
+}
+
+model_interactions <- function(){
+  
+  N <- 1e6
+  d <- data.table()
+  
+  # Domain 1 by silo
+  d[, s := sample(1:3, size = N, replace = T, prob = c(0.3, 0.5, 0.2))]
+  d[s == 1, d1 := sample(c(-98, -99), size = .N, replace = T, prob = c(0.85, 0.15))]
+  d[s == 1 & d1 == -98, d1 := 1]
+  d[s == 1 & d1 == -99, d1 := sample(2:3, .N, replace = T, prob = c(2/3, 1/3))]
+  
+  d[s == 2, d1 := sample(c(-98, -99), size = .N, replace = T, prob = c(0.5, 0.5))]
+  d[s == 2 & d1 == -98, d1 := 1]
+  d[s == 2 & d1 == -99, d1 := sample(2:3, .N, replace = T, prob = c(0.3, 0.7))]
+  
+  d[s == 3, d1 := sample(c(-98, -99), size = .N, replace = T, prob = c(0.2, 0.8))]
+  d[s == 3 & d1 == -98, d1 := 1]
+  d[s == 3 & d1 == -99, d1 := sample(2:3, .N, replace = T, prob = c(0.25, 0.75))]
+  
+  mu <- -0.5
+  b_silo <- c(0.0, -0.3, -0.2)
+  b_d1_mu <- c(0, 1.5, 1)
+  # assume independence and same variation in each trt arm across all silo
+  b_d1_s <- diag(3)
+  # parameter values
+  b_d1 <- t(mvtnorm::rmvnorm(length(b_silo), b_d1_mu, b_d1_s))
+  
+  d[, mu := mu]
+  d[, b_silo := b_silo[s]]
+  d[, b_d1 := b_d1[cbind(d1, s)]]
+  d
+  
+  # Think about preference as something that is induced in the clinician by
+  # the status of the patient, i.e. it is a kind of baseline adjustment.
+  d[, eta := b_d1       ]
+  d[, p_tru := plogis(eta)]
+  
+  d[, y := rbinom(.N, 1, plogis(eta))]
+  
+  m2 <- cmdstanr::cmdstan_model("stan/model-sim-05-b.stan")
+  
+  d_mod <- d[, .(
+    y = sum(y), n = .N
+  ), keyby = .(s, d1, p_tru)]
+  d_mod[, p_obs := y / n]
+  
+  lsd <- list(
+    N = nrow(d_mod),
+    
+    y = d_mod$y,
+    n = d_mod$n,
+    
+    K_silo = 3, K_d1 = 3,
+    silo = d_mod$s, 
+    d1 = d_mod$d1,
+    
+    pri_mu = c(0, 0.47),
+    pri_b_silo = c(0, 1),
+    
+    prior_only = F
+    
+  )
+  
+  f_2 <- m2$sample(
+    lsd, iter_warmup = 1000, iter_sampling = 3000,
+    parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F, 
+    max_treedepth = 12, adapt_delta = 0.96)
+  
+  f_2$summary(variables = c("bd1"))
+  f_2$summary(variables = c("bd1_tau"))
+  
+  f_2$cmdstan_diagnose()
+  
+  post <- f_2$draws(format = "matrix")
+  np_cp <- nuts_params(f_2)
+  
+  mcmc_pairs(post, np = np_cp, 
+             pars = c(
+               "bd1[1,1]", "bd1[2,1]", "bd1[3,1]",
+               "bd1[1,2]", "bd1[2,2]", "bd1[3,2]",
+               "bd1[1,3]", "bd1[2,3]", "bd1[3,3]",
+               "bd1_tau[1]",
+               "bd1_tau[2]",
+               "bd1_tau[3]"),
+             off_diag_args = list(size = 0.75))
+  
+  # d_post_mu <- data.table(f_2$draws(
+  #   variables = c("mu"), format = "matrix"
+  # ))
+  # d_post_silo <- data.table(f_2$draws(
+  #   variables = c("bs"), format = "matrix"
+  # ))
+  d_post_bd1 <- data.table(f_2$draws(
+    variables = c("bd1"), format = "matrix"))
+  d_post_bd1_tau <- data.table(f_2$draws(
+    variables = c("bd1_tau"), format = "matrix"))
+  
+  
+  d_fig <- melt(d_post_bd1_tau, measure.vars = names(d_post_bd1_tau))
+  d_pri <- data.table(value = rexp(1e4, 0.5))
+  ggplot(d_fig, aes(x = value, group = variable)) +
+    geom_density() +
+    geom_density(
+      data = d_pri, 
+      aes(x = value), col = 2,
+      inherit.aes = F
+    )
+  
+  
+  f_2$summary(variables = "bd1")
+  
+  b_d1_mu
+  b_d1
+  # trt arm x silo
+  plogis(b_d1)
+  matrix(plogis(colMeans(d_post_bd1)), ncol = 3, byrow = F)
+  
+
+  
 }
 
 model_consistency_check <- function(){
@@ -902,6 +987,7 @@ run_sim_05 <- function(){
   # )
   # d_risk_smry
   
+  return_posterior = F
   
   e = NULL
   log_info("Starting simulation")
@@ -919,7 +1005,8 @@ run_sim_05 <- function(){
           b_d2 = b_d2,
           b_d3 = b_d3,
           b_d4 = b_d4,
-          l_prior = l_prior
+          l_prior = l_prior,
+          return_posterior = return_posterior
           )
       },
       error=function(e) {
