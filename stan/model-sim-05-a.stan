@@ -45,6 +45,8 @@ data{
   array[N_d1_p2] int ix_d1_p2;
   array[N_d1_p1] int n_d1_p1;
   array[N_d1_p2] int n_d1_p2;
+  real prop_p1; // proportion with preference towards one-stage
+  real prop_p2; // proportion with preference towards two-stage
   
   // d2 is evaluated for those receiving one-stage revision
   int N_d2;
@@ -192,9 +194,11 @@ generated quantities{
   // effect of interest is the weight sum of the revision effects (wgts being 
   // the observed proportion of preferring each type) relative to dair
   // multiplication by 1.0 is required to cast to float.
-  real prf_1 = (N_d1_p1 * 1.0/N_d1);
-  real prf_2 = (N_d1_p2 * 1.0/N_d1);
-  real nu_d1_23 = ((N_d1_p1 * 1.0/N_d1) * nu_d1_2) + ((N_d1_p2 * 1.0/N_d1) * nu_d1_3) ; 
+  // real prf_1 = (N_d1_p1 * 1.0/N_d1);
+  // real prf_2 = (N_d1_p2 * 1.0/N_d1);
+  // real nu_d1_23 = ((N_d1_p1 * 1.0/N_d1) * nu_d1_2) + ((N_d1_p2 * 1.0/N_d1) * nu_d1_3) ; 
+  
+  real nu_d1_23 = (prop_p1 * nu_d1_2) + (prop_p2 * nu_d1_3) ; 
   real lor_d1 = nu_d1_23 - nu_d1_1;
   // on the risk scale we would have
   real p_d1_1 = inv_logit(nu_d1_1);
