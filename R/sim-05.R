@@ -531,7 +531,7 @@ run_trial <- function(
   
   l_ret <- list(
     # data collected in the trial
-    d_all = d_all[, .(y = sum(y), .N), keyby = .(id_analys, silo, jnt, d1, d2, d3, d4)],
+    d_all = d_all[, .(y = sum(y), .N), keyby = .(id_analys, silo, jnt, pref_rev, d1, d2, d3, d4)],
     
     d_post_smry_1 = d_post_smry_1,
     d_post_smry_2 = d_post_smry_2,
@@ -1178,7 +1178,7 @@ run_sim_05 <- function(){
     d_n_units = d_n_units,
     d_n_assign = d_n_assign,
     
-    d_post_smry_2 = d_post_smry_2,
+    d_post_smry_2 = d_post_smry_2
     # d_grp = d_grp
     )
   
