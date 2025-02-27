@@ -105,6 +105,7 @@ run_trial <- function(
   )
   d_post_smry_1[, mu := NA_real_]
   d_post_smry_1[, med := NA_real_]
+  d_post_smry_1[, se := NA_real_]
   d_post_smry_1[, q_025 := NA_real_]
   d_post_smry_1[, q_975 := NA_real_]
   
@@ -314,6 +315,9 @@ run_trial <- function(
                   med := d_post_long[, median(value), 
                                     keyby = .(domain, variable)]$V1]
     d_post_smry_1[id_analys == ii, 
+                  se := d_post_long[, sd(value), 
+                                     keyby = .(domain, variable)]$V1]
+    d_post_smry_1[id_analys == ii, 
                   q_025 := d_post_long[, quantile(value, prob = 0.025), 
                                     keyby = .(domain, variable)]$V1]
     d_post_smry_1[id_analys == ii, 
@@ -340,6 +344,7 @@ run_trial <- function(
       d_post_chk[, .(analys = ii,
                      mu = mean(value),
                      med = median(value),
+                     se = sd(value),
                      q_025 = quantile(value, prob = 0.025),
                      q_975 = quantile(value, prob = 0.975)),
                  keyby = .(variable, domain)]
@@ -1018,11 +1023,13 @@ run_sim_05 <- function(){
     })
   
   
-  
   log_info("Length of result set ", length(r))
   
   for(i in 1:length(r)){
     log_info("Element at index ",i, " is class ", class(r[[i]]))
+    if(any(class(r[[i]]) %like% "try-error")){
+      log_info("Element at index ",i, " has content ", r[[i]])  
+    }
     log_info("Element at index ",i, " has names ", 
              paste0(names(r[[i]]), collapse = ", "))
   }
@@ -1112,6 +1119,10 @@ run_sim_05 <- function(){
     r[[i]]$d_post_smry_1
   } ), idcol = "sim")
   
+  d_post_smry_2 <- rbindlist(lapply(1:length(r), function(i){ 
+    r[[i]]$d_post_smry_2
+  } ), idcol = "sim")
+  
   # data from each simulated trial
   d_all <- rbindlist(lapply(1:length(r), function(i){ 
     r[[i]]$d_all
@@ -1165,9 +1176,9 @@ run_sim_05 <- function(){
     d_all = d_all,
     
     d_n_units = d_n_units,
-    d_n_assign = d_n_assign
+    d_n_assign = d_n_assign,
     
-    # d_post_smry_2 = d_post_smry_2,
+    d_post_smry_2 = d_post_smry_2,
     # d_grp = d_grp
     )
   
