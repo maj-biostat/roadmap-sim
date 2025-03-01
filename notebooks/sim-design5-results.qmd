@@ -56,7 +56,7 @@ for(i in 1:length(flist)){
 
 ## Notes 
 
-Updated: 28/Feb/2025 - 22:00
+Updated: 1/Mar/2025 - 10:30
 
 The decision approach now converts the model outputs to a risk (probability) scale and assesses decisions based on risk difference for the intervention comparisons by domain.
 Why?
@@ -545,7 +545,11 @@ ggplot(data = d_fig, aes(x = x, y = y, group = desc)) +
 
 For this set of simulations, the number of simulated trials per scenario was `r l[[1]]$cfg$nsim`.
 
+Todo:
+
 Do we need to think about the hierarchical component for surgical domain to enable, for example, silo specific effects, which would otherwise be problematic for the domains. Revisit interactions silo x surg, pref x surg, joint x surg, etc.
+
+Scenarios for effects in surg (moderate effect) + choice (weak effect) plus other comparisons.
 
 ## Simulation results
 

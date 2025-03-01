@@ -1,5 +1,5 @@
 ---
-title: "Simulation 5 - example 1"
+title: "Simulation 5 - example 3"
 subtitle: "Sequential design with early stopping (restricted action set) - risk based"
 date: today
 date-modified: last-modified
@@ -289,8 +289,8 @@ for(i in 1:length(l)){
 #| label: ex1-dat
 #| code-summary: Cumulative probability of each decision type
 
-ix_scenario <- 7
-ix_trial = 3452
+ix_scenario <- 8
+ix_trial = 599
 
 # > names(l[[ix_scenario]])
 #  [1] "cfg"           "d_pr_sup"      "d_pr_ni"       "d_pr_sup_fut"  "d_pr_ni_fut"   "d_decision"   
@@ -453,7 +453,7 @@ d_dec_timeline[, decision := factor(decision, levels = c(
 
 
 
-The results are from a simulated trial picked from scenario 7 where there is a moderate (OR 1.75) effect in the antibiotic choice with all other domains having null treatment effects.
+The results are from a simulated trial picked from scenario 8 where there is a moderate (OR 1.75) effect of treatment in all domains.
 
 @fig-dec shows the knowledge transitions based on the decisions made for each domain by sample size.
 Initially, all domains start in an indeterminate state in that neither treatment arm is preferred. 
@@ -482,6 +482,8 @@ suppressWarnings(print(p1))
 ## Domain 1: Sample size
 
 Any decision rule only applies to the late acute silo (silo 2).
+
+Here, we know there is an effect of one-stage (but not two-stage) and would hope that a decision for superiority is made such that new participants are directed to receive revision.
 
 ```{r}
 #| label: fig-d1-n
@@ -591,8 +593,6 @@ suppressWarnings(print(p_d3))
 
 Across the entire trial sample, approximately 60% are assumed to enter the AB choice domain.
 
-Here, we know there is an effect of AB choice and would hope that a decision for superiority is made such that new participants are directed to receive rifampacin.
-
 ```{r}
 #| label: fig-d4-n
 #| fig-cap: "AB Choice sample size"
@@ -627,9 +627,6 @@ suppressWarnings(print(p_d4))
 ```
 
 :::
-
-
-
 
 @fig-post-or and @fig-post-rd show the parameter estimates.
 
@@ -715,15 +712,10 @@ suppressWarnings(print(p1))
 
 @fig-pr-dec shows the probability associated with each decision type for the randomised comparisons by domain and enrolment progression.
 
-For example, for domain 1 in analysis 1, the probability of revision being superior to DAIR (per the definition of superiority, which is a measure that is relative to nominated reference level for superiority) is approxiamtely 0.55. 
-To make a superiority decision, this probability would have to exceed 0.98.
-
-Similarly, for domain 1 in analysis 1, the probability of the superiority decision being futile (per the relevant definition) is approximately 0.3.
-To make a futility decision (related to superiority) this probability has to fall *below* 0.25.
-
 Note:
 
-1. The futility probabilities are based on being below a given threshold (rather than above).
+See example 1 for general explanation of plot.
+
 
 ```{r}
 #| label: fig-pr-dec
