@@ -29,6 +29,19 @@ source("./R/init.R")
 source("./R/util.R")
 source("./R/data.R")
 log_info("Called simulation-results 5 notebook")
+
+toks <- unlist(tstrsplit(getwd(), "/")) 
+if(toks[length(toks)] == "roadmap-sim"){
+  prefix_cfg <- "./etc/sim05/"
+  prefix_stan <- "./stan"
+  prefix_fig <- "./fig"
+} else {
+  prefix_cfg <- "../etc/sim05/"
+  prefix_stan <- "../stan"
+  prefix_fig <- "../fig"
+}
+
+g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim05-sc01-v08.yml"))
 ```
 
 
@@ -80,7 +93,7 @@ The priors were as follows:
 + Preference effects: normal distribution, mean `r l[[1]]$cfg$pri$b_prf[[1]]` and scale `r l[[1]]$cfg$pri$b_prf[[2]]`
 + Treatment effects: normal distribution, mean `r l[[1]]$cfg$pri$b_trt[[1]]` and scale `r l[[1]]$cfg$pri$b_trt[[2]]`
 
-@fig-priors shows an example of the priors that are induced on the risk differences, by domain, and the inference on treatment effect parameters after 1000 enrolments when moderate treatment effects (OR 1.75) are applied to all domains.
+@fig-priors shows an example of the priors that are induced on the risk differences, by domain, and the inference on treatment effect parameters after 2500 enrolments when moderate treatment effects (OR 1.75) are applied to all domains bar AB duration, which has a null effect.
 
 ```{r}
 #| label: fig-priors
@@ -88,18 +101,7 @@ The priors were as follows:
 #| fig-height: 5
 #| fig-width: 5
 
-toks <- unlist(tstrsplit(getwd(), "/")) 
-if(toks[length(toks)] == "roadmap-sim"){
-  prefix_cfg <- "./etc/sim05/"
-  prefix_stan <- "./stan"
-  prefix_fig <- "./fig"
-} else {
-  prefix_cfg <- "../etc/sim05/"
-  prefix_stan <- "../stan"
-  prefix_fig <- "../fig"
-}
 
-g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim05-sc01-v08.yml"))
 
 m1 <- cmdstanr::cmdstan_model(paste0(prefix_stan, "/model-sim-05-a.stan"))   
 dec_sup = list(surg = NA,
@@ -118,14 +120,14 @@ b_pref <- unlist(g_cfgsc$cov$pref)
 # dair, one, two-stage, we compare avg of one and two stage rev to dair
 b_d1 <- unlist(g_cfgsc$d1)
 # always ref, 12wk, 6wk as we are assessing if 6wk ni to 12wk
-b_d2 <- unlist(g_cfgsc$d2)
+b_d2 <- c(0, 0, 0) # unlist(g_cfgsc$d2)
 # always ref, 0, 12wk as we are assessing if 12wk sup to none
 b_d3 <- unlist(g_cfgsc$d3)
 # always ref, none, rif as we are assessing if rif is sup to none
 b_d4 <- unlist(g_cfgsc$d4)
 
-set.seed(83475)
-my_N <- 1000
+set.seed(123)
+my_N <- 2500
 l_new <- get_trial_data_int(
   N = my_N,
   
@@ -550,6 +552,8 @@ Todo:
 Do we need to think about the hierarchical component for surgical domain to enable, for example, silo specific effects, which would otherwise be problematic for the domains. Revisit interactions silo x surg, pref x surg, joint x surg, etc.
 
 Scenarios for effects in surg (moderate effect) + choice (weak effect) plus other comparisons.
+
+Discuss region of practical equivalence.
 
 ## Simulation results
 
