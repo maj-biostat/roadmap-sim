@@ -545,6 +545,8 @@ ggplot(data = d_fig, aes(x = x, y = y, group = desc)) +
 
 For this set of simulations, the number of simulated trials per scenario was `r l[[1]]$cfg$nsim`.
 
+Do we need to think about the hierarchical component for surgical domain to enable, for example, silo specific effects, which would otherwise be problematic for the domains. Revisit interactions silo x surg, pref x surg, joint x surg, etc.
+
 ## Simulation results
 
 ```{r, echo = FALSE}
