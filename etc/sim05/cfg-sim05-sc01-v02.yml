@@ -24,7 +24,7 @@ default:
     delta_ni: -0.05
     delta_ni_fut: 0.00
   dec_probs:
-    thresh_sup: 0.98
-    thresh_ni: 0.98
-    thresh_fut_sup: 0.25
-    thresh_fut_ni: 0.25
+    thresh_sup:  [0.90, 0.98, 0.98, 0.98]
+    thresh_ni: [0.98, 0.98, 0.98, 0.98]
+    thresh_fut_sup: [0.25, 0.25, 0.25, 0.25]
+    thresh_fut_ni: [0.25, 0.25, 0.25, 0.25]

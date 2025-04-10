@@ -96,20 +96,39 @@ sim04:
 # sequential design sim-05.R 
 .PHONY: sim05
 sim05:
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v01.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v02.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v03.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v04.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v05.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v06.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v07.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v08.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v09.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v10.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v11.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v12.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v13.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v14.yml
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v15.yml
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v01.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v02.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v03.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v04.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v05.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v06.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v07.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v08.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v09.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v10.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v11.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v12.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v13.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v14.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v15.yml
+	#sleep 10
+	#Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v16.yml
+	#sleep 10
+	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v17.yml
+
 
 

@@ -4,6 +4,20 @@ Simulation implementation and simulation results for the trial operating charact
 
 To build this site, you need to have a recent version of quarto install plus there is a dependency on the `roadmap.data` R package, see [https://github.com/maj-biostat/roadmap.data].
 
+Also note, the site makes use of the development version of `data.table`.
+Use `data.table::update_dev_pkg()` to install.
+
+## TODO
+
+Make simulation parameters configurable
+Create several scenarios (parallel logistic perspective?)
+Run to 250
+Improve summary
+Cycle back to improve scenarios/summary
+
+
+
+
 ## Running simulations
 
 Simulations are configured via Makefile. 

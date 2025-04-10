@@ -55,12 +55,12 @@ g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim05-sc01-v08.yml"))
 # Load all the files into a single list.
 
 # files of interest
-flist <- list.files("data/sim05-06", pattern = "sim05")
+flist <- list.files("data/sim05-08", pattern = "sim05")
 toks <- list()
 l <- list()
 i <- 1
 for(i in 1:length(flist)){
-  l[[i]] <- qs::qread(file.path("data/sim05-06", flist[i]))
+  l[[i]] <- qs::qread(file.path("data/sim05-08", flist[i]))
   toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
 }
 
@@ -69,7 +69,7 @@ for(i in 1:length(flist)){
 
 ## Notes 
 
-Updated: 1/Mar/2025 - 10:30
+Updated: 1/Mar/2025 - 10:45
 
 The decision approach now converts the model outputs to a risk (probability) scale and assesses decisions based on risk difference for the intervention comparisons by domain.
 Why?
@@ -97,7 +97,7 @@ The priors were as follows:
 
 ```{r}
 #| label: fig-priors
-#| fig-cap: 'Indicative prior vs posterior belief for risk difference treatment effect parameters after 1000 enrolments (non-zero effects in all domains)'
+#| fig-cap: 'Indicative prior vs posterior belief for risk difference treatment effect parameters after 2500 enrolments (null effect in AB duration, non-zero effects in all other domains)'
 #| fig-height: 5
 #| fig-width: 5
 

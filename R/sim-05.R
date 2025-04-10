@@ -398,6 +398,9 @@ run_trial <- function(
     log_info("Trial ", ix, " calculated decision quantities ", ii)
     
     # evaluate decisions - need high levels of evidence to suggest sup or ni
+    # sapply(pr_sup[ii, ], function(z){ z > })
+    
+    
     decision[ii, , "sup"] <- pr_sup[ii, ] > g_cfgsc$dec_probs$thresh_sup
     decision[ii, , "ni"] <- pr_ni[ii, ] > g_cfgsc$dec_probs$thresh_ni
     
@@ -409,6 +412,7 @@ run_trial <- function(
     # taken to imply negligible chance of being ni 
     decision[ii, , "fut_ni"] <- pr_ni_fut[ii, ] < g_cfgsc$dec_probs$thresh_fut_ni
     
+    log_info("Trial ", ix, " compared to thresholds ", ii)
     
     # Earlier decisions are retained - once superiority has been decided, 
     # we retain this conclusion irrespective of subsequent post probabilities.
@@ -419,13 +423,7 @@ run_trial <- function(
     decision[1:ii, , "ni"] <- apply(decision[1:ii, , "ni", drop = F], 2, function(z){ cumsum(z) > 0 })
     decision[1:ii, , "fut_sup"] <- apply(decision[1:ii, , "fut_sup", drop = F], 2, function(z){ cumsum(z) > 0 })
     decision[1:ii, , "fut_ni"] <- apply(decision[1:ii, , "fut_ni", drop = F], 2, function(z){ cumsum(z) > 0 })
-    
-    # decision
-    # any(decision[ii, , "sup"])
-    # any(decision[ii, , "ni"])
-    # any(decision[ii, , "fut_sup"])
-    # any(decision[ii, , "fut_ni"])
-    
+  
     # superiority decisions apply to domains 1, 3 and 4
     if(any(decision[ii, , "sup"])){
       # since there are only two treatments per cell, if a superiority decision 
@@ -998,7 +996,7 @@ run_sim_05 <- function(){
   log_info("Starting simulation")
   r <- parallel::mclapply(
     X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
-    # X=1:1000, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    #X=1:50, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
       log_info("Simulation ", ix);
       ll <- tryCatch({
         run_trial(
@@ -1015,7 +1013,10 @@ run_sim_05 <- function(){
           )
       },
       error=function(e) {
-        log_info(" ERROR " , e);
+        log_info("ERROR in MCLAPPLY LOOP (see terminal output):")
+        message(" ERROR in MCLAPPLY LOOP " , e);
+        log_info("Traceback (see terminal output):")
+        message(traceback())
         stop(paste0("Stopping with error ", e))
       })
 
@@ -1023,7 +1024,10 @@ run_sim_05 <- function(){
     })
   
   
+  
   log_info("Length of result set ", length(r))
+  log_info("Sleep for 5 before processing")
+  Sys.sleep(5)
   
   for(i in 1:length(r)){
     log_info("Element at index ",i, " is class ", class(r[[i]]))
@@ -1049,10 +1053,10 @@ run_sim_05 <- function(){
       )  
     } else {
       log_info("Value for r at this index is not recursive ", i)
-      log_info("r[[i]] ", r[[i]])
+      message("r[[i]] ", r[[i]])
+      message(traceback())
       stop(paste0("Stopping due to non-recursive element "))
     }
-    
     
   }
   
