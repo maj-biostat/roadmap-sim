@@ -67,20 +67,18 @@ for(i in 1:length(flist)){
 
 ```
 
-## Notes 
+## Introduction 
 
-Updated: 1/Mar/2025 - 10:45
-
-The decision approach now converts the model outputs to a risk (probability) scale and assesses decisions based on risk difference for the intervention comparisons by domain.
-Why?
+In the present design, the model is used to compute unit level risk (probability) and assesses decisions based on risk difference for the intervention comparisons by domain.
 Log-odds scale had limited interpretability for clinical users and is inconsistent in absolute terms across strata with varying baseline rates.
-Additionally, it is useful to explore what an absolute perspective on effectiveness translates to in terms of operating characteristics.
+It is also useful to explore what an absolute perspective on effectiveness translates to in terms of operating characteristics.
 Simulation parameters continue to be expressed as log-odds-ratios.
 This makes the simulation process simpler.
 Results are presented on both the odds and risk scale.
 Aim is to give us a better intuition and transparency on the magnitude of effects we are contemplating and determine if these are reasonable assumptions.
 
-We have a single, large, conditional model, which amongst other things includes an effect for clinician preference for revision type in order to achieve conditional exchangeability across groups.
+We have a single, large, multivariable logistic regression model.
+One of the sets of parameters accounts for clinician preference for revision type in order to achieve conditional exchangeability across groups.
 At each interim, we assess the posterior and if a decision threshold is met, we act.
 For example, if a superiority decision is reached in one of the domains for which this decision type is relevant, then we consider that domain dealt with and all subsequent participants are assigned to receive the superior intervention.
 We can (and presently do) continue to update the posterior inference for the comparison that has stopped in subsequent interim analyses until we get to the point where all questions have been answered in all domains, at which point the trial will stop.
@@ -244,9 +242,9 @@ ggplot(d_fig, aes(x = value, group = desc, lty = desc)) +
 ```
 
 
-For the superiority decision, a reference value of `r l[[1]]$cfg$dec_ref$delta_sup` was used and a probability threshold of `r l[[1]]$cfg$dec_probs$thresh_sup` was required.
-For the futility decision (in relation to superiority) a reference value of `r l[[1]]$cfg$dec_ref$delta_sup_fut` was used and a probability threshold of `r l[[1]]$cfg$dec_probs$thresh_fut_sup` was required.
-This means that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_sup_fut` is less than `r l[[1]]$cfg$dec_probs$thresh_fut_sup`, then we say the superiority goal is futile.
+For the superiority decision, a reference value of `r l[[1]]$cfg$dec_ref$delta_sup` was used and a probability threshold of `r l[[1]]$cfg$dec_probs$thresh_sup[1]` was required.
+For the futility decision (in relation to superiority) a reference value of `r l[[1]]$cfg$dec_ref$delta_sup_fut` was used and a probability threshold of `r l[[1]]$cfg$dec_probs$thresh_fut_sup[1]` was required.
+This means that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_sup_fut` is less than `r l[[1]]$cfg$dec_probs$thresh_fut_sup[1]`, then we say the superiority goal is futile.
 @fig-superiority-rule puts this into pictures based on possible scenarios for assessment of the posterior risk difference for an arbitrary domain where superiority is being assessed.
 The approach, reference values and thresholds apply to all domains where superiority is assessed.
 
@@ -392,10 +390,10 @@ This iteration of the simulations loosens the NI reference value to 0.05 on the 
 The change was motivated by the desire to better reflect current perspective on acceptable NI margins (3% was considered overly conservative).
 The futility rule has also been updated to use a reference value of zero (previously it was +2%) so we actually a bit less with regards to futility rule for NI in this set of simulations.
 
-For the ni decision, a reference value of `r l[[1]]$cfg$dec_ref$delta_ni` was used and a probability threshold of `r l[[1]]$cfg$dec_probs$thresh_ni` was required.
-This means that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_ni` is greater than `r l[[1]]$cfg$dec_probs$thresh_ni`, we will say the intervention is non-inferior.
-The futility decision (in relation to non-inferiority) has a reference value of `r l[[1]]$cfg$dec_ref$delta_ni_fut` and a probability threshold of `r l[[1]]$cfg$dec_probs$thresh_fut_ni`.
-This means that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_ni_fut` is less than `r l[[1]]$cfg$dec_probs$thresh_fut_ni`, then we say the non-inferiority goal is futile.
+For the ni decision, a reference value of `r l[[1]]$cfg$dec_ref$delta_ni` was used and a probability threshold of `r l[[1]]$cfg$dec_probs$thresh_ni[1]` was required.
+This means that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_ni` is greater than `r l[[1]]$cfg$dec_probs$thresh_ni[1]`, we will say the intervention is non-inferior.
+The futility decision (in relation to non-inferiority) has a reference value of `r l[[1]]$cfg$dec_ref$delta_ni_fut` and a probability threshold of `r l[[1]]$cfg$dec_probs$thresh_fut_ni[1]`.
+This means that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_ni_fut` is less than `r l[[1]]$cfg$dec_probs$thresh_fut_ni[1]`, then we say the non-inferiority goal is futile.
 @fig-ni-rule puts this into pictures based on possible scenarios for assessment of the posterior risk difference for an arbitrary domain where non-inferiority is being assessed.
 The approach, reference values and thresholds apply to all domains.
 
@@ -547,13 +545,13 @@ ggplot(data = d_fig, aes(x = x, y = y, group = desc)) +
 
 For this set of simulations, the number of simulated trials per scenario was `r l[[1]]$cfg$nsim`.
 
-Todo:
+<!-- Todo: -->
 
-Do we need to think about the hierarchical component for surgical domain to enable, for example, silo specific effects, which would otherwise be problematic for the domains. Revisit interactions silo x surg, pref x surg, joint x surg, etc.
+<!-- Do we need to think about the hierarchical component for surgical domain to enable, for example, silo specific effects, which would otherwise be problematic for the domains. Revisit interactions silo x surg, pref x surg, joint x surg, etc. -->
 
-Scenarios for effects in surg (moderate effect) + choice (weak effect) plus other comparisons.
+<!-- Scenarios for effects in surg (moderate effect) + choice (weak effect) plus other comparisons. -->
 
-Discuss region of practical equivalence.
+<!-- Discuss region of practical equivalence. -->
 
 ## Simulation results
 
@@ -934,9 +932,10 @@ Notes:
 1. The 'average' surgical revision effect reaches about 65% (it was 70% in the previous simulations) when both one-stage and two-stage have a moderate effect, i.e. when both of these procedures increase the log-odds or response by the same $\log(1.75)$.
 When one-stage or two-stage show an effect (the other having a zero effect) the weighted average effect of revision is lower and hence the power is lower.
 The decisions are based on the aggregated effect of both revision types, not the methods selected by the clinician for revision.
-2. AB duration of therapy is only indirectly relevant here because that domain assesses non-inferiority. I think that the revised rules for NI will influence other domains in that when AB duration is deemed NI, then all subsequent participants are assumed to get 6 weeks which redirects some of those that would have otherwise entered into the self-select group, which is effectively the group that inform decisions in the surgical domain. But note that this is a theory and I am yet to verify it.
-3. AB extended prophylaxis receives entrants from acute, late and chronic silos and hence has more data to work with, leading to a higher overall cumulative probability of stopping. Ditto with the AB choice domain. So, in general, these have better overall power when effects are present, when contrasted with the surgical domain.
+2. AB extended prophylaxis receives entrants from acute, late and chronic silos and hence has more data to work with, leading to a higher overall cumulative probability of stopping. Ditto with the AB choice domain. So, in general, these have better overall power when effects are present, when contrasted with the surgical domain.
 
+
+<!-- 2. AB duration of therapy is only indirectly relevant here because that domain assesses non-inferiority. I think that the revised rules for NI will influence other domains in that when AB duration is deemed NI, then all subsequent participants are assumed to get 6 weeks which redirects some of those that would have otherwise entered into the self-select group, which is effectively the group that inform decisions in the surgical domain. But note that this is a theory and I am yet to verify it. -->
 
 ```{r}
 #| label: tbl-sim05-cumprobsup
@@ -1024,7 +1023,7 @@ The results are only shown for the domains for which non-inferiority is evaluate
 Notes:
 
 1. In this set of results the cumalative probability of claiming NI by 2500 is 0.76 when the effect size is OR 1.75 (contrasting with 0.67 from the last set of simulation results).
-2. In the null case (when the 6 week and 12 week response are effectively identical) there is only a 10% cumulative probability of declaring NI. This is purely due to the thresholds we have selected. If equivalence is what we are actually thinking about, then we could potentially look towards evaluating that instead of non-inferiority (see the @fig-indiff below).
+2. In the null case (when the 6 week and 12 week response are effectively identical) there is only a ~10% cumulative probability of declaring NI. This is purely due to the thresholds we have selected. If equivalence is what we are actually thinking about, then we could potentially look towards evaluating that instead of non-inferiority (see the @fig-indiff below).
 
 ![Decision options based on posterior](indifference.png){#fig-indiff}
 
