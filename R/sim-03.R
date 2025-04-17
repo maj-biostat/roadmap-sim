@@ -4,6 +4,7 @@
 # pre-specified thresholds. 
 
 source("./R/init.R")
+source("./R/data.R")
 
 # Command line arguments list scenario (true dose response),
 # the number of simulations to run, the number of cores
@@ -410,8 +411,8 @@ run_sim_03 <- function(){
   e = NULL
   log_info("Starting simulation")
   r <- parallel::mclapply(
-    X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
-    # X=1:100, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    # X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    X=1:10, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
       log_info("Simulation ", ix);
       ll <- tryCatch({
         run_trial(ix)
