@@ -8,3 +8,16 @@ notebooks/.DS_Store
 /.quarto/
 /_site/
 /comments/
+
+data-202.*
+data-202?????
+*.xlsx
+*.csv
+
+*.png
+*.pdf
+*.qs
+*.txt
+
+/fig/
+/versions/
