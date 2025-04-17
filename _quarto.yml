@@ -1,6 +1,15 @@
 project:
   type: website
   execute-dir: project
+  render: 
+    - "*.qmd"
+    - "!notebooks/population-assumptions.qmd"
+    - "!notebooks/model-spec.qmd"
+    - "!notebooks/decision-rules.qmd"
+    - "!backup/tmp.qmd"
+    - "!backup/design-notes-06.qmd"
+    - "!backup/design-notes-02-orig.qmd"
+    - "!backup/trial-data.qmd"
 
 website:
   title: "ROADMAP - design notes and simulations"
@@ -19,9 +28,7 @@ website:
       - index.qmd
       - section: "Assumptions and setup"
         contents:
-        - notebooks/population-assumptions.qmd
-        - notebooks/model-spec.qmd
-        - notebooks/decision-rules.qmd
+        - notebooks/overview.qmd
         - notebooks/trial-data.qmd
         - notebooks/model-implementation.qmd
         - notebooks/example-trials.qmd
