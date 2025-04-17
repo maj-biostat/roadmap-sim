@@ -5,3 +5,14 @@
 
 .DS_Store
 
+model-sim-05-ab-choice.stan
+model-sim-05-ab-dur.stan
+model-sim-05-c.stan
+model-sim-05-demo.stan
+model-sim-05-ex-with-error-for-demo.stan
+model-sim-05-ext-proph.stan
+model-sim-05-surgical.stan
+model12-d1.stan
+model12-d2.stan
+model12.stan
+
