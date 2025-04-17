@@ -32,6 +32,8 @@ stopifnot("Config is null" = !is.null(g_cfgsc))
 ix <- 1
 m1 <- cmdstanr::cmdstan_model("stan/model-sim-05-a.stan")
 
+output_dir_mcmc <- paste0(getwd(), "/tmp")
+
 # Main trial loop.
 run_trial <- function(
     ix,
@@ -264,13 +266,20 @@ run_trial <- function(
     lsd$ld$pri_b_prf <- l_prior$pri_b_prf
     lsd$ld$pri_b_trt <- l_prior$pri_b_trt
     
+    foutname <- paste0(
+      format(Sys.time(), format = "%Y%m%d%H%M%S"),
+      "-sim-", ix, "-intrm-", ii)
+    
     # fit model - does it matter that I continue to fit the model after the
     # decision is made...?
     snk <- capture.output(
       f_1 <- m1$sample(
         lsd$ld, iter_warmup = 1000, iter_sampling = 2000,
         parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
-        max_treedepth = 11)
+        max_treedepth = 11,
+        output_dir = output_dir_mcmc,
+        output_basename = foutname
+        )
     )
     
     log_info("Trial ", ix, " fitted models ", ii)
