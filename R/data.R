@@ -444,6 +444,9 @@ get_trial_data_int <- function(
     dec_ni = list(
       ab_dur = NA
     ),
+    # dec_eq = list(
+    #   ab_dur = NA
+    # ),
     dec_sup_fut = list(
       surg = NA,
       ext_proph = NA,
@@ -452,6 +455,9 @@ get_trial_data_int <- function(
     dec_ni_fut = list(
       ab_dur = NA
     ),
+    # dec_inf = list(
+    #   ab_dur = NA
+    # ),
     
     idx_s = NULL,
     t0 = NULL,
@@ -580,21 +586,25 @@ get_trial_data_int <- function(
   # the hospital/surgeon select duration. If we do not make this
   # assumption we will hit an identification problem and that would mean that we 
   # could not recover the true parameters without fairly major bias.
-  
-  if(is.na(dec_ni$ab_dur) & is.na(dec_ni_fut$ab_dur)){
+  if(is.na(dec_ni$ab_dur) & is.na(dec_ni_fut$ab_dur) ){
+  # if(is.na(dec_ni$ab_dur) & is.na(dec_ni_fut$ab_dur) &
+  #    is.na(dec_eq$ab_dur) & is.na(dec_inf$ab_dur)){
     # Default situation, we are allocating randomised trt
     
     # We assume that of those receiving one-stage revision,
     # 70% enter into the duration domain (the remainder being assigned to the ref index)
     d[d1 %in% c(2), d2 := sample(1:3, size = .N, replace = T, prob = c(0.3, 0.35, 0.35))]
-    
-  } else if (!is.na(dec_ni$ab_dur)) {
-    # 6wks is NI to 12wks so we assume that those receiving one-stage revision
+  
+  } else if (!is.na(dec_ni$ab_dur) ) {    
+  # } else if (!is.na(dec_ni$ab_dur) | !is.na(dec_eq$ab_dur)) {
+    # 6wks is NI to 12wks (or equivalent) so we assume that those receiving one-stage revision
     # all receive the 6wk trt
     d[d1 %in% c(2), d2 := 3]
-  }  else if (!is.na(dec_ni_fut$ab_dur)) {
     
-    # 6wk ni assessment is futile, everyone now gets 12wk
+  }  else if (!is.na(dec_ni_fut$ab_dur) ) {
+  # }  else if (!is.na(dec_ni_fut$ab_dur) | !is.na(dec_inf$ab_dur)) {
+    
+    # 6wk ni assessment is futile or inferior, everyone now gets 12wk
     d[d1 %in% c(2), d2 := 2]
   } 
   

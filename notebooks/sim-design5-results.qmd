@@ -5,7 +5,7 @@ date: today
 date-modified: last-modified
 sidebar: false
 navbar: false
-theme: cosmo
+theme: sandstone
 # this is necessary to remove an unwanted boarder around a tabset
 include-in-header:
   - text: |
@@ -55,12 +55,12 @@ g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim05-sc01-v08.yml"))
 # Load all the files into a single list.
 
 # files of interest
-flist <- list.files("data/sim05-08", pattern = "sim05")
+flist <- list.files("data/sim05-10", pattern = "sim05")
 toks <- list()
 l <- list()
 i <- 1
 for(i in 1:length(flist)){
-  l[[i]] <- qs::qread(file.path("data/sim05-08", flist[i]))
+  l[[i]] <- qs::qread(file.path("data/sim05-10", flist[i]))
   toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
 }
 
@@ -91,161 +91,43 @@ The priors were as follows:
 + Preference effects: normal distribution, mean `r l[[1]]$cfg$pri$b_prf[[1]]` and scale `r l[[1]]$cfg$pri$b_prf[[2]]`
 + Treatment effects: normal distribution, mean `r l[[1]]$cfg$pri$b_trt[[1]]` and scale `r l[[1]]$cfg$pri$b_trt[[2]]`
 
-@fig-priors shows an example of the priors that are induced on the risk differences, by domain, and the inference on treatment effect parameters after 2500 enrolments when moderate treatment effects (OR 1.75) are applied to all domains bar AB duration, which has a null effect.
+Superiority and non-inferiority are applicable to some domains and not others, however, we define reference and threshold values for all domains, just in case.
 
-```{r}
-#| label: fig-priors
-#| fig-cap: 'Indicative prior vs posterior belief for risk difference treatment effect parameters after 2500 enrolments (null effect in AB duration, non-zero effects in all other domains)'
-#| fig-height: 5
-#| fig-width: 5
+For the superiority decision, a reference value of `r l[[1]]$cfg$dec_ref$delta_sup` was used and the probability thresholds were:
 
++ `r l[[1]]$cfg$dec_probs$thresh_sup[1]` for surgical domain
++ `r l[[1]]$cfg$dec_probs$thresh_sup[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_probs$thresh_sup[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_probs$thresh_sup[4]` for antibiotic choice domain
 
+For the futility decision (in relation to superiority) a reference value of `r l[[1]]$cfg$dec_ref$delta_sup_fut` was used and the probability thresholds were:
 
-m1 <- cmdstanr::cmdstan_model(paste0(prefix_stan, "/model-sim-05-a.stan"))   
-dec_sup = list(surg = NA,
-               ext_proph = NA,
-               ab_choice = NA)
-dec_ni = list(ab_dur = NA)
-dec_sup_fut = list(surg = NA,
-                   ext_proph = NA,
-                   ab_choice = NA)
-dec_ni_fut = list(ab_dur = NA)
++ `r l[[1]]$cfg$dec_probs$thresh_fut_sup[1]` for surgical domain
++ `r l[[1]]$cfg$dec_probs$thresh_fut_sup[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_probs$thresh_fut_sup[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_probs$thresh_fut_sup[4]` for antibiotic choice domain
 
-mu <- g_cfgsc$cov$mu
-b_silo <- unlist(g_cfgsc$cov$silo)
-b_jnt <- unlist(g_cfgsc$cov$jnt)
-b_pref <- unlist(g_cfgsc$cov$pref)
-# dair, one, two-stage, we compare avg of one and two stage rev to dair
-b_d1 <- unlist(g_cfgsc$d1)
-# always ref, 12wk, 6wk as we are assessing if 6wk ni to 12wk
-b_d2 <- c(0, 0, 0) # unlist(g_cfgsc$d2)
-# always ref, 0, 12wk as we are assessing if 12wk sup to none
-b_d3 <- unlist(g_cfgsc$d3)
-# always ref, none, rif as we are assessing if rif is sup to none
-b_d4 <- unlist(g_cfgsc$d4)
+The above means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_sup_fut` is less than `r l[[1]]$cfg$dec_probs$thresh_fut_sup[1]` in the surgical domain comparison, then we say the superiority goal is futile.
 
-set.seed(123)
-my_N <- 2500
-l_new <- get_trial_data_int(
-  N = my_N,
-  
-  # reference level log odds of response
-  mu = mu,
-  # silo effects
-  # silo 1 as the one for late acute
-  # silo 2 as the one for late acute
-  # silo 3 is LATE ACUTE
-  b_silo = b_silo,
-  b_jnt = b_jnt,
-  b_pref = b_pref,
-  # dair, one, two-stage
-  b_d1 = b_d1,  #c(0, 2, 2), # b_d1,
-  b_d2 = b_d2,
-  b_d3 = b_d3,
-  b_d4 = b_d4,
-  
-  dec_sup = dec_sup,
-  dec_ni = dec_ni,
-  dec_sup_fut = dec_sup_fut,
-  dec_ni_fut = dec_ni_fut,
-  
-  idx_s = 1,
-  t0 = rep(1, my_N),
-  id_analys = 1
-)
-  
-# create stan data format based on the relevant subsets of pt
-lsd <- get_stan_data_all_int(l_new$d)
-lsd$ld$prior_only <- 1
-lsd$ld$pri_mu <- c(0, 0.47)
-lsd$ld$pri_b_silo <- c(0, 1)
-lsd$ld$pri_b_jnt <- c(0, 1)
-lsd$ld$pri_b_prf <- c(0, 1)
-lsd$ld$pri_b_trt <- c(0, 1)
+For the ni decision, a reference value of `r l[[1]]$cfg$dec_ref$delta_ni` was used and the probability thresholds were:
 
-snk <- capture.output(
-  f_1 <- m1$sample(
-    lsd$ld, iter_warmup = 1000, iter_sampling = 5000,
-    parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
-    max_treedepth = 11)
-)
++ `r l[[1]]$cfg$dec_probs$thresh_ni[1]` for surgical domain
++ `r l[[1]]$cfg$dec_probs$thresh_ni[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_probs$thresh_ni[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_probs$thresh_ni[4]` for antibiotic choice domain
 
+The above means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_ni` is greater than `r l[[1]]$cfg$dec_probs$thresh_ni[2]`, in the antibiotic duration domain, then we will say the intervention is non-inferior.
 
-lsd$ld$prior_only <- 0
-snk <- capture.output(
-  f_2 <- m1$sample(
-    lsd$ld, iter_warmup = 1000, iter_sampling = 5000,
-    parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
-    max_treedepth = 11)
-)
+The futility decision (in relation to non-inferiority) has a reference value of `r l[[1]]$cfg$dec_ref$delta_ni_fut` and the probability thresholds were:
 
-snk <- capture.output(
-  f_3 <- m1$optimize(data = lsd$ld)
-)
-d_mle <- data.table(
-  f_3$summary(variables = c("rd_d1", "rd_d2", "rd_d3", "rd_d4")))
-# extract posterior - marginal probability of outcome by group
-# dair vs rev
-d_pri <- data.table(f_1$draws(
-  variables = c(
-    "rd_d1", "rd_d2", "rd_d3", "rd_d4"
-  ),   
-  format = "matrix"))
-d_fig_1 <- melt(d_pri, measure.vars = names(d_pri))
-d_fig_1[, desc := "Prior"]
++ `r l[[1]]$cfg$dec_probs$thresh_fut_ni[1]` for surgical domain
++ `r l[[1]]$cfg$dec_probs$thresh_fut_ni[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_probs$thresh_fut_ni[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_probs$thresh_fut_ni[4]` for antibiotic choice domain 
 
-d_post <- data.table(f_2$draws(
-  variables = c(
-    "rd_d1", "rd_d2", "rd_d3", "rd_d4"
-  ),   
-  format = "matrix"))
-d_fig_2 <- melt(d_post, measure.vars = names(d_post))
-d_fig_2[, desc := "Posterior"]
-d_fig <- rbind(
-  d_fig_1, d_fig_2  
-)
-d_fig[, desc := factor(desc, levels = c("Posterior", "Prior"))]
+This means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_ni_fut` is less than `r l[[1]]$cfg$dec_probs$thresh_fut_ni[2]`, in the antibiotic duration domain, then we say the non-inferiority goal is futile.
 
-d_fig[, variable := factor(
-  variable, levels = c("rd_d1", "rd_d2", "rd_d3", "rd_d4"),
-  labels = c("Surgical", "AB Duration", "AB Ext-proph", "AB Choice"))]
-
-d_mle[, variable := factor(
-  variable, levels = c("rd_d1", "rd_d2", "rd_d3", "rd_d4"),
-  labels = c("Surgical", "AB Duration", "AB Ext-proph", "AB Choice"))]
-
-ggplot(d_fig, aes(x = value, group = desc, lty = desc)) +
-  geom_density(lwd = 0.3) +
-  geom_vline(
-    data = d_fig[desc == "Posterior", .(mu = median(value)), keyby = .(variable)],
-    aes(xintercept = mu), lwd = 0.3
-  ) +
-  geom_vline(
-    data = d_mle,
-    aes(xintercept = estimate), lwd = 0.3, col = 2
-  ) +
-  geom_vline(
-    aes(xintercept = 0), lwd = 0.2, lty = 1
-  ) +
-  scale_linetype_discrete("") +
-  scale_x_continuous("Risk difference", breaks = seq(-0.8, 0.8, by = 0.2)) +
-  scale_y_continuous("") +
-  facet_wrap(~variable, axes = "all") +
-  theme(
-    axis.title.y=element_blank(),
-    axis.text.y=element_blank(),
-    axis.ticks.y=element_blank(),
-    axis.text.x = element_text(size = 5), 
-    axis.title.x = element_text(size = 5), 
-    strip.text.x = element_text(angle = 0, size = 5)
-  )
-```
-
-
-For the superiority decision, a reference value of `r l[[1]]$cfg$dec_ref$delta_sup` was used and a probability threshold of `r l[[1]]$cfg$dec_probs$thresh_sup[1]` was required.
-For the futility decision (in relation to superiority) a reference value of `r l[[1]]$cfg$dec_ref$delta_sup_fut` was used and a probability threshold of `r l[[1]]$cfg$dec_probs$thresh_fut_sup[1]` was required.
-This means that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_sup_fut` is less than `r l[[1]]$cfg$dec_probs$thresh_fut_sup[1]`, then we say the superiority goal is futile.
-@fig-superiority-rule puts this into pictures based on possible scenarios for assessment of the posterior risk difference for an arbitrary domain where superiority is being assessed.
+@fig-superiority-rule attempts to put the superiority rules into pictures based on possible scenarios for assessment of the posterior risk difference for an arbitrary domain where superiority is being assessed.
 The approach, reference values and thresholds apply to all domains where superiority is assessed.
 
 ```{r, echo = F}
@@ -386,15 +268,7 @@ ggplot(data = d_fig, aes(x = x, y = y, group = desc)) +
 
 ```
 
-This iteration of the simulations loosens the NI reference value to 0.05 on the risk scale, i.e. interventions are evaluated relative to reducing the probability of a good outcome by 5%.
-The change was motivated by the desire to better reflect current perspective on acceptable NI margins (3% was considered overly conservative).
-The futility rule has also been updated to use a reference value of zero (previously it was +2%) so we actually a bit less with regards to futility rule for NI in this set of simulations.
-
-For the ni decision, a reference value of `r l[[1]]$cfg$dec_ref$delta_ni` was used and a probability threshold of `r l[[1]]$cfg$dec_probs$thresh_ni[1]` was required.
-This means that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_ni` is greater than `r l[[1]]$cfg$dec_probs$thresh_ni[1]`, we will say the intervention is non-inferior.
-The futility decision (in relation to non-inferiority) has a reference value of `r l[[1]]$cfg$dec_ref$delta_ni_fut` and a probability threshold of `r l[[1]]$cfg$dec_probs$thresh_fut_ni[1]`.
-This means that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_ni_fut` is less than `r l[[1]]$cfg$dec_probs$thresh_fut_ni[1]`, then we say the non-inferiority goal is futile.
-@fig-ni-rule puts this into pictures based on possible scenarios for assessment of the posterior risk difference for an arbitrary domain where non-inferiority is being assessed.
+Analogously, @fig-ni-rule puts the non-inferiority rule into pictures based on possible scenarios for assessment of the posterior risk difference for an arbitrary domain where non-inferiority is being assessed.
 The approach, reference values and thresholds apply to all domains.
 
 ```{r, echo = F}
@@ -923,16 +797,16 @@ for(i in 1:length(l)){
 
 ```
 
-@tbl-sim05-cumprobsup shows the cumulative probability of a superiority decision across each of the scenarios simulated.
-This is only shown for the domains for which superiority is evaluated.
-The futility of a superiority decision is included in parentheses.
+@tbl-sim05-cumprobsup shows the cumulative probability of a superiority decision across each of the scenarios simulated (the same information is shown in @fig-cum-prob-sup).
+Operating characteristics are shown only for the relevant domains and the futility of a superiority decision is included in parentheses.
 
-Notes:
+Notes (last edit 2025-04-29):
 
-1. The 'average' surgical revision effect reaches about 65% (it was 70% in the previous simulations) when both one-stage and two-stage have a moderate effect, i.e. when both of these procedures increase the log-odds or response by the same $\log(1.75)$.
+1. The 'average' surgical revision effect reaches about 86% when both one-stage and two-stage have a moderate effects, i.e. when both of these procedures increase the log-odds or response by the same $\log(1.75)$.
 When one-stage or two-stage show an effect (the other having a zero effect) the weighted average effect of revision is lower and hence the power is lower.
 The decisions are based on the aggregated effect of both revision types, not the methods selected by the clinician for revision.
-2. AB extended prophylaxis receives entrants from acute, late and chronic silos and hence has more data to work with, leading to a higher overall cumulative probability of stopping. Ditto with the AB choice domain. So, in general, these have better overall power when effects are present, when contrasted with the surgical domain.
+2. With the lower threshold value for superiority in the surgical domain, there is a commensurate increase in the type-i assertion probability.
+3. AB extended prophylaxis receives entrants from acute, late and chronic silos and hence has more data to work with, leading to a higher overall cumulative probability of stopping. Ditto with the AB choice domain. So, in general, these have better overall power when effects are present, when contrasted with the surgical domain.
 
 
 <!-- 2. AB duration of therapy is only indirectly relevant here because that domain assesses non-inferiority. I think that the revised rules for NI will influence other domains in that when AB duration is deemed NI, then all subsequent participants are assumed to get 6 weeks which redirects some of those that would have otherwise entered into the self-select group, which is effectively the group that inform decisions in the surgical domain. But note that this is a theory and I am yet to verify it. -->
@@ -1017,7 +891,61 @@ g_tbl
 
 ```
 
-@tbl-sim05-cumprobni shows the cumulative probability of a non-inferiority decision with futility shown in parentheses.
+```{r}
+#| label: fig-cum-prob-sup
+#| fig-cap: 'Cumulative probabilities for superiority assessments'
+#| fig-height: 7
+#| fig-width: 6
+#| column: page-right
+#| lightbox: true
+
+d_fig <- d_tbl_1[quant %in% c("sup", "fut_sup") & domain %in% c(1, 3, 4), .SD]
+setorderv(d_fig, cols = c("scenario", "domain", "analys", "quant"), 
+          order = c(1, 1, 1, -1))
+
+d_fig[, domain := factor(domain, 
+                         levels = c(1, 3, 4), 
+                         labels = c("Surgical", "AB Ext-proph", "AB Choice"))]
+
+d_fig[, quant := factor(quant, 
+                        levels = c("sup", "fut_sup"), 
+                        labels = c("Superiority", "Futility"))]
+
+d_fig[, desc := factor(desc, 
+                        levels = unique(d_fig$desc), 
+                        labels = unique(d_fig$desc))]
+
+
+ggplot(d_fig, aes(x = N, y = pr_val, group = quant, col = quant)) +
+  geom_line(lwd = 0.25) +
+  scale_y_continuous("", breaks = seq(0, 1, by = 0.2)) +
+  scale_color_discrete("") +
+  facet_grid(desc ~ domain) + 
+  # facet_grid2(desc ~ domain, render_empty = FALSE)
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    strip.text.y.right = element_text(angle = 0,
+                                      hjust = 0,
+                                      vjust = 0.2,
+                                      size = 4),
+    strip.text.x.top = element_text(size = 4),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "grey",
+                                  linewidth = 0.1,
+                                  linetype = 1),
+    axis.text.y = element_text(size = 4), 
+    axis.text.x = element_text(size = 4), 
+    axis.title.x = element_text(size = 5),
+    legend.text = element_text(size = 4)
+  )
+
+
+
+```
+
+
+@tbl-sim05-cumprobni shows the cumulative probability of a non-inferiority decision with futility shown in parentheses (the same information is shown in @fig-cum-prob-ni).
 The results are only shown for the domains for which non-inferiority is evaluated.
 
 Notes:
@@ -1106,6 +1034,62 @@ g_tbl <- d_tbl_1_cur |>
   fmt_number(decimals = 3, drop_trailing_zeros = TRUE)
 
 g_tbl
+
+```
+
+```{r}
+#| label: fig-cum-prob-ni
+#| fig-cap: 'Cumulative probabilities for NI assessments'
+#| fig-height: 7
+#| fig-width: 4
+#| column: page-right
+#| lightbox: true
+
+d_fig <- d_tbl_1[quant %in% c("ni", "fut_ni") & domain %in% c(2), .SD]
+setorderv(d_fig, cols = c("scenario", "domain", "analys", "quant"), 
+          order = c(1, 1, 1, -1))
+
+d_fig[, domain := factor(domain, 
+                               levels = c(2), 
+                               labels = c("AB Duration"))]
+
+d_fig[, quant := factor(quant, 
+                        levels = c("ni", "fut_ni"), 
+                        labels = c("NI", "Futility for NI"))]
+
+d_fig[, desc := factor(desc, 
+                        levels = unique(d_fig$desc), 
+                        labels = unique(d_fig$desc))]
+
+
+ggplot(d_fig, aes(x = N, y = pr_val, group = quant, col = quant)) +
+  geom_line(lwd = 0.25) +
+  scale_y_continuous("", breaks = seq(0, 1, by = 0.2)) +
+  scale_color_discrete("") +
+  facet_grid(desc ~ domain, space = "free") +
+  
+  # facet_manual(
+  #   . ~ desc, design = matrix(1:17, ncol = 1),
+  #   widths = unit(3, "cm")
+  # ) +
+  theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    strip.text.y.right = element_text(angle = 0,
+                                      hjust = 0,
+                                      vjust = 0.2,
+                                      size = 4),
+    strip.text.x.top = element_text(size = 4),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "grey",
+                                  linewidth = 0.1,
+                                  linetype = 1),
+    axis.text.y = element_text(size = 4), 
+    axis.text.x = element_text(size = 4), 
+    axis.title.x = element_text(size = 5),
+    legend.text = element_text(size = 4)
+  )
+
 
 ```
 

@@ -13,7 +13,7 @@ args = commandArgs(trailingOnly=TRUE)
 if (length(args)<1) {
   log_info("Setting default run method (does nothing)")
   args[1] = "run_none_sim_05"
-  args[2] = "./sim05/cfg-sim05-sc01-v05.yml"
+  args[2] = "./sim05/cfg-sim05-sc01-v01.yml"
 } else {
   log_info("Run method ", args[1])
   log_info("Scenario config ", args[2])
@@ -143,6 +143,20 @@ run_trial <- function(
     dimnames = list(1:N_analys, paste0("d", 1:4))
   )
   
+  # introduce equivalence and inferiority
+  # pr_eq <- array(
+  #   NA, 
+  #   # num analysis x num domains
+  #   dim = c(N_analys, 4),
+  #   dimnames = list(1:N_analys, paste0("d", 1:4))
+  # )
+  # pr_inf <- array(
+  #   NA, 
+  #   # num analysis x num domains
+  #   dim = c(N_analys, 4),
+  #   dimnames = list(1:N_analys, paste0("d", 1:4))
+  # )
+  
   # units informing estimates
   n_units <- array(
     NA, 
@@ -151,11 +165,18 @@ run_trial <- function(
     dimnames = list(1:N_analys, paste0("d", 1:4))
   )
  
-  # decisions
+  # decisions 
+  # superior, ni, equivalence, 
+  # futile (for superiority - idiotic)
+  # futile (for ni - idiotic)
+  # inferiority
   g_dec_type <- c("sup", 
                   "ni", 
+                  # "eq", 
                   "fut_sup", 
                   "fut_ni"
+                  # , 
+                  # "inf"
                   )
 
   decision <- array(
@@ -169,6 +190,7 @@ run_trial <- function(
   # store all simulated trial pt data
   d_all <- data.table()
   
+  # decisions - only include domains for which they are evaluated
   dec_sup = list(
     surg = NA,
     ext_proph = NA,
@@ -177,6 +199,9 @@ run_trial <- function(
   dec_ni = list(
     ab_dur = NA
   )
+  # dec_eq = list(
+  #   ab_dur = NA
+  # )
   dec_sup_fut = list(
     surg = NA,
     ext_proph = NA,
@@ -185,6 +210,9 @@ run_trial <- function(
   dec_ni_fut = list(
     ab_dur = NA
   )
+  # dec_inf = list(
+  #   ab_dur = NA
+  # )
   
   if(return_posterior){
     l_post <- list()
@@ -241,8 +269,10 @@ run_trial <- function(
       
       dec_sup = dec_sup,
       dec_ni = dec_ni,
+      dec_eq = dec_eq,
       dec_sup_fut = dec_sup_fut,
       dec_ni_fut = dec_ni_fut,
+      dec_inf = dec_inf,
       
       idx_s = is,
       t0 = loc_t0[is:ie],
@@ -402,6 +432,23 @@ run_trial <- function(
       d_post[, mean(p_d3_3 - p_d3_2 > g_cfgsc$dec_ref$delta_ni_fut)],
       d_post[, mean(p_d4_3 - p_d4_2 > g_cfgsc$dec_ref$delta_ni_fut)]
     )
+    
+    # equivalence is implied by a high probability that the risk diff is centred
+    # around zero and bound by the specified limits with high probability
+    # pr_eq[ii, ]  <-   c(
+    #   d_post[, mean(p_d1_23 - p_d1_1 > -g_cfgsc$dec_ref$delta_eq & p_d1_23 - p_d1_1 < g_cfgsc$dec_ref$delta_eq)],
+    #   d_post[, mean(p_d2_3 - p_d2_2 > -g_cfgsc$dec_ref$delta_eq & p_d2_3 - p_d2_2 < g_cfgsc$dec_ref$delta_eq)],
+    #   d_post[, mean(p_d3_3 - p_d3_2 > -g_cfgsc$dec_ref$delta_eq & p_d3_3 - p_d3_2 < g_cfgsc$dec_ref$delta_eq)],
+    #   d_post[, mean(p_d4_3 - p_d4_2 > -g_cfgsc$dec_ref$delta_eq & p_d4_3 - p_d4_2 < g_cfgsc$dec_ref$delta_eq)]
+    # )
+    # inferiority is implied by a high probability that 
+    # the risk diff is below zero   
+    # pr_inf[ii, ]  <-   c(
+    #   d_post[, mean(p_d1_23 - p_d1_1 < g_cfgsc$dec_ref$delta_inf)],
+    #   d_post[, mean(p_d2_3 - p_d2_2 < g_cfgsc$dec_ref$delta_inf)],
+    #   d_post[, mean(p_d3_3 - p_d3_2 < g_cfgsc$dec_ref$delta_inf)],
+    #   d_post[, mean(p_d4_3 - p_d4_2 < g_cfgsc$dec_ref$delta_inf)]
+    # )
 
     
     log_info("Trial ", ix, " calculated decision quantities ", ii)
@@ -412,6 +459,7 @@ run_trial <- function(
     
     decision[ii, , "sup"] <- pr_sup[ii, ] > g_cfgsc$dec_probs$thresh_sup
     decision[ii, , "ni"] <- pr_ni[ii, ] > g_cfgsc$dec_probs$thresh_ni
+    # decision[ii, , "eq"] <- pr_eq[ii, ] > g_cfgsc$dec_probs$thresh_eq
     
     # futility rules
     # taken to imply negligible chance of being superior or ni
@@ -420,6 +468,8 @@ run_trial <- function(
     decision[ii, , "fut_sup"] <- pr_sup_fut[ii, ] < g_cfgsc$dec_probs$thresh_fut_sup
     # taken to imply negligible chance of being ni 
     decision[ii, , "fut_ni"] <- pr_ni_fut[ii, ] < g_cfgsc$dec_probs$thresh_fut_ni
+    # inferiority
+    # decision[ii, , "inf"] <- pr_inf[ii, ] > g_cfgsc$dec_probs$thresh_inf
     
     log_info("Trial ", ix, " compared to thresholds ", ii)
     
@@ -430,8 +480,10 @@ run_trial <- function(
     # decision reported.
     decision[1:ii, , "sup"] <- apply(decision[1:ii, , "sup", drop = F], 2, function(z){ cumsum(z) > 0 })
     decision[1:ii, , "ni"] <- apply(decision[1:ii, , "ni", drop = F], 2, function(z){ cumsum(z) > 0 })
+    # decision[1:ii, , "eq"] <- apply(decision[1:ii, , "eq", drop = F], 2, function(z){ cumsum(z) > 0 })
     decision[1:ii, , "fut_sup"] <- apply(decision[1:ii, , "fut_sup", drop = F], 2, function(z){ cumsum(z) > 0 })
     decision[1:ii, , "fut_ni"] <- apply(decision[1:ii, , "fut_ni", drop = F], 2, function(z){ cumsum(z) > 0 })
+    # decision[1:ii, , "inf"] <- apply(decision[1:ii, , "inf", drop = F], 2, function(z){ cumsum(z) > 0 })
   
     # superiority decisions apply to domains 1, 3 and 4
     if(any(decision[ii, , "sup"])){
@@ -488,6 +540,22 @@ run_trial <- function(
       }
     }
     
+    
+    # equivalence decisions apply to domains 2
+    # if short is ni to long then stop enrolment
+    # for this randomised comparison
+    # if(any(decision[ii, , "eq"])){
+    #   if(decision[ii, "d2", "eq"]){
+    #     dec_eq$ab_dur <- 3
+    #   }
+    # }
+    
+    # if(any(decision[ii, , "inf"])){
+    #   if(decision[ii, "d2", "inf"]){
+    #     dec_ni_fut$ab_dur <- 3
+    #   }
+    # }
+    
     # have we answered all questions of interest?
     if(
       # if rev (in late acute silo) is superior to dair (or superiority decision
@@ -495,7 +563,7 @@ run_trial <- function(
       (decision[ii, "d1", "sup"] | decision[ii, "d1", "fut_sup"]) &
       # if 6wk backbone duration (in one-stage units) is non-inferior to 12wk
       # (or decision for non-inferiority is futile to pursue)
-      (decision[ii, "d2", "ni"] | decision[ii, "d2", "fut_ni"]) &
+      (decision[ii, "d2", "ni"] | decision[ii, "d2", "fut_ni"] ) &
       # if 12wk ext-proph duration (in two-stage units) is sup to none
       # (or decision for sup is futile to pursue)
       (decision[ii, "d3", "sup"] | decision[ii, "d3", "fut_sup"]) &
@@ -530,8 +598,10 @@ run_trial <- function(
       log_info("Stopped at analysis ", stop_at, " filling all subsequent entries")
       decision[(stop_at+1):N_analys, , "sup"] <- decision[rep(stop_at, N_analys-stop_at), , "sup"]
       decision[(stop_at+1):N_analys, , "ni"] <- decision[rep(stop_at, N_analys-stop_at), , "ni"]
+      # decision[(stop_at+1):N_analys, , "eq"] <- decision[rep(stop_at, N_analys-stop_at), , "eq"]
       decision[(stop_at+1):N_analys, , "fut_sup"] <- decision[rep(stop_at, N_analys-stop_at), , "fut_sup"]
       decision[(stop_at+1):N_analys, , "fut_ni"] <- decision[rep(stop_at, N_analys-stop_at), , "fut_ni"]
+      # decision[(stop_at+1):N_analys, , "inf"] <- decision[rep(stop_at, N_analys-stop_at), , "inf"]
 
     }
   }
@@ -550,8 +620,10 @@ run_trial <- function(
     
     pr_sup = pr_sup,
     pr_ni = pr_ni,
+    # pr_eq = pr_eq,
     pr_sup_fut = pr_sup_fut,
     pr_ni_fut = pr_ni_fut,
+    # pr_inf = pr_inf,
     
     stop_at = stop_at
   )

@@ -54,7 +54,7 @@ format:
   html:
     # include-in-header: etc/mathjax.html
     theme:
-      - sketchy
+      - sandstone
     toc: true
     code-fold: true
     code-line-numbers: true
