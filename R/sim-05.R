@@ -269,10 +269,10 @@ run_trial <- function(
       
       dec_sup = dec_sup,
       dec_ni = dec_ni,
-      dec_eq = dec_eq,
+      # dec_eq = dec_eq,
       dec_sup_fut = dec_sup_fut,
       dec_ni_fut = dec_ni_fut,
-      dec_inf = dec_inf,
+      # dec_inf = dec_inf,
       
       idx_s = is,
       t0 = loc_t0[is:ie],
