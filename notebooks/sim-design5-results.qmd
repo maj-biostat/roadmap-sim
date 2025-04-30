@@ -55,12 +55,14 @@ g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim05-sc01-v08.yml"))
 # Load all the files into a single list.
 
 # files of interest
-flist <- list.files("data/sim05-10", pattern = "sim05")
+sim_lab <- "sim05-12"
+
+flist <- list.files(paste0("data/", sim_lab), pattern = "sim05")
 toks <- list()
 l <- list()
 i <- 1
 for(i in 1:length(flist)){
-  l[[i]] <- qs::qread(file.path("data/sim05-10", flist[i]))
+  l[[i]] <- qs::qread(file.path(paste0("data/", sim_lab), flist[i]))
   toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
 }
 
@@ -417,7 +419,7 @@ ggplot(data = d_fig, aes(x = x, y = y, group = desc)) +
 
 ```
 
-For this set of simulations, the number of simulated trials per scenario was `r l[[1]]$cfg$nsim`.
+For this set of simulations, the number of simulated trials per scenario was `r l[[1]]$cfg$nsim`, the simulation label is `r sim_lab`.
 
 <!-- Todo: -->
 
@@ -950,8 +952,9 @@ The results are only shown for the domains for which non-inferiority is evaluate
 
 Notes:
 
-1. In this set of results the cumalative probability of claiming NI by 2500 is 0.76 when the effect size is OR 1.75 (contrasting with 0.67 from the last set of simulation results).
-2. In the null case (when the 6 week and 12 week response are effectively identical) there is only a ~10% cumulative probability of declaring NI. This is purely due to the thresholds we have selected. If equivalence is what we are actually thinking about, then we could potentially look towards evaluating that instead of non-inferiority (see the @fig-indiff below).
+1. The "Null effect in all domains" is actually a bit of a misnomer as the true null with regards to the NI decision would be at the NI margin, whereas the scenario refers to the setting where all effects are set to zero. Thus an inflation over the usual type-i assertion probability is to be expected.  
+2. In this set of results the cumalative probability of claiming NI by 2500 is 0.76 when the effect size is OR 1.75 (contrasting with 0.67 from the last set of simulation results).
+3. In the null case (when the 6 week and 12 week response are effectively identical) there is only a ~10% cumulative probability of declaring NI. This is purely due to the thresholds we have selected. If equivalence is what we are actually thinking about, then we could potentially look towards evaluating that instead of non-inferiority (see the @fig-indiff below).
 
 ![Decision options based on posterior](indifference.png){#fig-indiff}
 
