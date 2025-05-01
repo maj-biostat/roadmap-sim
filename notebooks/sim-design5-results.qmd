@@ -55,7 +55,7 @@ g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim05-sc01-v08.yml"))
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim05-12"
+sim_lab <- "sim05-13"
 
 flist <- list.files(paste0("data/", sim_lab), pattern = "sim05")
 toks <- list()
@@ -809,6 +809,7 @@ When one-stage or two-stage show an effect (the other having a zero effect) the 
 The decisions are based on the aggregated effect of both revision types, not the methods selected by the clinician for revision.
 2. With the lower threshold value for superiority in the surgical domain, there is a commensurate increase in the type-i assertion probability.
 3. AB extended prophylaxis receives entrants from acute, late and chronic silos and hence has more data to work with, leading to a higher overall cumulative probability of stopping. Ditto with the AB choice domain. So, in general, these have better overall power when effects are present, when contrasted with the surgical domain.
+4. For the 90% power example, the effect (OR) sizes by domain are 1.87, 1.45, 1.73, 1.6 for surgical, ab duration, extended prophylaxis and choice respectively.
 
 
 <!-- 2. AB duration of therapy is only indirectly relevant here because that domain assesses non-inferiority. I think that the revised rules for NI will influence other domains in that when AB duration is deemed NI, then all subsequent participants are assumed to get 6 weeks which redirects some of those that would have otherwise entered into the self-select group, which is effectively the group that inform decisions in the surgical domain. But note that this is a theory and I am yet to verify it. -->
