@@ -41,12 +41,14 @@ source("./R/util.R")
 # Load all the files into a single list.
 
 # files of interest
-flist <- list.files("data/sim05-06", pattern = "sim05")
+sim_lab <- "sim05-13"
+# files of interest
+flist <- list.files(paste0("data/", sim_lab), pattern = "sim05")
 toks <- list()
 l <- list()
 i <- 1
 for(i in 1:length(flist)){
-  l[[i]] <- qs::qread(file.path("data/sim05-06", flist[i]))
+  l[[i]] <- qs::qread(file.path(paste0("data/", sim_lab), flist[i]))
   toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
 }
 
@@ -290,7 +292,7 @@ for(i in 1:length(l)){
 #| code-summary: Cumulative probability of each decision type
 
 ix_scenario <- 7
-ix_trial = 3452
+ix_trial = 83
 
 # > names(l[[ix_scenario]])
 #  [1] "cfg"           "d_pr_sup"      "d_pr_ni"       "d_pr_sup_fut"  "d_pr_ni_fut"   "d_decision"   
@@ -384,17 +386,29 @@ d_dec <- rbind(
 
 
 d_dec_thres <- data.table(
-  quant = c("sup", "sup_fut", "ni", "ni_fut"),
-  threshold = c(
+  quant = rep(c("sup", "sup_fut", "ni", "ni_fut"), each = 4),
+  domain = rep(1:4, len = 16)
+  )
+d_dec_thres[, threshold := c(
     l_cfg$dec_probs$thresh_sup,
     l_cfg$dec_probs$thresh_fut_sup,
     l_cfg$dec_probs$thresh_ni,
     l_cfg$dec_probs$thresh_fut_ni
-  )  ,
-  question = c(
-    "Superiority", "Superiority", "Non-inferiority", "Non-inferiority"
-  )
-)
+  )]
+
+# d_dec_thres <- data.table(
+#   domain = 
+#   quant = c("sup", "sup_fut", "ni", "ni_fut"),
+#   threshold = c(
+#     l_cfg$dec_probs$thresh_sup,
+#     l_cfg$dec_probs$thresh_fut_sup,
+#     l_cfg$dec_probs$thresh_ni,
+#     l_cfg$dec_probs$thresh_fut_ni
+#   )  ,
+#   question = c(
+#     "Superiority", "Superiority", "Non-inferiority", "Non-inferiority"
+#   )
+# )
 
 
 
@@ -445,8 +459,23 @@ d_dec_timeline[, decision := factor(decision, levels = c(
   "Indeterminate", "Superior", "Futile (sup)", "NI", "Futile (NI)"
 ))]
 
+d_decision <- data.table(
+  domain = 1:4,
+  N = 2500
+)
+if(any(d_dec_timeline$decision != "Indeterminate")){
+  d_decision <- d_dec_timeline[
+    decision != "Indeterminate", .(N = min(N)), keyby = .(domain, decision)]
+}
 
-
+d_decision <- merge(
+  d_decision, 
+  data.table(domain = 1:4),
+  by = "domain", all.y = T
+)
+d_decision[is.na(decision), `:=`(
+  decision = "Intermediate", N = 2500  
+)]
 
 
 ```
@@ -454,6 +483,39 @@ d_dec_timeline[, decision := factor(decision, levels = c(
 
 
 The results are from a simulated trial picked from scenario 7 where there is a moderate (OR 1.75) effect in the antibiotic choice with all other domains having null treatment effects.
+
+@tbl-trial-decisions shows the decisions made for each domain (or indeterminate if no decisions were made).
+
+```{r}
+#| label: tbl-trial-decisions
+#| tbl-cap: 'Trial decisions by domain'
+
+g_tbl <- d_decision |> 
+  gt() |> 
+  cols_align(
+    columns = 1:2,
+    align = "center"
+  )  |> 
+  cols_align(
+    columns = 3,
+    align = "right"
+  )  |>
+  cols_label(
+    domain = "Domain",
+    decision = "Decision",
+    N = "Enrolment"
+  ) |>
+  tab_options(
+    table.font.size = "70%"
+  ) |>
+  fmt_number(decimals = 3, drop_trailing_zeros = TRUE)
+
+g_tbl
+
+```
+
+
+
 
 @fig-dec shows the knowledge transitions based on the decisions made for each domain by sample size.
 Initially, all domains start in an indeterminate state in that neither treatment arm is preferred. 
@@ -743,7 +805,7 @@ d_fig_2[, quant := factor(quant, levels = c("sup", "sup_fut", "ni", "ni_fut"),
 d_fig_2 <- merge(
   d_fig_2, 
   unique(d_fig_1[, .(domain, quant, question)]),
-  by = c("quant", "question")
+  by = c("quant", "domain")
 )
 
 
