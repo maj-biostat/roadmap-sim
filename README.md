@@ -7,24 +7,18 @@ To build this site, you need to have a recent version of quarto install plus the
 Also note, the site makes use of the development version of `data.table`.
 Use `data.table::update_dev_pkg()` to install.
 
-## TODO
+To render an individual notebook use, for example:
 
-Make simulation parameters configurable
-Create several scenarios (parallel logistic perspective?)
-Run to 250
-Improve summary
-Cycle back to improve scenarios/summary
-
-
-
+```
+quarto render notebooks/sim-design5-results.qmd --to html
+```
 
 ## Running simulations
 
 Simulations are configured via Makefile. 
 Run `make list` to see all targets. 
-At the time of writing `make sim01` and `make sim02` are the primary simulations.
-The former runs a single analysis and summarises the power at different treatment effect sizes.
-The range of effects are from log(1/2) to log(2) in all arms.
+
+At the time of writing `make sim05` has the simulations for the current design.
 
 ## R, Rstudio, STAN, Quarto
 

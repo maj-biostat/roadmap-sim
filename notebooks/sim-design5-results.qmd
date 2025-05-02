@@ -1255,54 +1255,15 @@ g_tbl
 
 
 
-@tbl-sim05-randn shows the number of participants contributing to each comparison.
+@fig-n-by-arm shows the number of participants entering into each of the randomised comparisons by domain and scenario.
 
-```{r}
-#| label: tbl-sim05-randn
-#| tbl-cap: 'todo '
-#| column: page
-#| out-width: 70%
+The expected values are calculated by extracting the number of participants entering in each analysis and taking the cumulative sum of these, restricted to the relevant strata.
+For example, the domain 1 (surgical) expected values are based on the participants in the late acute silo that receive randomised surgical intervention.
+Similarly, the domain 2 (antibiotic duration) expected values are based on the participants across all silos that received one-stage revision.
 
-d_tbl_2_cur <- d_tbl_2[, .(N_mu = mean(N_stopped)), keyby = .(scenario, desc, domain)]
-d_tbl_2_cur <- dcast(d_tbl_2_cur, scenario + desc ~ domain, value.var = "N_mu")
-d_tbl_2_cur <- d_tbl_2_cur[, .SD, .SDcols = !c("scenario")]
-
-g_tbl <- d_tbl_2_cur |> 
-  gt(groupname_col = "desc") |> 
-  gt::text_transform(
-    locations = cells_row_groups(),
-    fn = function(x) {
-      lapply(x, function(x) {
-        gt::md(paste0("*", x, "*"))
-      })
-    }
-  ) |>
-  cols_align(
-    columns = 1,
-    align = "left"
-  )  |> 
-  cols_align(
-    columns = 2:ncol(d_tbl_2_cur),
-    align = "center"
-  )  |> 
-  tab_spanner(
-    label = html("Expected number of total enrolments to hit stopping rule by domain"),
-    columns = 2:ncol(d_tbl_2_cur)
-  )  |>
-  cols_label(
-    `1` = "Surgical",
-    `2` = "AB Duration",
-    `3` = "AB Ext-proph",
-    `4` = "AB choice"
-  ) |>
-  tab_options(
-    table.font.size = "70%"
-  ) |>
-  fmt_number(decimals = 0, drop_trailing_zeros = TRUE)
-
-g_tbl
-```
-
+If a decision was made for a single domain then subsequent enrolments would be assigned to the relevant arm.
+For example, if a superiority decision was made for domain 1 and the trial was ongoing then all subsequent participants are assigned to the superior intervention.
+Finally, if a decision was made for all research questions, then the trial would stop early and we use LOCF to propagate the sample size forward to subsequent analyses before computing the expected cumulative numbers by treatment arm.
 
 
 ```{r}
@@ -1340,6 +1301,7 @@ ggplot(d_fig, aes(x = N_enrol, y = mu_N, col = arm)) +
     panel.grid.major = element_line(color = "grey",
                                   linewidth = 0.1,
                                   linetype = 1),
+    axis.title.y=element_text(size = 5),
     axis.text.y = element_text(size = 4), 
     axis.text.x = element_text(size = 4), 
     axis.title.x = element_text(size = 5),
