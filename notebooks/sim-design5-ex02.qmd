@@ -59,7 +59,7 @@ for(i in 1:length(flist)){
 
 ```{r, echo = FALSE}
 #| label: cprobdec
-#| code-summary: Cumulative probability of each decision type
+#| code-summary: Cumulative probability of each decision type for example trial
 
 # Cumulative probability of decisions:
 
@@ -879,7 +879,7 @@ d_fig_2[, quant := factor(quant, levels = c("sup", "sup_fut", "ni", "ni_fut"),
 d_fig_2 <- merge(
   d_fig_2, 
   unique(d_fig_1[, .(domain, quant, question)]),
-  by = c("quant", "question")
+  by = c("quant", "domain")
 )
 
 

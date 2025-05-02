@@ -550,11 +550,10 @@ suppressWarnings(print(p1))
 
 Any decision rule only applies to the late acute silo (silo 2).
 
-Here, we know there is an effect of one-stage (but not two-stage) and would hope that a decision for superiority is made such that new participants are directed to receive revision.
-
 ```{r}
 #| label: fig-d1-n
 #| fig-cap: "Domain 1: Surgical sample size"
+#| fig-height: 4
 
 
 d_fig <- copy(d_dat_d1)
@@ -572,7 +571,6 @@ p_d1 <- ggplot(d_fig, aes(x = d1, y = cn)) +
   scale_x_discrete("") +
   scale_y_continuous("Sample size", breaks = seq(0, 800, by = 200)) +
   facet_grid(silo ~ analys, labeller = label_both) +
-  theme_minimal() +
   theme(text = element_text(size = 6),
         strip.text.y.right = element_text(angle = 0, size = 6),
         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 6),
@@ -589,7 +587,7 @@ Of those receiving one-stage (see figure for domain 1) and irrespective of silo 
 
 ```{r}
 #| label: fig-d2-n
-#| fig-cap: "Domain 2: AB Duration sample size"
+#| fig-height: 6
 
 d_fig <- copy(d_dat_d2)
 
@@ -604,18 +602,44 @@ d_fig[, cn := nafill(cn, type = "locf"), keyby = .(silo, d2)]
 d_fig[, d2 := factor(
   d2, levels = c("Selected", "12wk", "6wk"))]
 
-p_d2 <- ggplot(d_fig, aes(x = d2, y = cn)) +
+p_d2_a <- ggplot(d_fig, aes(x = d2, y = cn)) +
   geom_linerange(aes(ymin = 0, ymax = cn), lwd = 1) +
   scale_x_discrete("") +
   scale_y_continuous("Sample size") +
   facet_grid(silo ~ analys, labeller = label_both) +
-  theme_minimal() +
   theme(text = element_text(size = 6),
         strip.text.y.right = element_text(angle = 0, size = 6),
         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 6),
         axis.text.y = element_text(size = 6)) 
 
-suppressWarnings(print(p_d2))
+
+d_fig <- copy(d_dat_d2)
+d_fig <- d_fig[, .(cn = sum(cn)), keyby = .(analys, d2)]
+
+d_fig <- merge(
+  d_fig, 
+  CJ(analys = 1:5, d2 = c("Selected", "12wk", "6wk")),
+  by = c("analys", "d2"),
+  all.y = T
+)
+d_fig[, cn := nafill(cn, type = "locf"), keyby = .(d2)]
+
+d_fig[, d2 := factor(
+  d2, levels = c("Selected", "12wk", "6wk"))]
+
+p_d2_b <- ggplot(d_fig, aes(x = d2, y = cn)) +
+  geom_linerange(aes(ymin = 0, ymax = cn), lwd = 1) +
+  scale_x_discrete("") +
+  scale_y_continuous("Sample size") +
+  facet_grid(. ~ analys, labeller = label_both) +
+  theme(text = element_text(size = 6),
+        strip.text.y.right = element_text(angle = 0, size = 6),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 6),
+        axis.text.y = element_text(size = 6)) 
+
+suppressWarnings(
+  grid.arrange(p_d2_a, p_d2_b, nrow = 2, heights = c(3, 1))
+)
 ```
 
 
@@ -626,6 +650,7 @@ Of those receiving two-stage (see figure for domain 1) and irrespective of silo 
 ```{r}
 #| label: fig-d3-n
 #| fig-cap: "Domain 3: AB Expt-proph sample size"
+#| fig-height: 6
 
 
 d_fig <- copy(d_dat_d3)
@@ -641,18 +666,45 @@ d_fig[, cn := nafill(cn, type = "locf"), keyby = .(silo, d3)]
 d_fig[, d3 := factor(
   d3, levels = c("Selected", "none", "12wk"))]
 
-p_d3 <- ggplot(d_fig, aes(x = d3, y = cn)) +
+p_d3_a <- ggplot(d_fig, aes(x = d3, y = cn)) +
   geom_linerange(aes(ymin = 0, ymax = cn), lwd = 1) +
   scale_x_discrete("") +
   scale_y_continuous("Sample size") +
   facet_grid(silo ~ analys, labeller = label_both) +
-  theme_minimal() +
   theme(text = element_text(size = 6),
         strip.text.y.right = element_text(angle = 0, size = 6),
         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 6),
         axis.text.y = element_text(size = 6)) 
 
-suppressWarnings(print(p_d3))
+
+d_fig <- copy(d_dat_d3)
+d_fig <- d_fig[, .(cn = sum(cn)), keyby = .(analys, d3)]
+
+d_fig <- merge(
+  d_fig, 
+  CJ(analys = 1:5, d3 = c("Selected", "none", "12wk")),
+  by = c("analys", "d3"),
+  all.y = T
+)
+d_fig[, cn := nafill(cn, type = "locf"), keyby = .(d3)]
+
+d_fig[, d3 := factor(
+  d3, levels = c("Selected", "none", "12wk"))]
+
+p_d3_b <- ggplot(d_fig, aes(x = d3, y = cn)) +
+  geom_linerange(aes(ymin = 0, ymax = cn), lwd = 1) +
+  scale_x_discrete("") +
+  scale_y_continuous("Sample size") +
+  facet_grid(. ~ analys, labeller = label_both) +
+  theme(text = element_text(size = 6),
+        strip.text.y.right = element_text(angle = 0, size = 6),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 6),
+        axis.text.y = element_text(size = 6)) 
+
+suppressWarnings(
+  grid.arrange(p_d3_a, p_d3_b, nrow = 2, heights = c(3, 1))
+)
+
 ```
 
 
@@ -660,9 +712,12 @@ suppressWarnings(print(p_d3))
 
 Across the entire trial sample, approximately 60% are assumed to enter the AB choice domain.
 
+Here, we know there is an effect of AB choice and would hope that a decision for superiority is made such that new participants are directed to receive rifampacin.
+
 ```{r}
 #| label: fig-d4-n
 #| fig-cap: "AB Choice sample size"
+#| fig-height: 6
 
 
 d_fig <- copy(d_dat_d4)
@@ -679,18 +734,43 @@ d_fig[, d4 := factor(
   d4, levels = c("Selected", "no-rif", "rif"))]
 
 
-p_d4 <- ggplot(d_fig, aes(x = d4, y = cn)) +
+p_d4_a <- ggplot(d_fig, aes(x = d4, y = cn)) +
   geom_linerange(aes(ymin = 0, ymax = cn), lwd = 1) +
   scale_x_discrete("") +
   scale_y_continuous("Sample size") +
   facet_grid(silo ~ analys, labeller = label_both) +
-  theme_minimal() +
   theme(text = element_text(size = 6),
         strip.text.y.right = element_text(angle = 0, size = 6),
         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 6),
         axis.text.y = element_text(size = 6))
 
-suppressWarnings(print(p_d4))
+d_fig <- copy(d_dat_d4)
+d_fig <- d_fig[, .(cn = sum(cn)), keyby = .(analys, d4)]
+
+d_fig <- merge(
+  d_fig, 
+  CJ(analys = 1:5, d4 = c("Selected", "no-rif", "rif")),
+  by = c("analys", "d4"),
+  all.y = T
+)
+d_fig[, cn := nafill(cn, type = "locf"), keyby = .(d4)]
+
+d_fig[, d4 := factor(
+  d4, levels = c("Selected", "no-rif", "rif"))]
+
+p_d4_b <- ggplot(d_fig, aes(x = d4, y = cn)) +
+  geom_linerange(aes(ymin = 0, ymax = cn), lwd = 1) +
+  scale_x_discrete("") +
+  scale_y_continuous("Sample size") +
+  facet_grid(. ~ analys, labeller = label_both) +
+  theme(text = element_text(size = 6),
+        strip.text.y.right = element_text(angle = 0, size = 6),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 6),
+        axis.text.y = element_text(size = 6)) 
+
+suppressWarnings(
+  grid.arrange(p_d4_a, p_d4_b, nrow = 2, heights = c(3, 1))
+)
 ```
 
 :::
@@ -802,7 +882,7 @@ d_fig_2[, quant := factor(quant, levels = c("sup", "sup_fut", "ni", "ni_fut"),
 d_fig_2 <- merge(
   d_fig_2, 
   unique(d_fig_1[, .(domain, quant, question)]),
-  by = c("quant", "question")
+  by = c("quant", "domain")
 )
 
 
