@@ -26,7 +26,7 @@ Given that this is a summary of a single data set, some variation from the under
 
 set.seed(11)
 
-sim_spec <- get_sim_spec()
+sim_spec <- roadmap.data::get_sim_spec()
 
 sim_spec$b['r1'] <- 0
 sim_spec$b['r2'] <- 0
@@ -34,7 +34,7 @@ sim_spec$b['r1d'] <- 0
 sim_spec$b['r2d'] <- 0
 sim_spec$b['f'] <- 0
 
-ll <- get_trial_data(N = 2500, sim_spec = sim_spec)
+ll <- roadmap.data::get_trial_data(N = 2500, sim_spec = sim_spec)
 
 gt_tbl <- tbl_ex_trial(ll$d)
 gt_tbl
