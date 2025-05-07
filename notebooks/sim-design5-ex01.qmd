@@ -4,8 +4,7 @@ subtitle: "Sequential design with early stopping (restricted action set) - risk 
 date: today
 date-modified: last-modified
 sidebar: false
-navbar: false
-theme: cosmo
+navbar: true
 # this is necessary to remove an unwanted boarder around a tabset
 include-in-header:
   - text: |
