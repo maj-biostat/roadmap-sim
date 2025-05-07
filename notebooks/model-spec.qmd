@@ -2,6 +2,17 @@
 title: "Model specification"
 date: today
 date-modified: last-modified
+sidebar: false
+navbar: true
+# this is necessary to remove an unwanted boarder around a tabset
+include-in-header:
+  - text: |
+      <style>
+      .panel-tabset > .nav-tabs,
+      .panel-tabset > .tab-content {
+        border: none;
+      }
+      </style>
 ---
 
 ```{r, echo = FALSE}
@@ -130,127 +141,48 @@ We also evaluate whether the superiority decision is futile in the sense that it
 
 ## Model specification {#sec-model-spec}
 
-For each silo $l$ and site of infection $j$ we therefore simulate and model the probability of treatment success as:
+For each silo $l$ and site of infection $j$ we therefore simulate the probability of treatment success as:
 
 $$
 \begin{aligned}
-\text{logit}(\pi) &=  \mu + \lambda_s + \rho_j + \sum_{d=1}^{D} x_d^\top \vec{\beta_d} + \zeta_{r,v} + \tau_t + z^\top \vec{\omega}
+\text{logit}(\pi) &=  \mu + \lambda_s + \rho_j + \phi_{l} + \sum_{d=1}^{D} x_d^\top \vec{\beta_d} + \zeta_{r,v} + \tau_t + z^\top \vec{\omega}
 \end{aligned}
 $$ {#eq-mod-spec-1}
 
-+ $\mu$ grand mean log-odds of treatment success
+
++ $\mu$ grand mean log-odds of treatment success; it serves as a reference from which all other effects deviate
 + $\lambda_s$ change associated with membership silo $s$
 + $\rho_j$ change associated with site of infection (joint) $j$
++ $\phi_{l}$ preference for surgical approach under revision type $l$ with elements for non-randomised treatment, one-stage and two-stage
 + $\vec{\beta_d}$ change associated treatment allocation with domain $d$
 + $\zeta_{r,v}$ change associated with site $v$ nested within region $r$
 + $\tau_t$ change associated with randomisation period $t$
 + $\omega$ parameters associated with baseline factors
 
-## Examples
-
-The following characterise how patients enter into the likelihood under various scenarios under @eq-mod-spec-2.
-The main consideration is whether randomised or non-randomised surgical treatment occurs and how this impacts the other terms in the model.
-
-### Randomised surgical treatment
-
-
-::: {.column width="100%"}
-
-| ID | Covariate characteristics |  Log-odds treatment success |
-|-|----|----|
-| 1a | Late silo receiving rand DAIR, non-rand AB duration and rand rif |  $\alpha_0 + \lambda_1 + \beta_{9}$  |
-| 2a | Late silo receiving rand rev (one-stage), rand 12 weeks AB (ref) and rand rif |  $\alpha_0 + \lambda_1 + \beta_4 + \beta_{9}$ |
-| 3a | Late silo receiving rand rev (one-stage), rand 6 weeks AB and rand rif | $\alpha_0 + \lambda_1 + \beta_4 + \beta_6 + \beta_{9}$ |
-| 4a | Late silo receiving rand rev (two-stage), rand 7 days AB (ref) and rand rif |  $\alpha_0 + \lambda_1 + \beta_5 + \beta_{9}$ |
-| 5a | Late silo receiving rand rev (two-stage), rand 12 weeks AB and rand rif | $\alpha_0 + \lambda_1 + \beta_5 + \beta_7 + \beta_{9}$ |
-
-: Likelihood contributions under various scenarios {.striped .hover}
-:::
-
-
-
-### Non-randomised surgical treatment
-
-
-::: {.callout-note collapse=false}
-
-Unsure whether non-randomised surgical treatment would occur for the late-silo patients but have included anyway.
-
-If the non-reveal parameters for the surgical domain were not split by surgery type, then, in the following table:
-
-+ ID 7b would have the same terms as ID 9b 
-+ ID 12b would have the same terms as ID 14b
-
-:::
+The trial data will be modelled as above with decisions made on the basis of the joint posterior, but an additional analysis model run with treatment by site of infection (hip/knee) interactions to characterise and report treatment heterogeneity.
 
 
 
 
-::: {.column width="100%"}
+## Priors
 
-| ID | Covariate characteristics |  Log-odds treatment success |
-|-|----|----|
-| 1b | Early silo receiving non-rand DAIR, non-rand AB duration and rand rif |  $\alpha_0 + \beta_1 + \beta_{9}$  |
-| 2b | Early silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref) and rand rif |  $\alpha_0 + \beta_1 + \beta_2 + \beta_{9}$  |
-| 3b | Early silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif |  $\alpha_0 + \beta_1 + \beta_2 + \beta_6 + \beta_{9}$  |
-| 4b | Early silo receiving non-rand rev (two-stage), rand 7 days AB (ref) and rand rif |  $\alpha_0 + \beta_1 + \beta_3 + \beta_{9}$  |
-| 5b | Early silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif |  $\alpha_0 + \beta_1 + \beta_3 + \beta_7 + \beta_{9}$  |
-|  | | |
-| 6b | Late silo receiving non-rand DAIR, non-rand AB duration and rand rif |  $\alpha_0 + \lambda_1 + \beta_1 + \beta_{9}$  |
-| 7b | Late silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref) and rand rif |  $\alpha_0 + \lambda_1 + \beta_1 + \beta_2 + \beta_{9}$  |
-| 8b | Late silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif |  $\alpha_0 + \lambda_1 + \beta_1 + \beta_2 + \beta_6 + \beta_{9}$  |
-| 9b | Late silo receiving non-rand rev (two-stage), rand 7 days AB (ref) and rand rif |  $\alpha_0 + \lambda_1 + \beta_1 + \beta_3 + \beta_{9}$  |
-| 10b | Late silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif |  $\alpha_0 + \lambda_1 + \beta_1 + \beta_3 + \beta_7 + \beta_{9}$  |
-|  | | |
-| 11b | Chronic silo receiving non-rand DAIR, non-rand AB duration and rand rif |  $\alpha_0 + \lambda_2 + \beta_1 + \beta_{9}$  |
-| 12b | Chronic silo receiving non-rand rev (one-stage), rand 12 weeks AB (ref) and rand rif |  $\alpha_0 + \lambda_2 + \beta_1 + \beta_2 + \beta_{9}$  |
-| 13b | Chronic silo receiving non-rand rev (one-stage), rand 6 weeks AB and rand rif |  $\alpha_0 + \lambda_2 + \beta_1 + \beta_2 + \beta_6 + \beta_{9}$  |
-| 14b | Chronic silo receiving non-rand rev (two-stage), rand 7 days AB (ref) and rand rif |  $\alpha_0 + \lambda_2 + \beta_1 + \beta_3 + \beta_{9}$  |
-| 15b | Chronic silo receiving non-rand rev (two-stage), rand 12 weeks AB and rand rif |  $\alpha_0 + \lambda_2 + \beta_1 + \beta_3 + \beta_7 + \beta_{9}$  |
-
-: Likelihood contributions under various scenarios {.striped .hover}
-:::
-
-
-
-
+todo
 
 
 ## Treatment effects
 
 For the surgical domain, the effect of interest is an average conditional log-odds ratio and is applicable to the late silo.
-This amounts to a weighted combination of $\beta_2$ and $\beta_3$ where the weights are the sample based expectations for the probability of receiving one-stage and two-stage surgery.
+This amounts to a weighted combination of $\beta$ parameters associated with one and two stage revision.
+If we let $\beta_1$ correspond to the effect of one-stage revision and $\beta_2$ correspond to the effect of two-stage revision (both being for the cohort receiving randomised surgical intervention), then we would have:
 
 $$
 \begin{aligned}
-\Delta_R = \beta_4 \mathbb{E}[S_{R_P} == 1 \land R == 1] + \beta_5 \mathbb{E}[S_{R_P} == 2 \land R == 1]
+\Delta_R = \beta_1 \mathbb{E}[S_{R_P} = 1 \land R = 1] + \beta_2 \mathbb{E}[S_{R_P} = 2 \land R = 1]
 \end{aligned}
 $$
 
-For the duration domain, the conditional log-odds ratios of interest are $\beta_6$ and $\beta_7$ which characterise the effect of 6 weeks (short) vs 12 weeks (long) under one-stage revision and 12 weeks (long) vs 7 days (short) in two-stage revision.
-For the choice domain, the conditional log-odd ratios of interest is $\beta_{9}$, characterising the effect of rifampacin vs no-rifampacin.
-For the duration and choice domains, the effects are applicable to all silos.
+where the $S_{R_P}$ denotes the surgery received and $R$ indicates randomised surgical intervention (revision).
 
 
-## Priors
-
-As with the linear predictor, the priors are currently targeted towards the simulation work and may be modified in the final model.
-
-### Intercepts
-
-The silo and infection site intercepts are given independent normal priors
-
-\begin{aligned}
-\alpha_0 \sim \mathcal{N}(0, 1.5^2)
-\end{aligned}
-
-On the probability scale, these concentrate on 0.5 with 95% of the density between 0.04 and 0.96, approximately uniform across this interval.
-
-### Other covariates
-
-Independent standard normal priors are assumed for all other covariate terms effects.
 
 
-### Treatment effects
-
-All covariates relating to treatment effects have standard normal priors.
