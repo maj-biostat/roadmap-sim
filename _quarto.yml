@@ -6,6 +6,10 @@ project:
     - "!notebooks/population-assumptions.qmd"
     - "!notebooks/model-spec.qmd"
     - "!notebooks/decision-rules.qmd"
+    - "!notebooks/sim-design4-results.qmd"
+    - "!notebooks/sim-design5-data-smry.qmd"
+    - "!notebooks/example-trials.qmd"
+    - "!notebooks/trial-data.qmd"
     - "!backup/tmp.qmd"
     - "!backup/design-notes-06.qmd"
     - "!backup/design-notes-02-orig.qmd"
@@ -29,13 +33,15 @@ website:
       - section: "Assumptions and setup"
         contents:
         - notebooks/overview.qmd
-        - notebooks/trial-data.qmd
         - notebooks/model-implementation.qmd
-        - notebooks/example-trials.qmd
       - section: "Simulations"
         contents:
         - notebooks/sim-design1-results.qmd
         - notebooks/sim-design3-results.qmd
+        - notebooks/sim-design5-results.qmd
+        - notebooks/sim-design5-ex01.qmd
+        - notebooks/sim-design5-ex02.qmd
+        - notebooks/sim-design5-ex03.qmd
       - section: "Design notes"
         contents:
         - notebooks/design-notes-01.qmd
