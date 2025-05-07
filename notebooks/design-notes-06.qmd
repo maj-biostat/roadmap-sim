@@ -2,7 +2,17 @@
 title: "Multi-level model perspective"
 date: today
 date-modified: last-modified
-lightbox: true
+sidebar: false
+navbar: true
+# this is necessary to remove an unwanted boarder around a tabset
+include-in-header:
+  - text: |
+      <style>
+      .panel-tabset > .nav-tabs,
+      .panel-tabset > .tab-content {
+        border: none;
+      }
+      </style>
 ---
 
 ```{r, echo = F}
