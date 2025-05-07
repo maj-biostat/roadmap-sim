@@ -17,6 +17,7 @@ rownames(g_pr_jnt) <- g_silo
 
 # early silo randomisation probabilities to dair/rev
 g_pr_e_surg <- c(0.85, 0.15)
+names(g_pr_e_surg) <- c("dair", "rev")
 # early silo preference to surgical type
 g_pr_e_pref <- rbind(
   # for those that receive dair, the preferences are
@@ -28,6 +29,7 @@ g_pr_e_pref <- rbind(
 
 # late silo randomisation probabilities to dair/rev
 g_pr_l_surg <- c(0.5, 0.5)
+names(g_pr_l_surg) <- c("dair", "rev")
 # late silo preference to surgical type
 g_pr_l_pref <- rbind(
   # for those that receive dair, the preferences are
@@ -39,6 +41,7 @@ g_pr_l_pref <- rbind(
 
 # as above but for chronic silo
 g_pr_c_surg <- c(0.2, 0.8)
+names(g_pr_c_surg) <- c("dair", "rev")
 g_pr_c_pref <- rbind(
   dair = c(0.2, 0.2, 0.6),
   rev = c(0, 0.25, 0.75)
