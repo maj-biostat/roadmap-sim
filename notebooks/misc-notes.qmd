@@ -5,6 +5,17 @@ date-modified: last-modified
 editor: source
 editor_options: 
   chunk_output_type: console
+sidebar: false
+navbar: true
+# this is necessary to remove an unwanted boarder around a tabset
+include-in-header:
+  - text: |
+      <style>
+      .panel-tabset > .nav-tabs,
+      .panel-tabset > .tab-content {
+        border: none;
+      }
+      </style>
 ---
 
 ```{r, echo = FALSE}
