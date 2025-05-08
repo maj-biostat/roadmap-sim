@@ -427,8 +427,8 @@ get_trial_data_int <- function(
     b_jnt = c(0, 0.4),
     b_pref = c(0, -0.2),
     # dair, one, two-stage
-    b_d1 = c(0, -0.1, -0.1),
-    # b_d1_ex = c(0, -0.1, -0.1, -0.1),
+    # b_d1 = c(0, -0.1, -0.1),
+    b_d1 = c(0, 0.693, 0.693, 0, 0, 0, 0, 0.693, 0.693),
     # is short duration (6 wk) is non-inferior to long duration (12 wk) ab?
     # misc, 12wk, 6wk
     b_d2 = c(0, -0.4, 0.6),
@@ -447,9 +447,6 @@ get_trial_data_int <- function(
     dec_ni = list(
       ab_dur = NA
     ),
-    # dec_eq = list(
-    #   ab_dur = NA
-    # ),
     dec_sup_fut = list(
       surg = NA,
       ext_proph = NA,
@@ -458,9 +455,6 @@ get_trial_data_int <- function(
     dec_ni_fut = list(
       ab_dur = NA
     ),
-    # dec_inf = list(
-    #   ab_dur = NA
-    # ),
     
     idx_s = NULL,
     t0 = NULL,
@@ -471,8 +465,11 @@ get_trial_data_int <- function(
   K_s <- length(b_silo)
   K_j <- length(b_jnt)
   K_p <- length(b_pref)
-  # number of parameters in each domain
-  K_d1 <- length(b_d1)
+  # number of parameters in each domain 
+  # Silo specific parameters for the surgical domain but same amount of 
+  # parameters for each silo.
+  K_d1 <- length(b_d1)/K_s
+  # Same parameters across all silos.
   K_d2 <- length(b_d2)
   K_d3 <- length(b_d3)
   K_d4 <- length(b_d4)
@@ -491,8 +488,8 @@ get_trial_data_int <- function(
   ## Surgical domain--------
   
   # Early disease receive non-randomised intervention in that they are not 
-  # part of the experimental considerations so the allocation here is really 
-  # just arbitrary based on preferences for this cohort.
+  # part of the experimental considerations so the allocation here is 
+  # arbitrary based on preferences for this cohort.
   
   # clinician decides on what surgery type occurs for silo 1 and 2
   # pref_rev refers to the preferred revision type, either 
@@ -506,15 +503,9 @@ get_trial_data_int <- function(
   # preference, but sometimes the preferred revision type will not occur
   d[silo == 1 & d1 == -99 & pref_rev == 1, d1 := sample(2:3, .N, replace = T, prob = c(0.95, 0.05))]
   d[silo == 1 & d1 == -99 & pref_rev == 2, d1 := sample(2:3, .N, replace = T, prob = c(0.05, 0.95))]
+
   
-  # don't think this kind of approach (trying to adjust for non-randomised)
-  # would work as the silos are entirely collinear
-  # d[silo == 1 & d1 == 1, d1_ex := 2]
-  # d[silo == 1 & d1 == 2, d1_ex := 3]
-  # d[silo == 1 & d1 == 3, d1_ex := 4]
-  
-  
-  # Here we are addressing the late silo data who are the only cohort to enter
+  # Here we are addressing the late silo data that are the only cohort to enter
   # into the surgical domain randomised treatment.
   
   # If a decision is yet to be made on superiority or futility for superiority
@@ -564,8 +555,6 @@ get_trial_data_int <- function(
     
   }
   
-  
-  
   # exactly same approach as early silo for the chronic silo but using different probabilities
   d[silo == 3, pref_rev := sample(1:2, size = .N, replace = T, prob = g_pr_c_pref[2, 2:3])]
   d[silo == 3, d1 := sample(c(-98, -99), size = .N, replace = T, prob = g_pr_c_surg)]
@@ -573,7 +562,6 @@ get_trial_data_int <- function(
   # under revision, d1 has high probability of being the preference
   d[silo == 3 & d1 == -99 & pref_rev == 1, d1 := sample(2:3, .N, replace = T, prob = c(0.95, 0.05))]
   d[silo == 3 & d1 == -99 & pref_rev == 2, d1 := sample(2:3, .N, replace = T, prob = c(0.05, 0.95))]
-  
   
   ## Antibiotic duration domain--------
   
@@ -665,14 +653,21 @@ get_trial_data_int <- function(
     d[, g4 := NULL]
   }
   
-  
+  # Domain 1 has a set of parameters corresponding to silo x intervention 
+  # Silo is 1:3 (e,l,c) and intervention is 1:3 (dair, rev(1), rev(2)).
+  # For early silo, d1_ix = 1:3
+  # For late silo, d1_ix = 4:6
+  # For chronic silo, d1_ix = 7:9
+  # i.e. d1_ix = d1 + (K_d1 * (silo - 1))
+  d[, d1_ix := d1 + (K_d1 * (silo - 1))]
   
   # Outcome
   d[, mu := mu]
   d[, b_silo := b_silo[silo]]
   d[, b_jnt := b_jnt[jnt]]
   d[, b_pref := b_pref[pref_rev]]
-  d[, b_d1 := b_d1[d1]]
+  # use calculated index to pick up correct silo specific parameter
+  d[, b_d1 := b_d1[d1_ix]]
   d[, b_d2 := b_d2[d2]]
   d[, b_d3 := b_d3[d3]]
   d[, b_d4 := b_d4[d4]]
@@ -682,8 +677,6 @@ get_trial_data_int <- function(
   d[, eta := mu + b_silo + b_jnt + b_pref + b_d1 + b_d2 + b_d3 + b_d4      ]
   
   d[, y := rbinom(.N, 1, plogis(eta))]
-  
-  
   
   # add a pt id
   if(!is.null(idx_s)){
@@ -854,8 +847,6 @@ get_stan_data_ext_proph_int <- function(d_all){
   
 }
 
-
-
 # is rifampicin superior to no rifampicin.
 get_stan_data_ab_choice_int <- function(d_all){
   
@@ -898,16 +889,20 @@ get_stan_data_ab_choice_int <- function(d_all){
   
 }
 
-get_stan_data_all_int <- function(d_all, excl_non_rand_surg_silo = F){
+get_stan_data_all_int <- function(d_all){
   
   # convert from binary representation to binomial (successes/trials)
   d_mod <- d_all[, .(y = sum(y), n = .N, eta = round(unique(eta), 3)), 
                 keyby = .(silo, jnt, pref_rev, d1, d2, d3, d4)]
+  
+  K_d1 <- length(unique(d_all$d1))
+  d_mod[, d1_ix := d1 + (K_d1 * (silo - 1))]
+  
   d_mod[, eta_obs := round(qlogis(y / n), 3)]
   d_mod[, p_obs := y / n]
   
-  # really don't need to do this for all of the domains but it provides
-  # a uniform approach for generating the parameters of interest
+  # g-comp setup for all of the domains to provide
+  # a uniform approach for generating the parameters of interest.
   
   # Surgical -----
   
@@ -936,11 +931,6 @@ get_stan_data_all_int <- function(d_all, excl_non_rand_surg_silo = F){
   # The units having d4 set to 1 were not included in ab choice
   d_mod_d4 <- d_mod[d4 %in% 2:3]
   
-  
-  # d1 adjustment so that non rand comparisons fall into separate parameter
-  d_tmp <- copy(d_mod)
-  d_tmp[silo != 2, d1 := 4]
-  
   ld <- list(
     # full dataset
     N = nrow(d_mod), 
@@ -949,7 +939,7 @@ get_stan_data_all_int <- function(d_all, excl_non_rand_surg_silo = F){
     silo = d_mod[, silo], 
     jnt = d_mod[, jnt],
     pref = d_mod[, pref_rev],
-    d1 = NA,
+    d1 = d_mod[, d1],
     d2 = d_mod[, d2],
     d3 = d_mod[, d3],
     d4 = d_mod[, d4],
@@ -958,7 +948,7 @@ get_stan_data_all_int <- function(d_all, excl_non_rand_surg_silo = F){
     K_silo = length(unique(d_all$silo)), 
     K_jnt = length(unique(d_all$jnt)), 
     K_pref = length(unique(d_all$pref_rev)), 
-    K_d1 = NA,  
+    K_d1 = length(unique(d_all$d1)), 
     K_d2 = length(unique(d_all$d2)), 
     K_d3 = length(unique(d_all$d3)), 
     K_d4 = length(unique(d_all$d4)), 
@@ -1016,14 +1006,6 @@ get_stan_data_all_int <- function(d_all, excl_non_rand_surg_silo = F){
     
     prior_only = 0
   )
-  
-  if(excl_non_rand_surg_silo == T){
-    ld$d1 = d_tmp[, d1]
-    ld$K_d1 = length(unique(d_tmp[, d1]))
-  } else {
-    ld$d1 = d_mod[, d1]
-    ld$K_d1 = length(unique(d_mod[, d1]))
-  }
   
   list(
     d_mod = d_mod,

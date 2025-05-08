@@ -34,6 +34,24 @@ m1 <- cmdstanr::cmdstan_model("stan/model-sim-05-a.stan")
 
 output_dir_mcmc <- paste0(getwd(), "/tmp")
 
+# Sanity check:
+# The target enrolment rate is 1.5 participants per day, i.e. 
+# about 10 per 7 day week.
+# n_per_wk = numeric(100)
+# for(i in 1:100){
+#   loc_t0 <- get_enrol_time_int(max(g_cfgsc$N_pt), lambda, rho)
+#   # ignore the first 400 as these are the ramp up phase.
+#   d_fig <- data.table(
+#     i = seq_along(loc_t0),
+#     t0 = loc_t0
+#   )
+#   # d_fig[i %in% 400:420]
+#   wks_total <- max(loc_t0) / 7
+#   n_per_wk[i] <- max(g_cfgsc$N_pt) / wks_total
+# }
+# n_per_wk
+
+
 # Main trial loop.
 run_trial <- function(
     ix,
@@ -46,8 +64,8 @@ run_trial <- function(
     b_jnt = c(0, 0.4),
     b_pref = c(0, -0.2),
     # dair, one, two-stage
-    b_d1 = c(0, -0.1, -0.2),
-    # b_d1_ex = c(0, -0.1, -0.1, -0.1),
+    # b_d1 = c(0, -0.1, -0.2),
+    b_d1 = c(0, 0.693, 0.693, 0, 0, 0, 0, 0.693, 0.693),
     # 
     b_d2 = c(0, -0.4, 0.6),
     b_d3 = c(0, 0.1, 0.3),
@@ -75,30 +93,11 @@ run_trial <- function(
   
   loc_t0 <- get_enrol_time_int(max(g_cfgsc$N_pt), lambda, rho)
   
-  # Sanity check:
-  # The target enrolment rate is 1.5 participants per day, i.e. 
-  # about 10 per 7 day week.
-  # n_per_wk = numeric(100)
-  # for(i in 1:100){
-  #   loc_t0 <- get_enrol_time_int(max(g_cfgsc$N_pt), lambda, rho)
-  #   # ignore the first 400 as these are the ramp up phase.
-  #   d_fig <- data.table(
-  #     i = seq_along(loc_t0),
-  #     t0 = loc_t0
-  #   )
-  #   # d_fig[i %in% 400:420]
-  #   wks_total <- max(loc_t0) / 7
-  #   n_per_wk[i] <- max(g_cfgsc$N_pt) / wks_total
-  # }
-  # n_per_wk
-  
-
   # loop controls
   stop_enrol <- FALSE
   ii <- 1 # interim number
   N_analys <- length(g_cfgsc$N_pt)
 
-  
   # posterior summaries
   d_post_smry_1 <- CJ(
     id_analys = 1:N_analys,
@@ -110,7 +109,6 @@ run_trial <- function(
   d_post_smry_1[, se := NA_real_]
   d_post_smry_1[, q_025 := NA_real_]
   d_post_smry_1[, q_975 := NA_real_]
-  
   
   d_post_smry_2 <- data.table()
 
@@ -143,20 +141,6 @@ run_trial <- function(
     dimnames = list(1:N_analys, paste0("d", 1:4))
   )
   
-  # introduce equivalence and inferiority
-  # pr_eq <- array(
-  #   NA, 
-  #   # num analysis x num domains
-  #   dim = c(N_analys, 4),
-  #   dimnames = list(1:N_analys, paste0("d", 1:4))
-  # )
-  # pr_inf <- array(
-  #   NA, 
-  #   # num analysis x num domains
-  #   dim = c(N_analys, 4),
-  #   dimnames = list(1:N_analys, paste0("d", 1:4))
-  # )
-  
   # units informing estimates
   n_units <- array(
     NA, 
@@ -166,17 +150,13 @@ run_trial <- function(
   )
  
   # decisions 
-  # superior, ni, equivalence, 
+  # superior, ni, 
   # futile (for superiority - idiotic)
   # futile (for ni - idiotic)
-  # inferiority
   g_dec_type <- c("sup", 
                   "ni", 
-                  # "eq", 
                   "fut_sup", 
                   "fut_ni"
-                  # , 
-                  # "inf"
                   )
 
   decision <- array(
@@ -199,9 +179,6 @@ run_trial <- function(
   dec_ni = list(
     ab_dur = NA
   )
-  # dec_eq = list(
-  #   ab_dur = NA
-  # )
   dec_sup_fut = list(
     surg = NA,
     ext_proph = NA,
@@ -210,15 +187,10 @@ run_trial <- function(
   dec_ni_fut = list(
     ab_dur = NA
   )
-  # dec_inf = list(
-  #   ab_dur = NA
-  # )
   
   if(return_posterior){
     l_post <- list()
   }
-  
-  
   
   
   ## LOOP -------
@@ -252,16 +224,11 @@ run_trial <- function(
     l_new <- get_trial_data_int(
       N = N_c, 
       
-      # reference level log odds of response
+      # true parameters
       mu = mu,
-      # silo effects
-      # silo 1 as the one for late acute
-      # silo 2 as the one for late acute
-      # silo 3 is LATE ACUTE
       b_silo = b_silo,
       b_jnt = b_jnt,
       b_pref = b_pref,
-      # dair, one, two-stage
       b_d1 = b_d1,
       b_d2 = b_d2,
       b_d3 = b_d3,
@@ -269,10 +236,8 @@ run_trial <- function(
       
       dec_sup = dec_sup,
       dec_ni = dec_ni,
-      # dec_eq = dec_eq,
       dec_sup_fut = dec_sup_fut,
       dec_ni_fut = dec_ni_fut,
-      # dec_inf = dec_inf,
       
       idx_s = is,
       t0 = loc_t0[is:ie],
@@ -281,9 +246,6 @@ run_trial <- function(
     
     log_info("Trial ", ix, " new data generated ", ii)
 
-    # l_new$d
-    # l_new$d[, .N, keyby = d2]
-    # d_all[, .N, keyby = d2]
     # combine the existing and new data
     d_all <- rbind(d_all, l_new$d)
     
@@ -432,34 +394,11 @@ run_trial <- function(
       d_post[, mean(p_d3_3 - p_d3_2 > g_cfgsc$dec_ref$delta_ni_fut)],
       d_post[, mean(p_d4_3 - p_d4_2 > g_cfgsc$dec_ref$delta_ni_fut)]
     )
-    
-    # equivalence is implied by a high probability that the risk diff is centred
-    # around zero and bound by the specified limits with high probability
-    # pr_eq[ii, ]  <-   c(
-    #   d_post[, mean(p_d1_23 - p_d1_1 > -g_cfgsc$dec_ref$delta_eq & p_d1_23 - p_d1_1 < g_cfgsc$dec_ref$delta_eq)],
-    #   d_post[, mean(p_d2_3 - p_d2_2 > -g_cfgsc$dec_ref$delta_eq & p_d2_3 - p_d2_2 < g_cfgsc$dec_ref$delta_eq)],
-    #   d_post[, mean(p_d3_3 - p_d3_2 > -g_cfgsc$dec_ref$delta_eq & p_d3_3 - p_d3_2 < g_cfgsc$dec_ref$delta_eq)],
-    #   d_post[, mean(p_d4_3 - p_d4_2 > -g_cfgsc$dec_ref$delta_eq & p_d4_3 - p_d4_2 < g_cfgsc$dec_ref$delta_eq)]
-    # )
-    # inferiority is implied by a high probability that 
-    # the risk diff is below zero   
-    # pr_inf[ii, ]  <-   c(
-    #   d_post[, mean(p_d1_23 - p_d1_1 < g_cfgsc$dec_ref$delta_inf)],
-    #   d_post[, mean(p_d2_3 - p_d2_2 < g_cfgsc$dec_ref$delta_inf)],
-    #   d_post[, mean(p_d3_3 - p_d3_2 < g_cfgsc$dec_ref$delta_inf)],
-    #   d_post[, mean(p_d4_3 - p_d4_2 < g_cfgsc$dec_ref$delta_inf)]
-    # )
 
-    
     log_info("Trial ", ix, " calculated decision quantities ", ii)
-    
-    # evaluate decisions - need high levels of evidence to suggest sup or ni
-    # sapply(pr_sup[ii, ], function(z){ z > })
-    
     
     decision[ii, , "sup"] <- pr_sup[ii, ] > g_cfgsc$dec_probs$thresh_sup
     decision[ii, , "ni"] <- pr_ni[ii, ] > g_cfgsc$dec_probs$thresh_ni
-    # decision[ii, , "eq"] <- pr_eq[ii, ] > g_cfgsc$dec_probs$thresh_eq
     
     # futility rules
     # taken to imply negligible chance of being superior or ni
@@ -468,8 +407,6 @@ run_trial <- function(
     decision[ii, , "fut_sup"] <- pr_sup_fut[ii, ] < g_cfgsc$dec_probs$thresh_fut_sup
     # taken to imply negligible chance of being ni 
     decision[ii, , "fut_ni"] <- pr_ni_fut[ii, ] < g_cfgsc$dec_probs$thresh_fut_ni
-    # inferiority
-    # decision[ii, , "inf"] <- pr_inf[ii, ] > g_cfgsc$dec_probs$thresh_inf
     
     log_info("Trial ", ix, " compared to thresholds ", ii)
     
@@ -480,10 +417,8 @@ run_trial <- function(
     # decision reported.
     decision[1:ii, , "sup"] <- apply(decision[1:ii, , "sup", drop = F], 2, function(z){ cumsum(z) > 0 })
     decision[1:ii, , "ni"] <- apply(decision[1:ii, , "ni", drop = F], 2, function(z){ cumsum(z) > 0 })
-    # decision[1:ii, , "eq"] <- apply(decision[1:ii, , "eq", drop = F], 2, function(z){ cumsum(z) > 0 })
     decision[1:ii, , "fut_sup"] <- apply(decision[1:ii, , "fut_sup", drop = F], 2, function(z){ cumsum(z) > 0 })
     decision[1:ii, , "fut_ni"] <- apply(decision[1:ii, , "fut_ni", drop = F], 2, function(z){ cumsum(z) > 0 })
-    # decision[1:ii, , "inf"] <- apply(decision[1:ii, , "inf", drop = F], 2, function(z){ cumsum(z) > 0 })
   
     # superiority decisions apply to domains 1, 3 and 4
     if(any(decision[ii, , "sup"])){
@@ -540,22 +475,6 @@ run_trial <- function(
       }
     }
     
-    
-    # equivalence decisions apply to domains 2
-    # if short is ni to long then stop enrolment
-    # for this randomised comparison
-    # if(any(decision[ii, , "eq"])){
-    #   if(decision[ii, "d2", "eq"]){
-    #     dec_eq$ab_dur <- 3
-    #   }
-    # }
-    
-    # if(any(decision[ii, , "inf"])){
-    #   if(decision[ii, "d2", "inf"]){
-    #     dec_ni_fut$ab_dur <- 3
-    #   }
-    # }
-    
     # have we answered all questions of interest?
     if(
       # if rev (in late acute silo) is superior to dair (or superiority decision
@@ -598,11 +517,8 @@ run_trial <- function(
       log_info("Stopped at analysis ", stop_at, " filling all subsequent entries")
       decision[(stop_at+1):N_analys, , "sup"] <- decision[rep(stop_at, N_analys-stop_at), , "sup"]
       decision[(stop_at+1):N_analys, , "ni"] <- decision[rep(stop_at, N_analys-stop_at), , "ni"]
-      # decision[(stop_at+1):N_analys, , "eq"] <- decision[rep(stop_at, N_analys-stop_at), , "eq"]
       decision[(stop_at+1):N_analys, , "fut_sup"] <- decision[rep(stop_at, N_analys-stop_at), , "fut_sup"]
       decision[(stop_at+1):N_analys, , "fut_ni"] <- decision[rep(stop_at, N_analys-stop_at), , "fut_ni"]
-      # decision[(stop_at+1):N_analys, , "inf"] <- decision[rep(stop_at, N_analys-stop_at), , "inf"]
-
     }
   }
   
@@ -620,10 +536,8 @@ run_trial <- function(
     
     pr_sup = pr_sup,
     pr_ni = pr_ni,
-    # pr_eq = pr_eq,
     pr_sup_fut = pr_sup_fut,
     pr_ni_fut = pr_ni_fut,
-    # pr_inf = pr_inf,
     
     stop_at = stop_at
   )
@@ -794,7 +708,7 @@ model_consistency_check <- function(){
   b_pref <- c(0.0, -0.2)
   
   # dair, one, two-stage, we compare avg of one and two stage rev to dair
-  b_d1 <- c(0, 1, 1)
+  b_d1 <- c(0, 0.693, 0.693, 0, 0, 0, 0, 0.693, 0.693)
   # always ref, 12wk, 6wk as we are assessing if 6wk ni to 12wk
   b_d2 <- c(0, -0.25, 0.5)
   # always ref, 0, 12wk as we are assessing if 12wk sup to none
@@ -870,13 +784,14 @@ model_consistency_check <- function(){
     })
   
   d_r <- data.table(do.call(rbind, r))
+  colMeans(d_r)
   
   d_fig <- melt(d_r, measure.vars = names(d_r))
   
   d_tru <- data.table(
     variable = paste0("lor_d", 1:4),
     value = c(
-      b_d1[3],
+      b_d1[5],
       b_d2[3] - b_d2[2],
       b_d3[3] - b_d3[2],
       b_d4[3] - b_d4[2]
@@ -1051,26 +966,6 @@ run_sim_05 <- function(){
   log_info("b_d3: ", paste0(b_d3, collapse = ", "));
   log_info("b_d4: ", paste0(b_d4, collapse = ", "));
   
-  # Computes empirical risk by treatment and risk differences in 
-  # each of the domain groups.
-  # nsim = 1000
-  # d_risk_smry <- get_empirical_risk(
-  #   nsim = nsim,
-  #   N = N,
-  #   mu = mu,
-  #   # silo effects
-  #   # silo 1 as the one for late acute
-  #   # silo 2 as the one for late acute
-  #   # silo 3 is LATE ACUTE
-  #   b_silo = b_silo, b_jnt = b_jnt, b_pref = b_pref,
-  #   # dair, one, two-stage
-  #   b_d1 = b_d1,
-  #   b_d2 = b_d2,
-  #   b_d3 = b_d3,
-  #   b_d4 = b_d4
-  # )
-  # d_risk_smry
-  
   return_posterior = F
   
   e = NULL
@@ -1140,16 +1035,6 @@ run_sim_05 <- function(){
     }
     
   }
-  
-
-  # put results into data.tables
-  # quantifying evidence for superiority/non-inf etc.
-  # d_pr_sup <- data.table(
-  #   do.call(rbind, lapply(1:length(r), function(i){ 
-  #     cbind(
-  #       sim = i, analys = as.integer(rownames(r[[i]]$pr_sup)), r[[i]]$pr_sup
-  #       ) 
-  #     } )))
 
   d_pr_ni <- data.table(
     do.call(rbind, lapply(1:length(r), function(i){ 
