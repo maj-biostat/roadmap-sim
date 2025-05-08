@@ -8,7 +8,7 @@ data{
   array[N] int y;
   array[N] int n;
   
-  // total indexes per covariate
+  // total indexes per covariate, e.g. number of silos, d1 interventions etc
   int K_silo;
   int K_jnt;
   int K_pref;
