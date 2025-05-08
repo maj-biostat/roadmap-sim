@@ -898,7 +898,7 @@ get_stan_data_ab_choice_int <- function(d_all){
   
 }
 
-get_stan_data_all_int <- function(d_all){
+get_stan_data_all_int <- function(d_all, excl_non_rand_surg_silo = F){
   
   # convert from binary representation to binomial (successes/trials)
   d_mod <- d_all[, .(y = sum(y), n = .N, eta = round(unique(eta), 3)), 
@@ -936,6 +936,11 @@ get_stan_data_all_int <- function(d_all){
   # The units having d4 set to 1 were not included in ab choice
   d_mod_d4 <- d_mod[d4 %in% 2:3]
   
+  
+  # d1 adjustment so that non rand comparisons fall into separate parameter
+  d_tmp <- copy(d_mod)
+  d_tmp[silo != 2, d1 := 4]
+  
   ld <- list(
     # full dataset
     N = nrow(d_mod), 
@@ -944,7 +949,7 @@ get_stan_data_all_int <- function(d_all){
     silo = d_mod[, silo], 
     jnt = d_mod[, jnt],
     pref = d_mod[, pref_rev],
-    d1 = d_mod[, d1],
+    d1 = NA,
     d2 = d_mod[, d2],
     d3 = d_mod[, d3],
     d4 = d_mod[, d4],
@@ -953,7 +958,7 @@ get_stan_data_all_int <- function(d_all){
     K_silo = length(unique(d_all$silo)), 
     K_jnt = length(unique(d_all$jnt)), 
     K_pref = length(unique(d_all$pref_rev)), 
-    K_d1 = length(unique(d_all$d1)), 
+    K_d1 = NA,  
     K_d2 = length(unique(d_all$d2)), 
     K_d3 = length(unique(d_all$d3)), 
     K_d4 = length(unique(d_all$d4)), 
@@ -1011,6 +1016,14 @@ get_stan_data_all_int <- function(d_all){
     
     prior_only = 0
   )
+  
+  if(excl_non_rand_surg_silo == T){
+    ld$d1 = d_tmp[, d1]
+    ld$K_d1 = length(unique(d_tmp[, d1]))
+  } else {
+    ld$d1 = d_mod[, d1]
+    ld$K_d1 = length(unique(d_mod[, d1]))
+  }
   
   list(
     d_mod = d_mod,
