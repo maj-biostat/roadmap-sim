@@ -1003,7 +1003,6 @@ g_tbl
 #| fig-height: 7
 #| fig-width: 6
 #| column: page-right
-#| lightbox: true
 
 d_fig <- d_tbl_1[quant %in% c("sup", "fut_sup") & domain %in% c(1, 3, 4), .SD]
 setorderv(d_fig, cols = c("scenario", "domain", "analys", "quant"), 
@@ -1150,7 +1149,6 @@ g_tbl
 #| fig-height: 7
 #| fig-width: 4
 #| column: page-right
-#| lightbox: true
 
 d_fig <- d_tbl_1[quant %in% c("ni", "fut_ni") & domain %in% c(2), .SD]
 setorderv(d_fig, cols = c("scenario", "domain", "analys", "quant"), 
@@ -1271,7 +1269,6 @@ Finally, if a decision was made for all research questions, then the trial would
 #| fig-height: 7
 #| fig-width: 7
 #| column: page-right
-#| lightbox: true
 
 d_fig <- d_N_by_arm[, .(mu_N = mean(N)), keyby = .(desc, domain, arm, N_enrol)]
 d_fig[, desc := factor(
