@@ -190,12 +190,14 @@ model{
 generated quantities{
   
   array[N] real y_pred;
+  vector[N] p_hat;
   real p_hat_pred;
 
   for (i in 1:N) {
-    y_pred[i] = bernoulli_logit_rng(eta[i]);
+    y_pred[i] = binomial_rng(n[i], inv_logit(eta[i]));
+    p_hat[i] = y_pred[i]/n[i];
   }
-  p_hat_pred = mean(y_pred);
+  p_hat_pred = mean(p_hat);
 
   vector[N] log_lik;
   for (i in 1:N) {
@@ -215,7 +217,7 @@ generated quantities{
   // applies to all. First level is reference, i.e. equals zero.
   // Similarly, first level of bd3 selected since this is the only comparison
   // that applies to all. Again, first level is reference, i.e. equals zero.
-  vector[N_d1] eta_d1_1 = mu + bs[d1_s] + bj[d1_j] + bp[d1_p] + 
+  vector[N_d1] eta_d1_1 = mu + bs[2] + bj[d1_j] + bp[d1_p] + 
     bd1[4] + bd2[1] + bd3[1] + bd4[d1_d4];
   // Assignment to revision will either end up being one or two-stage.
   // those that had the preference for one get one and those that had pref for
@@ -223,20 +225,13 @@ generated quantities{
   // our late acute cohort).
   // I have set bp explicitly here but it would be ok to just use the data passed
   // in as all records should have been selected based on the required preference.
-  vector[N_d1_p1] eta_d1_2 = mu + bs[d1_s[ix_d1_p1]] + bj[d1_j[ix_d1_p1]] + bp[1] +
+  vector[N_d1_p1] eta_d1_2 = mu + bs[2] + bj[d1_j[ix_d1_p1]] + bp[1] +
     bd1[5] + bd2[1] + bd3[1] + bd4[d1_d4[ix_d1_p1]];
-  vector[N_d1_p2] eta_d1_3 = mu + bs[d1_s[ix_d1_p2]] + bj[d1_j[ix_d1_p2]] + bp[2] +
+  vector[N_d1_p2] eta_d1_3 = mu + bs[2] + bj[d1_j[ix_d1_p2]] + bp[2] +
     bd1[6] + bd2[1] + bd3[1] + bd4[d1_d4[ix_d1_p2]];
   real nu_d1_1 = wgtsd1' * eta_d1_1   ;
   real nu_d1_2 = wgtsd1_p1' * eta_d1_2   ;
   real nu_d1_3 = wgtsd1_p2' * eta_d1_3   ;
-
-  // effect of interest is the weight sum of the revision effects (wgts being
-  // the observed proportion of preferring each type) relative to dair
-  // multiplication by 1.0 is required to cast to float.
-  // real prf_1 = (N_d1_p1 * 1.0/N_d1);
-  // real prf_2 = (N_d1_p2 * 1.0/N_d1);
-  // real nu_d1_23 = ((N_d1_p1 * 1.0/N_d1) * nu_d1_2) + ((N_d1_p2 * 1.0/N_d1) * nu_d1_3) ;
 
   real nu_d1_23 = (prop_p1 * nu_d1_2) + (prop_p2 * nu_d1_3) ;
   real lor_d1 = nu_d1_23 - nu_d1_1;
@@ -250,13 +245,16 @@ generated quantities{
   // for those that have one-stage revision
   vector[N_d2] wgtsd2 = dirichlet_rng(to_vector(n_d2));
   // In the data passed to stan, d1 needs to be set to one-stage revision 
-  // for all units but now this is a silo specific view so we index the bd1 
-  // parameter to pick up either the rand or non-rand comparison from the surg
-  // domain.
+  // for all units. However, this is now a silo specific view to account for the 
+  // possibility of differential surgical effects (for whatever reason).
+  // So, we index the bd1 using d2_d1_ix to pick up either the rand or non-rand 
+  // comparison from the surg domain.
   // Additionally, d3 (ext-proph) needs to be 1 here for all units 
   // (corresponding to non-rand intervention). 
-  // If we do not do these conditioning steps, then we would not be comparing 
-  // apples with apples.
+  // If we do not do these conditioning steps, then we would not be making 
+  // logical comparisons based on the design constraints, e.g. if you have 
+  // one stage revision, then it is logically impossible to receive ext proph
+  // based on the design rules.
   vector[N_d2] eta_d2_2 = mu + bs[d2_s] + bj[d2_j] + bp[d2_p] + 
     bd1[d2_d1_ix] + bd2[2] + bd3[1] + bd4[d2_d4];
   vector[N_d2] eta_d2_3 = mu + bs[d2_s] + bj[d2_j] + bp[d2_p] + 
