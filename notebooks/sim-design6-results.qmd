@@ -1,0 +1,171 @@
+---
+title: "Simulation results 6"
+subtitle: "Sequential design with early stopping (restricted action set) - risk based"
+date: today
+date-modified: last-modified
+sidebar: false
+navbar: true
+# this is necessary to remove an unwanted boarder around a tabset
+include-in-header:
+  - text: |
+      <style>
+      .panel-tabset > .nav-tabs,
+      .panel-tabset > .tab-content {
+        border: none;
+      }
+      </style>
+---
+
+
+
+
+
+```{r, echo = FALSE}
+#| label: libs
+#| code-summary: Libraries and globals
+
+source("./R/init.R")
+source("./R/util.R")
+source("./R/data.R")
+log_info("Called simulation-results 6 notebook")
+
+toks <- unlist(tstrsplit(getwd(), "/")) 
+if(toks[length(toks)] == "roadmap-sim"){
+  prefix_cfg <- "./etc/sim06/"
+  prefix_stan <- "./stan"
+  prefix_fig <- "./fig"
+} else {
+  prefix_cfg <- "../etc/sim06/"
+  prefix_stan <- "../stan"
+  prefix_fig <- "../fig"
+}
+
+g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim06-sc01-v01.yml"))
+```
+
+
+
+```{r}
+#| label: loadfiles
+#| code-summary: Load simulation results
+
+# Each input file corresponds to the results from a single simulation
+# scenario/configuration.
+# Load all the files into a single list.
+
+# files of interest
+sim_lab <- "sim06-01"
+
+flist <- list.files(paste0("data/", sim_lab), pattern = "sim06")
+toks <- list()
+l <- list()
+i <- 1
+for(i in 1:length(flist)){
+  l[[i]] <- qs::qread(file.path(paste0("data/", sim_lab), flist[i]))
+  toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
+}
+
+
+```
+
+## Introduction
+
+### Model
+
+In the present design, the model continues to be used to compute unit level risk (probability) and assesses decisions based on risk difference for the intervention comparisons by domain.
+
+For the simulations, we have a single, multivariable logistic regression model with a linear predictor that incorporates all domains and is specified as follows:
+
+$$
+\begin{aligned}
+Y &\sim \text{Binomial}(n, p) \\
+\text{logit}(p) &= \mu + \beta_{s} + \beta_{j} + \beta_{p} + \\ 
+  \quad& \beta_{d1[k_{d1}, s]} + \beta_{d2[k_{d2}]} + \beta_{d3[k_{d3}]} + \beta_{d4[k_{d4}]}  
+\end{aligned}
+$$
+
+for each distinct covariate grouping where:
+
++ $\mu$ represents an overall reference level from which all covariates deviate
++ $\beta_{s}$ represents the silo deviations, which can be thought of as a seriousness of disease adjustment. We fix the first parameter (early) in this vector to zero for identifiability and the components are for early, late and chronic silo membership. 
++ $\beta_{j}$ represents the joint deviations, accounting for heterogeneity in outcome due to site of infection. Again, we fix the first parameter (knee) in this vector to zero for identifiability and the components are knee and hip.
++ $\beta_{p}$ represents the preference adjustment, assuming revision was allocated but included irrespective of silo, i.e. even if DAIR is assigned or planned or randomised assignment isn't relevant. This accounts for heterogeneity in outcome due to clinical preference for revision type, which can be thought of as expert elicitation on aspects of the patient state and clinicial experience. Again, we fix the first parameter (preference one-stage revision) in this vector to zero for identifiability and the components are one-stage and two-stage. Assuming revision is assigned, we would expect that the original preference would ultimately align with the type of revision received, but there is nothing enforcing this. Arguably, this could be restricted to the late-acute cohort, but we need to extend the vector of parameters to account for this.
++ $\beta_{d1[k_{d1}, s]}$ represents the silo-specific deviations associated with the surgery type. This accounts for heterogeneity in outcome due to surgery type and with the late-acute deviations taken as a randomised comparison of dair vs revision after the agreed weighting is applied. Again, we fix the first parameter (dair in the early cohort) in this vector to zero for identifiability and the components are dair, rev(1), rev(2) for each silo. The reason for the silo-specific context is that if revision effects exist in one silo but not another, then without this conditioning, we will end up with biased inference. For example, if (for whatever reason) there is an revision effect in the early domain but not the late-acute cohort then without this level of adjustment, we would end up reporting a revision effect when we shouldn't be; adjustment for silo doesn't protect us from this, even though it is perfectly collinear with a unit receiving non-randomised or randomised surgical treatment.
++ $\beta_{d2[k_{d2}]}$ represents the deviations associated with backbone antibiotic duration. This accounts for heterogeneity in outcome due to the assigned backbone antibiotic duration. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, 12 weeks and 6 weeks. The term is included in the model irrespective of what surgery type was received but only units receiving randomised and revealed one-stage are captured within the 12 week/6 week comparison. The other units contribute to the non-randomised set (which is essentially a nuissance variable that we don't particularly care about). We are assuming that there is no silo-specific hetereogeneity for this comparison.
++ $\beta_{d3[k_{d3}]}$ represents the deviations associated with extended prophylaxis duration. This accounts for heterogeneity in outcome due to the assigned extended prophylaxis duration. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, no ext-proph and 12 weeks. The term is included in the model irrespective of what surgery type was received but only units receiving randomised and revealed two-stage are captured within the none/12 week comparison. The other units contribute to the non-randomised set (which again is a nuissance variable that we don't particularly care about). We are assuming that there is no silo-specific hetereogeneity for this comparison.
++ $\beta_{d4[k_{d4}]}$ represents the deviations associated with antibiotic choice. This accounts for heterogeneity in outcome due to the assigned antibiotic choice. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, no rifampicin and rifampicin. The term is included for all units for which rifampicin may be indicated. The other units contribute to the non-randomised set. We are assuming that there is no silo-specific hetereogeneity for this comparison.
+
+The model isn't particularly complicated but the way that terms enter the model is convoluted and understanding the dependency implications and consequently interpretations is really quite challenging.
+For the actual trial analysis, this model will be revised to the equivalent Bernoulli likelihood setup on unit level data and also extended to account for site, randomisation period and prognostic covariates.
+Bar the surgical domain, for which 'by silo' deviations are implicit in the existing parameterisation, no further interactions are included.
+However, given that heterogeneity by site of infection (joint) is of interest (primarily in the surgical domain) the analysis plan will include specification to account for this (essentially by an additional set of surgical domain parameters for which each term could be partially pooled, if that aligns with the prior belief structure).
+
+### Decision
+
+At each interim, we assess the posterior and if a decision threshold is met, we act.
+For example, if a superiority decision is reached in one of the domains for which this decision type is relevant, then we consider that domain dealt with and all subsequent participants are assigned to receive the superior intervention.
+We can (and presently do) continue to update the posterior inference for the comparison that has stopped in subsequent interim analyses until we get to the point where all questions have been answered in all domains, at which point the trial will stop.
+
+Superiority and non-inferiority are applicable to some domains and not others, however, we define reference and threshold values for all domains, just in case.
+
+For the superiority decision, a reference value of `r l[[1]]$cfg$dec_ref$delta_sup` was used and the probability thresholds were:
+
++ `r l[[1]]$cfg$dec_probs$thresh_sup[1]` for surgical domain
++ `r l[[1]]$cfg$dec_probs$thresh_sup[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_probs$thresh_sup[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_probs$thresh_sup[4]` for antibiotic choice domain
+
+For the futility decision (in relation to superiority) a reference value of `r l[[1]]$cfg$dec_ref$delta_sup_fut` was used and the probability thresholds were:
+
++ `r l[[1]]$cfg$dec_probs$thresh_fut_sup[1]` for surgical domain
++ `r l[[1]]$cfg$dec_probs$thresh_fut_sup[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_probs$thresh_fut_sup[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_probs$thresh_fut_sup[4]` for antibiotic choice domain
+
+The above means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_sup_fut` is less than `r l[[1]]$cfg$dec_probs$thresh_fut_sup[1]` in the surgical domain comparison, then we say the superiority goal is futile.
+
+For the ni decision, a reference value of `r l[[1]]$cfg$dec_ref$delta_ni` was used and the probability thresholds were:
+
++ `r l[[1]]$cfg$dec_probs$thresh_ni[1]` for surgical domain
++ `r l[[1]]$cfg$dec_probs$thresh_ni[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_probs$thresh_ni[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_probs$thresh_ni[4]` for antibiotic choice domain
+
+The above means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_ni` is greater than `r l[[1]]$cfg$dec_probs$thresh_ni[2]`, in the antibiotic duration domain, then we will say the intervention is non-inferior.
+
+The futility decision (in relation to non-inferiority) has a reference value of `r l[[1]]$cfg$dec_ref$delta_ni_fut` and the probability thresholds were:
+
++ `r l[[1]]$cfg$dec_probs$thresh_fut_ni[1]` for surgical domain
++ `r l[[1]]$cfg$dec_probs$thresh_fut_ni[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_probs$thresh_fut_ni[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_probs$thresh_fut_ni[4]` for antibiotic choice domain 
+
+This means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_ni_fut` is less than `r l[[1]]$cfg$dec_probs$thresh_fut_ni[2]`, in the antibiotic duration domain, then we say the non-inferiority goal is futile.
+
+
+### Prior
+
+The priors were as follows:
+
++ Reference log-odds of response: logistic distribution, mean `r l[[1]]$cfg$pri$mu[[1]]` and scale `r l[[1]]$cfg$pri$mu[[2]]`
++ Silo effects: normal distribution, mean `r l[[1]]$cfg$pri$b_silo[[1]]` and scale `r l[[1]]$cfg$pri$b_silo[[2]]`
++ Joint effects: normal distribution, mean `r l[[1]]$cfg$pri$b_jnt[[1]]` and scale `r l[[1]]$cfg$pri$b_jnt[[2]]`
++ Preference effects: normal distribution, mean `r l[[1]]$cfg$pri$b_prf[[1]]` and scale `r l[[1]]$cfg$pri$b_prf[[2]]`
++ Treatment effects: normal distribution, mean `r l[[1]]$cfg$pri$b_trt[[1]]` and scale `r l[[1]]$cfg$pri$b_trt[[2]]`
+
+The prior predictive distribution is consistent with a mean probability across of response over the covariate groupings covering the entire support on the probability scale, centred around 0.6 with the first and third quarters at 0.4 to 0.7.
+
+### Simulation
+
+For this set of simulations, the number of simulated trials per scenario was `r l[[1]]$cfg$nsim`, the simulation label is `r sim_lab`.
+
+<!-- Todo: -->
+
+<!-- Do we need to think about the hierarchical component for surgical domain to enable, for example, silo specific effects, which would otherwise be problematic for the domains. Revisit interactions silo x surg, pref x surg, joint x surg, etc. -->
+
+<!-- Scenarios for effects in surg (moderate effect) + choice (weak effect) plus other comparisons. -->
+
+<!-- Discuss region of practical equivalence. -->
+
+
+

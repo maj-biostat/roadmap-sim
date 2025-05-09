@@ -40,7 +40,7 @@ if(toks[length(toks)] == "roadmap-sim"){
   prefix_fig <- "../fig"
 }
 
-g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim05-sc01-v08.yml"))
+g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim05-sc01-v01.yml"))
 ```
 
 
@@ -54,7 +54,7 @@ g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim05-sc01-v08.yml"))
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim05-13"
+sim_lab <- "sim05-15"
 
 flist <- list.files(paste0("data/", sim_lab), pattern = "sim05")
 toks <- list()
@@ -1023,17 +1023,23 @@ d_fig[, desc := factor(desc,
 
 ggplot(d_fig, aes(x = N, y = pr_val, group = quant, col = quant)) +
   geom_line(lwd = 0.25) +
-  scale_y_continuous("", breaks = seq(0, 1, by = 0.2)) +
+  scale_y_continuous("") +
   scale_color_discrete("") +
-  facet_grid(desc ~ domain) + 
+  # facet_grid(desc ~ domain) + 
   # facet_grid2(desc ~ domain, render_empty = FALSE)
-  theme_minimal() +
+  ggh4x::facet_grid2(desc ~ domain , 
+             labeller = labeller(desc = label_wrap_gen(25)), 
+             scales = "free",
+             axes = "y",
+             independent = "y") +
+  # theme_minimal() +
   theme(
     legend.position = "bottom",
     strip.text.y.right = element_text(angle = 0,
                                       hjust = 0,
                                       vjust = 0.2,
                                       size = 4),
+    axis.ticks = element_blank(),
     strip.text.x.top = element_text(size = 4),
     panel.grid.minor = element_blank(),
     panel.grid.major = element_line(color = "grey",
@@ -1171,19 +1177,25 @@ ggplot(d_fig, aes(x = N, y = pr_val, group = quant, col = quant)) +
   geom_line(lwd = 0.25) +
   scale_y_continuous("", breaks = seq(0, 1, by = 0.2)) +
   scale_color_discrete("") +
-  facet_grid(desc ~ domain, space = "free") +
+  # facet_grid(desc ~ domain, space = "free") +
+  ggh4x::facet_grid2(desc ~ domain , 
+             labeller = labeller(desc = label_wrap_gen(25)), 
+             scales = "free",
+             axes = "y",
+             independent = "y") +
   
   # facet_manual(
   #   . ~ desc, design = matrix(1:17, ncol = 1),
   #   widths = unit(3, "cm")
   # ) +
-  theme_minimal() +
+  # theme_minimal() +
   theme(
     legend.position = "bottom",
     strip.text.y.right = element_text(angle = 0,
                                       hjust = 0,
                                       vjust = 0.2,
                                       size = 4),
+    axis.ticks = element_blank(),
     strip.text.x.top = element_text(size = 4),
     panel.grid.minor = element_blank(),
     panel.grid.major = element_line(color = "grey",
@@ -1256,10 +1268,10 @@ g_tbl
 
 The expected values are calculated by extracting the number of participants entering in each analysis and taking the cumulative sum of these, restricted to the relevant strata.
 For example, the domain 1 (surgical) expected values are based on the participants in the late acute silo that receive randomised surgical intervention.
-Similarly, the domain 2 (antibiotic duration) expected values are based on the participants across all silos that received one-stage revision.
+Similarly, the domain 2 (antibiotic duration) expected values are based on the participants across all silos that received one-stage revision and then receive one of the randomised treatment allocations (i.e. are not in the non-randomised treatment group for any reason).
 
 If a decision was made for a single domain then subsequent enrolments would be assigned to the relevant arm.
-For example, if a superiority decision was made for domain 1 and the trial was ongoing then all subsequent participants are assigned to the superior intervention.
+For example, if a superiority decision was made for domain 1 and the trial was still ongoing then all subsequent participants are assigned to the superior intervention.
 Finally, if a decision was made for all research questions, then the trial would stop early and we use LOCF to propagate the sample size forward to subsequent analyses before computing the expected cumulative numbers by treatment arm.
 
 
@@ -1284,14 +1296,16 @@ ggplot(d_fig, aes(x = N_enrol, y = mu_N, col = arm)) +
   scale_color_discrete("Treatment arm: ") +
   ggh4x::facet_grid2(
     desc ~ paste0("domain: ", domain), 
+    labeller = labeller(desc = label_wrap_gen(25)), 
     scales = "free_y", independent = "y") +
-  theme_minimal() +
+  # theme_minimal() +
   theme(
     legend.position = "bottom",
     strip.text.y.right = element_text(angle = 0,
                                       hjust = 0,
                                       vjust = 0.2,
                                       size = 4),
+    axis.ticks = element_blank(),
     strip.text.x.top = element_text(size = 4),
     panel.grid.minor = element_blank(),
     panel.grid.major = element_line(color = "grey",
@@ -1350,17 +1364,30 @@ d_fig[, domain := factor(domain,
 ggplot(data = d_fig,  
        aes(x = N, y = or)) +
   geom_line(lwd = 0.25) +
-  geom_linerange(aes(ymin = q_025, ymax = q_975), lwd = 0.25) +
+  geom_errorbar(aes(ymin = q_025, ymax = q_975), lwd = 0.25, width = 50) +
   scale_x_continuous("") +
   scale_y_continuous("OR") +
-  facet_grid(desc ~ domain , 
-             labeller = labeller(desc = label_wrap_gen(15)), scales = "free_y") +
-  theme_minimal() +
+  ggh4x::facet_grid2(desc ~ domain , 
+             labeller = labeller(desc = label_wrap_gen(15)), 
+             scales = "free",
+             axes = "y",
+             independent = "y") +
+  # theme_minimal() +
   theme(text = element_text(size = 6),
-        strip.text.y.right = element_text(angle = 0, size = 5),
+        strip.text.y.right = element_text(angle = 0,
+                                      hjust = 0,
+                                      vjust = 0.2,
+                                      size = 4),
         strip.text.x = element_text(angle = 0, size = 5),
+        axis.ticks = element_blank(),
         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
-        axis.text.y = element_text(size = 5))
+        axis.text.y = element_text(size = 5),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "grey",
+                                  linewidth = 0.1,
+                                  linetype = 1))
+
+
 
 ```
 
@@ -1400,17 +1427,28 @@ d_fig[, domain := factor(domain,
 ggplot(data = d_fig,  
        aes(x = N, y = rd)) +
   geom_line(lwd = 0.25) +
-  geom_linerange(aes(ymin = q_025, ymax = q_975), lwd = 0.25) +
+  geom_errorbar(aes(ymin = q_025, ymax = q_975), lwd = 0.25, width = 50) +
   scale_x_continuous("") +
   scale_y_continuous("Risk difference") +
-  facet_grid(desc ~ domain , 
-             labeller = labeller(desc = label_wrap_gen(15)), scales = "free_y") +
-  theme_minimal() +
+  ggh4x::facet_grid2(desc ~ domain , 
+             labeller = labeller(desc = label_wrap_gen(15)), 
+             scales = "free",
+             axes = "y",
+             independent = "y") +
+  # theme_minimal() +
   theme(text = element_text(size = 6),
-        strip.text.y.right = element_text(angle = 0, size = 5),
+        strip.text.y.right = element_text(angle = 0,
+                                      hjust = 0,
+                                      vjust = 0.2,
+                                      size = 4),
         strip.text.x = element_text(angle = 0, size = 5),
+        axis.ticks = element_blank(),
         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
-        axis.text.y = element_text(size = 5))
+        axis.text.y = element_text(size = 5),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "grey",
+                                  linewidth = 0.1,
+                                  linetype = 1))
 
 ```
 
@@ -1469,19 +1507,34 @@ d_fig[, domain := factor(domain,
 ggplot(data = d_fig,  
        aes(x = N, y = fr_unc)) +
   geom_line(lwd = 0.25) +
-  geom_linerange(aes(ymin = q_025, ymax = q_975), lwd = 0.25) +
+  geom_errorbar(aes(ymin = q_025, ymax = q_975), lwd = 0.25, width = 50) +
   scale_x_continuous("") +
   scale_y_continuous("Fraction of uncertainty resolved (1-(V_post/V_pri))") +
-  facet_grid(desc ~ domain , 
-             labeller = labeller(desc = label_wrap_gen(15)), scales = "free_y") +
-  theme_minimal() +
+  ggh4x::facet_grid2(desc ~ domain , 
+             labeller = labeller(desc = label_wrap_gen(15)), 
+             scales = "free",
+             axes = "y",
+             independent = "y") +
+  # theme_clean() +
+  # theme_minimal() +
   theme(text = element_text(size = 6),
-        strip.text.y.right = element_text(angle = 0, size = 5),
+        strip.text.y.right = element_text(angle = 0,
+                                      hjust = 0,
+                                      vjust = 0.2,
+                                      size = 4),
         strip.text.x = element_text(angle = 0, size = 5),
+        axis.ticks = element_blank(),
         axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
-        axis.text.y = element_text(size = 5))
+        axis.text.y = element_text(size = 5),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "grey",
+                                  linewidth = 0.1,
+                                  linetype = 1))
+
+
 
 ```
+
 
 
 
