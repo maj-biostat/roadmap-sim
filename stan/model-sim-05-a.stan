@@ -237,6 +237,8 @@ generated quantities{
   real lor_d1 = nu_d1_23 - nu_d1_1;
   // on the risk scale we would have
   real p_d1_1 = inv_logit(nu_d1_1);
+  real p_d1_2 = inv_logit(nu_d1_2);
+  real p_d1_3 = inv_logit(nu_d1_3);
   real p_d1_23 = inv_logit(nu_d1_23);
   real rd_d1 = p_d1_23 - p_d1_1;
 
