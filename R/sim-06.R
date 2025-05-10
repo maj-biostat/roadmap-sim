@@ -331,7 +331,12 @@ run_trial <- function(
     d_post_chk <- data.table(f_1$draws(
       variables = c(
         
-        "bd1", "bd2", "bd3", "bd4"
+        "bd1", "bd2", "bd3", "bd4",
+        
+        "nu_d1_1", "nu_d1_2", "nu_d1_3",
+        "nu_d2_2", "nu_d2_3",
+        "nu_d3_2", "nu_d3_3",
+        "nu_d4_2", "nu_d4_3"
         
       ),   # risk scale
       format = "matrix"))
@@ -894,8 +899,8 @@ run_sim_06 <- function(){
   e = NULL
   log_info("Starting simulation")
   r <- parallel::mclapply(
-    X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
-    # X=1:5, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    # X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    X=1:5, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
       log_info("Simulation ", ix);
       ll <- tryCatch({
         run_trial(
