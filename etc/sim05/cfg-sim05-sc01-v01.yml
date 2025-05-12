@@ -9,7 +9,7 @@ default:
     jnt: [0, 0.4] # knee, hip
     pref: [0, -0.2] # pref one-stage, pref two-stage
   # early (dair, rev1, rev2), late (dair, rev1, rev2), chronic (dair, rev1, rev2)
-  d1: [0, 0.693, 0.693, 0, 0, 0, 0, 0.693, 0.693] 
+  d1: [0, 0.693, 0.693, 0, 0, 0, 0.1, 0.693, 0.693] 
   d2: [0, 0, 0] # non-rand, 12wk, 6wk
   d3: [0, 0, 0] # non-rand, none, 12wk
   d4: [0, 0, 0] # non-rand, none, rif

@@ -20,9 +20,7 @@ data{
   array[N] int silo;
   array[N] int jnt;
   array[N] int pref;
-  // silo x intv - converted via K_d1 and silo to index b/w 1:9, see d1_ix
   array[N] int d1;
-  // intv + non-rand 
   array[N] int d2;
   array[N] int d3;
   array[N] int d4;
@@ -95,35 +93,14 @@ data{
   int prior_only;
 }
 transformed data{
-  array[N] int d1_ix;
   
-  array[N_d2] int d2_d1_ix;
-  array[N_d3] int d3_d1_ix;
-  array[N_d4] int d4_d1_ix;
-  
-  
-  for(i in 1:N){
-    d1_ix[i] = d1[i] + (K_d1 * (silo[i] - 1));  
-  } 
-  // for g-comp to pick up the correct surgical domain parameter
-  for(i in 1:N_d2){
-    // d2_d1 should be 2 for everything since we are conditioning on one-stage
-    d2_d1_ix[i] = d2_d1[i] + (K_d1 * (d2_s[i] - 1));  
-  }
-  for(i in 1:N_d3){
-    // d3_d1 should be 3 for everything since we are conditioning on two-stage
-    d3_d1_ix[i] = d3_d1[i] + (K_d1 * (d3_s[i] - 1));  
-  }
-  for(i in 1:N_d4){
-    d4_d1_ix[i] = d4_d1[i] + (K_d1 * (d4_s[i] - 1));  
-  }
 }
 parameters{
   real mu;
   vector[K_silo-1] bs_raw;
   vector[K_jnt-1] bj_raw;
   vector[K_pref-1] bp_raw;
-  vector[(K_d1 * K_silo) - 1] bd1_raw;
+  vector[K_d1-1] bd1_raw;
   vector[K_d2-1] bd2_raw;
   vector[K_d3-1] bd3_raw;
   vector[K_d4-1] bd4_raw;
@@ -145,7 +122,7 @@ transformed parameters{
   // simply due to the non-randomised nature of the comparison for early and 
   // chronic) and their influence on the duration domains.
   // Below I declare the silo by domain effects for surgical intervention.
-  vector[K_d1 * K_silo] bd1;
+  vector[K_d1] bd1;
   vector[K_d2] bd2;
   vector[K_d3] bd3;
   vector[K_d4] bd4;
@@ -163,13 +140,13 @@ transformed parameters{
   bs[2:K_silo] = bs_raw;
   bj[2:K_jnt] = bj_raw;
   bp[2:K_pref] = bp_raw;
-  bd1[2:(K_d1 * K_silo)] = bd1_raw;
+  bd1[2:K_d1] = bd1_raw;
   bd2[2:K_d2] = bd2_raw;
   bd3[2:K_d3] = bd3_raw;
   bd4[2:K_d4] = bd4_raw;
 
   eta = mu + bs[silo] + bj[jnt] + bp[pref] + 
-    bd1[d1_ix] + bd2[d2] + bd3[d3] + bd4[d4];  
+    bd1[d1] + bd2[d2] + bd3[d3] + bd4[d4];  
 
 } 
 model{
@@ -218,7 +195,7 @@ generated quantities{
   // Similarly, first level of bd3 selected since this is the only comparison
   // that applies to all. Again, first level is reference, i.e. equals zero.
   vector[N_d1] eta_d1_1 = mu + bs[2] + bj[d1_j] + bp[d1_p] + 
-    bd1[4] + bd2[1] + bd3[1] + bd4[d1_d4];
+    bd1[1] + bd2[1] + bd3[1] + bd4[d1_d4];
   // Assignment to revision will either end up being one or two-stage.
   // those that had the preference for one get one and those that had pref for
   // two get two. Thus we use different weights (since these are subsets of
@@ -226,9 +203,9 @@ generated quantities{
   // I have set bp explicitly here but it would be ok to just use the data passed
   // in as all records should have been selected based on the required preference.
   vector[N_d1_p1] eta_d1_2 = mu + bs[2] + bj[d1_j[ix_d1_p1]] + bp[1] +
-    bd1[5] + bd2[1] + bd3[1] + bd4[d1_d4[ix_d1_p1]];
+    bd1[2] + bd2[1] + bd3[1] + bd4[d1_d4[ix_d1_p1]];
   vector[N_d1_p2] eta_d1_3 = mu + bs[2] + bj[d1_j[ix_d1_p2]] + bp[2] +
-    bd1[6] + bd2[1] + bd3[1] + bd4[d1_d4[ix_d1_p2]];
+    bd1[3] + bd2[1] + bd3[1] + bd4[d1_d4[ix_d1_p2]];
   real nu_d1_1 = wgtsd1' * eta_d1_1   ;
   real nu_d1_2 = wgtsd1_p1' * eta_d1_2   ;
   real nu_d1_3 = wgtsd1_p2' * eta_d1_3   ;
@@ -258,9 +235,9 @@ generated quantities{
   // one stage revision, then it is logically impossible to receive ext proph
   // based on the design rules.
   vector[N_d2] eta_d2_2 = mu + bs[d2_s] + bj[d2_j] + bp[d2_p] + 
-    bd1[d2_d1_ix] + bd2[2] + bd3[1] + bd4[d2_d4];
+    bd1[d2_d1] + bd2[2] + bd3[1] + bd4[d2_d4];
   vector[N_d2] eta_d2_3 = mu + bs[d2_s] + bj[d2_j] + bp[d2_p] + 
-    bd1[d2_d1_ix] + bd2[3] + bd3[1] + bd4[d2_d4];
+    bd1[d2_d1] + bd2[3] + bd3[1] + bd4[d2_d4];
   real nu_d2_2 = wgtsd2' * eta_d2_2   ;
   real nu_d2_3 = wgtsd2' * eta_d2_3   ;
   // only one comparison of interest
@@ -278,9 +255,9 @@ generated quantities{
   // domain.
   // Similarly, d2 needs to be 1 here for all units (corresponding to non-rand). 
   vector[N_d3] eta_d3_2 = mu + bs[d3_s] + bj[d3_j] + bp[d3_p] + 
-    bd1[d3_d1_ix] + bd2[1] + bd3[2] + bd4[d3_d4];
+    bd1[d3_d1] + bd2[1] + bd3[2] + bd4[d3_d4];
   vector[N_d3] eta_d3_3 = mu + bs[d3_s] + bj[d3_j] + bp[d3_p] + 
-    bd1[d3_d1_ix] + bd2[1] + bd3[3] + bd4[d3_d4];
+    bd1[d3_d1] + bd2[1] + bd3[3] + bd4[d3_d4];
   real nu_d3_2 = wgtsd3' * eta_d3_2   ;
   real nu_d3_3 = wgtsd3' * eta_d3_3   ;
   // only one comparison of interest
@@ -292,9 +269,9 @@ generated quantities{
   // Ab choice domain (D4) comparisons of interest are rif to none
   vector[N_d4] wgtsd4 = dirichlet_rng(to_vector(n_d4));
   vector[N_d4] eta_d4_2 = mu + bs[d4_s] + bj[d4_j] + bp[d4_p] + 
-    bd1[d4_d1_ix] + bd2[d4_d2] + bd3[d4_d3] + bd4[2];
+    bd1[d4_d1] + bd2[d4_d2] + bd3[d4_d3] + bd4[2];
   vector[N_d4] eta_d4_3 = mu + bs[d4_s] + bj[d4_j] + bp[d4_p] + 
-    bd1[d4_d1_ix] + bd2[d4_d2] + bd3[d4_d3] + bd4[3];
+    bd1[d4_d1] + bd2[d4_d2] + bd3[d4_d3] + bd4[3];
   real nu_d4_2 = wgtsd4' * eta_d4_2   ;
   real nu_d4_3 = wgtsd4' * eta_d4_3   ;
   // only one comparison of interest
