@@ -107,11 +107,14 @@ transformed data{
   } 
   // for g-comp to pick up the correct surgical domain parameter
   for(i in 1:N_d2){
-    // d2_d1 should be 2 for everything since we are conditioning on one-stage
+    // d2_d1 should be one-stage (2) for everything since we are conditioning on 
+    // one-stage but this will convert to a silo specific index for one-stage
     d2_d1_ix[i] = d2_d1[i] + (K_d1 * (d2_s[i] - 1));  
   }
   for(i in 1:N_d3){
-    // d3_d1 should be 3 for everything since we are conditioning on two-stage
+    // As above but for two-stage. 
+    // d3_d1 should be two-stage (2) for everything since we are conditioning on 
+    // two-stage but this will convert to a silo specific index for two-stage
     d3_d1_ix[i] = d3_d1[i] + (K_d1 * (d3_s[i] - 1));  
   }
   for(i in 1:N_d4){
