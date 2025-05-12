@@ -144,9 +144,6 @@ sim05:
 	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v16.yml
 	sleep 10
 	rm tmp/*.csv
-	Rscript $(R_OPTS) ./R/sim-05.R run_sim_05 ./sim05/cfg-sim05-sc01-v17.yml
-	sleep 10
-	rm tmp/*.csv
 
 # 9/May/2025
 # sequential design sim-06.R 
@@ -176,33 +173,7 @@ sim06:
 	Rscript $(R_OPTS) ./R/sim-06.R run_sim_06 ./sim06/cfg-sim06-sc01-v08.yml
 	sleep 10
 	rm tmp/*.csv
-	Rscript $(R_OPTS) ./R/sim-06.R run_sim_06 ./sim06/cfg-sim06-sc01-v09.yml
-	sleep 10
-	rm tmp/*.csv
-	Rscript $(R_OPTS) ./R/sim-06.R run_sim_06 ./sim06/cfg-sim06-sc01-v10.yml
-	sleep 10
-	rm tmp/*.csv
-	Rscript $(R_OPTS) ./R/sim-06.R run_sim_06 ./sim06/cfg-sim06-sc01-v11.yml
-	sleep 10
-	rm tmp/*.csv
-	Rscript $(R_OPTS) ./R/sim-06.R run_sim_06 ./sim06/cfg-sim06-sc01-v12.yml
-	sleep 10
-	rm tmp/*.csv
-	Rscript $(R_OPTS) ./R/sim-06.R run_sim_06 ./sim06/cfg-sim06-sc01-v13.yml
-	sleep 10
-	rm tmp/*.csv
-	Rscript $(R_OPTS) ./R/sim-06.R run_sim_06 ./sim06/cfg-sim06-sc01-v14.yml
-	sleep 10
-	rm tmp/*.csv
-	Rscript $(R_OPTS) ./R/sim-06.R run_sim_06 ./sim06/cfg-sim06-sc01-v15.yml
-	sleep 10
-	rm tmp/*.csv
-	Rscript $(R_OPTS) ./R/sim-06.R run_sim_06 ./sim06/cfg-sim06-sc01-v16.yml
-	sleep 10
-	rm tmp/*.csv
-	Rscript $(R_OPTS) ./R/sim-06.R run_sim_06 ./sim06/cfg-sim06-sc01-v17.yml
-	sleep 10
-	rm tmp/*.csv
+	
 
 
 

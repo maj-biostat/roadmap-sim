@@ -14,7 +14,7 @@ default:
   d3: [0, 0, 0] # non-rand, none, 12wk
   d4: [0, -0.1, 0.8163] # non-rand, none, rif
   pri:
-    mu: [0, 0.47] # mean, scale for each par set
+    mu: [0.7, 0.7] # mean, scale for each par set
     b_silo: [0, 1]
     b_jnt: [0, 1]
     b_prf: [0, 1]
