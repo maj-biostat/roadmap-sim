@@ -30,8 +30,8 @@ g_cfgsc <- config::get(file = f_cfgsc)
 stopifnot("Config is null" = !is.null(g_cfgsc))
 
 ix <- 1
-m1 <- cmdstanr::cmdstan_model("stan/model-sim-05-a.stan")
-m2 <- cmdstanr::cmdstan_model("stan/model-sim-05-b.stan")
+m1 <- cmdstanr::cmdstan_model("stan/model-sim-06-a.stan")
+m2 <- cmdstanr::cmdstan_model("stan/model-sim-06-b.stan")
 
 output_dir_mcmc <- paste0(getwd(), "/tmp")
 
