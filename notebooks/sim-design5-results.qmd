@@ -901,6 +901,7 @@ for(i in 1:length(l)){
 
 
 
+### Probability of triggering decision
 
 @tbl-sim05-cumprobsup shows the cumulative probability of a superiority decision across each of the scenarios simulated (the same information is shown in @fig-cum-prob-sup).
 Operating characteristics are shown only for the relevant domains and the futility of a superiority decision is included in parentheses.
@@ -914,6 +915,9 @@ The decisions are based on the aggregated effect of both revision types, not the
 3. AB extended prophylaxis receives entrants from acute, late and chronic silos and hence has more data to work with, leading to a higher overall cumulative probability of stopping. Ditto with the AB choice domain. So, in general, these have better overall power when effects are present, when contrasted with the surgical domain.
 4. For the 90% power example, the effect (OR) sizes by domain are 1.87, 1.45, 1.73, 1.6 for surgical, ab duration, extended prophylaxis and choice respectively.
 
+::: {.panel-tabset  .nav-pills}
+
+#### Superiority decision - tabulated
 
 <!-- 2. AB duration of therapy is only indirectly relevant here because that domain assesses non-inferiority. I think that the revised rules for NI will influence other domains in that when AB duration is deemed NI, then all subsequent participants are assumed to get 6 weeks which redirects some of those that would have otherwise entered into the self-select group, which is effectively the group that inform decisions in the surgical domain. But note that this is a theory and I am yet to verify it. -->
 
@@ -997,6 +1001,8 @@ g_tbl
 
 ```
 
+#### Superiority decision - visualisation
+
 ```{r}
 #| label: fig-cum-prob-sup
 #| fig-cap: 'Cumulative probabilities for superiority assessments'
@@ -1055,6 +1061,7 @@ ggplot(d_fig, aes(x = N, y = pr_val, group = quant, col = quant)) +
 
 ```
 
+:::
 
 @tbl-sim05-cumprobni shows the cumulative probability of a non-inferiority decision with futility shown in parentheses (the same information is shown in @fig-cum-prob-ni).
 The results are only shown for the domains for which non-inferiority is evaluated.
@@ -1068,6 +1075,11 @@ Notes:
 ![Decision options based on posterior](indifference.png){#fig-indiff}
 
 3. The higher power in the scenario where all domains have an effect arises because the surgical domain does not get shut down so you have more participants entering this AB duration domain.
+
+
+::: {.panel-tabset  .nav-pills}
+
+#### Non-inferiority - tabulated
 
 ```{r}
 #| label: tbl-sim05-cumprobni
@@ -1149,6 +1161,8 @@ g_tbl
 
 ```
 
+#### Non-inferiority - visualisation
+
 ```{r}
 #| label: fig-cum-prob-ni
 #| fig-cap: 'Cumulative probabilities for NI assessments'
@@ -1210,11 +1224,32 @@ ggplot(d_fig, aes(x = N, y = pr_val, group = quant, col = quant)) +
 
 ```
 
+:::
+
+
+
+### Sample size of randomised comparisons
+
 @tbl-sim05-stopn shows the number of enrolments when any stopping decision is made (including reaching the maximum 2500 sample size).
 
 Notes
 
 1. This is the total number of enrolments that are expected to have occurred, not how many are contributing to the inference in a given domain.
+
+@fig-n-by-arm shows the number of participants entering into each of the randomised comparisons by domain and scenario.
+
+The expected values are calculated by extracting the number of participants entering in each analysis and taking the cumulative sum of these, restricted to the relevant strata.
+For example, the domain 1 (surgical) expected values are based on the participants in the late acute silo that receive randomised surgical intervention.
+Similarly, the domain 2 (antibiotic duration) expected values are based on the participants across all silos that received one-stage revision and then receive one of the randomised treatment allocations (i.e. are not in the non-randomised treatment group for any reason).
+
+If a decision was made for a single domain then subsequent enrolments would be assigned to the relevant arm.
+For example, if a superiority decision was made for domain 1 and the trial was still ongoing then all subsequent participants are assigned to the superior intervention.
+Finally, if a decision was made for all research questions, then the trial would stop early and we use LOCF to propagate the sample size forward to subsequent analyses before computing the expected cumulative numbers by treatment arm.
+
+
+::: {.panel-tabset  .nav-pills}
+
+#### Enrolments to stopping
 
 ```{r}
 #| label: tbl-sim05-stopn
@@ -1263,17 +1298,7 @@ g_tbl
 ```
 
 
-
-@fig-n-by-arm shows the number of participants entering into each of the randomised comparisons by domain and scenario.
-
-The expected values are calculated by extracting the number of participants entering in each analysis and taking the cumulative sum of these, restricted to the relevant strata.
-For example, the domain 1 (surgical) expected values are based on the participants in the late acute silo that receive randomised surgical intervention.
-Similarly, the domain 2 (antibiotic duration) expected values are based on the participants across all silos that received one-stage revision and then receive one of the randomised treatment allocations (i.e. are not in the non-randomised treatment group for any reason).
-
-If a decision was made for a single domain then subsequent enrolments would be assigned to the relevant arm.
-For example, if a superiority decision was made for domain 1 and the trial was still ongoing then all subsequent participants are assigned to the superior intervention.
-Finally, if a decision was made for all research questions, then the trial would stop early and we use LOCF to propagate the sample size forward to subsequent analyses before computing the expected cumulative numbers by treatment arm.
-
+#### Enrolments to stopping
 
 ```{r}
 #| label: fig-n-by-arm
@@ -1321,11 +1346,10 @@ ggplot(d_fig, aes(x = N_enrol, y = mu_N, col = arm)) +
 
 ```
 
+:::
 
-::: {.panel-tabset  .nav-pills}
 
-
-## Treatment effects - odds ratios
+### Parameter estimation
 
 @fig-expected-or shows the median value and 95% quantiles for the posterior means obtained from the simulations for each domain and scenario.
 The estimates are unconditional, in that they ignore the stopping rule and propagate estimates forward with LOCF so that we are working from a random sample (albeit with static imputation) rather than a dependent sample of simulations.
@@ -1333,6 +1357,20 @@ The estimates are unconditional, in that they ignore the stopping rule and propa
 Notes
 
 1. The AB duration domain suffers from very high variance in the distribution of posterior means that we anticipate to observe. That is, when there is no true effect, we might still see effects as large as $\pm 25%$ on the absolute risk scale.
+
+
+@fig-expected-rd shows the median value and 95% quantiles for the posterior means obtained from the simulations for each domain and scenario.
+The estimates are unconditional, in that they ignore the stopping rule and propagate estimates forward with LOCF.
+
+Notes
+
+1. This plot focuses on the risk difference, and suggests that the odds ratios translate to effects in the order of 10-20% on the risk scale, dependent on the silo, domain etc. This variation is to be expected due to the non-linearity in the inverse logit transform. For example, if the baseline log-odds of response was -0.5 and you are contemplating an odds ratio of 2.5 this translates to a risk difference of about 0.23 but if your baseline log-odds of response is 0.2 then, with the same OR, this translates to a risk difference of about 0.2.
+
+
+::: {.panel-tabset  .nav-pills}
+
+
+#### Treatment effects - odds ratios
 
 
 ```{r}
@@ -1391,15 +1429,7 @@ ggplot(data = d_fig,
 
 ```
 
-## Treatment effects - risk difference
-
-
-@fig-expected-rd shows the median value and 95% quantiles for the posterior means obtained from the simulations for each domain and scenario.
-The estimates are unconditional, in that they ignore the stopping rule and propagate estimates forward with LOCF.
-
-Notes
-
-1. This plot focuses on the risk difference, and suggests that the odds ratios translate to effects in the order of 10-20% on the risk scale, dependent on the silo, domain etc. This variation is to be expected due to the non-linearity in the inverse logit transform. For example, if the baseline log-odds of response was -0.5 and you are contemplating an odds ratio of 2.5 this translates to a risk difference of about 0.23 but if your baseline log-odds of response is 0.2 then, with the same OR, this translates to a risk difference of about 0.2.
+#### Treatment effects - risk difference
 
 ```{r}
 #| label: fig-expected-rd

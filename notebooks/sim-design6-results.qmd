@@ -54,7 +54,7 @@ g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim06-sc01-v01.yml"))
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim06-02"
+sim_lab <- "sim06-04"
 
 flist <- list.files(paste0("data/", sim_lab), pattern = "sim06")
 toks <- list()
@@ -72,7 +72,10 @@ for(i in 1:length(flist)){
 
 ### Model
 
-In the present design, the model continues to be used to compute unit level risk (probability) and assesses decisions based on risk difference for the intervention comparisons by domain.
+Here, we provide the results under a revised model where we allow for silo-specific effects in the surgical domain.
+If, for whatever reason, the early or chronic silo show variation in the surgical domain effects then the silo adjustment is inadequate to address this and we end up with a poluted version of the surgical domain parameters.
+Everything else remains the same.
+The model is used to compute unit level risk (probability) and assesses decisions based on risk difference for the intervention comparisons by domain.
 
 For the simulations, we have a single, multivariable logistic regression model with a linear predictor that incorporates all domains and is specified as follows:
 
@@ -89,14 +92,14 @@ for each distinct covariate grouping where:
 + $\mu$ represents an overall reference level from which all covariates deviate
 + $\beta_{s}$ represents the silo deviations, which can be thought of as a seriousness of disease adjustment. We fix the first parameter (early) in this vector to zero for identifiability and the components are for early, late and chronic silo membership. 
 + $\beta_{j}$ represents the joint deviations, accounting for heterogeneity in outcome due to site of infection. Again, we fix the first parameter (knee) in this vector to zero for identifiability and the components are knee and hip.
-+ $\beta_{p}$ represents the preference adjustment, assuming revision was allocated but included irrespective of silo, i.e. even if DAIR is assigned or planned or randomised assignment isn't relevant. This accounts for heterogeneity in outcome due to clinical preference for revision type, which can be thought of as expert elicitation on aspects of the patient state and clinicial experience. Again, we fix the first parameter (preference one-stage revision) in this vector to zero for identifiability and the components are one-stage and two-stage. Assuming revision is assigned, we would expect that the original preference would ultimately align with the type of revision received, but there is nothing enforcing this. Arguably, this could be restricted to the late-acute cohort, but we need to extend the vector of parameters to account for this.
++ $\beta_{p}$ represents the preference adjustment, assuming revision was allocated but included irrespective of silo, i.e. even if DAIR is assigned or planned or randomised assignment isn't relevant. This accounts for heterogeneity in outcome due to clinical preference for revision type, which can be thought of as expert elicitation on aspects of the patient state and clinicial experience. Again, we fix the first parameter (preference one-stage revision) in this vector to zero for identifiability and the components are one-stage and two-stage. Assuming revision is assigned, we would expect that the original preference would ultimately align with the type of revision received, but there is nothing enforcing this. Arguably, this could be restricted to the late-acute cohort, but we would need to extend the vector of parameters to accommodate for this.
 + $\beta_{d1[k_{d1}, s]}$ represents the silo-specific deviations associated with the surgery type. This accounts for heterogeneity in outcome due to surgery type and with the late-acute deviations taken as a randomised comparison of dair vs revision after the agreed weighting is applied. Again, we fix the first parameter (dair in the early cohort) in this vector to zero for identifiability and the components are dair, rev(1), rev(2) for each silo. The reason for the silo-specific context is that if revision effects exist in one silo but not another, then without this conditioning, we will end up with biased inference. For example, if (for whatever reason) there is an revision effect in the early domain but not the late-acute cohort then without this level of adjustment, we would end up reporting a revision effect when we shouldn't be; adjustment for silo doesn't protect us from this, even though it is perfectly collinear with a unit receiving non-randomised or randomised surgical treatment.
-+ $\beta_{d2[k_{d2}]}$ represents the deviations associated with backbone antibiotic duration. This accounts for heterogeneity in outcome due to the assigned backbone antibiotic duration. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, 12 weeks and 6 weeks. The term is included in the model irrespective of what surgery type was received but only units receiving randomised and revealed one-stage are captured within the 12 week/6 week comparison. The other units contribute to the non-randomised set (which is essentially a nuissance variable that we don't particularly care about). We are assuming that there is no silo-specific hetereogeneity for this comparison.
++ $\beta_{d2[k_{d2}]}$ represents the deviations associated with backbone antibiotic duration. This accounts for heterogeneity in outcome due to the assigned backbone antibiotic duration. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, 12 weeks and 6 weeks. The term is included in the model irrespective of what surgery type was received but only units receiving randomised and revealed one-stage are captured within the 12 week/6 week comparison. The other units contribute to the non-randomised set (which is essentially a nuissance variable that we don't particularly care about). We are assuming that there is no silo-specific (or any other) hetereogeneity for this comparison.
 + $\beta_{d3[k_{d3}]}$ represents the deviations associated with extended prophylaxis duration. This accounts for heterogeneity in outcome due to the assigned extended prophylaxis duration. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, no ext-proph and 12 weeks. The term is included in the model irrespective of what surgery type was received but only units receiving randomised and revealed two-stage are captured within the none/12 week comparison. The other units contribute to the non-randomised set (which again is a nuissance variable that we don't particularly care about). We are assuming that there is no silo-specific hetereogeneity for this comparison.
 + $\beta_{d4[k_{d4}]}$ represents the deviations associated with antibiotic choice. This accounts for heterogeneity in outcome due to the assigned antibiotic choice. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, no rifampicin and rifampicin. The term is included for all units for which rifampicin may be indicated. The other units contribute to the non-randomised set. We are assuming that there is no silo-specific hetereogeneity for this comparison.
 
-The model isn't particularly complicated but the way that terms enter the model is convoluted and understanding the dependency implications and consequently interpretations is really quite challenging.
-For the actual trial analysis, this model will be revised to the equivalent Bernoulli likelihood setup on unit level data and also extended to account for site, randomisation period and prognostic covariates.
+The model isn't particularly complicated but the way that terms enter the model is convoluted and understanding the dependency implications and consequently interpretations is fairly challenging.
+For the actual trial analysis, the model will be revised to the equivalent Bernoulli likelihood setup on unit level data and also extended to account for site, randomisation period and prognostic covariates.
 Bar the surgical domain, for which 'by silo' deviations are implicit in the existing parameterisation, no further interactions are included.
 However, given that heterogeneity by site of infection (joint) is of interest (primarily in the surgical domain) the analysis plan will include specification to account for this (essentially by an additional set of surgical domain parameters for which each term could be partially pooled, if that aligns with the prior belief structure).
 
@@ -107,6 +110,7 @@ For example, if a superiority decision is reached in one of the domains for whic
 We can (and presently do) continue to update the posterior inference for the comparison that has stopped in subsequent interim analyses until we get to the point where all questions have been answered in all domains, at which point the trial will stop.
 
 Superiority and non-inferiority are applicable to some domains and not others, however, we define reference and threshold values for all domains, just in case.
+Decisions are made with respect to the average within any `random-effect' terms that might exist within the model.
 
 For the superiority decision, a reference value of `r l[[1]]$cfg$dec_ref$delta_sup` was used and the probability thresholds were:
 
@@ -335,7 +339,7 @@ for(i in 1:length(l)){
 # our estimates is representative of the parameter values we used to simulate
 # the data.
 
-i <- 2
+i <- 1
 d_tbl_3 <- data.table()
 
 for(i in 1:length(l)){
@@ -1144,8 +1148,10 @@ ggplot(data = d_fig,
 
 :::
 
-### Empirical risk
+### Proportion with treatment success
 
+@tbl-sim05-risk shows the empirical proportion having treatment success within the randomised comparisons across the simulations.
+So, for example, the values for the surgical domain shows the empirical proportion having treatment success within the late acute silo by treatment arm (dair, rev(1), rev(2)).
 
 ```{r}
 #| label: tbl-sim05-risk
