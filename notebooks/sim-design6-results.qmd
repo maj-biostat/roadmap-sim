@@ -421,14 +421,16 @@ for(i in 1:length(l)){
   setnames(d_tru, "id_analys", "analys")
   
   # late acute, surgical arms
+  # *** silo isn't included in the keyby because we want to average across 
+  # the entire trial population, not silo specific sample sizes.
   d_1_tmp <- d_tru[
-    silo == 2, .(N = sum(N), domain = 1), keyby = .(sim, analys, silo, d1)]
-  d_1_tmp[, N := cumsum(N), keyby = .(sim, silo, d1)]
+    silo == 2, .(N = sum(N), domain = 1), keyby = .(sim, analys, d1)]
+  d_1_tmp[, N := cumsum(N), keyby = .(sim, d1)]
   setnames(d_1_tmp, old = "d1", "arm")
   d_1_tmp <- merge(
     d_1_tmp, 
-    CJ(sim = 1:max(d_tru$sim), analys = 1:5, arm = 1:3, silo = 2, domain = 1), 
-    by = c("sim", "analys", "arm", "silo", "domain"),
+    CJ(sim = 1:max(d_tru$sim), analys = 1:5, arm = 1:3, domain = 1), 
+    by = c("sim", "analys", "arm", "domain"),
     all.y = T)
   d_1_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm)]
   setkey(d_1_tmp, sim, analys, arm)
@@ -436,45 +438,45 @@ for(i in 1:length(l)){
   # one-stage revision, ab duration randomised arms
   d_2_tmp <- d_tru[
     d1 == 2 & d2 %in% 2:3, 
-    .(N = sum(N), domain = 2), keyby = .(sim, analys, silo, d2)]
-  d_2_tmp[, N := cumsum(N), keyby = .(sim, silo, d2)]
+    .(N = sum(N), domain = 2), keyby = .(sim, analys, d2)]
+  d_2_tmp[, N := cumsum(N), keyby = .(sim, d2)]
   setnames(d_2_tmp, old = "d2", "arm")
   d_2_tmp <- merge(
     d_2_tmp, 
-    CJ(sim = 1:max(d_tru$sim), analys = 1:5, arm = 2:3, silo = 1:3, domain = 2), 
-    by = c("sim", "analys", "arm", "silo", "domain"),
+    CJ(sim = 1:max(d_tru$sim), analys = 1:5, arm = 2:3, domain = 2), 
+    by = c("sim", "analys", "arm", "domain"),
     all.y = T)
   d_2_tmp[analys == 1 & is.na(N), N := 0]
-  d_2_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm, silo)]
+  d_2_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm)]
   setkey(d_2_tmp, sim, analys, arm)
   
   # two-stage revision, extended prophy randomised arms
   d_3_tmp <- d_tru[
     d1 == 3 & d3 %in% 2:3, 
-    .(N = sum(N), domain = 3), keyby = .(sim, analys, silo, d3)]
-  d_3_tmp[, N := cumsum(N), keyby = .(sim, silo, d3)]
+    .(N = sum(N), domain = 3), keyby = .(sim, analys, d3)]
+  d_3_tmp[, N := cumsum(N), keyby = .(sim, d3)]
   setnames(d_3_tmp, old = "d3", "arm")
   d_3_tmp <- merge(
     d_3_tmp, 
-    CJ(sim = 1:max(d_tru$sim), analys = 1:5, arm = 2:3, silo = 1:3, domain = 3), 
-    by = c("sim", "analys", "arm", "silo", "domain"),
+    CJ(sim = 1:max(d_tru$sim), analys = 1:5, arm = 2:3, domain = 3), 
+    by = c("sim", "analys", "arm", "domain"),
     all.y = T)
   d_3_tmp[analys == 1 & is.na(N), N := 0]
-  d_3_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm, silo)]
+  d_3_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm)]
   setkey(d_3_tmp, sim, analys, arm)
   
   # ab choice randomised arms
   d_4_tmp <- d_tru[
-    d4 %in% 2:3, .(N = sum(N), domain = 4), keyby = .(sim, analys, silo, d4)]
-  d_4_tmp[, N := cumsum(N), keyby = .(sim, silo, d4)]
+    d4 %in% 2:3, .(N = sum(N), domain = 4), keyby = .(sim, analys, d4)]
+  d_4_tmp[, N := cumsum(N), keyby = .(sim, d4)]
   setnames(d_4_tmp, old = "d4", "arm")
   d_4_tmp <- merge(
     d_4_tmp, 
-    CJ(sim = 1:max(d_tru$sim), analys = 1:5, arm = 2:3, silo = 1:3, domain = 4), 
-    by = c("sim", "analys", "arm", "silo", "domain"),
+    CJ(sim = 1:max(d_tru$sim), analys = 1:5, arm = 2:3, domain = 4), 
+    by = c("sim", "analys", "arm", "domain"),
     all.y = T)
   d_4_tmp[analys == 1 & is.na(N), N := 0]
-  d_4_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm, silo)]
+  d_4_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm)]
   setkey(d_4_tmp, sim, analys, arm)
   
   d_arm_tmp <- rbind(d_1_tmp, d_2_tmp, d_3_tmp, d_4_tmp)
