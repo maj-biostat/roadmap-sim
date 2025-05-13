@@ -744,7 +744,7 @@ model_prior_predictive <- function(){
     ab_dur = NA
   )
   
-  mu <- 0.65
+  mu <- 0.7
   b_silo <- c(0.0, -0.3, -0.2)
   b_jnt <- c(0, 0.4)
   b_pref <- c(0.0, -0.2)
@@ -794,7 +794,7 @@ model_prior_predictive <- function(){
   
   # create stan data format based on the relevant subsets of pt
   lsd <- get_stan_data_all_int(l_new$d)
-  lsd$ld$pri_mu <- c(0.8, 0.47)
+  lsd$ld$pri_mu <- c(0.7, 0.7)
   lsd$ld$pri_b_silo <- c(0, 1)
   lsd$ld$pri_b_jnt <- c(0, 1)
   lsd$ld$pri_b_prf <- c(0, 1)
@@ -812,8 +812,6 @@ model_prior_predictive <- function(){
     lsd$ld, iter_warmup = 1000, iter_sampling = 3000,
     parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
     max_treedepth = 11)
-  
-  
   
   
   # extract posterior - marginal probability of outcome by group
