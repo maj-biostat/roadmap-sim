@@ -682,7 +682,7 @@ g_tbl
 ```{r}
 #| label: fig-cum-prob-sup
 #| fig-cap: 'Cumulative probabilities for superiority assessments'
-#| fig-height: 7
+#| fig-height: 5
 #| fig-width: 6
 #| column: page-right
 
@@ -710,7 +710,7 @@ ggplot(d_fig, aes(x = N, y = pr_val, group = quant, col = quant)) +
   # facet_grid(desc ~ domain) + 
   # facet_grid2(desc ~ domain, render_empty = FALSE)
   ggh4x::facet_grid2(desc ~ domain , 
-             labeller = labeller(desc = label_wrap_gen(25)), 
+             labeller = labeller(desc = label_wrap_gen(35)), 
              scales = "free",
              axes = "y",
              independent = "y") +
@@ -839,8 +839,9 @@ g_tbl
 ```{r}
 #| label: fig-cum-prob-ni
 #| fig-cap: 'Cumulative probabilities for NI assessments'
-#| fig-height: 7
+#| fig-height: 4
 #| fig-width: 4
+#| out-width: 70%
 #| column: page-right
 
 d_fig <- d_tbl_1[quant %in% c("ni", "fut_ni") & domain %in% c(2), .SD]
@@ -866,11 +867,12 @@ ggplot(d_fig, aes(x = N, y = pr_val, group = quant, col = quant)) +
   scale_color_discrete("") +
   # facet_grid(desc ~ domain, space = "free") +
   ggh4x::facet_grid2(desc ~ domain , 
-             labeller = labeller(desc = label_wrap_gen(25)), 
+             labeller = labeller(desc = label_wrap_gen(35)), 
              scales = "free",
              axes = "y",
              independent = "y") +
   
+  ggh4x::force_panelsizes(cols = unit(c(4), "cm"), TRUE) +
   # facet_manual(
   #   . ~ desc, design = matrix(1:17, ncol = 1),
   #   widths = unit(3, "cm")
@@ -972,7 +974,7 @@ g_tbl
 ```{r}
 #| label: fig-n-by-arm
 #| fig-cap: 'Expected number of participants on domain arms'
-#| fig-height: 7
+#| fig-height: 5
 #| fig-width: 7
 #| column: page-right
 
@@ -990,7 +992,7 @@ ggplot(d_fig, aes(x = N_enrol, y = mu_N, col = arm)) +
   scale_color_discrete("Treatment arm: ") +
   ggh4x::facet_grid2(
     desc ~ paste0("domain: ", domain), 
-    labeller = labeller(desc = label_wrap_gen(25)), 
+    labeller = labeller(desc = label_wrap_gen(35)), 
     scales = "free_y", independent = "y") +
   # theme_minimal() +
   theme(
@@ -1040,8 +1042,8 @@ Notes
 ```{r}
 #| label: fig-expected-or
 #| fig-cap: 'Median value of posterior means for odds-ratio treatment effects by domain and simulation scenario'
-#| fig-height: 10
-#| fig-width: 6
+#| fig-height: 5
+#| fig-width: 7
 #| column: page-right
 
 # ggplot2::theme_update(text = element_text(size = 8))
@@ -1070,7 +1072,7 @@ ggplot(data = d_fig,
   scale_x_continuous("") +
   scale_y_continuous("OR") +
   ggh4x::facet_grid2(desc ~ domain , 
-             labeller = labeller(desc = label_wrap_gen(15)), 
+             labeller = labeller(desc = label_wrap_gen(35)), 
              scales = "free",
              axes = "y",
              independent = "y") +
@@ -1099,8 +1101,8 @@ ggplot(data = d_fig,
 #| label: fig-expected-rd
 #| fig-cap: 'Median value of posterior means for risk difference treatment effects by domain and simulation scenario'
 #| fig-cap-location: margin
-#| fig-height: 10
-#| fig-width: 6
+#| fig-height: 5
+#| fig-width: 7
 #| column: page-right
 
 
@@ -1125,7 +1127,7 @@ ggplot(data = d_fig,
   scale_x_continuous("") +
   scale_y_continuous("Risk difference") +
   ggh4x::facet_grid2(desc ~ domain , 
-             labeller = labeller(desc = label_wrap_gen(15)), 
+             labeller = labeller(desc = label_wrap_gen(35)), 
              scales = "free",
              axes = "y",
              independent = "y") +
@@ -1228,8 +1230,8 @@ A low fraction resolved (e.g. less than 0.5) suggests that any decision that was
 #| label: fig-uncertainty-1
 #| fig-cap: 'Median values and quantiles for fraction of uncertainty resolved'
 #| fig-cap-location: margin
-#| fig-height: 10
-#| fig-width: 6
+#| fig-height: 5
+#| fig-width: 7
 #| column: page-right
 
 l_cfg <- copy(l[[1]]$cfg)
@@ -1260,7 +1262,7 @@ ggplot(data = d_fig,
   scale_x_continuous("") +
   scale_y_continuous("Fraction of uncertainty resolved (1-(V_post/V_pri))") +
   ggh4x::facet_grid2(desc ~ domain , 
-             labeller = labeller(desc = label_wrap_gen(15)), 
+             labeller = labeller(desc = label_wrap_gen(35)), 
              scales = "free",
              axes = "y",
              independent = "y") +
