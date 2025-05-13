@@ -9,7 +9,7 @@ default:
     jnt: [0, 0.4] # knee, hip
     pref: [0, -0.2] # pref one-stage, pref two-stage
   # early (dair, rev1, rev2), late (dair, rev1, rev2), chronic (dair, rev1, rev2)
-  d1: [0, 0.693, 0.693, -0.1, -0.1, 0.4596, 0.1, 0.693, 0.693] 
+  d1: [0, 0.693, 0.693, -0.1, -0.1, 0.4596, 0.1, 0.693, 0.693]
   d2: [0, -0.1, 0.8163] # non-rand, 12wk, 6wk
   d3: [0, 0, 0] # non-rand, none, 12wk
   d4: [0, 0, 0] # non-rand, none, rif
@@ -25,7 +25,7 @@ default:
     delta_ni: -0.05
     delta_ni_fut: 0.00
   dec_probs:
-    thresh_sup: [0.925, 0.975, 0.975, 0.995] # thresh by domain
+    thresh_sup: [0.92, 0.955, 0.975, 0.995] # thresh by domain
     thresh_ni: [0.975, 0.925, 0.975, 0.975]
-    thresh_fut_sup: [0.30, 0.25, 0.25, 0.25]
+    thresh_fut_sup: [0.30, 0.30, 0.25, 0.25]
     thresh_fut_ni: [0.25, 0.10, 0.25, 0.25]
