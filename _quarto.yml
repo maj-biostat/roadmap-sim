@@ -43,6 +43,9 @@ website:
         - notebooks/sim-design5-ex02.qmd
         - notebooks/sim-design5-ex03.qmd
         - notebooks/sim-design6-results.qmd
+        - notebooks/sim-design6-ex01.qmd
+        - notebooks/sim-design6-ex02.qmd
+        - notebooks/sim-design6-ex03.qmd
       - section: "Design notes"
         contents:
         - notebooks/design-notes-01.qmd
