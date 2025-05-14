@@ -78,11 +78,12 @@ This makes the simulation process simpler.
 Results are presented on both the odds and risk scale.
 Aim is to give us a better intuition and transparency on the magnitude of effects we are contemplating and determine if these are reasonable assumptions.
 
-We have a single, large, multivariable logistic regression model.
+We have a single multivariable logistic regression model.
 One of the sets of parameters accounts for clinician preference for revision type in order to achieve conditional exchangeability across groups.
 At each interim, we assess the posterior and if a decision threshold is met, we act.
 For example, if a superiority decision is reached in one of the domains for which this decision type is relevant, then we consider that domain dealt with and all subsequent participants are assigned to receive the superior intervention.
-We can (and presently do) continue to update the posterior inference for the comparison that has stopped in subsequent interim analyses until we get to the point where all questions have been answered in all domains, at which point the trial will stop.
+We continue to update the posterior for the stopped comparisons in subsequent interim analyses until we get to the point where all questions have been answered in all domains.
+Once all questions have been answered, the trial recruitment will stop.
 
 The priors were as follows:
 
@@ -430,7 +431,7 @@ For this set of simulations, the number of simulated trials per scenario was `r 
 
 ## Simulation results
 
-```{r, echo = FALSE}
+```{r, echo = T}
 #| label: cprobdec
 #| code-summary: Cumulative probability of each decision type
 
@@ -500,7 +501,7 @@ for(i in 1:length(l)){
 ```
 
 
-```{r, echo = FALSE}
+```{r, echo = T}
 #| label: esamplesize
 #| code-summary: Expected sample size 
 
@@ -589,7 +590,7 @@ for(i in 1:length(l)){
 
 
 
-```{r, echo = FALSE}
+```{r, echo = T}
 #| label: distpostmeanuncondit
 #| code-summary: Distributions of posterior means (unconditional)
 
@@ -651,7 +652,7 @@ for(i in 1:length(l)){
 ```
 
 
-```{r, echo = FALSE}
+```{r, echo = T}
 #| label: distpostmeancondit
 #| code-summary: Distributions of posterior means (conditional)
 
@@ -801,11 +802,11 @@ for(i in 1:length(l)){
 
 
 
-```{r, echo = FALSE}
+```{r, echo = T}
 #| label: nbyarm
-#| code-summary: Calculation of number of participants for each randomised comparison over time
+#| code-summary: Number of participants for each randomised comparison over time
 
-
+# 
 
 i <- 1
 d_N_by_arm <- data.table()
@@ -814,24 +815,45 @@ for(i in 1:length(l)){
   
   # extract the decision matrix - sim, analysis, quantity, domain level decision
   d_dec_1 <- copy(l[[i]]$d_decision)
+  # long version of decisions
+  d_dec_2 <- melt(
+    d_dec_1, id.vars = c("sim", "analys", "quant"), variable.name = "domain")
+  # Should be right, but just in case...
+  if(any(is.na(d_dec_2$value))){
+    message("Some of the decision values are NA in index ", i, " file ", flist[i])
+    d_dec_2[is.na(value), value := FALSE]
+  }
+  d_dec_2[, domain := as.numeric(gsub("d", "", domain))]
+  # Domains 1, 3 and 4 will stop for superiority or futility for superiority.
+  # Domaain 2 will stop for NI or futility for NI.
+  # No other stopping rules apply and so we only evaluate the operating 
+  # characteristics on these, i.e. we do not care about the results for the 
+  # cumualative probability of ni for domain 1, 3 and 4 because we would never
+  # stop for this. 
+  d_dec_2 <- rbind(
+    d_dec_2[domain %in% c(1, 3, 4) & quant %in% c("sup", "fut_sup")],
+    d_dec_2[domain %in% c(2) & quant %in% c("ni", "fut_ni")]
+  )
+  
   # config for scenario
   l_cfg <- copy(l[[i]]$cfg)
-  
   # interim looks
   d_enrolment <- data.table(analys = seq_along(l_cfg$N_pt), N_enrol = l_cfg$N_pt)
-  
+  # observed trial data sets
   d_tru <- copy(l[[i]]$d_all)
   setnames(d_tru, "id_analys", "analys")
   
   # late acute, surgical arms
+  # *** silo isn't included in the keyby because we want to average across 
+  # the entire trial population, not silo specific sample sizes.
   d_1_tmp <- d_tru[
-    silo == 2, .(N = sum(N), domain = 1), keyby = .(sim, analys, silo, d1)]
-  d_1_tmp[, N := cumsum(N), keyby = .(sim, silo, d1)]
+    silo == 2, .(N = sum(N), domain = 1), keyby = .(sim, analys, d1)]
+  d_1_tmp[, N := cumsum(N), keyby = .(sim, d1)]
   setnames(d_1_tmp, old = "d1", "arm")
   d_1_tmp <- merge(
     d_1_tmp, 
-    CJ(sim = 1:1000, analys = 1:5, arm = 1:3, silo = 2, domain = 1), 
-    by = c("sim", "analys", "arm", "silo", "domain"),
+    CJ(sim = 1:max(d_tru$sim), analys = 1:5, arm = 1:3, domain = 1), 
+    by = c("sim", "analys", "arm", "domain"),
     all.y = T)
   d_1_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm)]
   setkey(d_1_tmp, sim, analys, arm)
@@ -839,48 +861,56 @@ for(i in 1:length(l)){
   # one-stage revision, ab duration randomised arms
   d_2_tmp <- d_tru[
     d1 == 2 & d2 %in% 2:3, 
-    .(N = sum(N), domain = 2), keyby = .(sim, analys, silo, d2)]
-  d_2_tmp[, N := cumsum(N), keyby = .(sim, silo, d2)]
+    .(N = sum(N), domain = 2), keyby = .(sim, analys, d2)]
+  d_2_tmp[, N := cumsum(N), keyby = .(sim, d2)]
   setnames(d_2_tmp, old = "d2", "arm")
   d_2_tmp <- merge(
     d_2_tmp, 
-    CJ(sim = 1:1000, analys = 1:5, arm = 2:3, silo = 1:3, domain = 2), 
-    by = c("sim", "analys", "arm", "silo", "domain"),
+    CJ(sim = 1:max(d_tru$sim), analys = 1:5, arm = 2:3, domain = 2), 
+    by = c("sim", "analys", "arm", "domain"),
     all.y = T)
   d_2_tmp[analys == 1 & is.na(N), N := 0]
-  d_2_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm, silo)]
+  d_2_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm)]
   setkey(d_2_tmp, sim, analys, arm)
   
   # two-stage revision, extended prophy randomised arms
   d_3_tmp <- d_tru[
     d1 == 3 & d3 %in% 2:3, 
-    .(N = sum(N), domain = 3), keyby = .(sim, analys, silo, d3)]
-  d_3_tmp[, N := cumsum(N), keyby = .(sim, silo, d3)]
+    .(N = sum(N), domain = 3), keyby = .(sim, analys, d3)]
+  d_3_tmp[, N := cumsum(N), keyby = .(sim, d3)]
   setnames(d_3_tmp, old = "d3", "arm")
   d_3_tmp <- merge(
     d_3_tmp, 
-    CJ(sim = 1:1000, analys = 1:5, arm = 2:3, silo = 1:3, domain = 3), 
-    by = c("sim", "analys", "arm", "silo", "domain"),
+    CJ(sim = 1:max(d_tru$sim), analys = 1:5, arm = 2:3, domain = 3), 
+    by = c("sim", "analys", "arm", "domain"),
     all.y = T)
   d_3_tmp[analys == 1 & is.na(N), N := 0]
-  d_3_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm, silo)]
+  d_3_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm)]
   setkey(d_3_tmp, sim, analys, arm)
   
   # ab choice randomised arms
   d_4_tmp <- d_tru[
-    d4 %in% 2:3, .(N = sum(N), domain = 4), keyby = .(sim, analys, silo, d4)]
-  d_4_tmp[, N := cumsum(N), keyby = .(sim, silo, d4)]
+    d4 %in% 2:3, .(N = sum(N), domain = 4), keyby = .(sim, analys, d4)]
+  d_4_tmp[, N := cumsum(N), keyby = .(sim, d4)]
   setnames(d_4_tmp, old = "d4", "arm")
   d_4_tmp <- merge(
     d_4_tmp, 
-    CJ(sim = 1:1000, analys = 1:5, arm = 2:3, silo = 1:3, domain = 4), 
-    by = c("sim", "analys", "arm", "silo", "domain"),
+    CJ(sim = 1:max(d_tru$sim), analys = 1:5, arm = 2:3, domain = 4), 
+    by = c("sim", "analys", "arm", "domain"),
     all.y = T)
   d_4_tmp[analys == 1 & is.na(N), N := 0]
-  d_4_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm, silo)]
+  d_4_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm)]
   setkey(d_4_tmp, sim, analys, arm)
   
   d_arm_tmp <- rbind(d_1_tmp, d_2_tmp, d_3_tmp, d_4_tmp)
+  
+  # d_arm_tmp
+  # d_dec_2[value == T, .SD[1], keyby = .(sim, analys, domain, quant)]
+  # dcast(
+  #   d_dec_1[
+  #     sim == 5 & quant %in% c("sup", "fut_sup"), .(sim, analys, quant, d1)],
+  #   sim + analys ~ quant, value.var = "d1"
+  # )
   
   d_arm_tmp[, `:=`(
     scenario = i, desc = l_cfg$desc
@@ -894,9 +924,6 @@ for(i in 1:length(l)){
   d_N_by_arm <- rbind(d_N_by_arm, d_arm_tmp)
 
 }
-
-
-
 ```
 
 
@@ -906,14 +933,11 @@ for(i in 1:length(l)){
 @tbl-sim05-cumprobsup shows the cumulative probability of a superiority decision across each of the scenarios simulated (the same information is shown in @fig-cum-prob-sup).
 Operating characteristics are shown only for the relevant domains and the futility of a superiority decision is included in parentheses.
 
-Notes (last edit 2025-04-29):
+In the first eight scenarios, the surgical effects are simulated assuming equal sizes in all silos. 
+In the second set of scenarios, silo specific heterogeneity is introduced.
+Under silo-specific heterogeneity there is inflation of the type-i assertion probability in the surgical domain.
 
-1. The 'average' surgical revision effect reaches about 86% when both one-stage and two-stage have a moderate effects, i.e. when both of these procedures increase the log-odds or response by the same $\log(1.75)$.
-When one-stage or two-stage show an effect (the other having a zero effect) the weighted average effect of revision is lower and hence the power is lower.
-The decisions are based on the aggregated effect of both revision types, not the methods selected by the clinician for revision.
-2. With the lower threshold value for superiority in the surgical domain, there is a commensurate increase in the type-i assertion probability.
-3. AB extended prophylaxis receives entrants from acute, late and chronic silos and hence has more data to work with, leading to a higher overall cumulative probability of stopping. Ditto with the AB choice domain. So, in general, these have better overall power when effects are present, when contrasted with the surgical domain.
-4. For the 90% power example, the effect (OR) sizes by domain are 1.87, 1.45, 1.73, 1.6 for surgical, ab duration, extended prophylaxis and choice respectively.
+
 
 ::: {.panel-tabset  .nav-pills}
 
@@ -1066,16 +1090,7 @@ ggplot(d_fig, aes(x = N, y = pr_val, group = quant, col = quant)) +
 @tbl-sim05-cumprobni shows the cumulative probability of a non-inferiority decision with futility shown in parentheses (the same information is shown in @fig-cum-prob-ni).
 The results are only shown for the domains for which non-inferiority is evaluated.
 
-Notes:
-
-1. The "Null effect in all domains" is actually a bit of a misnomer as the true null with regards to the NI decision would be at the NI margin, whereas the scenario refers to the setting where all effects are set to zero. Thus an inflation over the usual type-i assertion probability is to be expected.  
-2. In this set of results the cumalative probability of claiming NI by 2500 is 0.76 when the effect size is OR 1.75 (contrasting with 0.67 from the last set of simulation results).
-3. In the null case (when the 6 week and 12 week response are effectively identical) there is only a ~10% cumulative probability of declaring NI. This is purely due to the thresholds we have selected. If equivalence is what we are actually thinking about, then we could potentially look towards evaluating that instead of non-inferiority (see the @fig-indiff below).
-
-![Decision options based on posterior](indifference.png){#fig-indiff}
-
-3. The higher power in the scenario where all domains have an effect arises because the surgical domain does not get shut down so you have more participants entering this AB duration domain.
-
+The "Null effect in all domains" is actually a bit of a misnomer as the true null with regards to the NI decision would be at the NI margin, whereas the scenario refers to the setting where all effects are set to zero. Thus an inflation over the usual type-i assertion probability is to be expected.
 
 ::: {.panel-tabset  .nav-pills}
 
@@ -1247,21 +1262,19 @@ ggplot(d_fig, aes(x = N, y = pr_val, group = quant, col = quant)) +
 
 ### Sample size of randomised comparisons
 
-@tbl-sim05-stopn shows the number of enrolments when any stopping decision is made (including reaching the maximum 2500 sample size).
-
-Notes
-
-1. This is the total number of enrolments that are expected to have occurred, not how many are contributing to the inference in a given domain.
+@tbl-sim05-stopn shows the number of enrolments when any stopping decision is made (or for reaching the maximum 2500 sample size).
+This is the total number of enrolments that are expected to have occurred, not how many are contributing to the inference in a given domain.
 
 @fig-n-by-arm shows the number of participants entering into each of the randomised comparisons by domain and scenario.
 
-The expected values are calculated by extracting the number of participants entering in each analysis and taking the cumulative sum of these, restricted to the relevant strata.
+The expected cumulative sample sizes are calculated by extracting the number of participants entering into each randomised comparison (i.e. restricted to the relevant strata) and taking the cumulative sum of these over time.
 For example, the domain 1 (surgical) expected values are based on the participants in the late acute silo that receive randomised surgical intervention.
 Similarly, the domain 2 (antibiotic duration) expected values are based on the participants across all silos that received one-stage revision and then receive one of the randomised treatment allocations (i.e. are not in the non-randomised treatment group for any reason).
 
-If a decision was made for a single domain then subsequent enrolments would be assigned to the relevant arm.
-For example, if a superiority decision was made for domain 1 and the trial was still ongoing then all subsequent participants are assigned to the superior intervention.
-Finally, if a decision was made for all research questions, then the trial would stop early and we use LOCF to propagate the sample size forward to subsequent analyses before computing the expected cumulative numbers by treatment arm.
+If a decision was made in a domain, then subsequent enrolments would be assigned to the relevant arm and so the allocation would be expected to deviate away from 1:1.
+For example, if a superiority decision was made for domain 1 (and the trial was still ongoing) then all subsequent participants are assigned to the superior intervention.
+Finally, if a decision was made for all research questions, the trial stops early.
+To avoid any bias in the calculation, we use LOCF to propagate the expectations forward through to the maximum number of enrolments.
 
 
 ::: {.panel-tabset  .nav-pills}
@@ -1324,20 +1337,43 @@ g_tbl
 #| fig-width: 7
 #| column: page-right
 
-d_fig <- d_N_by_arm[, .(mu_N = mean(N)), keyby = .(desc, domain, arm, N_enrol)]
-d_fig[, desc := factor(
+d_fig_1 <- d_N_by_arm[, .(mu_N = mean(N)), keyby = .(desc, domain, arm, N_enrol)]
+d_fig_1[, desc := factor(
   desc,
   levels = unique(d_N_by_arm$desc))]
+d_fig_1[
+  , domain := factor(
+    domain,
+    levels = 1:4,
+    labels = c("Surgical", "AB Duration", "AB Ext-proph", "AB Choice"))]
+
+d_fig_2 <- d_N_by_arm[
+  domain == 1 & arm %in% 2:3, 
+  .(N = sum(N), arm = 4), 
+  keyby = .(analys, sim, domain, scenario, desc, N_enrol)]
+d_fig_2 <- d_fig_2[, .(mu_N = mean(N)), keyby = .(desc, domain, arm, N_enrol)]
+
+d_fig_2[, desc := factor(
+  desc,
+  levels = unique(d_N_by_arm$desc))]
+d_fig_2[
+  , domain := factor(
+    domain,
+    levels = 1:4,
+    labels = c("Surgical", "AB Duration", "AB Ext-proph", "AB Choice"))]
   
-d_fig[, arm := factor(arm)]
-ggplot(d_fig, aes(x = N_enrol, y = mu_N, col = arm)) +
+d_fig_1[, arm := factor(arm)]
+ggplot(d_fig_1, aes(x = N_enrol, y = mu_N, col = arm)) +
   geom_line(lwd = 0.2) +
   geom_point(size = 0.4) +
+  geom_line(
+    data = d_fig_2, 
+    aes(x = N_enrol, y = mu_N), lwd = 0.2, lty = 2, inherit.aes = F) +
   scale_x_continuous("") +
   scale_y_continuous("Expected number of participants") +
   scale_color_discrete("Treatment arm: ") +
   ggh4x::facet_grid2(
-    desc ~ paste0("domain: ", domain), 
+    desc ~ domain, 
     labeller = labeller(desc = label_wrap_gen(35)), 
     scales = "free_y", independent = "y") +
   # theme_minimal() +
@@ -1368,20 +1404,14 @@ ggplot(d_fig, aes(x = N_enrol, y = mu_N, col = arm)) +
 
 ### Parameter estimation
 
-@fig-expected-or shows the median value and 95% quantiles for the posterior means obtained from the simulations for each domain and scenario.
+@fig-expected-or shows the median value and 95% quantiles from the posterior mean odds ratios obtained from the simulations by each domain and scenario.
 The estimates are unconditional, in that they ignore the stopping rule and propagate estimates forward with LOCF so that we are working from a random sample (albeit with static imputation) rather than a dependent sample of simulations.
 
-Notes
+@fig-expected-rd shows the median value and 95% quantiles for the posterior mean risk differences obtained from the simulations for each domain and scenario.
+The transformation to a risk difference suggests that the odds ratios amount to effects in the order of 10-20% on the risk scale, dependent on the silo, domain etc.
 
-1. The AB duration domain suffers from very high variance in the distribution of posterior means that we anticipate to observe. That is, when there is no true effect, we might still see effects as large as $\pm 25%$ on the absolute risk scale.
-
-
-@fig-expected-rd shows the median value and 95% quantiles for the posterior means obtained from the simulations for each domain and scenario.
-The estimates are unconditional, in that they ignore the stopping rule and propagate estimates forward with LOCF.
-
-Notes
-
-1. This plot focuses on the risk difference, and suggests that the odds ratios translate to effects in the order of 10-20% on the risk scale, dependent on the silo, domain etc. This variation is to be expected due to the non-linearity in the inverse logit transform. For example, if the baseline log-odds of response was -0.5 and you are contemplating an odds ratio of 2.5 this translates to a risk difference of about 0.23 but if your baseline log-odds of response is 0.2 then, with the same OR, this translates to a risk difference of about 0.2.
+The AB duration domain has high variance in the distribution of posterior means that we anticipate to observe. 
+That is, when there is no true effect, we might still see posterior means as large as $\pm 0.2$ on the absolute risk scale.
 
 
 ::: {.panel-tabset  .nav-pills}

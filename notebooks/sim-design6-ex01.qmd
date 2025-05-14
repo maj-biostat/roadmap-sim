@@ -1,5 +1,5 @@
 ---
-title: "Simulation 5 - example 3"
+title: "Simulation 6 - example 1"
 subtitle: "Sequential design with early stopping (restricted action set) - risk based"
 date: today
 date-modified: last-modified
@@ -40,9 +40,9 @@ source("./R/util.R")
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim05-13"
+sim_lab <- "sim06-04"
 # files of interest
-flist <- list.files(paste0("data/", sim_lab), pattern = "sim05")
+flist <- list.files(paste0("data/", sim_lab), pattern = "sim06")
 toks <- list()
 l <- list()
 i <- 1
@@ -51,8 +51,8 @@ for(i in 1:length(flist)){
   toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
 }
 
-ix_scenario <- 9
-ix_trial = 599
+ix_scenario <- 7
+ix_trial <- 83
 
 ```
 
@@ -293,7 +293,8 @@ for(i in 1:length(l)){
 
 ```{r, echo = T}
 #| label: ex1-dat
-#| code-summary: Cumulative probability of each decision type
+#| code-summary: Cumulative probability of each decision type for example trial
+
 
 
 # > names(l[[ix_scenario]])
@@ -476,11 +477,8 @@ d_decision[is.na(decision), `:=`(
 
 d_dec_timeline <- d_dec_timeline[N <= max(d_decision$N)]
 
-
-
-
-
 ```
+
 
 
 
@@ -772,6 +770,9 @@ suppressWarnings(
 
 :::
 
+
+
+
 @fig-post-or and @fig-post-rd show the parameter estimates.
 
 Note:
@@ -854,6 +855,7 @@ suppressWarnings(print(p1))
 
 :::
 
+
 ```{r, echo = FALSE}
 #| label: decisionprobs
 #| code-summary: Summarise decision probabilities by domain
@@ -908,6 +910,7 @@ p1 <- ggplot(d_fig_1, aes(x = N, y = value)) +
 suppressWarnings(print(p1))
 ```
 
+
 ::: {.callout-note collapse="true"}
 
 ## Reveal scenario
@@ -919,3 +922,5 @@ l_cfg
 ```
 
 :::
+
+

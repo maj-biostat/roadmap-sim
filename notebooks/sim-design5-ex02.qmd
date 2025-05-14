@@ -31,7 +31,7 @@ source("./R/util.R")
 
 
 
-```{r}
+```{r, echo = T}
 #| label: loadfiles
 #| code-summary: Load simulation results
 
@@ -51,12 +51,13 @@ for(i in 1:length(flist)){
   toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
 }
 
-
+ix_scenario <- 4
+ix_trial = 871
 ```
 
 ## Results from example trial
 
-```{r, echo = FALSE}
+```{r, echo = T}
 #| label: cprobdec
 #| code-summary: Cumulative probability of each decision type for example trial
 
@@ -126,7 +127,7 @@ for(i in 1:length(l)){
 ```
 
 
-```{r, echo = FALSE}
+```{r, echo = T}
 #| label: eenrolments
 #| code-summary: Expected number of enrolments
 
@@ -220,7 +221,7 @@ for(i in 1:length(l)){
 
 
 
-```{r, echo = FALSE}
+```{r, echo = T}
 #| label: distpostmeanuncondit
 #| code-summary: Distributions of posterior means (unconditional)
 
@@ -289,12 +290,11 @@ for(i in 1:length(l)){
 
 
 
-```{r, echo = FALSE}
+```{r, echo = T}
 #| label: ex1-dat
 #| code-summary: Cumulative probability of each decision type
 
-ix_scenario <- 4
-ix_trial = 871
+
 
 # > names(l[[ix_scenario]])
 #  [1] "cfg"           "d_pr_sup"      "d_pr_ni"       "d_pr_sup_fut"  "d_pr_ni_fut"   "d_decision"   
@@ -483,8 +483,6 @@ d_dec_timeline <- d_dec_timeline[N <= max(d_decision$N)]
 ```
 
 
-
-The results are from a simulated trial picked from scenario 4 where there is a moderate (OR 1.75) surgical revision effect in the two-stage domain only and all other domains having null treatment effects.
 
 @tbl-trial-decisions shows the decisions made for each domain (or indeterminate if no decisions were made).
 
@@ -853,18 +851,9 @@ suppressWarnings(print(p1))
 
 :::
 
-@fig-pr-dec shows the probability associated with each decision type for the randomised comparisons by domain and enrolment progression.
-
-Note:
-
-See example 1 for general explanation of plot.
-
-
-```{r}
-#| label: fig-pr-dec
-#| fig-cap: "Probability decision summaries"
-#| fig-height: 5
-
+```{r, echo = FALSE}
+#| label: decisionprobs
+#| code-summary: Summarise decision probabilities by domain
 
 d_fig_1 <- copy(d_pr_dec)
 d_fig_1[, quant := factor(quant, levels = c("sup", "sup_fut", "ni", "ni_fut"),
@@ -880,6 +869,24 @@ d_fig_2 <- merge(
   unique(d_fig_1[, .(domain, quant, question)]),
   by = c("quant", "domain")
 )
+```
+
+@fig-pr-dec shows the probability associated with each decision type for the randomised comparisons by domain and enrolment progression.
+
+For example, for domain 1 in analysis 1, the probability of revision being superior to DAIR (per the definition of superiority, which is a measure that is relative to nominated reference level for superiority) is approxiamtely `r sprintf("%.2f", d_fig_1[domain == 1 & analys == 1 & quant == "Superior", value])`. 
+To make a superiority decision, this probability needs to exceed `r sprintf("%.3f", l_cfg$dec_probs$thresh_sup[1])`.
+
+Similarly, for domain 1 in analysis 1, the probability of the superiority decision being futile (per the relevant definition) is approximately `r sprintf("%.2f", d_fig_1[domain == 1 & analys == 1 & quant == "Superior (futile)", value])`.
+To make a futility decision (related to superiority) this probability has to fall *below* `r sprintf("%.3f", l_cfg$dec_probs$thresh_fut_sup[1])`.
+
+Note:
+
+1. The futility probabilities are based on being below a given threshold (rather than above).
+
+```{r}
+#| label: fig-pr-dec
+#| fig-cap: "Probability decision summaries"
+#| fig-height: 5
 
 
 p1 <- ggplot(d_fig_1, aes(x = N, y = value)) +
@@ -897,3 +904,17 @@ p1 <- ggplot(d_fig_1, aes(x = N, y = value)) +
 
 suppressWarnings(print(p1))
 ```
+
+
+
+::: {.callout-note collapse="true"}
+
+## Reveal scenario
+
+The results are from a simulated trial picked from scenario `r ix_scenario`: `r l_cfg$desc`.
+
+```{r}
+l_cfg
+```
+
+:::
