@@ -1,5 +1,5 @@
 ---
-title: "Simulation 6 - example 2"
+title: "Simulation 6 - example 3"
 subtitle: "Sequential design with early stopping (restricted action set) - risk based"
 date: today
 date-modified: last-modified
