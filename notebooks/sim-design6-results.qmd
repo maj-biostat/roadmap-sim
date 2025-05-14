@@ -75,21 +75,21 @@ for(i in 1:length(flist)){
 Data is generated based on the empirical distributions obtained mostly from the PIANO study.
 
 We simulate silo membership from a multinomial distribution with probabilities 0.3, 0.5 and 0.2 for early, late and chronic.
-Conditional on silo membership, we simulate site of infection from a multinomial distribution with probabilities 0.4, 0.6 (early knee, hip),  0.7, 0.3 (late knee, hip) and  0.5, 0.5 (chronic knee, hip).
+Conditional on silo membership, we simulate site of infection from a multinomial distribution with probabilities 0.4, 0.6 (knee, hip | early),  0.7, 0.3 (knee, hip | late) and  0.5, 0.5 (knee, hip | chronic).
 
-For the surgical domain, we simulate preference towards revision from a multinomial distribution with probabilities 0.66, 0.33 (early rev(1), rev(2)), 0.3, 0.7 (late rev(1), rev(2)), 0.25, 0.75 (chronic rev(1), rev(2)).
+For the surgical domain, we simulate preference towards revision from a multinomial distribution with probabilities 0.66, 0.33 (rev(1), rev(2) | early), 0.3, 0.7 (rev(1), rev(2) | late), 0.25, 0.75 (rev(1), rev(2) | chronic).
 
-We simulate surgical intervention from a multinomial distribution with probabilities 0.85, 0.15 (early DAIR, revision), 0.5, 0.5 (late DAIR, revision), 0.2, 0.8 (chronic DAIR, revision).
+We simulate surgical intervention from a multinomial distribution with probabilities 0.85, 0.15 (DAIR, revision | early), 0.5, 0.5 (DAIR, revision | late), 0.2, 0.8 (DAIR, revision | chronic).
 Revision is subsequently decomposed into one and two-stage via the preferences.
 
 A silo-specific index can be computed as $d_1 + (K_{d_1}  (s - 1))$ where $d_1 \in \{1, 2, 3\}$ is the treatment allocation (DAIR, rev(1), rev(2)),  $K_{d_1} = 3$ is the number of surgical treatment types and $s \in \{1, 2, 3\}$ is the silo membership (early, late, chronic).
 
 For the antibiotic duration domain, we fix all participants that have received DAIR or two-stage revision as having non-randomised treatment.
-For all those receiving one-stage, we simulate antibiotic duration intervention from a multinomial distribution with probabilities 0.3, 0.35, 0.35 (non-rand, 12 weeks, 6 weeks).
+For all those receiving one-stage, we simulate antibiotic duration intervention from a multinomial distribution with probabilities 0.3, 0.35, 0.35 (non-rand, 12 weeks, 6 weeks | rev(1)).
 That is, 70% of the eligible set get randomised treatment and the split between 12 weeks and 6 weeks is 1:1.
 
 For the extended prophylaxis domain, we fix all participants that have received DAIR or one-stage revision as having non-randomised treatment.
-For all those receiving one-stage, we simulate extended prophylaxis intervention from a multinomial distribution with probabilities 0.1, 0.45, 0.45 (non-rand, 12 weeks, 6 weeks).
+For all those receiving one-stage, we simulate extended prophylaxis intervention from a multinomial distribution with probabilities 0.1, 0.45, 0.45 (non-rand, 12 weeks, 6 weeks | rev(2)).
 That is, 90% of the eligible set get randomised treatment and the split between 12 weeks and 6 weeks is 1:1.
 
 For the antibiotic choice domain, we simulate the intervention from a multinomial distribution with probabilities 0.4, 0.3, 0.3 (non-rand, no-rifampicin, rifampicin) unconditional on silo membership.
@@ -103,9 +103,10 @@ To speed up the model, we aggregate number of successes and number of trials by 
 
 ### Model
 
-Here, we provide the results under a revised model where we allow for silo-specific effects in the surgical domain.
-If, for whatever reason, the early or chronic silo show variation in the surgical domain effects then the silo adjustment is inadequate to address this and we end up with a poluted version of the surgical domain parameters.
-Everything else remains the same.
+We adopt a revised model where we allow for silo-specific effects in the surgical domain.
+
+If, for whatever reason, the early or chronic silo show variation in the surgical domain effects adjustment for silo is inadequate to account for this and we end up with a poluted version of the surgical domain parameters.
+Most other things in the model remain the same as the previous simulation.
 The model is used to compute unit level risk (probability) and assesses decisions based on risk difference for the intervention comparisons by domain.
 
 For the simulations, we have a single, multivariable logistic regression model with a linear predictor that incorporates all domains and is specified as follows:
@@ -123,7 +124,7 @@ for each distinct covariate grouping where:
 + $\mu$ represents an overall reference level from which all covariates deviate
 + $\beta_{s}$ represents the silo deviations, which can be thought of as a seriousness of disease adjustment. We fix the first parameter (early) in this vector to zero for identifiability and the components are for early, late and chronic silo membership. 
 + $\beta_{j}$ represents the joint deviations, accounting for heterogeneity in outcome due to site of infection. Again, we fix the first parameter (knee) in this vector to zero for identifiability and the components are knee and hip.
-+ $\beta_{p}$ represents the preference adjustment, assuming revision was allocated but included irrespective of silo, i.e. even if DAIR is assigned or planned or randomised assignment isn't relevant. This accounts for heterogeneity in outcome due to clinical preference for revision type, which can be thought of as expert elicitation on aspects of the patient state and clinicial experience. Again, we fix the first parameter (preference one-stage revision) in this vector to zero for identifiability and the components are preference for one-stage or two-stage. Assuming revision is assigned, we would expect that the original preference would ultimately align with the type of revision received, but there is nothing enforcing this. Arguably, this could be restricted to the late-acute cohort, but we would need to extend the vector of parameters to accommodate for this. The preference indicators are also used to compute the sample weights for aggregating one and two-stage revision into a single overall revision effect.
++ $\beta_{p}$ represents the (pre-revealed) preference adjustment, assuming revision was allocated but included irrespective of silo and what the assignment ultimately turned out to be. This accounts for heterogeneity in outcome due to clinical preference for revision type, which can be thought of as expert elicitation on aspects of the patient state and clinicial experience. Again, we fix the first parameter (preference one-stage revision) in this vector to zero for identifiability and the components are preference for one-stage or two-stage. Assuming revision is assigned, we would expect that the original preference would ultimately align with the type of revision received, but there is nothing enforcing this. Arguably, this could be restricted to the late-acute cohort, but we would need to extend the vector of parameters to accommodate for this. The preference indicators are also used to compute the sample weights for aggregating one and two-stage revision into a single overall revision effect.
 + $\beta_{d1[k_{d1}, s]}$ represents the silo-specific deviations associated with the surgery type. This accounts for heterogeneity in outcome due to surgery type and with the late-acute deviations taken as a randomised comparison of dair vs revision after the agreed weighting is applied. Again, we fix the first parameter (dair in the early cohort) in this vector to zero for identifiability and the components are dair, rev(1), rev(2) for each silo. The reason for the silo-specific context is that if revision effects exist in one silo but not another, then without this conditioning, we will end up with biased inference. For example, if (for whatever reason) there is an revision effect in the early domain but not the late-acute cohort then without this level of adjustment, we would end up reporting a revision effect when we shouldn't be; adjustment for silo doesn't protect us from this, even though it is perfectly collinear with a unit receiving non-randomised or randomised surgical treatment.
 + $\beta_{d2[k_{d2}]}$ represents the deviations associated with backbone antibiotic duration. This accounts for heterogeneity in outcome due to the assigned backbone antibiotic duration. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, 12 weeks and 6 weeks. The term is included in the model irrespective of what surgery type was received but only units receiving randomised and revealed one-stage are captured within the 12 week/6 week comparison. The other units contribute to the non-randomised set (which is essentially a nuissance variable that we don't particularly care about). We are assuming that there is no silo-specific (or any other) hetereogeneity for this comparison.
 + $\beta_{d3[k_{d3}]}$ represents the deviations associated with extended prophylaxis duration. This accounts for heterogeneity in outcome due to the assigned extended prophylaxis duration. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, no ext-proph and 12 weeks. The term is included in the model irrespective of what surgery type was received but only units receiving randomised and revealed two-stage are captured within the none/12 week comparison. The other units contribute to the non-randomised set (which again is a nuissance variable that we don't particularly care about). We are assuming that there is no silo-specific hetereogeneity for this comparison.
