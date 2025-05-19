@@ -331,14 +331,9 @@ run_trial <- function(
     d_post_chk <- data.table(f_1$draws(
       variables = c(
         
-        "bd1", "bd2", "bd3", "bd4",
+        "bd1", "bd2", "bd3", "bd4"
         
-        "nu_d1_1", "nu_d1_2", "nu_d1_3",
-        "nu_d2_2", "nu_d2_3",
-        "nu_d3_2", "nu_d3_3",
-        "nu_d4_2", "nu_d4_3"
-        
-      ),   # risk scale
+      ),  
       format = "matrix"))
     d_post_chk <- melt(d_post_chk, measure.vars = names(d_post_chk))
     d_post_chk[variable %like% "d1", domain := 1]
