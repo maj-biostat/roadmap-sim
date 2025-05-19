@@ -220,32 +220,27 @@ generated quantities{
   // applies to all. First level is reference, i.e. equals zero.
   // Similarly, first level of bd3 selected since this is the only comparison
   // that applies to all. Again, first level is reference, i.e. equals zero.
-  vector[N_d1] eta_d1_1 = mu + bs[2] + bj[d1_j] + bp[d1_p] + 
-    bd1[4] + bd2[1] + bd3[1] + bd4[d1_d4];
+  vector[N_d1] mu_d1_1 = inv_logit(mu + bs[2] + bj[d1_j] + bp[d1_p] + 
+    bd1[4] + bd2[1] + bd3[1] + bd4[d1_d4]);
   // Assignment to revision will either end up being one or two-stage.
   // those that had the preference for one get one and those that had pref for
   // two get two. Thus we use different weights (since these are subsets of
   // our late acute cohort).
   // I have set bp explicitly here but it would be ok to just use the data passed
   // in as all records should have been selected based on the required preference.
-  vector[N_d1_p1] eta_d1_2 = mu + bs[2] + bj[d1_j[ix_d1_p1]] + bp[1] +
-    bd1[5] + bd2[1] + bd3[1] + bd4[d1_d4[ix_d1_p1]];
-  vector[N_d1_p2] eta_d1_3 = mu + bs[2] + bj[d1_j[ix_d1_p2]] + bp[2] +
-    bd1[6] + bd2[1] + bd3[1] + bd4[d1_d4[ix_d1_p2]];
-  real nu_d1_1 = wgtsd1' * eta_d1_1   ;
-  real nu_d1_2 = wgtsd1_p1' * eta_d1_2   ;
-  real nu_d1_3 = wgtsd1_p2' * eta_d1_3   ;
+  vector[N_d1_p1] mu_d1_2 = inv_logit(mu + bs[2] + bj[d1_j[ix_d1_p1]] + bp[1] +
+    bd1[5] + bd2[1] + bd3[1] + bd4[d1_d4[ix_d1_p1]]);
+  vector[N_d1_p2] mu_d1_3 = inv_logit(mu + bs[2] + bj[d1_j[ix_d1_p2]] + bp[2] +
+    bd1[6] + bd2[1] + bd3[1] + bd4[d1_d4[ix_d1_p2]]);
+  real p_d1_1 = wgtsd1' * mu_d1_1   ;
+  real p_d1_2 = wgtsd1_p1' * mu_d1_2   ;
+  real p_d1_3 = wgtsd1_p2' * mu_d1_3   ;
 
-  real nu_d1_23 = (prop_p1 * nu_d1_2) + (prop_p2 * nu_d1_3) ;
-  real lor_d1 = nu_d1_23 - nu_d1_1;
-  // on the risk scale we would have
-  real p_d1_1 = inv_logit(nu_d1_1);
-  real p_d1_2 = inv_logit(nu_d1_2);
-  real p_d1_3 = inv_logit(nu_d1_3);
-  real p_d1_23 = inv_logit(nu_d1_23);
+  // our interpretation of revision:
+  real p_d1_23 = (prop_p1 * p_d1_2) + (prop_p2 * p_d1_3) ;
   real rd_d1 = p_d1_23 - p_d1_1;
-
-
+  real lor_d1 = log((p_d1_23 * (1-p_d1_1)) / ( (1 - p_d1_23) * p_d1_1));
+  
   // AB duration domain (D2) comparisons of interest are 6 wks relative to 12 wks
   // for those that have one-stage revision
   vector[N_d2] wgtsd2 = dirichlet_rng(to_vector(n_d2));
@@ -260,17 +255,15 @@ generated quantities{
   // logical comparisons based on the design constraints, e.g. if you have 
   // one stage revision, then it is logically impossible to receive ext proph
   // based on the design rules.
-  vector[N_d2] eta_d2_2 = mu + bs[d2_s] + bj[d2_j] + bp[d2_p] + 
-    bd1[d2_d1_ix] + bd2[2] + bd3[1] + bd4[d2_d4];
-  vector[N_d2] eta_d2_3 = mu + bs[d2_s] + bj[d2_j] + bp[d2_p] + 
-    bd1[d2_d1_ix] + bd2[3] + bd3[1] + bd4[d2_d4];
-  real nu_d2_2 = wgtsd2' * eta_d2_2   ;
-  real nu_d2_3 = wgtsd2' * eta_d2_3   ;
-  // only one comparison of interest
-  real lor_d2 = nu_d2_3 - nu_d2_2;
-  real p_d2_2 = inv_logit(nu_d2_2);
-  real p_d2_3 = inv_logit(nu_d2_3);
+  vector[N_d2] mu_d2_2 = inv_logit(mu + bs[d2_s] + bj[d2_j] + bp[d2_p] + 
+    bd1[d2_d1_ix] + bd2[2] + bd3[1] + bd4[d2_d4] );
+  vector[N_d2] mu_d2_3 = inv_logit(mu + bs[d2_s] + bj[d2_j] + bp[d2_p] + 
+    bd1[d2_d1_ix] + bd2[3] + bd3[1] + bd4[d2_d4] );
+  real p_d2_2 = wgtsd2' * mu_d2_2   ;
+  real p_d2_3 = wgtsd2' * mu_d2_3   ;
+  
   real rd_d2 = p_d2_3 - p_d2_2;
+  real lor_d2 = log((p_d2_3 * (1-p_d2_2)) / ( (1 - p_d2_3) * p_d2_2));
 
   // Ext prophylaxis domain (D3) comparisons of interest are 12 wks relative to none
   // for those that have two-stage revision
@@ -280,31 +273,27 @@ generated quantities{
   // parameter to pick up either the rand or non-rand comparison from the surg
   // domain.
   // Similarly, d2 needs to be 1 here for all units (corresponding to non-rand). 
-  vector[N_d3] eta_d3_2 = mu + bs[d3_s] + bj[d3_j] + bp[d3_p] + 
-    bd1[d3_d1_ix] + bd2[1] + bd3[2] + bd4[d3_d4];
-  vector[N_d3] eta_d3_3 = mu + bs[d3_s] + bj[d3_j] + bp[d3_p] + 
-    bd1[d3_d1_ix] + bd2[1] + bd3[3] + bd4[d3_d4];
-  real nu_d3_2 = wgtsd3' * eta_d3_2   ;
-  real nu_d3_3 = wgtsd3' * eta_d3_3   ;
-  // only one comparison of interest
-  real lor_d3 = nu_d3_3 - nu_d3_2;
-  real p_d3_2 = inv_logit(nu_d3_2);
-  real p_d3_3 = inv_logit(nu_d3_3);
+  vector[N_d3] mu_d3_2 = inv_logit(mu + bs[d3_s] + bj[d3_j] + bp[d3_p] + 
+    bd1[d3_d1_ix] + bd2[1] + bd3[2] + bd4[d3_d4]);
+  vector[N_d3] mu_d3_3 = inv_logit(mu + bs[d3_s] + bj[d3_j] + bp[d3_p] + 
+    bd1[d3_d1_ix] + bd2[1] + bd3[3] + bd4[d3_d4]);
+  real p_d3_2 = wgtsd3' * mu_d3_2   ;
+  real p_d3_3 = wgtsd3' * mu_d3_3   ;
+  
   real rd_d3 = p_d3_3 - p_d3_2;
+  real lor_d3 = log((p_d3_3 * (1-p_d3_2)) / ( (1 - p_d3_3) * p_d3_2));
 
   // Ab choice domain (D4) comparisons of interest are rif to none
   vector[N_d4] wgtsd4 = dirichlet_rng(to_vector(n_d4));
-  vector[N_d4] eta_d4_2 = mu + bs[d4_s] + bj[d4_j] + bp[d4_p] + 
-    bd1[d4_d1_ix] + bd2[d4_d2] + bd3[d4_d3] + bd4[2];
-  vector[N_d4] eta_d4_3 = mu + bs[d4_s] + bj[d4_j] + bp[d4_p] + 
-    bd1[d4_d1_ix] + bd2[d4_d2] + bd3[d4_d3] + bd4[3];
-  real nu_d4_2 = wgtsd4' * eta_d4_2   ;
-  real nu_d4_3 = wgtsd4' * eta_d4_3   ;
-  // only one comparison of interest
-  real lor_d4 = nu_d4_3 - nu_d4_2;
-  real p_d4_2 = inv_logit(nu_d4_2);
-  real p_d4_3 = inv_logit(nu_d4_3);
+  vector[N_d4] mu_d4_2 = inv_logit(mu + bs[d4_s] + bj[d4_j] + bp[d4_p] + 
+    bd1[d4_d1_ix] + bd2[d4_d2] + bd3[d4_d3] + bd4[2]);
+  vector[N_d4] mu_d4_3 = inv_logit(mu + bs[d4_s] + bj[d4_j] + bp[d4_p] + 
+    bd1[d4_d1_ix] + bd2[d4_d2] + bd3[d4_d3] + bd4[3]);
+  real p_d4_2 = wgtsd4' * mu_d4_2   ;
+  real p_d4_3 = wgtsd4' * mu_d4_3   ;
+  
   real rd_d4 = p_d4_3 - p_d4_2;
+  real lor_d4 = log((p_d4_3 * (1-p_d4_2)) / ( (1 - p_d4_3) * p_d4_2));
   
   
 }

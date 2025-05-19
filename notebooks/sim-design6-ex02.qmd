@@ -40,7 +40,7 @@ source("./R/util.R")
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim06-04"
+sim_lab <- "sim06-05"
 # files of interest
 flist <- list.files(paste0("data/", sim_lab), pattern = "sim06")
 toks <- list()

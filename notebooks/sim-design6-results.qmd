@@ -54,7 +54,7 @@ g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim06-sc01-v01.yml"))
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim06-04"
+sim_lab <- "sim06-05"
 
 flist <- list.files(paste0("data/", sim_lab), pattern = "sim06")
 toks <- list()
