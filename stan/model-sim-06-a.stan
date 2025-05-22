@@ -220,6 +220,11 @@ generated quantities{
   // applies to all. First level is reference, i.e. equals zero.
   // Similarly, first level of bd3 selected since this is the only comparison
   // that applies to all. Again, first level is reference, i.e. equals zero.
+  
+  // An alternative view is to consider bd2 and bd3 when given as usual practice 
+  // under dair. Similarly, for revision, bd2 and bd3 would be conceptualised 
+  // as having been given per usual practice under the type of revision 
+  // adopted.
   vector[N_d1] mu_d1_1 = inv_logit(mu + bs[2] + bj[d1_j] + bp[d1_p] + 
     bd1[4] + bd2[1] + bd3[1] + bd4[d1_d4]);
   // Assignment to revision will either end up being one or two-stage.
