@@ -7,24 +7,24 @@ library(patchwork)
 
 
 risk_pars_surg <- function(
-  p_d1_alloc = 0.5,
-  p_d2_entry = 0.7,
-  p_d2_alloc = 0.5,
-  p_d3_entry = 0.9,
-  p_d3_alloc = 0.5,
-  p_d4_entry = 0.6,
-  p_d4_alloc = 0.5,
-  # 40% pref for two-stage
-  p_pref = 0.4,
-  # log-odds
-  mu = 0.7,
-  # log-or
-  # different baseline risk for rev
-  bp = -0.4,
-  bd1 = c(0, 0, 0),
-  bd2 = c(0, 0.1, 0),
-  bd3 = c(0, 0, -0.2),
-  bd4 = c(0, 0.1, 0.2)
+    p_d1_alloc = 0.5,
+    p_d2_entry = 0.7,
+    p_d2_alloc = 0.5,
+    p_d3_entry = 0.9,
+    p_d3_alloc = 0.5,
+    p_d4_entry = 0.6,
+    p_d4_alloc = 0.5,
+    # 40% pref for two-stage
+    p_pref = 0.4,
+    # log-odds
+    bs = c(0.9, 0.8, 0.7),
+    # log-or
+    # different baseline risk for rev
+    bp = -0.4,
+    bd1 = c(0, 0, 0),
+    bd2 = c(0, 0.1, 0),
+    bd3 = c(0, 0, -0.2),
+    bd4 = c(0, 0.1, 0.2)
   ){
   
   # dair
@@ -58,12 +58,12 @@ risk_pars_surg <- function(
   prop_tru[6] <- p_d4_entry * (p_pref)/2
   
   p_dair <- 
-    prop_tru[1] * plogis(mu + bd4[1]) + 
-    prop_tru[2] * plogis(mu + bd4[2]) + 
-    prop_tru[3] * plogis(mu + bd4[3]) + 
-    prop_tru[4] * plogis(mu + bp + bd4[1]) + 
-    prop_tru[5] * plogis(mu + bp + bd4[2]) + 
-    prop_tru[6] * plogis(mu + bp + bd4[3])
+    prop_tru[1] * plogis(bs[2] + bd4[1]) + 
+    prop_tru[2] * plogis(bs[2] + bd4[2]) + 
+    prop_tru[3] * plogis(bs[2] + bd4[3]) + 
+    prop_tru[4] * plogis(bs[2] + bp + bd4[1]) + 
+    prop_tru[5] * plogis(bs[2] + bp + bd4[2]) + 
+    prop_tru[6] * plogis(bs[2] + bp + bd4[3])
   
   
   # rev 1
@@ -94,15 +94,15 @@ risk_pars_surg <- function(
   prop_tru[9] <- p_d4_entry * (p_d2_entry/2) / 2
   
   p_rev_1 <- 
-    prop_tru[1] * plogis(mu + bd1[2] + bd2[1] + bd4[1]) + 
-    prop_tru[2] * plogis(mu + bd1[2] + bd2[1] + bd4[2]) + 
-    prop_tru[3] * plogis(mu + bd1[2] + bd2[1] + bd4[3]) + 
-    prop_tru[4] * plogis(mu + bd1[2] + bd2[2] + bd4[1]) + 
-    prop_tru[5] * plogis(mu + bd1[2] + bd2[2] + bd4[2]) + 
-    prop_tru[6] * plogis(mu + bd1[2] + bd2[2] + bd4[3]) + 
-    prop_tru[7] * plogis(mu + bd1[2] + bd2[3] + bd4[1]) + 
-    prop_tru[8] * plogis(mu + bd1[2] + bd2[3] + bd4[2]) + 
-    prop_tru[9] * plogis(mu + bd1[2] + bd2[3] + bd4[3])  
+    prop_tru[1] * plogis(bs[2] + bd1[2] + bd2[1] + bd4[1]) + 
+    prop_tru[2] * plogis(bs[2] + bd1[2] + bd2[1] + bd4[2]) + 
+    prop_tru[3] * plogis(bs[2] + bd1[2] + bd2[1] + bd4[3]) + 
+    prop_tru[4] * plogis(bs[2] + bd1[2] + bd2[2] + bd4[1]) + 
+    prop_tru[5] * plogis(bs[2] + bd1[2] + bd2[2] + bd4[2]) + 
+    prop_tru[6] * plogis(bs[2] + bd1[2] + bd2[2] + bd4[3]) + 
+    prop_tru[7] * plogis(bs[2] + bd1[2] + bd2[3] + bd4[1]) + 
+    prop_tru[8] * plogis(bs[2] + bd1[2] + bd2[3] + bd4[2]) + 
+    prop_tru[9] * plogis(bs[2] + bd1[2] + bd2[3] + bd4[3])  
   
   # rev 2
   # averages over combinations from f1_2:   ~ 1 + d3 + d4
@@ -134,15 +134,15 @@ risk_pars_surg <- function(
   
   # contribution of non-rand, bp needs to be included here
   p_rev_2 <- 
-    prop_tru[1] * plogis(mu + bp + bd1[3] + bd3[1] + bd4[1]) + 
-    prop_tru[2] * plogis(mu + bp + bd1[3] + bd3[1] + bd4[2]) + 
-    prop_tru[3] * plogis(mu + bp + bd1[3] + bd3[1] + bd4[3]) + 
-    prop_tru[4] * plogis(mu + bp + bd1[3] + bd3[2] + bd4[1]) + 
-    prop_tru[5] * plogis(mu + bp + bd1[3] + bd3[2] + bd4[2]) + 
-    prop_tru[6] * plogis(mu + bp + bd1[3] + bd3[2] + bd4[3]) + 
-    prop_tru[7] * plogis(mu + bp + bd1[3] + bd3[3] + bd4[1]) + 
-    prop_tru[8] * plogis(mu + bp + bd1[3] + bd3[3] + bd4[2]) + 
-    prop_tru[9] * plogis(mu + bp + bd1[3] + bd3[3] + bd4[3])  
+    prop_tru[1] * plogis(bs[2] + bp + bd1[3] + bd3[1] + bd4[1]) + 
+    prop_tru[2] * plogis(bs[2] + bp + bd1[3] + bd3[1] + bd4[2]) + 
+    prop_tru[3] * plogis(bs[2] + bp + bd1[3] + bd3[1] + bd4[3]) + 
+    prop_tru[4] * plogis(bs[2] + bp + bd1[3] + bd3[2] + bd4[1]) + 
+    prop_tru[5] * plogis(bs[2] + bp + bd1[3] + bd3[2] + bd4[2]) + 
+    prop_tru[6] * plogis(bs[2] + bp + bd1[3] + bd3[2] + bd4[3]) + 
+    prop_tru[7] * plogis(bs[2] + bp + bd1[3] + bd3[3] + bd4[1]) + 
+    prop_tru[8] * plogis(bs[2] + bp + bd1[3] + bd3[3] + bd4[2]) + 
+    prop_tru[9] * plogis(bs[2] + bp + bd1[3] + bd3[3] + bd4[3])  
   
   # rev
   prop_tru <- c(1 - p_pref, p_pref)
@@ -361,17 +361,20 @@ risk_pars_choice <- function(
 
 test_pars <- function(){
   
-  p_d1_alloc = 0.5
-  p_d2_entry = 0.7
-  p_d2_alloc = 0.5
-  p_d3_entry = 0.9
-  p_d3_alloc = 0.5
-  p_d4_entry = 0.6
-  p_d4_alloc = 0.5
-  # 40% pref for two-stage
-  p_pref = 0.4
+  l_l <- list(
+    # prob of rev
+    p_d1_alloc = 0.5,
+    p_d2_entry = 0.7,
+    p_d2_alloc = 0.5,
+    p_d3_entry = 0.9,
+    p_d3_alloc = 0.5,
+    p_d4_entry = 0.6,
+    p_d4_alloc = 0.5,
+    # preference for two-stage
+    p_pref = 0.7
+  )
   # log-odds
-  mu = 0.7
+  bs = c(0.9, 0.8, 0.7)
   # log-or
   # different baseline risk for rev
   bp = -0.4
@@ -380,50 +383,31 @@ test_pars <- function(){
   bd3 = c(0, 0, -0.2)
   bd4 = c(0, 0.1, 0.2)
   
-  risk_pars_surg(bd1 = c(0, 0, 0))
   
-  risk_pars_dur(bd1 = c(0, 0.5, 0), 
-                bd2 = c(0, 0.1, 0), 
-                bd4 = c(0, 0.1, 0.2))
-  
-  risk_pars_extp(bd1 = c(0, 0.5, 0.1),
-                 bd2 = c(0, 0.1, 0.5), 
-                 bd3 = c(0, 0.4, -0.1),
-                 bd4 = c(0, 0.1, 0.2))
-  
-  risk_pars_choice(bd4 = c(0, 0, 0))
   
   obj_f1 <- function(x){
-    res <- risk_pars_surg(bd1 = c(0, x, x),
-                          bd2 = bd2,
-                          bd3 = bd3,
-                          bd4 = bd4)
-    (res["rd"] - 0)^2
-  }
-  obj_f2 <- function(x){
-    res <- risk_pars_surg(bd1 = c(0, 0, x))
-    (res["rd"] - 0)^2
-  }
-  obj_f3 <- function(x){
-    res <- risk_pars_surg(bd1 = c(0, x, 0))
+    res <- risk_pars_surg(
+      l_l$p_d1_alloc, 
+      l_l$p_d2_entry, l_l$p_d2_alloc,
+      l_l$p_d3_entry, l_l$p_d3_alloc,
+      l_l$p_d4_entry, l_l$p_d4_alloc, 
+      l_l$p_pref, 
+      bs, bp, 
+      bd1 = c(0, x, x), 
+      bd2, bd3, bd4)
+    
     (res["rd"] - 0)^2
   }
   
   # use to work out the null scenario in terms of risk when using 
   # log odds ratios to set up the simulation
   
-  optimize(obj_f1, c(0, 1))$minimum
-  
   # to get a null scenario on the risk scale when both rev(1) and rev(2) 
   # are non-zero, you need to set the logor for both to:
-  (lor <- optimize(obj_f1, c(0, 1))$minimum)
-  risk_pars_surg(bd1 = c(0, lor, lor))
-  # to get a null scenario on the risk scale when rev(1) is zero, you need 
-  # to set the rev(2) logor to:
-  optimize(obj_f2, c(0, 1))$minimum
-  # to get a null scenario on the risk scale when rev(2) is zero, you need 
-  # to set rev(1) logor to:
-  optimize(obj_f3, c(0, 1))$minimum
+  optimize(obj_f1, c(0, 1))$minimum
+  
+  
+  
   
 }
 
@@ -433,44 +417,110 @@ multi_model_approach <- function(){
   
   N_sim <- 1000
   mc_cores <- 4
+
+  p_s_alloc = c(0.3, 0.5, 0.2)
+  l_e <- list(
+    # prob of rev
+    p_d1_alloc = 0.15,
+    # entry into duration same across all silo
+    p_d2_entry = 0.7,
+    p_d2_alloc = 0.5,
+    # entry into extp same across all silo
+    p_d3_entry = 0.9,
+    p_d3_alloc = 0.5,
+    # entry into choice same across all silo
+    p_d4_entry = 0.6,
+    p_d4_alloc = 0.5,
+    # preference for two-stage
+    p_pref = 0.35
+  )
+  l_l <- list(
+    # prob of rev
+    p_d1_alloc = 0.5,
+    p_d2_entry = 0.7,
+    p_d2_alloc = 0.5,
+    p_d3_entry = 0.9,
+    p_d3_alloc = 0.5,
+    p_d4_entry = 0.6,
+    p_d4_alloc = 0.5,
+    # preference for two-stage
+    p_pref = 0.7
+  )
+  l_c <- list(
+    # prob of rev
+    p_d1_alloc = 0.8,
+    p_d2_entry = 0.7,
+    p_d2_alloc = 0.5,
+    p_d3_entry = 0.9,
+    p_d3_alloc = 0.5,
+    p_d4_entry = 0.6,
+    p_d4_alloc = 0.5,
+    # preference for two-stage
+    p_pref = 0.75
+  )
   
-  p_d1_alloc = 0.5
-  p_d2_entry = 0.7
-  p_d2_alloc = 0.5
-  p_d3_entry = 0.9
-  p_d3_alloc = 0.5
-  p_d4_entry = 0.6
-  p_d4_alloc = 0.5
   
-  p_pref = 0.4
-  # log-odds
-  mu = 0.7
+  # log-odds (early, late, acute)
+  bs = c(0.9, 0.8, 0.7)
   # log-or
   # different baseline risk for rev
   bp = -0.4
-  bd1 = c(0, 0, 0)
+  bd1 = c(0, 0.05738023, 0.05738023)
   bd2 = c(0, 0.1, 0)
   bd3 = c(0, 0, -0.2)
   bd4 = c(0, 0.1, 0.2)
 
   r <- pbapply::pblapply(X=1:N_sim, cl = mc_cores, FUN = function(ix){
     
-    N <- 1e3
+    N <- 3e3
     d <- data.table(
-      # ctl/trt allocations ignoring dependencies
-      d1_alloc = rbinom(N, 1, p_d1_alloc),
-      # 70% entery d2
-      d2_entry = rbinom(N, 1, p_d2_entry),
-      d2_alloc = rbinom(N, 1, p_d2_alloc),
-      # 90% enter d3
-      d3_entry = rbinom(N, 1, p_d3_entry),
-      d3_alloc = rbinom(N, 1, p_d3_alloc),
-      # 60% enter d4
-      d4_entry = rbinom(N, 1, p_d4_entry),
-      d4_alloc = rbinom(N, 1, p_d4_alloc),
-      # preference directs type of revision
-      pref = rbinom(N, 1, p_pref)
+      s = sample(1:3, N, replace = T, prob = p_s_alloc)
     )
+    d[s == 1, `:=`(
+      # ctl/trt allocations ignoring dependencies
+      d1_alloc = rbinom(.N, 1, l_e$p_d1_alloc),
+      # 70% entery d2
+      d2_entry = rbinom(.N, 1, l_e$p_d2_entry),
+      d2_alloc = rbinom(.N, 1, l_e$p_d2_alloc),
+      # 90% enter d3
+      d3_entry = rbinom(.N, 1, l_e$p_d3_entry),
+      d3_alloc = rbinom(.N, 1, l_e$p_d3_alloc),
+      # 60% enter d4
+      d4_entry = rbinom(.N, 1, l_e$p_d4_entry),
+      d4_alloc = rbinom(.N, 1, l_e$p_d4_alloc),
+      # preference directs type of revision (0 rev(1), 1 rev(2))
+      pref = rbinom(.N, 1, l_e$p_pref)
+    )]
+    d[s == 2, `:=`(
+      # ctl/trt allocations ignoring dependencies
+      d1_alloc = rbinom(.N, 1, l_l$p_d1_alloc),
+      # 70% entery d2
+      d2_entry = rbinom(.N, 1, l_l$p_d2_entry),
+      d2_alloc = rbinom(.N, 1, l_l$p_d2_alloc),
+      # 90% enter d3
+      d3_entry = rbinom(.N, 1, l_l$p_d3_entry),
+      d3_alloc = rbinom(.N, 1, l_l$p_d3_alloc),
+      # 60% enter d4
+      d4_entry = rbinom(.N, 1, l_l$p_d4_entry),
+      d4_alloc = rbinom(.N, 1, l_l$p_d4_alloc),
+      # preference directs type of revision (0 rev(1), 1 rev(2))
+      pref = rbinom(.N, 1, l_l$p_pref)
+    )]
+    d[s == 3, `:=`(
+      # ctl/trt allocations ignoring dependencies
+      d1_alloc = rbinom(.N, 1, l_c$p_d1_alloc),
+      # 70% entery d2
+      d2_entry = rbinom(.N, 1, l_c$p_d2_entry),
+      d2_alloc = rbinom(.N, 1, l_c$p_d2_alloc),
+      # 90% enter d3
+      d3_entry = rbinom(.N, 1, l_c$p_d3_entry),
+      d3_alloc = rbinom(.N, 1, l_c$p_d3_alloc),
+      # 60% enter d4
+      d4_entry = rbinom(.N, 1, l_c$p_d4_entry),
+      d4_alloc = rbinom(.N, 1, l_c$p_d4_alloc),
+      # preference directs type of revision (0 rev(1), 1 rev(2))
+      pref = rbinom(.N, 1, l_c$p_pref)
+    )]
     
     # dair gets dair, revision gets split
     d[d1_alloc == 0, d1 := 1]
@@ -486,86 +536,89 @@ multi_model_approach <- function(){
     d[d4_entry == 0, d4 := 1]
     d[d4_entry == 1, d4 := 2 + d4_alloc]
     
-    d[, .N, keyby = .(pref, d1, d2, d3, d4)]
+    d[, .N, keyby = .(s, pref, d1, d2, d3, d4)]
 
     # bd1 is irrelevant since d1 == 1 is the ref group, fixed at zero
-    d[d1 == 1, eta := mu + bp*pref + bd4[d4]]
+    d[d1 == 1, eta := bs[s] + bp*pref + bd4[d4]]
     # pref is irrelevant as d1 = 2 only occurs if pref = 0
-    d[d1 == 2, eta := mu + bd1[2] + bd2[d2] + bd4[d4]]
+    d[d1 == 2, eta := bs[s] + bd1[2] + bd2[d2] + bd4[d4]]
     # but here pref is relevant as d1 = 3 only if pref = 1
-    d[d1 == 3, eta := mu + bp*pref + bd1[3] + bd3[d3] + bd4[d4]]
+    d[d1 == 3, eta := bs[s] + bp*pref + bd1[3] + bd3[d3] + bd4[d4]]
     
-    d[, `:=`(d1 = factor(d1), d2 = factor(d2), d3 = factor(d3), d4 = factor(d4))]
+    d[, `:=`(s = factor(s), d1 = factor(d1), d2 = factor(d2), d3 = factor(d3), d4 = factor(d4))]
     
     d[, p := plogis(eta)]
     d[, y := rbinom(N, 1, p)]
     
     f1_1 <- glm(
-      y ~ 1 + pref + d4 , data = d, subset= d1==1, family = binomial,
+      y ~ -1 + s + pref + d4 , data = d, subset= d1==1, family = binomial,
       control = glm.control(epsilon = 1e-4, maxit = 100, trace = FALSE))
     # pref is zero for everyone
     f1_2 <- glm(
-      y ~ 1 + d2 + d4, data = d, subset= d1==2, family = binomial,
+      y ~ -1 + s + d2 + d4, data = d, subset= d1==2, family = binomial,
       control = glm.control(epsilon = 1e-4, maxit = 100, trace = FALSE))
     # effect of pref will get rolled into the intercept
     f1_3 <- glm(
-      y ~ 1 + d3 + d4, data = d, subset= d1==3, family = binomial,
+      y ~ -1 + s + d3 + d4, data = d, subset= d1==3, family = binomial,
       control = glm.control(epsilon = 1e-4, maxit = 100, trace = FALSE))
+    
+    coef(f1_1)
+    coef(f1_2)
+    coef(f1_3)
     
     # surgical domain
     
     # dair
-    d_dair <- copy(d)
+    d_dair <- copy(d[s == 2])
     d_dair[, d1 := factor(1)]
     # d4 stays at whatever it was
     d_dair[, p_hat := predict(f1_1, newdata = d_dair, type = "response")]
     p_dair_hat <- mean(d_dair$p_hat)
     
     # rev(1)
-    d_rev_1 <- copy(d)
+    d_rev_1 <- copy(d[s == 2 & pref == 0])
     d_rev_1[, d1 := factor(2)]
     d_rev_1[, pref := 0]
-    d_rev_1[d2_entry == 1, d2 := factor(d[d2_entry == 1, d2_alloc + 2], levels = 1:3)]
+    d_rev_1[d2_entry == 1, d2 := factor(d_rev_1[d2_entry == 1, d2_alloc + 2], levels = 1:3)]
     d_rev_1[d2_entry == 0, d2 := factor(1, levels = 1:3)]
     # and d4 stays at whatever it was
     d_rev_1[, p_hat := predict(f1_2, newdata = d_rev_1, type = "response")]
     p_rev_1_hat <- mean(d_rev_1$p_hat)
     
     # rev(2)
-    d_rev_2 <- copy(d)
+    d_rev_2 <- copy(d[s == 2 & pref == 1])
     d_rev_2[, d1 := factor(3)]
     # pref doesn't matter because the model had to roll it up into the intercept
     # d_rev_2[, pref := 1]
-    d_rev_2[d3_entry == 1, d3 := factor(d[d3_entry == 1, d3_alloc + 2], levels = 1:3)]
+    d_rev_2[d3_entry == 1, d3 := factor(d_rev_2[d3_entry == 1, d3_alloc + 2], levels = 1:3)]
     d_rev_2[d3_entry == 0, d3 := factor(1, levels = 1:3)]
     # and d4 stays at whatever it was
     d_rev_2[, p_hat := predict(f1_3, newdata = d_rev_2, type = "response")]
     p_rev_2_hat <- mean(d_rev_2$p_hat)
     
     # now aggregate the one and two-stage revision
-    d_prop <- d[, .(prop = .N/nrow(d)), keyby = pref]
+    d_prop <- d[s == 2, .(prop = .N/nrow(d[s == 2])), keyby = pref]
     p_rev_hat <- p_rev_1_hat * d_prop[pref == 0, prop] + p_rev_2_hat * d_prop[pref == 1, prop]
     
     rd_hat <- p_rev_hat - p_dair_hat
 
-    
-    d_uniq <- unique(d[, .(pref, d1, d2, d3, d4, p)])
-    setkey(d_uniq, pref, d1, d2, d3, d4)
-    d_uniq[d1 == 1, p_hat := predict(f1_1, newdata = d_uniq[d1 == 1], type = "response")]
-    d_uniq[d1 == 2, p_hat := predict(f1_2, newdata = d_uniq[d1 == 2], type = "response")]
-    d_uniq[d1 == 3, p_hat := predict(f1_3, newdata = d_uniq[d1 == 3], type = "response")]
+    # d_uniq <- unique(d[, .(pref, d1, d2, d3, d4, p)])
+    # setkey(d_uniq, pref, d1, d2, d3, d4)
+    # d_uniq[d1 == 1, p_hat := predict(f1_1, newdata = d_uniq[d1 == 1], type = "response")]
+    # d_uniq[d1 == 2, p_hat := predict(f1_2, newdata = d_uniq[d1 == 2], type = "response")]
+    # d_uniq[d1 == 3, p_hat := predict(f1_3, newdata = d_uniq[d1 == 3], type = "response")]
     
     # don't really need to do this for all, but:
     risk_surg <- risk_pars_surg(
-      p_d1_alloc, 
-      p_d2_entry, p_d2_alloc,
-      p_d3_entry, p_d3_alloc,
-      p_d4_entry, p_d4_alloc, 
-      p_pref, 
-      mu, bp, bd1, bd2, bd3, bd4)
+      l_l$p_d1_alloc, 
+      l_l$p_d2_entry, l_l$p_d2_alloc,
+      l_l$p_d3_entry, l_l$p_d3_alloc,
+      l_l$p_d4_entry, l_l$p_d4_alloc, 
+      l_l$p_pref, 
+      bs, bp, bd1, bd2, bd3, bd4)
     
     list(
-      d_uniq = d_uniq,
+      # d_uniq = d_uniq,
       d_g = data.table(
         p_dair_ref = risk_surg["p_dair"],
         p_dair_hat = p_dair_hat,
@@ -614,7 +667,8 @@ multi_model_approach <- function(){
   p3 <- ggplot(d_fig, aes(x = rd_hat)) +
     geom_density() +
     geom_vline(data = d_fig[, .(mu = mean(rd_hat))],
-               aes(xintercept = mu), lwd = 0.2) 
+               aes(xintercept = mu), lwd = 0.2) +
+    ggtitle(paste0("Risk diff mean = ", round(d_fig[, mean(rd_hat)], 3), " to 3dp"))
   
   p1 / (p2 + p3)
   
