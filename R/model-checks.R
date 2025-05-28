@@ -157,12 +157,10 @@ risk_pars_surg <- function(
 
 
 risk_pars_dur <- function(
-    p_d2_entry = 0.7,
-    p_d2_alloc = 0.5,
-    p_d4_entry = 0.6,
-    p_d4_alloc = 0.5,
+    p_s_alloc = c(0.3, 0.5, 0.2),
+    l_e, l_l, l_c,
     # log-odds
-    mu = 0.7,
+    bs = c(0.9, 0.8, 0.7),
     # log-or
     # different baseline risk for rev
     bp = -0.4,
@@ -177,49 +175,61 @@ risk_pars_dur <- function(
   
   # 12 weeks
   # averages over combinations
-  # mu + d2[2] + bd4[nonrand]
-  # mu + d2[2] + bd4[norif]
-  # mu + d2[2] + bd4[rif]
+  # bs[1] + d2[2] + bd4[nonrand]
+  # bs[1] + d2[2] + bd4[norif]
+  # bs[1] + d2[2] + bd4[rif]
+  # bs[2] + d2[2] + bd4[nonrand]
+  # bs[2] + d2[2] + bd4[norif]
+  # bs[2] + d2[2] + bd4[rif]
+  # bs[3] + d2[2] + bd4[nonrand]
+  # bs[3] + d2[2] + bd4[norif]
+  # bs[3] + d2[2] + bd4[rif]
   
-  prop_tru <- numeric(3)
-  prop_tru[1] <- (1-p_d4_entry) 
-  prop_tru[2] <- p_d4_entry*p_d4_alloc
-  prop_tru[3] <- p_d4_entry*p_d4_alloc
+  prop_tru <- numeric(9)
+  prop_tru[1] <- (p_s_alloc[1]) * (1-l_e$p_d4_entry)
+  prop_tru[2] <- (p_s_alloc[1]) * l_e$p_d4_entry*l_e$p_d4_alloc
+  prop_tru[3] <- (p_s_alloc[1]) * l_e$p_d4_entry*l_e$p_d4_alloc
+  prop_tru[4] <- (p_s_alloc[2]) * (1-l_l$p_d4_entry)
+  prop_tru[5] <- (p_s_alloc[2]) * l_l$p_d4_entry*l_l$p_d4_alloc
+  prop_tru[6] <- (p_s_alloc[2]) * l_l$p_d4_entry*l_l$p_d4_alloc
+  prop_tru[7] <- (p_s_alloc[3]) * (1-l_e$p_d4_entry)
+  prop_tru[8] <- (p_s_alloc[3]) * l_c$p_d4_entry*l_c$p_d4_alloc
+  prop_tru[9] <- (p_s_alloc[3]) * l_c$p_d4_entry*l_c$p_d4_alloc
   
   p_dur_12wk <- 
-    prop_tru[1] * plogis(mu + bd1[2] + bd2[2] + bd4[1]) +
-    prop_tru[2] * plogis(mu + bd1[2] + bd2[2] + bd4[2]) +
-    prop_tru[3] * plogis(mu + bd1[2] + bd2[2] + bd4[3]) 
+    prop_tru[1] * plogis(bs[1] + bd1[2] + bd2[2] + bd4[1]) +
+    prop_tru[2] * plogis(bs[1] + bd1[2] + bd2[2] + bd4[2]) +
+    prop_tru[3] * plogis(bs[1] + bd1[2] + bd2[2] + bd4[3]) +
+    prop_tru[4] * plogis(bs[2] + bd1[2] + bd2[2] + bd4[3]) +
+    prop_tru[5] * plogis(bs[2] + bd1[2] + bd2[2] + bd4[3]) +
+    prop_tru[6] * plogis(bs[2] + bd1[2] + bd2[2] + bd4[3]) +
+    prop_tru[7] * plogis(bs[3] + bd1[2] + bd2[2] + bd4[3]) +
+    prop_tru[8] * plogis(bs[3] + bd1[2] + bd2[2] + bd4[3]) +
+    prop_tru[9] * plogis(bs[3] + bd1[2] + bd2[2] + bd4[3])   
   
-  # 6 weeks
+  # same weights used for the 06 under 1:1 allocation
   
-  prop_tru <- numeric(3)
-  prop_tru[1] <- (1-p_d4_entry) 
-  prop_tru[2] <- p_d4_entry*p_d4_alloc
-  prop_tru[3] <- p_d4_entry*p_d4_alloc
+  p_dur_6wk <- 
+    prop_tru[1] * plogis(bs[1] + bd1[2] + bd2[3] + bd4[1]) +
+    prop_tru[2] * plogis(bs[1] + bd1[2] + bd2[3] + bd4[2]) +
+    prop_tru[3] * plogis(bs[1] + bd1[2] + bd2[3] + bd4[3]) +
+    prop_tru[4] * plogis(bs[2] + bd1[2] + bd2[3] + bd4[3]) +
+    prop_tru[5] * plogis(bs[2] + bd1[2] + bd2[3] + bd4[3]) +
+    prop_tru[6] * plogis(bs[2] + bd1[2] + bd2[3] + bd4[3]) +
+    prop_tru[7] * plogis(bs[3] + bd1[2] + bd2[3] + bd4[3]) +
+    prop_tru[8] * plogis(bs[3] + bd1[2] + bd2[3] + bd4[3]) +
+    prop_tru[9] * plogis(bs[3] + bd1[2] + bd2[3] + bd4[3])   
   
-  p_dur_06wk <- 
-    prop_tru[1] * plogis(mu + bd1[2] + bd2[3] + bd4[1]) +
-    prop_tru[2] * plogis(mu + bd1[2] + bd2[3] + bd4[2]) +
-    prop_tru[3] * plogis(mu + bd1[2] + bd2[3] + bd4[3]) 
-  
-  c(rd_dur = p_dur_06wk - p_dur_12wk,
-    p_dur_12wk = p_dur_12wk, p_dur_06wk = p_dur_06wk)
+  c(rd_dur = p_dur_6wk - p_dur_12wk,
+    p_dur_12wk = p_dur_12wk, p_dur_6wk = p_dur_6wk)
   
 }
 
 risk_pars_extp <- function(
-    p_d1_alloc = 0.5,
-    p_d2_entry = 0.7,
-    p_d2_alloc = 0.5,
-    p_d3_entry = 0.9,
-    p_d3_alloc = 0.5,
-    p_d4_entry = 0.6,
-    p_d4_alloc = 0.5,
-    # 40% pref for two-stage
-    p_pref = 0.4,
+    p_s_alloc = c(0.3, 0.5, 0.2),
+    l_e, l_l, l_c,
     # log-odds
-    mu = 0.7,
+    bs = c(0.9, 0.8, 0.7),
     # log-or
     # different baseline risk for rev
     bp = -0.4,
@@ -232,33 +242,40 @@ risk_pars_extp <- function(
   # only model that is relevant is     f1_3 ~ 1 + d3 + d4 which incorporates
   # the shifts for both rev(2) surgery and pref into the intercept
   
-  # 0 ext proph
-  # averages over combinations
-  # mu + bp + bd1[3] + bd2[2] + bd4[nonrand]
-  # mu + bp + bd1[3] + bd2[2] + bd4[norif]
-  # mu + bp + bd1[3] + bd2[2] + bd4[rif]
-  
-  prop_tru <- numeric(3)
-  prop_tru[1] <- (1-p_d4_entry) 
-  prop_tru[2] <- p_d4_entry*p_d4_alloc
-  prop_tru[3] <- p_d4_entry*p_d4_alloc
+  prop_tru <- numeric(9)
+  prop_tru[1] <- (p_s_alloc[1]) * (1-l_e$p_d4_entry)
+  prop_tru[2] <- (p_s_alloc[1]) * l_e$p_d4_entry*l_e$p_d4_alloc
+  prop_tru[3] <- (p_s_alloc[1]) * l_e$p_d4_entry*l_e$p_d4_alloc
+  prop_tru[4] <- (p_s_alloc[2]) * (1-l_l$p_d4_entry)
+  prop_tru[5] <- (p_s_alloc[2]) * l_l$p_d4_entry*l_l$p_d4_alloc
+  prop_tru[6] <- (p_s_alloc[2]) * l_l$p_d4_entry*l_l$p_d4_alloc
+  prop_tru[7] <- (p_s_alloc[3]) * (1-l_e$p_d4_entry)
+  prop_tru[8] <- (p_s_alloc[3]) * l_c$p_d4_entry*l_c$p_d4_alloc
+  prop_tru[9] <- (p_s_alloc[3]) * l_c$p_d4_entry*l_c$p_d4_alloc
   
   p_extp_0wk <- 
-    prop_tru[1] * plogis(mu + bp + bd1[3] + bd3[2] + bd4[1]) +
-    prop_tru[2] * plogis(mu + bp + bd1[3] + bd3[2] + bd4[2]) +
-    prop_tru[3] * plogis(mu + bp + bd1[3] + bd3[2] + bd4[3]) 
+    prop_tru[1] * plogis(bs[1] + bd1[2] + bd3[2] + bd4[1]) +
+    prop_tru[2] * plogis(bs[1] + bd1[2] + bd3[2] + bd4[2]) +
+    prop_tru[3] * plogis(bs[1] + bd1[2] + bd3[2] + bd4[3]) +
+    prop_tru[4] * plogis(bs[2] + bd1[2] + bd3[2] + bd4[3]) +
+    prop_tru[5] * plogis(bs[2] + bd1[2] + bd3[2] + bd4[3]) +
+    prop_tru[6] * plogis(bs[2] + bd1[2] + bd3[2] + bd4[3]) +
+    prop_tru[7] * plogis(bs[3] + bd1[2] + bd3[2] + bd4[3]) +
+    prop_tru[8] * plogis(bs[3] + bd1[2] + bd3[2] + bd4[3]) +
+    prop_tru[9] * plogis(bs[3] + bd1[2] + bd3[2] + bd4[3])   
   
-  # 12 weeks
+  # same weights used under 1:1 allocation
   
-  prop_tru <- numeric(3)
-  prop_tru[1] <- (1-p_d4_entry) 
-  prop_tru[2] <- p_d4_entry*p_d4_alloc
-  prop_tru[3] <- p_d4_entry*p_d4_alloc
-  
-  p_extp_12wk <-  
-    prop_tru[1] * plogis(mu + bp + bd1[3] + bd3[3] + bd4[1]) +
-    prop_tru[2] * plogis(mu + bp + bd1[3] + bd3[3] + bd4[2]) +
-    prop_tru[3] * plogis(mu + bp + bd1[3] + bd3[3] + bd4[3]) 
+  p_extp_12wk <- 
+    prop_tru[1] * plogis(bs[1] + bd1[2] + bd3[3] + bd4[1]) +
+    prop_tru[2] * plogis(bs[1] + bd1[2] + bd3[3] + bd4[2]) +
+    prop_tru[3] * plogis(bs[1] + bd1[2] + bd3[3] + bd4[3]) +
+    prop_tru[4] * plogis(bs[2] + bd1[2] + bd3[3] + bd4[3]) +
+    prop_tru[5] * plogis(bs[2] + bd1[2] + bd3[3] + bd4[3]) +
+    prop_tru[6] * plogis(bs[2] + bd1[2] + bd3[3] + bd4[3]) +
+    prop_tru[7] * plogis(bs[3] + bd1[2] + bd3[3] + bd4[3]) +
+    prop_tru[8] * plogis(bs[3] + bd1[2] + bd3[3] + bd4[3]) +
+    prop_tru[9] * plogis(bs[3] + bd1[2] + bd3[3] + bd4[3])   
   
   c(rd_extp = p_extp_12wk - p_extp_0wk,
     p_extp_0wk = p_extp_0wk, p_extp_12wk = p_extp_12wk)
@@ -361,6 +378,23 @@ risk_pars_choice <- function(
 
 test_pars <- function(){
   
+  
+  p_s_alloc = c(0.3, 0.5, 0.2)
+  l_e <- list(
+    # prob of rev
+    p_d1_alloc = 0.15,
+    # entry into duration same across all silo
+    p_d2_entry = 0.7,
+    p_d2_alloc = 0.5,
+    # entry into extp same across all silo
+    p_d3_entry = 0.9,
+    p_d3_alloc = 0.5,
+    # entry into choice same across all silo
+    p_d4_entry = 0.6,
+    p_d4_alloc = 0.5,
+    # preference for two-stage
+    p_pref = 0.35
+  )
   l_l <- list(
     # prob of rev
     p_d1_alloc = 0.5,
@@ -373,6 +407,18 @@ test_pars <- function(){
     # preference for two-stage
     p_pref = 0.7
   )
+  l_c <- list(
+    # prob of rev
+    p_d1_alloc = 0.8,
+    p_d2_entry = 0.7,
+    p_d2_alloc = 0.5,
+    p_d3_entry = 0.9,
+    p_d3_alloc = 0.5,
+    p_d4_entry = 0.6,
+    p_d4_alloc = 0.5,
+    # preference for two-stage
+    p_pref = 0.75
+  )
   # log-odds
   bs = c(0.9, 0.8, 0.7)
   # log-or
@@ -384,8 +430,7 @@ test_pars <- function(){
   bd4 = c(0, 0.1, 0.2)
   
   
-  
-  obj_f1 <- function(x){
+  obj_surg_f1 <- function(x){
     res <- risk_pars_surg(
       l_l$p_d1_alloc, 
       l_l$p_d2_entry, l_l$p_d2_alloc,
@@ -406,6 +451,26 @@ test_pars <- function(){
   # are non-zero, you need to set the logor for both to:
   optimize(obj_f1, c(0, 1))$minimum
   
+  
+  risk_pars_dur(
+    p_s_alloc, l_e, l_l, l_c,
+    # log-odds
+    bs, bp, 
+    bd1 = c(0, 0.5, -0.1), 
+    bd2 = c(0, 0.1, 0), 
+    bd3, 
+    bd4
+  )
+  
+  risk_pars_extp(
+    p_s_alloc, l_e, l_l, l_c,
+    # log-odds
+    bs, bp, 
+    bd1 = c(0, 0.5, -0.1), 
+    bd2 = c(0, 0, 0), 
+    bd3 = c(0, 0, 0.2), 
+    bd4
+  )
   
   
   
@@ -566,47 +631,41 @@ multi_model_approach <- function(){
     coef(f1_2)
     coef(f1_3)
     
-    # surgical domain
+    # surgical domain -----
     
     # dair
-    d_dair <- copy(d[s == 2])
-    d_dair[, d1 := factor(1)]
+    d_surg_dair <- copy(d[s == 2])
+    d_surg_dair[, d1 := factor(1)]
     # d4 stays at whatever it was
-    d_dair[, p_hat := predict(f1_1, newdata = d_dair, type = "response")]
-    p_dair_hat <- mean(d_dair$p_hat)
+    d_surg_dair[, p_hat := predict(f1_1, newdata = d_surg_dair, type = "response")]
+    p_surg_dair_hat <- mean(d_surg_dair$p_hat)
     
     # rev(1)
-    d_rev_1 <- copy(d[s == 2 & pref == 0])
-    d_rev_1[, d1 := factor(2)]
-    d_rev_1[, pref := 0]
-    d_rev_1[d2_entry == 1, d2 := factor(d_rev_1[d2_entry == 1, d2_alloc + 2], levels = 1:3)]
-    d_rev_1[d2_entry == 0, d2 := factor(1, levels = 1:3)]
+    d_surg_rev_1 <- copy(d[s == 2 & pref == 0])
+    d_surg_rev_1[, d1 := factor(2)]
+    d_surg_rev_1[, pref := 0]
+    d_surg_rev_1[d2_entry == 1, d2 := factor(d_surg_rev_1[d2_entry == 1, d2_alloc + 2], levels = 1:3)]
+    d_surg_rev_1[d2_entry == 0, d2 := factor(1, levels = 1:3)]
     # and d4 stays at whatever it was
-    d_rev_1[, p_hat := predict(f1_2, newdata = d_rev_1, type = "response")]
-    p_rev_1_hat <- mean(d_rev_1$p_hat)
+    d_surg_rev_1[, p_hat := predict(f1_2, newdata = d_surg_rev_1, type = "response")]
+    p_surg_rev_1_hat <- mean(d_surg_rev_1$p_hat)
     
     # rev(2)
-    d_rev_2 <- copy(d[s == 2 & pref == 1])
-    d_rev_2[, d1 := factor(3)]
+    d_surg_rev_2 <- copy(d[s == 2 & pref == 1])
+    d_surg_rev_2[, d1 := factor(3)]
     # pref doesn't matter because the model had to roll it up into the intercept
     # d_rev_2[, pref := 1]
-    d_rev_2[d3_entry == 1, d3 := factor(d_rev_2[d3_entry == 1, d3_alloc + 2], levels = 1:3)]
-    d_rev_2[d3_entry == 0, d3 := factor(1, levels = 1:3)]
+    d_surg_rev_2[d3_entry == 1, d3 := factor(d_surg_rev_2[d3_entry == 1, d3_alloc + 2], levels = 1:3)]
+    d_surg_rev_2[d3_entry == 0, d3 := factor(1, levels = 1:3)]
     # and d4 stays at whatever it was
-    d_rev_2[, p_hat := predict(f1_3, newdata = d_rev_2, type = "response")]
-    p_rev_2_hat <- mean(d_rev_2$p_hat)
+    d_surg_rev_2[, p_hat := predict(f1_3, newdata = d_surg_rev_2, type = "response")]
+    p_surg_rev_2_hat <- mean(d_surg_rev_2$p_hat)
     
     # now aggregate the one and two-stage revision
     d_prop <- d[s == 2, .(prop = .N/nrow(d[s == 2])), keyby = pref]
-    p_rev_hat <- p_rev_1_hat * d_prop[pref == 0, prop] + p_rev_2_hat * d_prop[pref == 1, prop]
+    p_surg_rev_hat <- p_surg_rev_1_hat * d_prop[pref == 0, prop] + p_surg_rev_2_hat * d_prop[pref == 1, prop]
     
-    rd_hat <- p_rev_hat - p_dair_hat
-
-    # d_uniq <- unique(d[, .(pref, d1, d2, d3, d4, p)])
-    # setkey(d_uniq, pref, d1, d2, d3, d4)
-    # d_uniq[d1 == 1, p_hat := predict(f1_1, newdata = d_uniq[d1 == 1], type = "response")]
-    # d_uniq[d1 == 2, p_hat := predict(f1_2, newdata = d_uniq[d1 == 2], type = "response")]
-    # d_uniq[d1 == 3, p_hat := predict(f1_3, newdata = d_uniq[d1 == 3], type = "response")]
+    rd_surg_hat <- p_surg_rev_hat - p_surg_dair_hat
     
     # don't really need to do this for all, but:
     risk_surg <- risk_pars_surg(
@@ -617,19 +676,74 @@ multi_model_approach <- function(){
       l_l$p_pref, 
       bs, bp, bd1, bd2, bd3, bd4)
     
+    
+    # duration domain -----
+    
+    d_dur_12wk <- copy(d[d1 == 2])
+    d_dur_12wk[, d2 := factor(2)]
+    d_dur_12wk[, p_hat := predict(f1_2, newdata = d_dur_12wk, type = "response")]
+    p_dur_12wk_hat <- mean(d_dur_12wk$p_hat)
+    
+    d_dur_6wk <- copy(d[d1 == 2])
+    d_dur_6wk[, d2 := factor(3)]
+    d_dur_6wk[, p_hat := predict(f1_2, newdata = d_dur_6wk, type = "response")]
+    p_dur_6wk_hat <- mean(d_dur_6wk$p_hat)
+    
+    rd_dur_hat <- p_dur_6wk_hat - p_dur_12wk_hat
+    
+    risk_dur <- risk_pars_dur(
+      p_s_alloc, l_e, l_l, l_c, 
+      bs, bp, bd1, bd2, bd3, bd4)
+    
+    # extp domain -----
+    
+    d_extp_0wk <- copy(d[d1 == 3])
+    d_extp_0wk[, d3 := factor(2)]
+    d_extp_0wk[, p_hat := predict(f1_3, newdata = d_extp_0wk, type = "response")]
+    p_extp_0wk_hat <- mean(d_extp_0wk$p_hat)
+    
+    d_extp_12wk <- copy(d[d1 == 3])
+    d_extp_12wk[, d3 := factor(3)]
+    d_extp_12wk[, p_hat := predict(f1_3, newdata = d_extp_12wk, type = "response")]
+    p_extp_12wk_hat <- mean(d_extp_12wk$p_hat)
+    
+    rd_extp_hat <- p_extp_12wk_hat - p_extp_0wk_hat
+    
+    risk_extp <- risk_pars_extp(
+      p_s_alloc, l_e, l_l, l_c, 
+      bs, bp, bd1, bd2, bd3, bd4)
+    
+    
+    
+    # choice domain -----
+    
     list(
       # d_uniq = d_uniq,
       d_g = data.table(
-        p_dair_ref = risk_surg["p_dair"],
-        p_dair_hat = p_dair_hat,
-        p_rev_1_ref = risk_surg["p_rev_1"],
-        p_rev_1_hat = p_rev_1_hat,
-        p_rev_2_ref = risk_surg["p_rev_2"],
-        p_rev_2_hat = p_rev_2_hat,
-        p_rev_ref = risk_surg["p_rev"],
-        p_rev_hat = p_rev_hat,
-        rd_ref = risk_surg["rd"],
-        rd_hat = rd_hat
+        p_surg_dair_ref = risk_surg["p_dair"],
+        p_surg_dair_hat = p_surg_dair_hat,
+        p_surg_rev_1_ref = risk_surg["p_rev_1"],
+        p_surg_rev_1_hat = p_surg_rev_1_hat,
+        p_surg_rev_2_ref = risk_surg["p_rev_2"],
+        p_surg_rev_2_hat = p_surg_rev_2_hat,
+        p_surg_rev_ref = risk_surg["p_rev"],
+        p_surg_rev_hat = p_surg_rev_hat,
+        rd_surg_ref = risk_surg["rd"],
+        rd_surg_hat = rd_surg_hat,
+        
+        p_dur_12wk_ref = risk_dur["p_dur_12wk"],
+        p_dur_12wk_hat = p_dur_12wk_hat,
+        p_dur_6wk_ref = risk_dur["p_dur_6wk"],
+        p_dur_6wk_hat = p_dur_6wk_hat,
+        rd_dur_ref = risk_dur["rd_dur"],
+        rd_dur_hat = rd_dur_hat,
+        
+        p_extp_0wk_ref = risk_extp["p_extp_0wk"],
+        p_extp_0wk_hat = p_extp_0wk_hat,
+        p_extp_12wk_ref = risk_extp["p_extp_12wk"],
+        p_extp_12wk_hat = p_extp_12wk_hat,
+        rd_extp_ref = risk_extp["rd_extp"],
+        rd_extp_hat = rd_extp_hat
       )
     )
     
@@ -638,39 +752,55 @@ multi_model_approach <- function(){
   
   d_g <- rbindlist(lapply(r, function(z) z$d_g))
   
-  d_g[, bias_rd := rd_hat - rd_ref]
-  d_g[, bias_p_dair := p_dair_hat - p_dair_ref]
-  d_g[, bias_p_rev := p_rev_hat - p_rev_ref]
-  d_g[, bias_p_rev_1 := p_rev_1_hat - p_rev_1_ref]
-  d_g[, bias_p_rev_2 := p_rev_2_hat - p_rev_2_ref]
+  d_g[, bias_surg_rd := rd_surg_hat - rd_surg_ref]
+  d_g[, bias_dur_rd := rd_dur_hat - rd_dur_ref]
+  d_g[, bias_extp_rd := rd_extp_hat - rd_extp_ref]
   
-  d_fig <- d_g[, .(bias_rd, bias_p_dair, bias_p_rev)]
+  d_fig <- d_g[, .(bias_surg_rd, bias_dur_rd, bias_extp_rd)]
   d_fig <- melt(d_fig, measure.vars = names(d_fig))
   
   p1 <- ggplot(d_fig, aes(x = value)) +
     geom_density() +
     geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable],
                aes(xintercept = mu), lwd = 0.2) + 
-    facet_wrap(~variable, nrow = 1)
+    facet_wrap(~variable, nrow = 1) +
+    theme(
+      axis.title = element_blank()
+    )
   #
   
-  d_fig <- d_g[, .(p_dair_hat, p_rev_hat)]
+  d_fig <- d_g[, .(p_surg_dair_hat, p_surg_rev_hat, 
+                   p_dur_12wk_hat, p_dur_6wk_hat,
+                   p_extp_0wk_hat, p_extp_12wk_hat)]
   d_fig <- melt(d_fig, measure.vars = names(d_fig))
   
   p2 <- ggplot(d_fig, aes(x = value)) +
     geom_density() +
     geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable],
                aes(xintercept = mu), lwd = 0.2) +
-    facet_wrap(~variable,  nrow = 1)
+    facet_wrap(~variable,  nrow = 3)+
+    theme(
+      axis.title.x = element_blank()
+    )
   
-  d_fig <- d_g[, .(rd_hat)]
-  p3 <- ggplot(d_fig, aes(x = rd_hat)) +
+  d_fig <- d_g[, .(rd_surg_hat, rd_dur_hat, rd_extp_hat)]
+  d_fig <- melt(d_fig, measure.vars = names(d_fig))
+  p3 <- ggplot(d_fig, aes(x = value)) +
     geom_density() +
-    geom_vline(data = d_fig[, .(mu = mean(rd_hat))],
-               aes(xintercept = mu), lwd = 0.2) +
-    ggtitle(paste0("Risk diff mean = ", round(d_fig[, mean(rd_hat)], 3), " to 3dp"))
+    geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable],
+               aes(xintercept = mu), lwd = 0.2)  +
+    facet_wrap(~variable,  nrow = 2)+
+    theme(
+      axis.title.x = element_blank()
+    )
   
-  p1 / (p2 + p3)
+  layout <- "
+    AAAA
+    BBCC
+    BBCC
+  "
+  p1 + p2 + p3 +
+    plot_layout(design = layout)
   
 }
 
