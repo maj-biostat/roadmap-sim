@@ -283,17 +283,10 @@ risk_pars_extp <- function(
 }
 
 risk_pars_choice <- function(
-    p_d1_alloc = 0.5,
-    p_d2_entry = 0.7,
-    p_d2_alloc = 0.5,
-    p_d3_entry = 0.9,
-    p_d3_alloc = 0.5,
-    p_d4_entry = 0.6,
-    p_d4_alloc = 0.5,
-    # 40% pref for two-stage
-    p_pref = 0.4,
+    p_s_alloc = c(0.3, 0.5, 0.2),
+    l_e, l_l, l_c,
     # log-odds
-    mu = 0.7,
+    bs = c(0.9, 0.8, 0.7),
     # log-or
     # different baseline risk for rev
     bp = -0.4,
@@ -302,70 +295,179 @@ risk_pars_choice <- function(
     bd3 = c(0, 0, -0.2),
     bd4 = c(0, 0.1, 0.2)
 ){
-  # y ~ 1 + pref + d4
-  # y ~ 1 + d2 + d4
-  # y ~ 1 + d3 + d4
+  
   
   # ab choice included everywhere so risk is weighted over all models
 
-  # we average over pref for the first model
-  prop_tru <- numeric(2)
-  prop_tru[1] <- (1-p_pref) 
-  prop_tru[2] <- p_pref
-  p_choice_norif_1 <-  
-    prop_tru[1] * plogis(mu + bd4[2]) +
-    prop_tru[2] * plogis(mu + bp + bd4[2]) 
-  p_choice_rif_1 <-  
-    prop_tru[1] * plogis(mu + bd4[3]) +
-    prop_tru[2] * plogis(mu + bp + bd4[3]) 
+  # first model
+  # y ~ -1 + s + pref + d4  for d1 = 1 (all silo)
+  # average over silo and pref for the first model
+  # combinations
+  # bs[1] + bd4[norif]
+  # bs[2] + bd4[norif]
+  # bs[3] + bd4[norif]
+  # bs[1] + bp + bd4[norif]
+  # bs[2] + bp + bd4[norif]
+  # bs[3] + bp + bd4[norif]
   
-  # average over bd2
-  prop_tru <- numeric(3)
-  prop_tru[1] <- (1-p_d2_entry) 
-  prop_tru[2] <- p_d2_entry * p_d2_alloc
-  prop_tru[3] <- p_d2_entry * p_d2_alloc
+  prop_tru <- numeric(6)
+  prop_tru[1] <- p_s_alloc[1] * (1-l_e$p_pref)
+  prop_tru[2] <- p_s_alloc[2] * (1-l_l$p_pref)
+  prop_tru[3] <- p_s_alloc[3] * (1-l_c$p_pref)
+  prop_tru[4] <- p_s_alloc[1] * l_e$p_pref
+  prop_tru[5] <- p_s_alloc[2] * l_l$p_pref
+  prop_tru[6] <- p_s_alloc[3] * l_c$p_pref
+  
+  p_choice_norif_1 <-  
+    prop_tru[1] * plogis(bs[1] + bd4[2]) +
+    prop_tru[2] * plogis(bs[2] + bd4[2]) +
+    prop_tru[3] * plogis(bs[3] + bd4[2]) +
+    prop_tru[4] * plogis(bs[1] + bp + bd4[2]) +
+    prop_tru[5] * plogis(bs[2] + bp + bd4[2]) +
+    prop_tru[6] * plogis(bs[3] + bp + bd4[2])
+  
+  p_choice_rif_1 <-  
+    prop_tru[1] * plogis(bs[1] + bd4[3]) +
+    prop_tru[2] * plogis(bs[2] + bd4[3]) +
+    prop_tru[3] * plogis(bs[3] + bd4[3]) +
+    prop_tru[4] * plogis(bs[1] + bp + bd4[3]) +
+    prop_tru[5] * plogis(bs[2] + bp + bd4[3]) +
+    prop_tru[6] * plogis(bs[3] + bp + bd4[3])
+  
+  # second model
+  # y ~ -1 + s + d2 + d4  for d1 = 2 (all silo)
+  # average over bd2 all pref at zero since is relevant only for rev(1)
+  # combinations
+  # bs[1] + d2[1] + bd4[norif]
+  # bs[2] + d2[1] + bd4[norif]
+  # bs[3] + d2[1] + bd4[norif]
+  # bs[1] + d2[2] + bd4[norif]
+  # bs[2] + d2[2] + bd4[norif]
+  # bs[3] + d2[2] + bd4[norif]
+  # bs[1] + d2[3] + bd4[norif]
+  # bs[2] + d2[3] + bd4[norif]
+  # bs[3] + d2[3] + bd4[norif]
+  
+  prop_tru <- numeric(9)
+  prop_tru[1] <- p_s_alloc[1] * (1-l_e$p_d2_entry) 
+  prop_tru[2] <- p_s_alloc[2] * (1-l_l$p_d2_entry)
+  prop_tru[3] <- p_s_alloc[3] * (1-l_c$p_d2_entry)
+  # technically the l_e$p_d2_alloc should be 1 - l_e$p_d2_alloc but we have
+  # 1:1 randomisation so it doesn't matter.
+  prop_tru[4] <- p_s_alloc[1] * (l_e$p_d2_entry * l_e$p_d2_alloc)
+  prop_tru[5] <- p_s_alloc[2] * (l_l$p_d2_entry * l_l$p_d2_alloc)
+  prop_tru[6] <- p_s_alloc[3] * (l_c$p_d2_entry * l_c$p_d2_alloc)
+  prop_tru[7] <- p_s_alloc[1] * (l_e$p_d2_entry * l_e$p_d2_alloc)
+  prop_tru[8] <- p_s_alloc[2] * (l_l$p_d2_entry * l_l$p_d2_alloc)
+  prop_tru[9] <- p_s_alloc[3] * (l_c$p_d2_entry * l_c$p_d2_alloc)
   
   p_choice_norif_2 <-  
-    prop_tru[1] * plogis(mu + bd1[2] + bd2[1] + bd4[2]) +
-    prop_tru[2] * plogis(mu + bd1[2] + bd2[2] + bd4[2]) +
-    prop_tru[3] * plogis(mu + bd1[2] + bd2[3] + bd4[2]) 
-  p_choice_rif_2 <-  
-    prop_tru[1] * plogis(mu + bd1[2] + bd2[1] + bd4[3]) +
-    prop_tru[2] * plogis(mu + bd1[2] + bd2[2] + bd4[3]) +
-    prop_tru[3] * plogis(mu + bd1[2] + bd2[3] + bd4[3]) 
+    prop_tru[1] * plogis(bs[1] + bd1[2] + bd2[1] + bd4[2]) +
+    prop_tru[2] * plogis(bs[2] + bd1[2] + bd2[1] + bd4[2]) +
+    prop_tru[3] * plogis(bs[3] + bd1[2] + bd2[1] + bd4[2]) +
+    prop_tru[4] * plogis(bs[1] + bd1[2] + bd2[2] + bd4[2]) +
+    prop_tru[5] * plogis(bs[2] + bd1[2] + bd2[2] + bd4[2]) +
+    prop_tru[6] * plogis(bs[3] + bd1[2] + bd2[2] + bd4[2]) +
+    prop_tru[7] * plogis(bs[1] + bd1[2] + bd2[3] + bd4[2]) +
+    prop_tru[8] * plogis(bs[2] + bd1[2] + bd2[3] + bd4[2]) +
+    prop_tru[9] * plogis(bs[3] + bd1[2] + bd2[3] + bd4[2]) 
   
-  # average over bd2
-  prop_tru <- numeric(3)
-  prop_tru[1] <- (1-p_d3_entry) 
-  prop_tru[2] <- p_d3_entry * p_d3_alloc
-  prop_tru[3] <- p_d3_entry * p_d3_alloc
+  p_choice_rif_2 <-  
+    prop_tru[1] * plogis(bs[1] + bd1[2] + bd2[1] + bd4[3]) +
+    prop_tru[2] * plogis(bs[2] + bd1[2] + bd2[1] + bd4[3]) +
+    prop_tru[3] * plogis(bs[3] + bd1[2] + bd2[1] + bd4[3]) +
+    prop_tru[4] * plogis(bs[1] + bd1[2] + bd2[2] + bd4[3]) +
+    prop_tru[5] * plogis(bs[2] + bd1[2] + bd2[2] + bd4[3]) +
+    prop_tru[6] * plogis(bs[3] + bd1[2] + bd2[2] + bd4[3]) +
+    prop_tru[7] * plogis(bs[1] + bd1[2] + bd2[3] + bd4[3]) +
+    prop_tru[8] * plogis(bs[2] + bd1[2] + bd2[3] + bd4[3]) +
+    prop_tru[9] * plogis(bs[3] + bd1[2] + bd2[3] + bd4[3]) 
+  
+  
+  # third model
+  
+  # y ~ -1 + s + d3 + d4  for d1 = 3 (all silo)
+  # combinations
+  # bs[1] + bp + d3[1] + bd4[norif]
+  # bs[2] + bp + d3[1] + bd4[norif]
+  # bs[3] + bp + d3[1] + bd4[norif]
+  # bs[1] + bp + d3[2] + bd4[norif]
+  # bs[2] + bp + d3[2] + bd4[norif]
+  # bs[3] + bp + d3[2] + bd4[norif]
+  # bs[1] + bp + d3[3] + bd4[norif]
+  # bs[2] + bp + d3[3] + bd4[norif]
+  # bs[3] + bp + d3[3] + bd4[norif]
+  
+  prop_tru <- numeric(9)
+  # pr of being in silo * pr of being in non-rand set
+  prop_tru[1] <- p_s_alloc[1] * (1-l_e$p_d3_entry) 
+  prop_tru[2] <- p_s_alloc[2] * (1-l_l$p_d3_entry)
+  prop_tru[3] <- p_s_alloc[3] * (1-l_c$p_d3_entry)
+  # technically the l_e$p_d2_alloc should be 1 - l_e$p_d2_alloc but we have
+  # 1:1 randomisation so it doesn't matter.
+  prop_tru[4] <- p_s_alloc[1] * (l_e$p_d3_entry * l_e$p_d3_alloc)
+  prop_tru[5] <- p_s_alloc[2] * (l_l$p_d3_entry * l_l$p_d3_alloc)
+  prop_tru[6] <- p_s_alloc[3] * (l_c$p_d3_entry * l_c$p_d3_alloc)
+  prop_tru[7] <- p_s_alloc[1] * (l_e$p_d3_entry * l_e$p_d3_alloc)
+  prop_tru[8] <- p_s_alloc[2] * (l_l$p_d3_entry * l_l$p_d3_alloc)
+  prop_tru[9] <- p_s_alloc[3] * (l_c$p_d3_entry * l_c$p_d3_alloc)
   
   p_choice_norif_3 <-  
-    prop_tru[1] * plogis(mu + bd1[2] + bd3[1] + bd4[2]) +
-    prop_tru[2] * plogis(mu + bd1[2] + bd3[2] + bd4[2]) +
-    prop_tru[3] * plogis(mu + bd1[2] + bd3[3] + bd4[2]) 
+    prop_tru[1] * plogis(bs[1] + bp + bd1[3] + bd3[1] + bd4[2]) +
+    prop_tru[2] * plogis(bs[2] + bp + bd1[3] + bd3[1] + bd4[2]) +
+    prop_tru[3] * plogis(bs[3] + bp + bd1[3] + bd3[1] + bd4[2]) +
+    prop_tru[4] * plogis(bs[1] + bp + bd1[3] + bd3[2] + bd4[2]) +
+    prop_tru[5] * plogis(bs[2] + bp + bd1[3] + bd3[2] + bd4[2]) +
+    prop_tru[6] * plogis(bs[3] + bp + bd1[3] + bd3[2] + bd4[2]) +
+    prop_tru[7] * plogis(bs[1] + bp + bd1[3] + bd3[3] + bd4[2]) +
+    prop_tru[8] * plogis(bs[2] + bp + bd1[3] + bd3[3] + bd4[2]) +
+    prop_tru[9] * plogis(bs[3] + bp + bd1[3] + bd3[3] + bd4[2]) 
+  
   p_choice_rif_3 <-  
-    prop_tru[1] * plogis(mu + bd1[2] + bd3[1] + bd4[3]) +
-    prop_tru[2] * plogis(mu + bd1[2] + bd3[2] + bd4[3]) +
-    prop_tru[3] * plogis(mu + bd1[2] + bd3[3] + bd4[3]) 
+    prop_tru[1] * plogis(bs[1] + bp + bd1[3] + bd3[1] + bd4[3]) +
+    prop_tru[2] * plogis(bs[2] + bp + bd1[3] + bd3[1] + bd4[3]) +
+    prop_tru[3] * plogis(bs[3] + bp + bd1[3] + bd3[1] + bd4[3]) +
+    prop_tru[4] * plogis(bs[1] + bp + bd1[3] + bd3[2] + bd4[3]) +
+    prop_tru[5] * plogis(bs[2] + bp + bd1[3] + bd3[2] + bd4[3]) +
+    prop_tru[6] * plogis(bs[3] + bp + bd1[3] + bd3[2] + bd4[3]) +
+    prop_tru[7] * plogis(bs[1] + bp + bd1[3] + bd3[3] + bd4[3]) +
+    prop_tru[8] * plogis(bs[2] + bp + bd1[3] + bd3[3] + bd4[3]) +
+    prop_tru[9] * plogis(bs[3] + bp + bd1[3] + bd3[3] + bd4[3]) 
   
   # model estimates need to be weighted by the relevant cohort contributions
-  prop_tru <- numeric(3)
-  prop_tru[1] <- p_d1_alloc
-  prop_tru[2] <- p_d1_alloc*(1-p_pref)
-  prop_tru[3] <- p_d1_alloc*p_pref
   
   p_choice_norif <- 
-    prop_tru[1] * p_choice_norif_1 +
-    prop_tru[2] * p_choice_norif_2 +
-    prop_tru[3] * p_choice_norif_3
-  
+    # those allocated to dair (contribute to model 1)
+    ((p_s_alloc[1] * (1-l_e$p_d1_alloc)) + 
+       (p_s_alloc[2] * (1-l_l$p_d1_alloc)) + 
+       (p_s_alloc[3] * (1-l_c$p_d1_alloc))) * p_choice_norif_1 +
+    # those allocated to rev(1) (contribute to model 2)
+    ((p_s_alloc[1] * (l_e$p_d1_alloc * (1-l_e$p_pref))) + 
+       (p_s_alloc[2] * (l_l$p_d1_alloc * (1-l_l$p_pref))) + 
+       (p_s_alloc[3] * (l_c$p_d1_alloc * (1-l_c$p_pref)))) * p_choice_norif_2 +
+    # those allocated to rev(2) (contribute to model 3)
+    ((p_s_alloc[1] * (l_e$p_d1_alloc * l_e$p_pref)) + 
+       (p_s_alloc[2] * (l_l$p_d1_alloc * l_l$p_pref)) + 
+       (p_s_alloc[3] * (l_c$p_d1_alloc * l_c$p_pref))) * p_choice_norif_3 
+    
   p_choice_rif <- 
-    prop_tru[1] * p_choice_rif_1 +
-    prop_tru[2] * p_choice_rif_2 +
-    prop_tru[3] * p_choice_rif_3 
+    # those allocated to dair (contribute to model 1)
+    ((p_s_alloc[1] * (1-l_e$p_d1_alloc)) + 
+       (p_s_alloc[2] * (1-l_l$p_d1_alloc)) + 
+       (p_s_alloc[3] * (1-l_c$p_d1_alloc))) * p_choice_rif_1 +
+    # those allocated to rev(1) (contribute to model 2)
+    ((p_s_alloc[1] * (l_e$p_d1_alloc * (1-l_e$p_pref))) + 
+       (p_s_alloc[2] * (l_l$p_d1_alloc * (1-l_l$p_pref))) + 
+       (p_s_alloc[3] * (l_c$p_d1_alloc * (1-l_c$p_pref)))) * p_choice_rif_2 +
+    # those allocated to rev(2) (contribute to model 3)
+    ((p_s_alloc[1] * (l_e$p_d1_alloc * l_e$p_pref)) + 
+       (p_s_alloc[2] * (l_l$p_d1_alloc * l_l$p_pref)) + 
+       (p_s_alloc[3] * (l_c$p_d1_alloc * l_c$p_pref))) * p_choice_rif_3 
+
   
   c(rd_choice = p_choice_rif - p_choice_norif,
+    p_choice_rif = p_choice_rif, 
+    p_choice_norif = p_choice_norif,
     p_choice_norif_1 = p_choice_norif_1, 
     p_choice_norif_2 = p_choice_norif_2,
     p_choice_norif_3 = p_choice_norif_3, 
@@ -470,6 +572,16 @@ test_pars <- function(){
     bd2 = c(0, 0, 0), 
     bd3 = c(0, 0, 0.2), 
     bd4
+  )
+  
+  risk_pars_choice(
+    p_s_alloc, l_e, l_l, l_c,
+    # log-odds
+    bs, bp, 
+    bd1 = c(0, 0.5, -0.1), 
+    bd2 = c(0, 0, 0), 
+    bd3 = c(0, 0, 0.2), 
+    bd4 = c(0, 0, 0)
   )
   
   
@@ -601,7 +713,7 @@ multi_model_approach <- function(){
     d[d4_entry == 0, d4 := 1]
     d[d4_entry == 1, d4 := 2 + d4_alloc]
     
-    d[, .N, keyby = .(s, pref, d1, d2, d3, d4)]
+    # d[, .N, keyby = .(s, pref, d1, d2, d3, d4)]
 
     # bd1 is irrelevant since d1 == 1 is the ref group, fixed at zero
     d[d1 == 1, eta := bs[s] + bp*pref + bd4[d4]]
@@ -627,9 +739,9 @@ multi_model_approach <- function(){
       y ~ -1 + s + d3 + d4, data = d, subset= d1==3, family = binomial,
       control = glm.control(epsilon = 1e-4, maxit = 100, trace = FALSE))
     
-    coef(f1_1)
-    coef(f1_2)
-    coef(f1_3)
+    # coef(f1_1)
+    # coef(f1_2)
+    # coef(f1_3)
     
     # surgical domain -----
     
@@ -713,9 +825,81 @@ multi_model_approach <- function(){
       p_s_alloc, l_e, l_l, l_c, 
       bs, bp, bd1, bd2, bd3, bd4)
     
-    
-    
     # choice domain -----
+    
+    d_choice_norif <- copy(d[d4 != 1 & d1 == 1])
+    d_choice_norif[, d4 := factor(2)]
+    d_choice_norif[, p_hat := predict(f1_1, newdata = d_choice_norif, type = "response")]
+    p_choice_norif_1_hat <- mean(d_choice_norif$p_hat)
+    
+    d_choice_norif <- copy(d[d4 != 1 & d1 == 2])
+    d_choice_norif[, d4 := factor(2)]
+    d_choice_norif[, p_hat := predict(f1_2, newdata = d_choice_norif, type = "response")]
+    p_choice_norif_2_hat <- mean(d_choice_norif$p_hat)
+    
+    d_choice_norif <- copy(d[d4 != 1 & d1 == 3])
+    d_choice_norif[, d4 := factor(2)]
+    d_choice_norif[, p_hat := predict(f1_3, newdata = d_choice_norif, type = "response")]
+    p_choice_norif_3_hat <- mean(d_choice_norif$p_hat)
+    
+    d_choice_rif <- copy(d[d4 != 1 & d1 == 1])
+    d_choice_rif[, d4 := factor(3)]
+    d_choice_rif[, p_hat := predict(f1_1, newdata = d_choice_rif, type = "response")]
+    p_choice_rif_1_hat <- mean(d_choice_rif$p_hat)
+    
+    d_choice_rif <- copy(d[d4 != 1 & d1 == 2])
+    d_choice_rif[, d4 := factor(3)]
+    d_choice_rif[, p_hat := predict(f1_2, newdata = d_choice_rif, type = "response")]
+    p_choice_rif_2_hat <- mean(d_choice_rif$p_hat)
+    
+    d_choice_rif <- copy(d[d4 != 1 & d1 == 3])
+    d_choice_rif[, d4 := factor(3)]
+    d_choice_rif[, p_hat := predict(f1_3, newdata = d_choice_rif, type = "response")]
+    p_choice_rif_3_hat <- mean(d_choice_rif$p_hat)
+    
+    
+    d_prop_s <- d[, .(prop = .N/nrow(d)), keyby = s]
+    d_prop_e_d1 <- d[s == 1, .(prop = .N/nrow(d[s == 1])), keyby = d1]
+    d_prop_l_d1 <- d[s == 2, .(prop = .N/nrow(d[s == 2])), keyby = d1]
+    d_prop_c_d1 <- d[s == 3, .(prop = .N/nrow(d[s == 3])), keyby = d1]
+    
+    d_prop_e_pref <- d[s == 1 , .(prop = .N/nrow(d[s == 1])), keyby = pref]
+    d_prop_l_pref <- d[s == 2 , .(prop = .N/nrow(d[s == 2])), keyby = pref]
+    d_prop_c_pref <- d[s == 3 , .(prop = .N/nrow(d[s == 3])), keyby = pref]
+    
+    p_choice_norif_hat <- 
+      # those allocated to dair (contribute to model 1)
+      ((d_prop_s[s==1, prop] * (d_prop_e_d1[d1 == 1, prop])) + 
+         (d_prop_s[s==2, prop] * (d_prop_l_d1[d1 == 1, prop])) + 
+         (d_prop_s[s==3, prop] * (d_prop_c_d1[d1 == 1, prop]))) * p_choice_norif_1_hat +
+      # those allocated to rev(1) (contribute to model 2)
+      ((d_prop_s[s==1, prop] * (d_prop_e_d1[d1 == 2, prop])) + 
+         (d_prop_s[s==2, prop] * (d_prop_l_d1[d1 == 2, prop])) + 
+         (d_prop_s[s==3, prop] * (d_prop_c_d1[d1 == 2, prop]))) * p_choice_norif_2_hat +
+      # those allocated to rev(2) (contribute to model 3)
+      ((d_prop_s[s==1, prop] * (d_prop_e_d1[d1 == 3, prop])) + 
+         (d_prop_s[s==2, prop] * (d_prop_l_d1[d1 == 3, prop])) + 
+         (d_prop_s[s==3, prop] * (d_prop_c_d1[d1 == 3, prop]))) * p_choice_norif_3_hat 
+    
+    p_choice_rif_hat <- 
+      # those allocated to dair (contribute to model 1)
+      ((d_prop_s[s==1, prop] * (d_prop_e_d1[d1 == 1, prop])) + 
+         (d_prop_s[s==2, prop] * (d_prop_l_d1[d1 == 1, prop])) + 
+         (d_prop_s[s==3, prop] * (d_prop_c_d1[d1 == 1, prop]))) * p_choice_rif_1_hat +
+      # those allocated to rev(1) (contribute to model 2)
+      ((d_prop_s[s==1, prop] * (d_prop_e_d1[d1 == 2, prop])) + 
+         (d_prop_s[s==2, prop] * (d_prop_l_d1[d1 == 2, prop])) + 
+         (d_prop_s[s==3, prop] * (d_prop_c_d1[d1 == 2, prop]))) * p_choice_rif_2_hat +
+      # those allocated to rev(2) (contribute to model 3)
+      ((d_prop_s[s==1, prop] * (d_prop_e_d1[d1 == 3, prop])) + 
+         (d_prop_s[s==2, prop] * (d_prop_l_d1[d1 == 3, prop])) + 
+         (d_prop_s[s==3, prop] * (d_prop_c_d1[d1 == 3, prop]))) * p_choice_rif_3_hat 
+    
+    rd_choice_hat <- p_choice_rif_hat - p_choice_norif_hat
+    
+    risk_choice_ref <- risk_pars_choice(
+      p_s_alloc, l_e, l_l, l_c, 
+      bs, bp, bd1, bd2, bd3, bd4)
     
     list(
       # d_uniq = d_uniq,
@@ -743,7 +927,14 @@ multi_model_approach <- function(){
         p_extp_12wk_ref = risk_extp["p_extp_12wk"],
         p_extp_12wk_hat = p_extp_12wk_hat,
         rd_extp_ref = risk_extp["rd_extp"],
-        rd_extp_hat = rd_extp_hat
+        rd_extp_hat = rd_extp_hat,
+        
+        p_choice_norif_ref = risk_choice_ref["p_choice_norif"],
+        p_choice_norif_hat = p_choice_norif_hat,
+        p_choice_rif_ref = risk_choice_ref["p_choice_rif"],
+        p_choice_rif_hat = p_choice_rif_hat,
+        rd_choice_ref = risk_choice_ref["rd_choice"],
+        rd_choice_hat = rd_choice_hat
       )
     )
     
@@ -755,8 +946,9 @@ multi_model_approach <- function(){
   d_g[, bias_surg_rd := rd_surg_hat - rd_surg_ref]
   d_g[, bias_dur_rd := rd_dur_hat - rd_dur_ref]
   d_g[, bias_extp_rd := rd_extp_hat - rd_extp_ref]
+  d_g[, bias_choice_rd := rd_choice_hat - rd_choice_ref]
   
-  d_fig <- d_g[, .(bias_surg_rd, bias_dur_rd, bias_extp_rd)]
+  d_fig <- d_g[, .(bias_surg_rd, bias_dur_rd, bias_extp_rd, bias_choice_rd)]
   d_fig <- melt(d_fig, measure.vars = names(d_fig))
   
   p1 <- ggplot(d_fig, aes(x = value)) +
@@ -771,19 +963,20 @@ multi_model_approach <- function(){
   
   d_fig <- d_g[, .(p_surg_dair_hat, p_surg_rev_hat, 
                    p_dur_12wk_hat, p_dur_6wk_hat,
-                   p_extp_0wk_hat, p_extp_12wk_hat)]
+                   p_extp_0wk_hat, p_extp_12wk_hat,
+                   p_choice_norif_hat, p_choice_rif_hat)]
   d_fig <- melt(d_fig, measure.vars = names(d_fig))
   
   p2 <- ggplot(d_fig, aes(x = value)) +
     geom_density() +
     geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable],
                aes(xintercept = mu), lwd = 0.2) +
-    facet_wrap(~variable,  nrow = 3)+
+    facet_wrap(~variable,  nrow = 4)+
     theme(
       axis.title.x = element_blank()
     )
   
-  d_fig <- d_g[, .(rd_surg_hat, rd_dur_hat, rd_extp_hat)]
+  d_fig <- d_g[, .(rd_surg_hat, rd_dur_hat, rd_extp_hat, rd_choice_hat)]
   d_fig <- melt(d_fig, measure.vars = names(d_fig))
   p3 <- ggplot(d_fig, aes(x = value)) +
     geom_density() +
