@@ -483,145 +483,94 @@ risk_pars_choice <- function(
 }
 
 
-
-
-
-multi_model_approach <- function(){
+trial_data <- function(l_spec){
   
-  N_sim <- 1000
-  mc_cores <- 4
-
-  p_s_alloc = c(0.3, 0.5, 0.2)
-  l_e <- list(
-    # prob of rev
-    p_d1_alloc = 0.15,
-    # entry into duration same across all silo
-    p_d2_entry = 0.7,
-    p_d2_alloc = 0.5,
-    # entry into extp same across all silo
-    p_d3_entry = 0.9,
-    p_d3_alloc = 0.5,
-    # entry into choice same across all silo
-    p_d4_entry = 0.6,
-    p_d4_alloc = 0.5,
-    # preference for two-stage
-    p_pref = 0.35
+  d <- data.table(
+    s = sample(1:3, l_spec$N, replace = T, prob = l_spec$p_s_alloc)
   )
-  l_l <- list(
-    # prob of rev
-    p_d1_alloc = 0.5,
-    p_d2_entry = 0.7,
-    p_d2_alloc = 0.5,
-    p_d3_entry = 0.9,
-    p_d3_alloc = 0.5,
-    p_d4_entry = 0.6,
-    p_d4_alloc = 0.5,
-    # preference for two-stage
-    p_pref = 0.7
-  )
-  l_c <- list(
-    # prob of rev
-    p_d1_alloc = 0.8,
-    p_d2_entry = 0.7,
-    p_d2_alloc = 0.5,
-    p_d3_entry = 0.9,
-    p_d3_alloc = 0.5,
-    p_d4_entry = 0.6,
-    p_d4_alloc = 0.5,
-    # preference for two-stage
-    p_pref = 0.75
-  )
+  d[s == 1, `:=`(
+    # ctl/trt allocations ignoring dependencies
+    d1_alloc = rbinom(.N, 1, l_spec$l_e$p_d1_alloc),
+    # 70% entery d2
+    d2_entry = rbinom(.N, 1, l_spec$l_e$p_d2_entry),
+    d2_alloc = rbinom(.N, 1, l_spec$l_e$p_d2_alloc),
+    # 90% enter d3
+    d3_entry = rbinom(.N, 1, l_spec$l_e$p_d3_entry),
+    d3_alloc = rbinom(.N, 1, l_spec$l_e$p_d3_alloc),
+    # 60% enter d4
+    d4_entry = rbinom(.N, 1, l_spec$l_e$p_d4_entry),
+    d4_alloc = rbinom(.N, 1, l_spec$l_e$p_d4_alloc),
+    # preference directs type of revision (0 rev(1), 1 rev(2))
+    pref = rbinom(.N, 1, l_spec$l_e$p_pref)
+  )]
+  d[s == 2, `:=`(
+    # ctl/trt allocations ignoring dependencies
+    d1_alloc = rbinom(.N, 1, l_spec$l_l$p_d1_alloc),
+    # 70% entery d2
+    d2_entry = rbinom(.N, 1, l_spec$l_l$p_d2_entry),
+    d2_alloc = rbinom(.N, 1, l_spec$l_l$p_d2_alloc),
+    # 90% enter d3
+    d3_entry = rbinom(.N, 1, l_spec$l_l$p_d3_entry),
+    d3_alloc = rbinom(.N, 1, l_spec$l_l$p_d3_alloc),
+    # 60% enter d4
+    d4_entry = rbinom(.N, 1, l_spec$l_l$p_d4_entry),
+    d4_alloc = rbinom(.N, 1, l_spec$l_l$p_d4_alloc),
+    # preference directs type of revision (0 rev(1), 1 rev(2))
+    pref = rbinom(.N, 1, l_spec$l_l$p_pref)
+  )]
+  d[s == 3, `:=`(
+    # ctl/trt allocations ignoring dependencies
+    d1_alloc = rbinom(.N, 1, l_spec$l_c$p_d1_alloc),
+    # 70% entery d2
+    d2_entry = rbinom(.N, 1, l_spec$l_c$p_d2_entry),
+    d2_alloc = rbinom(.N, 1, l_spec$l_c$p_d2_alloc),
+    # 90% enter d3
+    d3_entry = rbinom(.N, 1, l_spec$l_c$p_d3_entry),
+    d3_alloc = rbinom(.N, 1, l_spec$l_c$p_d3_alloc),
+    # 60% enter d4
+    d4_entry = rbinom(.N, 1, l_spec$l_c$p_d4_entry),
+    d4_alloc = rbinom(.N, 1, l_spec$l_c$p_d4_alloc),
+    # preference directs type of revision (0 rev(1), 1 rev(2))
+    pref = rbinom(.N, 1, l_spec$l_c$p_pref)
+  )]
   
+  # dair gets dair, revision gets split
+  d[d1_alloc == 0, d1 := 1]
+  d[d1_alloc == 1 & pref == 0, d1 := 2]
+  d[d1_alloc == 1 & pref == 1, d1 := 3]
   
-  # log-odds (early, late, acute)
-  bs = c(0.9, 0.8, 0.7)
-  # log-or
-  # different baseline risk for rev
-  bp = -0.4
-  bd1 = c(0, -0.04199452, -0.04199452) # 0.05738023
-  bd2 = c(0, 0, 0)
-  bd3 = c(0, 0.1, 0.1)
-  bd4 = c(0, 0.1, 0)
+  d[d1 == 2 & d2_entry == 0, d2 := 1]
+  d[d1 == 2 & d2_entry == 1, d2 := 2 + d2_alloc]
+  
+  d[d1 == 3 & d3_entry == 0, d3 := 1]
+  d[d1 == 3 & d3_entry == 1, d3 := 2 + d3_alloc]
+  
+  d[d4_entry == 0, d4 := 1]
+  d[d4_entry == 1, d4 := 2 + d4_alloc]
+  
+  # d[, .N, keyby = .(s, pref, d1, d2, d3, d4)]
+  
+  # bd1 is irrelevant since d1 == 1 is the ref group, fixed at zero
+  d[d1 == 1, eta := l_spec$bs[s] + l_spec$bp*pref + l_spec$bd4[d4]]
+  # pref is irrelevant as d1 = 2 only occurs if pref = 0
+  d[d1 == 2, eta := l_spec$bs[s] + l_spec$bd1[2] + l_spec$bd2[d2] + l_spec$bd4[d4]]
+  # but here pref is relevant as d1 = 3 only if pref = 1
+  d[d1 == 3, eta := l_spec$bs[s] + l_spec$bp*pref + l_spec$bd1[3] + l_spec$bd3[d3] + l_spec$bd4[d4]]
+  
+  d[, `:=`(s = factor(s), d1 = factor(d1), d2 = factor(d2), d3 = factor(d3), d4 = factor(d4))]
+  
+  d[, p := plogis(eta)]
+  d[, y := rbinom(.N, 1, p)]
+  
+  d
+}
 
-  r <- pbapply::pblapply(X=1:N_sim, cl = mc_cores, FUN = function(ix){
-    
-    N <- 3e6
-    d <- data.table(
-      s = sample(1:3, N, replace = T, prob = p_s_alloc)
-    )
-    d[s == 1, `:=`(
-      # ctl/trt allocations ignoring dependencies
-      d1_alloc = rbinom(.N, 1, l_e$p_d1_alloc),
-      # 70% entery d2
-      d2_entry = rbinom(.N, 1, l_e$p_d2_entry),
-      d2_alloc = rbinom(.N, 1, l_e$p_d2_alloc),
-      # 90% enter d3
-      d3_entry = rbinom(.N, 1, l_e$p_d3_entry),
-      d3_alloc = rbinom(.N, 1, l_e$p_d3_alloc),
-      # 60% enter d4
-      d4_entry = rbinom(.N, 1, l_e$p_d4_entry),
-      d4_alloc = rbinom(.N, 1, l_e$p_d4_alloc),
-      # preference directs type of revision (0 rev(1), 1 rev(2))
-      pref = rbinom(.N, 1, l_e$p_pref)
-    )]
-    d[s == 2, `:=`(
-      # ctl/trt allocations ignoring dependencies
-      d1_alloc = rbinom(.N, 1, l_l$p_d1_alloc),
-      # 70% entery d2
-      d2_entry = rbinom(.N, 1, l_l$p_d2_entry),
-      d2_alloc = rbinom(.N, 1, l_l$p_d2_alloc),
-      # 90% enter d3
-      d3_entry = rbinom(.N, 1, l_l$p_d3_entry),
-      d3_alloc = rbinom(.N, 1, l_l$p_d3_alloc),
-      # 60% enter d4
-      d4_entry = rbinom(.N, 1, l_l$p_d4_entry),
-      d4_alloc = rbinom(.N, 1, l_l$p_d4_alloc),
-      # preference directs type of revision (0 rev(1), 1 rev(2))
-      pref = rbinom(.N, 1, l_l$p_pref)
-    )]
-    d[s == 3, `:=`(
-      # ctl/trt allocations ignoring dependencies
-      d1_alloc = rbinom(.N, 1, l_c$p_d1_alloc),
-      # 70% entery d2
-      d2_entry = rbinom(.N, 1, l_c$p_d2_entry),
-      d2_alloc = rbinom(.N, 1, l_c$p_d2_alloc),
-      # 90% enter d3
-      d3_entry = rbinom(.N, 1, l_c$p_d3_entry),
-      d3_alloc = rbinom(.N, 1, l_c$p_d3_alloc),
-      # 60% enter d4
-      d4_entry = rbinom(.N, 1, l_c$p_d4_entry),
-      d4_alloc = rbinom(.N, 1, l_c$p_d4_alloc),
-      # preference directs type of revision (0 rev(1), 1 rev(2))
-      pref = rbinom(.N, 1, l_c$p_pref)
-    )]
-    
-    # dair gets dair, revision gets split
-    d[d1_alloc == 0, d1 := 1]
-    d[d1_alloc == 1 & pref == 0, d1 := 2]
-    d[d1_alloc == 1 & pref == 1, d1 := 3]
-    
-    d[d1 == 2 & d2_entry == 0, d2 := 1]
-    d[d1 == 2 & d2_entry == 1, d2 := 2 + d2_alloc]
-    
-    d[d1 == 3 & d3_entry == 0, d3 := 1]
-    d[d1 == 3 & d3_entry == 1, d3 := 2 + d3_alloc]
-    
-    d[d4_entry == 0, d4 := 1]
-    d[d4_entry == 1, d4 := 2 + d4_alloc]
-    
-    # d[, .N, keyby = .(s, pref, d1, d2, d3, d4)]
 
-    # bd1 is irrelevant since d1 == 1 is the ref group, fixed at zero
-    d[d1 == 1, eta := bs[s] + bp*pref + bd4[d4]]
-    # pref is irrelevant as d1 = 2 only occurs if pref = 0
-    d[d1 == 2, eta := bs[s] + bd1[2] + bd2[d2] + bd4[d4]]
-    # but here pref is relevant as d1 = 3 only if pref = 1
-    d[d1 == 3, eta := bs[s] + bp*pref + bd1[3] + bd3[d3] + bd4[d4]]
+multi_model_approach <- function(l_spec){
+  
+  r <- pbapply::pblapply(X=1:l_spec$N_sim, cl = l_spec$mc_cores, FUN = function(ix){
     
-    d[, `:=`(s = factor(s), d1 = factor(d1), d2 = factor(d2), d3 = factor(d3), d4 = factor(d4))]
-    
-    d[, p := plogis(eta)]
-    d[, y := rbinom(N, 1, p)]
+    d <- trial_data(l_spec)
     
     f1_1 <- glm(
       y ~ -1 + s + pref + d4 , data = d, subset= d1==1, family = binomial,
@@ -677,12 +626,12 @@ multi_model_approach <- function(){
     
     # don't really need to do this for all, but:
     risk_surg <- risk_pars_surg(
-      l_l$p_d1_alloc, 
-      l_l$p_d2_entry, l_l$p_d2_alloc,
-      l_l$p_d3_entry, l_l$p_d3_alloc,
-      l_l$p_d4_entry, l_l$p_d4_alloc, 
-      l_l$p_pref, 
-      bs, bp, bd1, bd2, bd3, bd4)
+      l_spec$l_l$p_d1_alloc, 
+      l_spec$l_l$p_d2_entry, l_spec$l_l$p_d2_alloc,
+      l_spec$l_l$p_d3_entry, l_spec$l_l$p_d3_alloc,
+      l_spec$l_l$p_d4_entry, l_spec$l_l$p_d4_alloc, 
+      l_spec$l_l$p_pref, 
+      l_spec$bs, l_spec$bp, l_spec$bd1, l_spec$bd2, l_spec$bd3, l_spec$bd4)
     
     
     # duration domain -----
@@ -700,8 +649,8 @@ multi_model_approach <- function(){
     rd_dur_hat <- p_dur_6wk_hat - p_dur_12wk_hat
     
     risk_dur <- risk_pars_dur(
-      p_s_alloc, l_e, l_l, l_c, 
-      bs, bp, bd1, bd2, bd3, bd4)
+      l_spec$p_s_alloc, l_spec$l_e, l_spec$l_l, l_spec$l_c, 
+      l_spec$bs, l_spec$bp, l_spec$bd1, l_spec$bd2, l_spec$bd3, l_spec$bd4)
     
     # extp domain -----
     
@@ -718,8 +667,8 @@ multi_model_approach <- function(){
     rd_extp_hat <- p_extp_12wk_hat - p_extp_0wk_hat
     
     risk_extp <- risk_pars_extp(
-      p_s_alloc, l_e, l_l, l_c, 
-      bs, bp, bd1, bd2, bd3, bd4)
+      l_spec$p_s_alloc, l_spec$l_e, l_spec$l_l, l_spec$l_c, 
+      l_spec$bs, l_spec$bp, l_spec$bd1, l_spec$bd2, l_spec$bd3, l_spec$bd4)
     
     # choice domain -----
     
@@ -794,102 +743,50 @@ multi_model_approach <- function(){
     rd_choice_hat <- p_choice_rif_hat - p_choice_norif_hat
     
     risk_choice_ref <- risk_pars_choice(
-      p_s_alloc, l_e, l_l, l_c, 
-      bs, bp, bd1, bd2, bd3, bd4)
+      l_spec$p_s_alloc, l_spec$l_e, l_spec$l_l, l_spec$l_c, 
+      l_spec$bs, l_spec$bp, l_spec$bd1, l_spec$bd2, l_spec$bd3, l_spec$bd4)
     
-    list(
-      # d_uniq = d_uniq,
-      d_g = data.table(
-        p_surg_dair_ref = risk_surg["p_dair"],
-        p_surg_dair_hat = p_surg_dair_hat,
-        p_surg_rev_1_ref = risk_surg["p_rev_1"],
-        p_surg_rev_1_hat = p_surg_rev_1_hat,
-        p_surg_rev_2_ref = risk_surg["p_rev_2"],
-        p_surg_rev_2_hat = p_surg_rev_2_hat,
-        p_surg_rev_ref = risk_surg["p_rev"],
-        p_surg_rev_hat = p_surg_rev_hat,
-        rd_surg_ref = risk_surg["rd"],
-        rd_surg_hat = rd_surg_hat,
-        
-        p_dur_12wk_ref = risk_dur["p_dur_12wk"],
-        p_dur_12wk_hat = p_dur_12wk_hat,
-        p_dur_6wk_ref = risk_dur["p_dur_6wk"],
-        p_dur_6wk_hat = p_dur_6wk_hat,
-        rd_dur_ref = risk_dur["rd_dur"],
-        rd_dur_hat = rd_dur_hat,
-        
-        p_extp_0wk_ref = risk_extp["p_extp_0wk"],
-        p_extp_0wk_hat = p_extp_0wk_hat,
-        p_extp_12wk_ref = risk_extp["p_extp_12wk"],
-        p_extp_12wk_hat = p_extp_12wk_hat,
-        rd_extp_ref = risk_extp["rd_extp"],
-        rd_extp_hat = rd_extp_hat,
-        
-        p_choice_norif_ref = risk_choice_ref["p_choice_norif"],
-        p_choice_norif_hat = p_choice_norif_hat,
-        p_choice_rif_ref = risk_choice_ref["p_choice_rif"],
-        p_choice_rif_hat = p_choice_rif_hat,
-        rd_choice_ref = risk_choice_ref["rd_choice"],
-        rd_choice_hat = rd_choice_hat
-      )
+
+    data.table(
+      p_surg_dair_ref = risk_surg["p_dair"],
+      p_surg_dair_hat = p_surg_dair_hat,
+      p_surg_rev_1_ref = risk_surg["p_rev_1"],
+      p_surg_rev_1_hat = p_surg_rev_1_hat,
+      p_surg_rev_2_ref = risk_surg["p_rev_2"],
+      p_surg_rev_2_hat = p_surg_rev_2_hat,
+      p_surg_rev_ref = risk_surg["p_rev"],
+      p_surg_rev_hat = p_surg_rev_hat,
+      rd_surg_ref = risk_surg["rd"],
+      rd_surg_hat = rd_surg_hat,
+      
+      p_dur_12wk_ref = risk_dur["p_dur_12wk"],
+      p_dur_12wk_hat = p_dur_12wk_hat,
+      p_dur_6wk_ref = risk_dur["p_dur_6wk"],
+      p_dur_6wk_hat = p_dur_6wk_hat,
+      rd_dur_ref = risk_dur["rd_dur"],
+      rd_dur_hat = rd_dur_hat,
+      
+      p_extp_0wk_ref = risk_extp["p_extp_0wk"],
+      p_extp_0wk_hat = p_extp_0wk_hat,
+      p_extp_12wk_ref = risk_extp["p_extp_12wk"],
+      p_extp_12wk_hat = p_extp_12wk_hat,
+      rd_extp_ref = risk_extp["rd_extp"],
+      rd_extp_hat = rd_extp_hat,
+      
+      p_choice_norif_ref = risk_choice_ref["p_choice_norif"],
+      p_choice_norif_hat = p_choice_norif_hat,
+      p_choice_rif_ref = risk_choice_ref["p_choice_rif"],
+      p_choice_rif_hat = p_choice_rif_hat,
+      rd_choice_ref = risk_choice_ref["rd_choice"],
+      rd_choice_hat = rd_choice_hat
     )
+    
     
   })
   
-  # results -----
-  d_g <- rbindlist(lapply(r, function(z) z$d_g))
+  r
   
-  d_g[, bias_surg_rd := rd_surg_hat - rd_surg_ref]
-  d_g[, bias_dur_rd := rd_dur_hat - rd_dur_ref]
-  d_g[, bias_extp_rd := rd_extp_hat - rd_extp_ref]
-  d_g[, bias_choice_rd := rd_choice_hat - rd_choice_ref]
   
-  d_fig <- d_g[, .(bias_surg_rd, bias_dur_rd, bias_extp_rd, bias_choice_rd)]
-  d_fig <- melt(d_fig, measure.vars = names(d_fig))
-  
-  p1 <- ggplot(d_fig, aes(x = value)) +
-    geom_density() +
-    geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable],
-               aes(xintercept = mu), lwd = 0.2) + 
-    facet_wrap(~variable, nrow = 1) +
-    theme(
-      axis.title = element_blank()
-    )
-  #
-  
-  d_fig <- d_g[, .(p_surg_dair_hat, p_surg_rev_hat, 
-                   p_dur_12wk_hat, p_dur_6wk_hat,
-                   p_extp_0wk_hat, p_extp_12wk_hat,
-                   p_choice_norif_hat, p_choice_rif_hat)]
-  d_fig <- melt(d_fig, measure.vars = names(d_fig))
-  
-  p2 <- ggplot(d_fig, aes(x = value)) +
-    geom_density() +
-    geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable],
-               aes(xintercept = mu), lwd = 0.2) +
-    facet_wrap(~variable,  nrow = 4)+
-    theme(
-      axis.title.x = element_blank()
-    )
-  
-  d_fig <- d_g[, .(rd_surg_hat, rd_dur_hat, rd_extp_hat, rd_choice_hat)]
-  d_fig <- melt(d_fig, measure.vars = names(d_fig))
-  p3 <- ggplot(d_fig, aes(x = value)) +
-    geom_density() +
-    geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable],
-               aes(xintercept = mu), lwd = 0.2)  +
-    facet_wrap(~variable,  nrow = 2)+
-    theme(
-      axis.title.x = element_blank()
-    )
-  
-  layout <- "
-    AAAA
-    BBCC
-    BBCC
-  "
-  p1 + p2 + p3 +
-    plot_layout(design = layout)
   
 }
 
@@ -900,89 +797,12 @@ single_model_approach <- function(l_spec){
 
   r <- pbapply::pblapply(X=1:l_spec$N_sim, cl = l_spec$mc_cores, FUN = function(ix){
     
-    d <- data.table(
-      s = sample(1:3, l_spec$N, replace = T, prob = l_spec$p_s_alloc)
-    )
-    d[s == 1, `:=`(
-      # ctl/trt allocations ignoring dependencies
-      d1_alloc = rbinom(.N, 1, l_spec$l_e$p_d1_alloc),
-      # 70% entery d2
-      d2_entry = rbinom(.N, 1, l_spec$l_e$p_d2_entry),
-      d2_alloc = rbinom(.N, 1, l_spec$l_e$p_d2_alloc),
-      # 90% enter d3
-      d3_entry = rbinom(.N, 1, l_spec$l_e$p_d3_entry),
-      d3_alloc = rbinom(.N, 1, l_spec$l_e$p_d3_alloc),
-      # 60% enter d4
-      d4_entry = rbinom(.N, 1, l_spec$l_e$p_d4_entry),
-      d4_alloc = rbinom(.N, 1, l_spec$l_e$p_d4_alloc),
-      # preference directs type of revision (0 rev(1), 1 rev(2))
-      pref = rbinom(.N, 1, l_spec$l_e$p_pref)
-    )]
-    d[s == 2, `:=`(
-      # ctl/trt allocations ignoring dependencies
-      d1_alloc = rbinom(.N, 1, l_spec$l_l$p_d1_alloc),
-      # 70% entery d2
-      d2_entry = rbinom(.N, 1, l_spec$l_l$p_d2_entry),
-      d2_alloc = rbinom(.N, 1, l_spec$l_l$p_d2_alloc),
-      # 90% enter d3
-      d3_entry = rbinom(.N, 1, l_spec$l_l$p_d3_entry),
-      d3_alloc = rbinom(.N, 1, l_spec$l_l$p_d3_alloc),
-      # 60% enter d4
-      d4_entry = rbinom(.N, 1, l_spec$l_l$p_d4_entry),
-      d4_alloc = rbinom(.N, 1, l_spec$l_l$p_d4_alloc),
-      # preference directs type of revision (0 rev(1), 1 rev(2))
-      pref = rbinom(.N, 1, l_spec$l_l$p_pref)
-    )]
-    d[s == 3, `:=`(
-      # ctl/trt allocations ignoring dependencies
-      d1_alloc = rbinom(.N, 1, l_spec$l_c$p_d1_alloc),
-      # 70% entery d2
-      d2_entry = rbinom(.N, 1, l_spec$l_c$p_d2_entry),
-      d2_alloc = rbinom(.N, 1, l_spec$l_c$p_d2_alloc),
-      # 90% enter d3
-      d3_entry = rbinom(.N, 1, l_spec$l_c$p_d3_entry),
-      d3_alloc = rbinom(.N, 1, l_spec$l_c$p_d3_alloc),
-      # 60% enter d4
-      d4_entry = rbinom(.N, 1, l_spec$l_c$p_d4_entry),
-      d4_alloc = rbinom(.N, 1, l_spec$l_c$p_d4_alloc),
-      # preference directs type of revision (0 rev(1), 1 rev(2))
-      pref = rbinom(.N, 1, l_spec$l_c$p_pref)
-    )]
-    
-    # dair gets dair, revision gets split
-    d[d1_alloc == 0, d1 := 1]
-    d[d1_alloc == 1 & pref == 0, d1 := 2]
-    d[d1_alloc == 1 & pref == 1, d1 := 3]
-    
-    d[d1 == 2 & d2_entry == 0, d2 := 1]
-    d[d1 == 2 & d2_entry == 1, d2 := 2 + d2_alloc]
-    
-    d[d1 == 3 & d3_entry == 0, d3 := 1]
-    d[d1 == 3 & d3_entry == 1, d3 := 2 + d3_alloc]
-    
-    d[d4_entry == 0, d4 := 1]
-    d[d4_entry == 1, d4 := 2 + d4_alloc]
+    d <- trial_data(l_spec)
     
     # arbitrary, levels don't get used but have to exist for the sake of the
     # initial setup.
-    d[is.na(d2), d2 := 4]
-    d[is.na(d3), d3 := 4]
-
-    # bd1 is irrelevant since d1 == 1 is the ref group, fixed at zero
-    d[d1 == 1, eta_orig := l_spec$bs[s] + l_spec$bp*pref + l_spec$bd1[d1] + l_spec$bd4[d4]]
-    # pref is irrelevant as d1 = 2 only occurs if pref = 0
-    d[d1 == 2, eta_orig := l_spec$bs[s] + l_spec$bd1[2] + l_spec$bd2[d2] + l_spec$bd4[d4]]
-    # but here pref is relevant as d1 = 3 only if pref = 1
-    d[d1 == 3, eta_orig := l_spec$bs[s] + l_spec$bp*pref + l_spec$bd1[3] + l_spec$bd3[d3] + l_spec$bd4[d4]]
-    
-    # alternative specification appears to be equivalent.
-    d[, eta := l_spec$bs[s] + l_spec$bp*pref + l_spec$bd1[d1] + (d1==2)*l_spec$bd2[d2] + (d1==3)*l_spec$bd3[d3] + l_spec$bd4[d4]]
-    d[, .(eta_orig, eta, delta = eta_orig-eta)][, .(min_diff = max(delta), max_diff = min(delta))]
-    
-    d[, `:=`(s = factor(s), d1 = factor(d1), d2 = factor(d2), d3 = factor(d3), d4 = factor(d4))]
-    
-    d[, p := plogis(eta)]
-    d[, y := rbinom(.N, 1, p)]
+    d[is.na(d2), d2 := factor(4)]
+    d[is.na(d3), d3 := factor(4)]
     
     f2 <- glm(
       y ~ -1 + s + pref + d1 + d2:(d1==2) + d3:(d1==3) + d4, 
@@ -1179,7 +999,7 @@ single_model_approach <- function(l_spec){
       l_spec$bs, l_spec$bp, l_spec$bd1, l_spec$bd2, l_spec$bd3, l_spec$bd4)
     
     
-    d_g = data.table(
+    data.table(
       p_surg_dair_ref = risk_surg["p_dair"],
       p_surg_dair_hat = p_surg_dair_hat,
       p_surg_rev_1_ref = risk_surg["p_rev_1"],
@@ -1386,7 +1206,10 @@ examples <- function(){
   # to a zero effect on the absolute risk scale.
   # tweak as necessary to target arbitrary effect size, or whatever variation 
   # is of interest.
-  obj_surg_f1 <- function(x){
+  obj_surg_f1 <- function(x, l_spec){
+    
+    l_spec$bd1 = c(0, x, x)
+    
     res <- risk_pars_surg(
       l_spec$l_l$p_d1_alloc, 
       l_spec$l_l$p_d2_entry, l_spec$l_l$p_d2_alloc,
@@ -1394,7 +1217,7 @@ examples <- function(){
       l_spec$l_l$p_d4_entry, l_spec$l_l$p_d4_alloc, 
       l_spec$l_l$p_pref, 
       l_spec$bs, l_spec$bp, 
-      bd1 = c(0, x, x), 
+      l_spec$bd1, 
       l_spec$bd2, 
       l_spec$bd3, 
       l_spec$bd4
@@ -1408,17 +1231,81 @@ examples <- function(){
   
   # to get a null scenario on the risk scale when both rev(1) and rev(2) 
   # are non-zero, you need to set the logor for both to:
-  optimize(obj_surg_f1, c(-1, 1))$minimum
+  optimize(obj_surg_f1, c(-1, 1), l_spec)$minimum
   
   
   
-  # examples
+  # examples -------
   
-  # null effects on abs pr scale in surg domain
+  # null effects in all domain on log odds scale translates to null on abs 
+  # pr scale in all domain
   single_model_approach(l_spec) |>
+    plot_results()
+  multi_model_approach(l_spec) |>
     plot_results()
   
   
+  # introduce abx duration effect 
+  l_spec$bd1 <- c(0, 0, 0)
+  l_spec$bd2 <- c(0, 0, 0.9, 999)
+  l_spec$bd3 <- c(0, 0, 0, 999)
+  l_spec$bd4 <- c(0, 0, 0)
   
+  # unbiased but reveals small +ve risk difference due to nonlinear transform
+  # see bottom right set of plots
+  single_model_approach(l_spec) |>
+    plot_results()
+  # should be same (seems to run much quicker)
+  multi_model_approach(l_spec) |>
+    plot_results()
+  
+  # update so that we resolve to zero on risk scale:
+  # adjust surg domain in order to represent null effect on 
+  # risk scale
+  (lor_d1_rev <- optimize(obj_surg_f1, c(-1, 1), l_spec)$minimum)
+  l_spec$bd1 <- c(0, lor_d1_rev, lor_d1_rev)
+  # rd_surg_hat should now be centred on zero
+  single_model_approach(l_spec) |>
+    plot_results()
+  # same
+  multi_model_approach(l_spec) |>
+    plot_results()
+  
+  # occurs if effects in d3 alone
+  l_spec$bd1 <- c(0, 0, 0)
+  l_spec$bd2 <- c(0, 0, 0, 999)
+  l_spec$bd3 <- c(0, 0, -0.5, 999)
+  l_spec$bd4 <- c(0, 0, 0)
+  single_model_approach(l_spec) |>
+    plot_results()
+  (lor_d1_rev <- optimize(obj_surg_f1, c(-1, 1), l_spec)$minimum)
+  l_spec$bd1 <- c(0, lor_d1_rev, lor_d1_rev)
+  # notice a bias here for ext proph but haven;t determined why 
+  single_model_approach(l_spec) |>
+    plot_results()
+  # same here 
+  multi_model_approach(l_spec) |>
+    plot_results()
+  # bias not due to insufficient sims 
+  # will need to check on this...
+  l_spec$N_sim <- 5000
+  multi_model_approach(l_spec) |>
+    plot_results()
+  l_spec$N_sim <- 1000
+  
+  
+  # but not if effects in d4 alone, i.e. no adjustment required to resolve to 
+  # the null in the surgical domain on the risk scale.
+  l_spec$bd1 <- c(0, 0, 0)
+  l_spec$bd2 <- c(0, 0, 0, 999)
+  l_spec$bd3 <- c(0, 0, 0, 999)
+  l_spec$bd4 <- c(0, 0, 1.2)
+  single_model_approach(l_spec) |>
+    plot_results()
+  # surg transform is already zero
+  (lor_d1_rev <- optimize(obj_surg_f1, c(-1, 1), l_spec)$minimum)
   
 }
+
+
+
