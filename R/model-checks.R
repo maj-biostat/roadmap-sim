@@ -896,114 +896,57 @@ multi_model_approach <- function(){
 
 
 
-single_model_approach <- function(){
-  
-  N_sim <- 5000
-  mc_cores <- 4
-  
-  p_s_alloc = c(0.3, 0.5, 0.2)
-  l_e <- list(
-    # prob of rev
-    p_d1_alloc = 0.15,
-    # entry into duration same across all silo
-    p_d2_entry = 0.7,
-    p_d2_alloc = 0.5,
-    # entry into extp same across all silo
-    p_d3_entry = 0.9,
-    p_d3_alloc = 0.5,
-    # entry into choice same across all silo
-    p_d4_entry = 0.6,
-    p_d4_alloc = 0.5,
-    # preference for two-stage
-    p_pref = 0.35
-  )
-  l_l <- list(
-    # prob of rev
-    p_d1_alloc = 0.5,
-    p_d2_entry = 0.7,
-    p_d2_alloc = 0.5,
-    p_d3_entry = 0.9,
-    p_d3_alloc = 0.5,
-    p_d4_entry = 0.6,
-    p_d4_alloc = 0.5,
-    # preference for two-stage
-    p_pref = 0.7
-  )
-  l_c <- list(
-    # prob of rev
-    p_d1_alloc = 0.8,
-    p_d2_entry = 0.7,
-    p_d2_alloc = 0.5,
-    p_d3_entry = 0.9,
-    p_d3_alloc = 0.5,
-    p_d4_entry = 0.6,
-    p_d4_alloc = 0.5,
-    # preference for two-stage
-    p_pref = 0.75
-  )
-  
-  
-  # log-odds (early, late, acute)
-  bs = c(0.9, 0.8, 0.7)
-  # log-or
-  # different baseline risk for rev
-  bp = -0.4
-  bd1 = c(0, -0.04495405, -0.04495405) 
-  bd2 = c(0, 0.1, 0.4, 999)
-  bd3 = c(0, 0, 0, 999)
-  bd4 = c(0, 0, 0.3)
-  
-  
-  r <- pbapply::pblapply(X=1:N_sim, cl = mc_cores, FUN = function(ix){
+single_model_approach <- function(l_spec){
+
+  r <- pbapply::pblapply(X=1:l_spec$N_sim, cl = l_spec$mc_cores, FUN = function(ix){
     
-    N <- 3e3
     d <- data.table(
-      s = sample(1:3, N, replace = T, prob = p_s_alloc)
+      s = sample(1:3, l_spec$N, replace = T, prob = l_spec$p_s_alloc)
     )
     d[s == 1, `:=`(
       # ctl/trt allocations ignoring dependencies
-      d1_alloc = rbinom(.N, 1, l_e$p_d1_alloc),
+      d1_alloc = rbinom(.N, 1, l_spec$l_e$p_d1_alloc),
       # 70% entery d2
-      d2_entry = rbinom(.N, 1, l_e$p_d2_entry),
-      d2_alloc = rbinom(.N, 1, l_e$p_d2_alloc),
+      d2_entry = rbinom(.N, 1, l_spec$l_e$p_d2_entry),
+      d2_alloc = rbinom(.N, 1, l_spec$l_e$p_d2_alloc),
       # 90% enter d3
-      d3_entry = rbinom(.N, 1, l_e$p_d3_entry),
-      d3_alloc = rbinom(.N, 1, l_e$p_d3_alloc),
+      d3_entry = rbinom(.N, 1, l_spec$l_e$p_d3_entry),
+      d3_alloc = rbinom(.N, 1, l_spec$l_e$p_d3_alloc),
       # 60% enter d4
-      d4_entry = rbinom(.N, 1, l_e$p_d4_entry),
-      d4_alloc = rbinom(.N, 1, l_e$p_d4_alloc),
+      d4_entry = rbinom(.N, 1, l_spec$l_e$p_d4_entry),
+      d4_alloc = rbinom(.N, 1, l_spec$l_e$p_d4_alloc),
       # preference directs type of revision (0 rev(1), 1 rev(2))
-      pref = rbinom(.N, 1, l_e$p_pref)
+      pref = rbinom(.N, 1, l_spec$l_e$p_pref)
     )]
     d[s == 2, `:=`(
       # ctl/trt allocations ignoring dependencies
-      d1_alloc = rbinom(.N, 1, l_l$p_d1_alloc),
+      d1_alloc = rbinom(.N, 1, l_spec$l_l$p_d1_alloc),
       # 70% entery d2
-      d2_entry = rbinom(.N, 1, l_l$p_d2_entry),
-      d2_alloc = rbinom(.N, 1, l_l$p_d2_alloc),
+      d2_entry = rbinom(.N, 1, l_spec$l_l$p_d2_entry),
+      d2_alloc = rbinom(.N, 1, l_spec$l_l$p_d2_alloc),
       # 90% enter d3
-      d3_entry = rbinom(.N, 1, l_l$p_d3_entry),
-      d3_alloc = rbinom(.N, 1, l_l$p_d3_alloc),
+      d3_entry = rbinom(.N, 1, l_spec$l_l$p_d3_entry),
+      d3_alloc = rbinom(.N, 1, l_spec$l_l$p_d3_alloc),
       # 60% enter d4
-      d4_entry = rbinom(.N, 1, l_l$p_d4_entry),
-      d4_alloc = rbinom(.N, 1, l_l$p_d4_alloc),
+      d4_entry = rbinom(.N, 1, l_spec$l_l$p_d4_entry),
+      d4_alloc = rbinom(.N, 1, l_spec$l_l$p_d4_alloc),
       # preference directs type of revision (0 rev(1), 1 rev(2))
-      pref = rbinom(.N, 1, l_l$p_pref)
+      pref = rbinom(.N, 1, l_spec$l_l$p_pref)
     )]
     d[s == 3, `:=`(
       # ctl/trt allocations ignoring dependencies
-      d1_alloc = rbinom(.N, 1, l_c$p_d1_alloc),
+      d1_alloc = rbinom(.N, 1, l_spec$l_c$p_d1_alloc),
       # 70% entery d2
-      d2_entry = rbinom(.N, 1, l_c$p_d2_entry),
-      d2_alloc = rbinom(.N, 1, l_c$p_d2_alloc),
+      d2_entry = rbinom(.N, 1, l_spec$l_c$p_d2_entry),
+      d2_alloc = rbinom(.N, 1, l_spec$l_c$p_d2_alloc),
       # 90% enter d3
-      d3_entry = rbinom(.N, 1, l_c$p_d3_entry),
-      d3_alloc = rbinom(.N, 1, l_c$p_d3_alloc),
+      d3_entry = rbinom(.N, 1, l_spec$l_c$p_d3_entry),
+      d3_alloc = rbinom(.N, 1, l_spec$l_c$p_d3_alloc),
       # 60% enter d4
-      d4_entry = rbinom(.N, 1, l_c$p_d4_entry),
-      d4_alloc = rbinom(.N, 1, l_c$p_d4_alloc),
+      d4_entry = rbinom(.N, 1, l_spec$l_c$p_d4_entry),
+      d4_alloc = rbinom(.N, 1, l_spec$l_c$p_d4_alloc),
       # preference directs type of revision (0 rev(1), 1 rev(2))
-      pref = rbinom(.N, 1, l_c$p_pref)
+      pref = rbinom(.N, 1, l_spec$l_c$p_pref)
     )]
     
     # dair gets dair, revision gets split
@@ -1026,27 +969,27 @@ single_model_approach <- function(){
     d[is.na(d3), d3 := 4]
 
     # bd1 is irrelevant since d1 == 1 is the ref group, fixed at zero
-    d[d1 == 1, eta_orig := bs[s] + bp*pref + bd1[d1] + bd4[d4]]
+    d[d1 == 1, eta_orig := l_spec$bs[s] + l_spec$bp*pref + l_spec$bd1[d1] + l_spec$bd4[d4]]
     # pref is irrelevant as d1 = 2 only occurs if pref = 0
-    d[d1 == 2, eta_orig := bs[s] + bd1[2] + bd2[d2] + bd4[d4]]
+    d[d1 == 2, eta_orig := l_spec$bs[s] + l_spec$bd1[2] + l_spec$bd2[d2] + l_spec$bd4[d4]]
     # but here pref is relevant as d1 = 3 only if pref = 1
-    d[d1 == 3, eta_orig := bs[s] + bp*pref + bd1[3] + bd3[d3] + bd4[d4]]
+    d[d1 == 3, eta_orig := l_spec$bs[s] + l_spec$bp*pref + l_spec$bd1[3] + l_spec$bd3[d3] + l_spec$bd4[d4]]
     
     # alternative specification appears to be equivalent.
-    d[, eta := bs[s] + bp*pref + bd1[d1] + (d1==2)*bd2[d2] + (d1==3)*bd3[d3] + bd4[d4]]
-    d[, .(eta_orig, eta, delta = eta_orig-eta)][, .(max(delta), min(delta))]
+    d[, eta := l_spec$bs[s] + l_spec$bp*pref + l_spec$bd1[d1] + (d1==2)*l_spec$bd2[d2] + (d1==3)*l_spec$bd3[d3] + l_spec$bd4[d4]]
+    d[, .(eta_orig, eta, delta = eta_orig-eta)][, .(min_diff = max(delta), max_diff = min(delta))]
     
     d[, `:=`(s = factor(s), d1 = factor(d1), d2 = factor(d2), d3 = factor(d3), d4 = factor(d4))]
     
     d[, p := plogis(eta)]
-    d[, y := rbinom(N, 1, p)]
+    d[, y := rbinom(.N, 1, p)]
     
     f2 <- glm(
       y ~ -1 + s + pref + d1 + d2:(d1==2) + d3:(d1==3) + d4, 
       data = d, 
       family = binomial,
       control = glm.control(epsilon = 1e-4, maxit = 100, trace = FALSE))
-    # will give you a lot of NA since over parameterised but it gets us to the 
+    # will give you a lot of NA in summary since over parameterised but it gets us to the 
     # predictions we are targeting
     # summary(f2)
     
@@ -1093,24 +1036,26 @@ single_model_approach <- function(){
     
     # don't really need to do this for all the sims, but:
     risk_surg <- risk_pars_surg(
-      l_l$p_d1_alloc, 
-      l_l$p_d2_entry, l_l$p_d2_alloc,
-      l_l$p_d3_entry, l_l$p_d3_alloc,
-      l_l$p_d4_entry, l_l$p_d4_alloc, 
-      l_l$p_pref, 
-      bs, bp, bd1, bd2, bd3, bd4)
+      l_spec$l_l$p_d1_alloc, 
+      l_spec$l_l$p_d2_entry, l_spec$l_l$p_d2_alloc,
+      l_spec$l_l$p_d3_entry, l_spec$l_l$p_d3_alloc,
+      l_spec$l_l$p_d4_entry, l_spec$l_l$p_d4_alloc, 
+      l_spec$l_l$p_pref, 
+      l_spec$bs, l_spec$bp, l_spec$bd1, l_spec$bd2, l_spec$bd3, l_spec$bd4)
     
     
     # duration domain -----
     
     d_dur_12wk <- copy(d[d1 == 2])
     d_dur_12wk[, d2 := factor(2)]
+    # has to be set as the hold out set
     d_dur_12wk[, d3 := factor(4)]
     d_dur_12wk[, p_hat := predict(f2, newdata = d_dur_12wk, type = "response")]
     p_dur_12wk_hat <- mean(d_dur_12wk$p_hat)
     
     d_dur_6wk <- copy(d[d1 == 2])
     d_dur_6wk[, d2 := factor(3)]
+    # has to be set as the hold out set
     d_dur_12wk[, d3 := factor(4)]
     d_dur_6wk[, p_hat := predict(f2, newdata = d_dur_6wk, type = "response")]
     p_dur_6wk_hat <- mean(d_dur_6wk$p_hat)
@@ -1118,28 +1063,30 @@ single_model_approach <- function(){
     rd_dur_hat <- p_dur_6wk_hat - p_dur_12wk_hat
     
     risk_dur <- risk_pars_dur(
-      p_s_alloc, l_e, l_l, l_c, 
-      bs, bp, bd1, bd2, bd3, bd4)
+      l_spec$p_s_alloc, l_spec$l_e, l_spec$l_l, l_spec$l_c, 
+      l_spec$bs, l_spec$bp, l_spec$bd1, l_spec$bd2, l_spec$bd3, l_spec$bd4)
     
     # extp domain -----
     
     d_extp_0wk <- copy(d[d1 == 3])
     d_extp_0wk[, d3 := factor(2)]
-    d_dur_12wk[, d3 := factor(4)]
+    # has to be set as the hold out set
+    d_dur_12wk[, d2 := factor(4)]
     d_extp_0wk[, p_hat := predict(f2, newdata = d_extp_0wk, type = "response")]
     p_extp_0wk_hat <- mean(d_extp_0wk$p_hat)
     
     d_extp_12wk <- copy(d[d1 == 3])
     d_extp_12wk[, d3 := factor(3)]
-    d_dur_12wk[, d3 := factor(4)]
+    # has to be set as the hold out set
+    d_dur_12wk[, d2 := factor(4)]
     d_extp_12wk[, p_hat := predict(f2, newdata = d_extp_12wk, type = "response")]
     p_extp_12wk_hat <- mean(d_extp_12wk$p_hat)
     
     rd_extp_hat <- p_extp_12wk_hat - p_extp_0wk_hat
     
     risk_extp <- risk_pars_extp(
-      p_s_alloc, l_e, l_l, l_c, 
-      bs, bp, bd1, bd2, bd3, bd4)
+      l_spec$p_s_alloc, l_spec$l_e, l_spec$l_l, l_spec$l_c, 
+      l_spec$bs, l_spec$bp, l_spec$bd1, l_spec$bd2, l_spec$bd3, l_spec$bd4)
     
     
     # choice domain -----
@@ -1148,6 +1095,7 @@ single_model_approach <- function(){
     # if you 
     d_choice_norif <- copy(d[d4 != 1 & d1 == 1])
     d_choice_norif[, d4 := factor(2)]
+    # hold out conditional on dair
     d_choice_norif[, d2 := factor(4)]
     d_choice_norif[, d3 := factor(4)]
     d_choice_norif[, p_hat := predict(f2, newdata = d_choice_norif, type = "response")]
@@ -1155,12 +1103,14 @@ single_model_approach <- function(){
     
     d_choice_norif <- copy(d[d4 != 1 & d1 == 2])
     d_choice_norif[, d4 := factor(2)]
+    # hold out conditional on rev(1)
     d_choice_norif[, d3 := factor(4)]
     d_choice_norif[, p_hat := predict(f2, newdata = d_choice_norif, type = "response")]
     p_choice_norif_2_hat <- mean(d_choice_norif$p_hat)
     
     d_choice_norif <- copy(d[d4 != 1 & d1 == 3])
     d_choice_norif[, d4 := factor(2)]
+    # hold out conditional on rev(1)
     d_choice_norif[, d2 := factor(4)]
     d_choice_norif[, p_hat := predict(f2, newdata = d_choice_norif, type = "response")]
     p_choice_norif_3_hat <- mean(d_choice_norif$p_hat)
@@ -1225,89 +1175,113 @@ single_model_approach <- function(){
     rd_choice_hat <- p_choice_rif_hat - p_choice_norif_hat
     
     risk_choice_ref <- risk_pars_choice(
-      p_s_alloc, l_e, l_l, l_c, 
-      bs, bp, bd1, bd2, bd3, bd4)
+      l_spec$p_s_alloc, l_spec$l_e, l_spec$l_l, l_spec$l_c, 
+      l_spec$bs, l_spec$bp, l_spec$bd1, l_spec$bd2, l_spec$bd3, l_spec$bd4)
     
-    list(
-      # d_uniq = d_uniq,
-      d_g = data.table(
-        p_surg_dair_ref = risk_surg["p_dair"],
-        p_surg_dair_hat = p_surg_dair_hat,
-        p_surg_rev_1_ref = risk_surg["p_rev_1"],
-        p_surg_rev_1_hat = p_surg_rev_1_hat,
-        p_surg_rev_2_ref = risk_surg["p_rev_2"],
-        p_surg_rev_2_hat = p_surg_rev_2_hat,
-        p_surg_rev_ref = risk_surg["p_rev"],
-        p_surg_rev_hat = p_surg_rev_hat,
-        rd_surg_ref = risk_surg["rd"],
-        rd_surg_hat = rd_surg_hat,
-        
-        p_dur_12wk_ref = risk_dur["p_dur_12wk"],
-        p_dur_12wk_hat = p_dur_12wk_hat,
-        p_dur_6wk_ref = risk_dur["p_dur_6wk"],
-        p_dur_6wk_hat = p_dur_6wk_hat,
-        rd_dur_ref = risk_dur["rd_dur"],
-        rd_dur_hat = rd_dur_hat,
-        
-        p_extp_0wk_ref = risk_extp["p_extp_0wk"],
-        p_extp_0wk_hat = p_extp_0wk_hat,
-        p_extp_12wk_ref = risk_extp["p_extp_12wk"],
-        p_extp_12wk_hat = p_extp_12wk_hat,
-        rd_extp_ref = risk_extp["rd_extp"],
-        rd_extp_hat = rd_extp_hat,
-        
-        p_choice_norif_ref = risk_choice_ref["p_choice_norif"],
-        p_choice_norif_hat = p_choice_norif_hat,
-        p_choice_rif_ref = risk_choice_ref["p_choice_rif"],
-        p_choice_rif_hat = p_choice_rif_hat,
-        rd_choice_ref = risk_choice_ref["rd_choice"],
-        rd_choice_hat = rd_choice_hat
-      )
+    
+    d_g = data.table(
+      p_surg_dair_ref = risk_surg["p_dair"],
+      p_surg_dair_hat = p_surg_dair_hat,
+      p_surg_rev_1_ref = risk_surg["p_rev_1"],
+      p_surg_rev_1_hat = p_surg_rev_1_hat,
+      p_surg_rev_2_ref = risk_surg["p_rev_2"],
+      p_surg_rev_2_hat = p_surg_rev_2_hat,
+      p_surg_rev_ref = risk_surg["p_rev"],
+      p_surg_rev_hat = p_surg_rev_hat,
+      rd_surg_ref = risk_surg["rd"],
+      rd_surg_hat = rd_surg_hat,
+      
+      p_dur_12wk_ref = risk_dur["p_dur_12wk"],
+      p_dur_12wk_hat = p_dur_12wk_hat,
+      p_dur_6wk_ref = risk_dur["p_dur_6wk"],
+      p_dur_6wk_hat = p_dur_6wk_hat,
+      rd_dur_ref = risk_dur["rd_dur"],
+      rd_dur_hat = rd_dur_hat,
+      
+      p_extp_0wk_ref = risk_extp["p_extp_0wk"],
+      p_extp_0wk_hat = p_extp_0wk_hat,
+      p_extp_12wk_ref = risk_extp["p_extp_12wk"],
+      p_extp_12wk_hat = p_extp_12wk_hat,
+      rd_extp_ref = risk_extp["rd_extp"],
+      rd_extp_hat = rd_extp_hat,
+      
+      p_choice_norif_ref = risk_choice_ref["p_choice_norif"],
+      p_choice_norif_hat = p_choice_norif_hat,
+      p_choice_rif_ref = risk_choice_ref["p_choice_rif"],
+      p_choice_rif_hat = p_choice_rif_hat,
+      rd_choice_ref = risk_choice_ref["rd_choice"],
+      rd_choice_hat = rd_choice_hat
     )
+    
     
   })
   
+  r
+  
+  
+  
+}
+
+
+parse_results <- function(r){
+  
   # results -----
-  d_g <- rbindlist(lapply(r, function(z) z$d_g))
+  d_g <- rbindlist(r)
   
   d_g[, bias_surg_rd := rd_surg_hat - rd_surg_ref]
   d_g[, bias_dur_rd := rd_dur_hat - rd_dur_ref]
   d_g[, bias_extp_rd := rd_extp_hat - rd_extp_ref]
   d_g[, bias_choice_rd := rd_choice_hat - rd_choice_ref]
-
+  
   d_fig <- d_g[, .(bias_surg_rd, bias_dur_rd, bias_extp_rd, bias_choice_rd)]
-  d_fig <- melt(d_fig, measure.vars = names(d_fig))
-
-  p1 <- ggplot(d_fig, aes(x = value)) +
-    geom_density() +
-    geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable],
-               aes(xintercept = mu), lwd = 0.2) +
-    facet_wrap(~variable, nrow = 1) +
-    theme(
-      axis.title = element_blank()
-    )
-
+  d_fig_1 <- melt(d_fig, measure.vars = names(d_fig))
+  
   
   d_fig <- d_g[, .(p_surg_dair_hat, p_surg_rev_hat,
                    p_dur_12wk_hat, p_dur_6wk_hat,
                    p_extp_0wk_hat, p_extp_12wk_hat,
                    p_choice_norif_hat, p_choice_rif_hat)]
-  d_fig <- melt(d_fig, measure.vars = names(d_fig))
+  d_fig_2 <- melt(d_fig, measure.vars = names(d_fig))
   
-  p2 <- ggplot(d_fig, aes(x = value)) +
+  d_fig <- d_g[, .(rd_surg_hat, rd_dur_hat, rd_extp_hat, rd_choice_hat)]
+  d_fig_3 <- melt(d_fig, measure.vars = names(d_fig))
+  
+  
+  list(
+    # bias
+    d_fig_1 = d_fig_1,
+    # risk
+    d_fig_2 = d_fig_2, 
+    # risk difference
+    d_fig_3 = d_fig_3
+  )
+}
+
+plot_results <- function(r){
+  
+  l_f <- parse_results(r)
+  
+  p1 <- ggplot(l_f$d_fig_1, aes(x = value)) +
     geom_density() +
-    geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable],
+    geom_vline(data = l_f$d_fig_1[, .(mu = mean(value)), keyby = variable],
+               aes(xintercept = mu), lwd = 0.2) +
+    facet_wrap(~variable, nrow = 1) +
+    theme(
+      axis.title = element_blank()
+    )
+  
+  p2 <- ggplot(l_f$d_fig_2, aes(x = value)) +
+    geom_density() +
+    geom_vline(data = l_f$d_fig_2[, .(mu = mean(value)), keyby = variable],
                aes(xintercept = mu), lwd = 0.2) +
     facet_wrap(~variable,  nrow = 4)+
     theme(
       axis.title.x = element_blank()
     )
   
-  d_fig <- d_g[, .(rd_surg_hat, rd_dur_hat, rd_extp_hat, rd_choice_hat)]
-  d_fig <- melt(d_fig, measure.vars = names(d_fig))
-  p3 <- ggplot(d_fig, aes(x = value)) +
+  p3 <- ggplot(l_f$d_fig_3, aes(x = value)) +
     geom_density() +
-    geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable],
+    geom_vline(data = l_f$d_fig_3[, .(mu = mean(value)), keyby = variable],
                aes(xintercept = mu), lwd = 0.2)  +
     facet_wrap(~variable,  nrow = 2)+
     theme(
@@ -1319,82 +1293,113 @@ single_model_approach <- function(){
     BBCC
     BBCC
   "
-  p1 + p2 + p3 +
-    plot_layout(design = layout)
+  print(p1 + p2 + p3 +
+    plot_layout(design = layout))
   
 }
 
 
-
 examples <- function(){
   
-  
-  p_s_alloc = c(0.3, 0.5, 0.2)
-  l_e <- list(
-    # prob of rev
-    p_d1_alloc = 0.15,
-    # entry into duration same across all silo
-    p_d2_entry = 0.7,
-    p_d2_alloc = 0.5,
-    # entry into extp same across all silo
-    p_d3_entry = 0.9,
-    p_d3_alloc = 0.5,
-    # entry into choice same across all silo
-    p_d4_entry = 0.6,
-    p_d4_alloc = 0.5,
-    # preference for two-stage
-    p_pref = 0.35
+  # setup for simulations, data generation and model parameters
+  l_spec <- list(
+    
+    # number of sims and cores to use
+    N_sim = 1000,
+    mc_cores = 4,
+    
+    
+    # sample size
+    N = 3e3,
+    # silo allocation
+    p_s_alloc = c(0.3, 0.5, 0.2),
+    
+    # early silo
+    l_e = list(
+      # prob of rev in surg domain (assuming all enter surg)
+      p_d1_alloc = 0.15,
+      # probability of entering d2 assuming you are in an eligible set
+      # note that entry into duration same across all silos
+      p_d2_entry = 0.7,
+      # 1:1 randomisation (note that if you deviate from this then some of the
+      # risk calcs with need updating so that the right weight is applied to 
+      # each of the randomised arm contributions)
+      p_d2_alloc = 0.5,
+      # probability of entering d3 assuming you are in an eligible set
+      # entry into extp same across all silos
+      p_d3_entry = 0.9,
+      p_d3_alloc = 0.5,
+      # probability of entering d4
+      # entry into choice same across all silos
+      p_d4_entry = 0.6,
+      p_d4_alloc = 0.5,
+      # preference for two-stage
+      p_pref = 0.35
+    ),
+    l_l = list(
+      # prob of rev in surg domain (assuming all enter surg)
+      p_d1_alloc = 0.5,
+      p_d2_entry = 0.7,
+      p_d2_alloc = 0.5,
+      p_d3_entry = 0.9,
+      p_d3_alloc = 0.5,
+      p_d4_entry = 0.6,
+      p_d4_alloc = 0.5,
+      # preference for two-stage
+      p_pref = 0.7
+    ),
+    l_c = list(
+      # prob of rev in surg domain (assuming all enter surg)
+      p_d1_alloc = 0.8,
+      p_d2_entry = 0.7,
+      p_d2_alloc = 0.5,
+      p_d3_entry = 0.9,
+      p_d3_alloc = 0.5,
+      p_d4_entry = 0.6,
+      p_d4_alloc = 0.5,
+      # preference for two-stage
+      p_pref = 0.75
+    ),
+    
+    # model parameters
+    
+    # log-odds (early, late, acute)
+    bs = c(0.9, 0.8, 0.7),
+    
+    # log-or
+    # different baseline risk for rev
+    bp = -0.4,
+    bd1 = c(0, 0, 0) ,
+    
+    # index 4 is never referenced but needs to be there so that the 
+    # calcs in the single model approach don't end up with NA
+    bd2 = c(0, 0, 0, 999),
+    bd3 = c(0, 0, 0, 999),
+    bd4 = c(0, 0, 0)
+    
   )
-  l_l <- list(
-    # prob of rev
-    p_d1_alloc = 0.5,
-    p_d2_entry = 0.7,
-    p_d2_alloc = 0.5,
-    p_d3_entry = 0.9,
-    p_d3_alloc = 0.5,
-    p_d4_entry = 0.6,
-    p_d4_alloc = 0.5,
-    # preference for two-stage
-    p_pref = 0.7
-  )
-  l_c <- list(
-    # prob of rev
-    p_d1_alloc = 0.8,
-    p_d2_entry = 0.7,
-    p_d2_alloc = 0.5,
-    p_d3_entry = 0.9,
-    p_d3_alloc = 0.5,
-    p_d4_entry = 0.6,
-    p_d4_alloc = 0.5,
-    # preference for two-stage
-    p_pref = 0.75
-  )
   
   
-  bs = c(0.9, 0.8, 0.7)
-  # log-or
-  # different baseline risk for rev
-  bp = -0.4
-  bd1 = c(0, 0, 0) # 0.05738023
-  bd2 = c(0, 0.1, 0.4)
-  bd3 = c(0, 0, 0)
-  bd4 = c(0, 0, 0.3)
   
   
+  # objective function to target effect on relative log scale corresponding
+  # to a zero effect on the absolute risk scale.
+  # tweak as necessary to target arbitrary effect size, or whatever variation 
+  # is of interest.
   obj_surg_f1 <- function(x){
     res <- risk_pars_surg(
-      l_l$p_d1_alloc, 
-      l_l$p_d2_entry, l_l$p_d2_alloc,
-      l_l$p_d3_entry, l_l$p_d3_alloc,
-      l_l$p_d4_entry, l_l$p_d4_alloc, 
-      l_l$p_pref, 
-      bs, bp, 
+      l_spec$l_l$p_d1_alloc, 
+      l_spec$l_l$p_d2_entry, l_spec$l_l$p_d2_alloc,
+      l_spec$l_l$p_d3_entry, l_spec$l_l$p_d3_alloc,
+      l_spec$l_l$p_d4_entry, l_spec$l_l$p_d4_alloc, 
+      l_spec$l_l$p_pref, 
+      l_spec$bs, l_spec$bp, 
       bd1 = c(0, x, x), 
-      bd2, 
-      bd3, 
-      bd4
+      l_spec$bd2, 
+      l_spec$bd3, 
+      l_spec$bd4
     )
-    
+    # square error
     (res["rd"] - 0)^2
   }
   
@@ -1406,35 +1411,13 @@ examples <- function(){
   optimize(obj_surg_f1, c(-1, 1))$minimum
   
   
-  risk_pars_dur(
-    p_s_alloc, l_e, l_l, l_c,
-    # log-odds
-    bs, bp, 
-    bd1 = c(0, 0.5, -0.1), 
-    bd2 = c(0, 0.1, 0), 
-    bd3, 
-    bd4
-  )
   
-  risk_pars_extp(
-    p_s_alloc, l_e, l_l, l_c,
-    # log-odds
-    bs, bp, 
-    bd1 = c(0, 0.5, -0.1), 
-    bd2 = c(0, 0, 0), 
-    bd3 = c(0, 0, 0.2), 
-    bd4
-  )
+  # examples
   
-  risk_pars_choice(
-    p_s_alloc, l_e, l_l, l_c,
-    # log-odds
-    bs, bp, 
-    bd1 = c(0, 0.5, -0.1), 
-    bd2 = c(0, 0, 0), 
-    bd3 = c(0, 0, 0.2), 
-    bd4 = c(0, 0, 0)
-  )
+  # null effects on abs pr scale in surg domain
+  single_model_approach(l_spec) |>
+    plot_results()
+  
   
   
   
