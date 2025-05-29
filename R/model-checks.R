@@ -28,13 +28,14 @@ risk_pars_surg <- function(
   ){
   
   # dair
-  # averages over combinations from f1_1:  ~ 1 + pref + d4
-  # mu + bd4[nonrand]
-  # mu + bd4[norif]
-  # mu + bd4[rif]
-  # mu + bp + bd4[nonrand]
-  # mu + bp + bd4[norif]
-  # mu + bp + bd4[rif]
+  # averages over combinations from f1_1:  ~ -1 + bs + pref + d4 (in late acute)
+  # bs[2] + bd4[nonrand]
+  # bs[2] + bd4[norif]
+  # bs[2] + bd4[rif]
+  # bs[2] + bp + bd4[nonrand]
+  # bs[2] + bp + bd4[norif]
+  # bs[2] + bp + bd4[rif]
+  # For example:
   # if 60% prefer rev(1) (if they had recv rev) and 60% enter ab choice
   # then 60% weight is given to the first three and 40% to the last
   # in the first three 60% enter ab choice so we have 
@@ -42,12 +43,12 @@ risk_pars_surg <- function(
   # in the second three, using the same logic
   # 0.6 * 0.4 = 0.24 allocated to no rif and rif and the rest left to nonrand
   # so we want:
-  # 0.24 * (mu + bd4[nonrand])
-  # 0.18 * (mu + bd4[norif])
-  # 0.18 * (mu + bd4[rif])
-  # 0.16 * (mu + bp + bd4[nonrand])
-  # 0.12 * (mu + bp + bd4[norif])
-  # 0.12 * (mu + bp + bd4[rif])
+  # 0.24 * (bs[2] + bd4[nonrand])
+  # 0.18 * (bs[2] + bd4[norif])
+  # 0.18 * (bs[2] + bd4[rif])
+  # 0.16 * (bs[2] + bp + bd4[nonrand])
+  # 0.12 * (bs[2] + bp + bd4[norif])
+  # 0.12 * (bs[2] + bp + bd4[rif])
   
   prop_tru <- numeric(6)
   prop_tru[1] <- (1-p_pref) - (p_d4_entry * (1-p_pref))
@@ -67,16 +68,16 @@ risk_pars_surg <- function(
   
   
   # rev 1
-  # averages over combinations from f1_2:  ~ 1 + d2 + d4
-  # mu + bd1[2] + bd2[1] + bd4[nonrand]
-  # mu + bd1[2] + bd2[1] + bd4[norif]
-  # mu + bd1[2] + bd2[1] + bd4[rif]    
-  # mu + bd1[2] + bd2[2] + bd4[nonrand]
-  # mu + bd1[2] + bd2[2] + bd4[norif]
-  # mu + bd1[2] + bd2[2] + bd4[rif]
-  # mu + bd1[2] + bd2[3] + bd4[nonrand]
-  # mu + bd1[2] + bd2[3] + bd4[norif]
-  # mu + bd1[2] + bd2[3] + bd4[rif]
+  # averages over combinations from f1_2:  ~ -1 + bs + d2 + d4
+  # bs[2] + bd1[2] + bd2[1] + bd4[nonrand]
+  # bs[2] + bd1[2] + bd2[1] + bd4[norif]
+  # bs[2] + bd1[2] + bd2[1] + bd4[rif]    
+  # bs[2] + bd1[2] + bd2[2] + bd4[nonrand]
+  # bs[2] + bd1[2] + bd2[2] + bd4[norif]
+  # bs[2] + bd1[2] + bd2[2] + bd4[rif]
+  # bs[2] + bd1[2] + bd2[3] + bd4[nonrand]
+  # bs[2] + bd1[2] + bd2[3] + bd4[norif]
+  # bs[2] + bd1[2] + bd2[3] + bd4[rif]
   # 70% of rev(1) enter into d2, 60% enter d4
   # 0.6 * 0.3 = 0.18 allocated to norif and rif (rest 0.3 - 0.18 for nonrand)
   # 0.6 * 0.35 = 0.21 allocated to norif and rif (rest for nonrand)
@@ -105,19 +106,19 @@ risk_pars_surg <- function(
     prop_tru[9] * plogis(bs[2] + bd1[2] + bd2[3] + bd4[3])  
   
   # rev 2
-  # averages over combinations from f1_2:   ~ 1 + d3 + d4
+  # averages over combinations from f1_2:   ~ -1 + bs + d3 + d4
   # pref is included as intercept = mu + bp for this cohort
-  # mu + bp + bd1[3] + bd3[1] + bd4[nonrand]
-  # mu + bp + bd1[3] + bd3[1] + bd4[norif]
-  # mu + bp + bd1[3] + bd3[1] + bd4[rif]    
-  # mu + bp + bd1[3] + bd3[2] + bd4[nonrand]
-  # mu + bp + bd1[3] + bd3[2] + bd4[norif]
-  # mu + bp + bd1[3] + bd3[2] + bd4[rif]
-  # mu + bp + bd1[3] + bd3[3] + bd4[nonrand]
-  # mu + bp + bd1[3] + bd3[3] + bd4[norif]
-  # mu + bp + bd1[3] + bd3[3] + bd4[rif]
+  # bs[2] + bp + bd1[3] + bd3[1] + bd4[nonrand]
+  # bs[2] + bp + bd1[3] + bd3[1] + bd4[norif]
+  # bs[2] + bp + bd1[3] + bd3[1] + bd4[rif]    
+  # bs[2] + bp + bd1[3] + bd3[2] + bd4[nonrand]
+  # bs[2] + bp + bd1[3] + bd3[2] + bd4[norif]
+  # bs[2] + bp + bd1[3] + bd3[2] + bd4[rif]
+  # bs[2] + bp + bd1[3] + bd3[3] + bd4[nonrand]
+  # bs[2] + bp + bd1[3] + bd3[3] + bd4[norif]
+  # bs[2] + bp + bd1[3] + bd3[3] + bd4[rif]
   # 90% of rev(2) enter into d3, 60% enter d4
-  # 0.6 * 0.1 = 0.06 allocated to norif and rif (rest 0.1 - 0.6 for nonrand)
+  # 0.6 * 0.1 = 0.06 allocated to norif and rif (rest 0.1 - 0.06 for nonrand)
   # 0.6 * 0.45 = 0.27 allocated to norif and rif (rest for nonrand)
   # 0.6 * 0.45 = 0.27 allocated to norif and rif (rest for nonrand)
   
@@ -521,15 +522,17 @@ test_pars <- function(){
     # preference for two-stage
     p_pref = 0.75
   )
-  # log-odds
+  
+  
+  # log-odds (early, late, acute)
   bs = c(0.9, 0.8, 0.7)
   # log-or
   # different baseline risk for rev
   bp = -0.4
-  bd1 = c(0, 0, 0)
-  bd2 = c(0, 0.1, 0)
-  bd3 = c(0, 0, -0.2)
-  bd4 = c(0, 0.1, 0.2)
+  bd1 = c(0, 0, 0) # 0.05738023
+  bd2 = c(0, -0.4, 0.2)
+  bd3 = c(0, 0.1, 0.1)
+  bd4 = c(0, 0.1, 0)
   
   
   obj_surg_f1 <- function(x){
@@ -541,7 +544,10 @@ test_pars <- function(){
       l_l$p_pref, 
       bs, bp, 
       bd1 = c(0, x, x), 
-      bd2, bd3, bd4)
+      bd2, 
+      bd3, 
+      bd4
+      )
     
     (res["rd"] - 0)^2
   }
@@ -551,7 +557,7 @@ test_pars <- function(){
   
   # to get a null scenario on the risk scale when both rev(1) and rev(2) 
   # are non-zero, you need to set the logor for both to:
-  optimize(obj_f1, c(0, 1))$minimum
+  optimize(obj_surg_f1, c(-1, 1))$minimum
   
   
   risk_pars_dur(
@@ -642,10 +648,10 @@ multi_model_approach <- function(){
   # log-or
   # different baseline risk for rev
   bp = -0.4
-  bd1 = c(0, 0.05738023, 0.05738023)
-  bd2 = c(0, 0.1, 0)
-  bd3 = c(0, 0, -0.2)
-  bd4 = c(0, 0.1, 0.2)
+  bd1 = c(0, -0.04199452, -0.04199452) # 0.05738023
+  bd2 = c(0, 0, 0)
+  bd3 = c(0, 0.1, 0.1)
+  bd4 = c(0, 0.1, 0)
 
   r <- pbapply::pblapply(X=1:N_sim, cl = mc_cores, FUN = function(ix){
     
@@ -1005,6 +1011,12 @@ single_model_approach <- function(){
   N_sim <- 1000
   mc_cores <- 4
   
+  
+  
+  
+  
+  
+  
   r <- pbapply::pblapply(X=1:N_sim, cl = mc_cores, FUN = function(ix){
     
     N <- 1e4
@@ -1066,7 +1078,8 @@ single_model_approach <- function(){
     d[, y := rbinom(N, 1, p)]
     
     f2 <- glm(
-      y ~ 1 + pref + d1 + d2 + d3 + d4, data = d, family = binomial,
+      y ~ 1 + pref + d1 + d2*(d1 == 2) + d3*(d1 == 3) + d4, data = d, 
+      family = binomial,
       control = glm.control(epsilon = 1e-4, maxit = 100, trace = FALSE))
     
     # summary(f2)
