@@ -5,7 +5,8 @@ library(patchwork)
 library(ggh4x)
 
 risk_pars_surg <- function(
-    l_spec
+    l_spec,
+    condition_on_nonrand_dur = F
   ){
   
   # dair
@@ -50,99 +51,144 @@ risk_pars_surg <- function(
     prop_tru[6] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd4[3])
   
   # rev 1
-  # averages over combinations from f1_2:  ~ 1 + s + d2 + d4
-  # mu + bs[2] + bd1[2] + bd2[1] + bd4[nonrand]
-  # mu + bs[2] + bd1[2] + bd2[1] + bd4[norif]
-  # mu + bs[2] + bd1[2] + bd2[1] + bd4[rif]  
-  
-  # mu + bs[2] + bd1[2] + bd2[2] + bd4[nonrand]
-  # mu + bs[2] + bd1[2] + bd2[2] + bd4[norif]
-  # mu + bs[2] + bd1[2] + bd2[2] + bd4[rif]
-  
-  # mu + bs[2] + bd1[2] + bd2[3] + bd4[nonrand]
-  # mu + bs[2] + bd1[2] + bd2[3] + bd4[norif]
-  # mu + bs[2] + bd1[2] + bd2[3] + bd4[rif]
-  
-  # Of those having rev(1) 70% get rand into d2 and 60% get rand into d4:
-  
-  prop_tru <- numeric(9)
-  # not enter d2, not enter d2 & enter d4
-  prop_tru[1] <- (1-l_spec$l_l$p_d2_entry) - ((1-l_spec$l_l$p_d2_entry) * (l_spec$l_l$p_d4_entry))
-  # not enter d2 & enter d4 & alloc ctl
-  prop_tru[2] <- (1-l_spec$l_l$p_d2_entry) * (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
-  # not enter d2 & enter d4 & alloc trt
-  prop_tru[3] <- (1-l_spec$l_l$p_d2_entry) * (l_spec$l_l$p_d4_entry * (l_spec$l_l$p_d4_alloc))
-  # rand d2 level 2
-  # enter d2 & alloc to ctl, enter d2 & alloc to ctl and enter d4
-  prop_tru[4] <- (l_spec$l_l$p_d2_entry * (1-l_spec$l_l$p_d2_alloc)) - ((l_spec$l_l$p_d2_entry*(1-l_spec$l_l$p_d2_alloc))*(l_spec$l_l$p_d4_entry) )
-  # enter d2 & alloc to ctl & enter d4 & alloc to ctl
-  prop_tru[5] <- l_spec$l_l$p_d2_entry * (1-l_spec$l_l$p_d2_alloc) * (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
-  # enter d2 & alloc to ctl & enter d4 & alloc to trt
-  prop_tru[6] <- l_spec$l_l$p_d2_entry * (1-l_spec$l_l$p_d2_alloc) * ((l_spec$l_l$p_d4_entry * l_spec$l_l$p_d4_alloc))
-  #  enter d2 & alloc to trt, enter d2 & alloc to ctl and enter d4
-  prop_tru[7] <- (l_spec$l_l$p_d2_entry * (l_spec$l_l$p_d2_alloc)) - ((l_spec$l_l$p_d2_entry*(l_spec$l_l$p_d2_alloc))*(l_spec$l_l$p_d4_entry) )
-  # enter d2 & alloc to trt & enter d4 & alloc to ctl
-  prop_tru[8] <- l_spec$l_l$p_d2_entry * (l_spec$l_l$p_d2_alloc) * (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
-  # enter d2 & alloc to trt & enter d4 & alloc to trt
-  prop_tru[9] <- l_spec$l_l$p_d2_entry * (l_spec$l_l$p_d2_alloc) * ((l_spec$l_l$p_d4_entry * l_spec$l_l$p_d4_alloc))
-  
-  p_rev_1 <- 
-    prop_tru[1] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[1] + l_spec$bd4[1]) + 
-    prop_tru[2] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[1] + l_spec$bd4[2]) + 
-    prop_tru[3] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[1] + l_spec$bd4[3]) + 
-    prop_tru[4] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[1]) + 
-    prop_tru[5] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[2]) + 
-    prop_tru[6] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[3]) + 
-    prop_tru[7] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[1]) + 
-    prop_tru[8] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[2]) + 
-    prop_tru[9] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[3])  
+  if(condition_on_nonrand_dur){
+    # averages over combinations from f1_2:  ~ 1 + s + d2 + d4 with bd2 fixed
+    
+    # mu + bs[2] + bd1[2] + bd2[1] + bd4[nonrand]
+    # mu + bs[2] + bd1[2] + bd2[1] + bd4[norif]
+    # mu + bs[2] + bd1[2] + bd2[1] + bd4[rif]  
+    
+    prop_tru <- numeric(3)
+    # not enter d2, not enter d2 & enter d4
+    prop_tru[1] <- (1-l_spec$l_l$p_d4_entry)
+    # not enter d2 & enter d4 & alloc ctl
+    prop_tru[2] <- (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
+    # not enter d2 & enter d4 & alloc trt
+    prop_tru[3] <- (l_spec$l_l$p_d4_entry * (l_spec$l_l$p_d4_alloc))
+    
+    p_rev_1 <- 
+      prop_tru[1] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[1] + l_spec$bd4[1]) + 
+      prop_tru[2] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[1] + l_spec$bd4[2]) + 
+      prop_tru[3] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[1] + l_spec$bd4[3]) 
+    
+  } else {
+    
+    # averages over combinations from f1_2:  ~ 1 + s + d2 + d4
+    # mu + bs[2] + bd1[2] + bd2[1] + bd4[nonrand]
+    # mu + bs[2] + bd1[2] + bd2[1] + bd4[norif]
+    # mu + bs[2] + bd1[2] + bd2[1] + bd4[rif]  
+    
+    # mu + bs[2] + bd1[2] + bd2[2] + bd4[nonrand]
+    # mu + bs[2] + bd1[2] + bd2[2] + bd4[norif]
+    # mu + bs[2] + bd1[2] + bd2[2] + bd4[rif]
+    
+    # mu + bs[2] + bd1[2] + bd2[3] + bd4[nonrand]
+    # mu + bs[2] + bd1[2] + bd2[3] + bd4[norif]
+    # mu + bs[2] + bd1[2] + bd2[3] + bd4[rif]
+    
+    prop_tru <- numeric(9)
+    # not enter d2, not enter d2 & enter d4
+    prop_tru[1] <- (1-l_spec$l_l$p_d2_entry) - ((1-l_spec$l_l$p_d2_entry) * (l_spec$l_l$p_d4_entry))
+    # not enter d2 & enter d4 & alloc ctl
+    prop_tru[2] <- (1-l_spec$l_l$p_d2_entry) * (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
+    # not enter d2 & enter d4 & alloc trt
+    prop_tru[3] <- (1-l_spec$l_l$p_d2_entry) * (l_spec$l_l$p_d4_entry * (l_spec$l_l$p_d4_alloc))
+    # rand d2 level 2
+    # enter d2 & alloc to ctl, enter d2 & alloc to ctl and enter d4
+    prop_tru[4] <- (l_spec$l_l$p_d2_entry * (1-l_spec$l_l$p_d2_alloc)) - ((l_spec$l_l$p_d2_entry*(1-l_spec$l_l$p_d2_alloc))*(l_spec$l_l$p_d4_entry) )
+    # enter d2 & alloc to ctl & enter d4 & alloc to ctl
+    prop_tru[5] <- l_spec$l_l$p_d2_entry * (1-l_spec$l_l$p_d2_alloc) * (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
+    # enter d2 & alloc to ctl & enter d4 & alloc to trt
+    prop_tru[6] <- l_spec$l_l$p_d2_entry * (1-l_spec$l_l$p_d2_alloc) * ((l_spec$l_l$p_d4_entry * l_spec$l_l$p_d4_alloc))
+    #  enter d2 & alloc to trt, enter d2 & alloc to ctl and enter d4
+    prop_tru[7] <- (l_spec$l_l$p_d2_entry * (l_spec$l_l$p_d2_alloc)) - ((l_spec$l_l$p_d2_entry*(l_spec$l_l$p_d2_alloc))*(l_spec$l_l$p_d4_entry) )
+    # enter d2 & alloc to trt & enter d4 & alloc to ctl
+    prop_tru[8] <- l_spec$l_l$p_d2_entry * (l_spec$l_l$p_d2_alloc) * (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
+    # enter d2 & alloc to trt & enter d4 & alloc to trt
+    prop_tru[9] <- l_spec$l_l$p_d2_entry * (l_spec$l_l$p_d2_alloc) * ((l_spec$l_l$p_d4_entry * l_spec$l_l$p_d4_alloc))
+    
+    p_rev_1 <- 
+      prop_tru[1] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[1] + l_spec$bd4[1]) + 
+      prop_tru[2] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[1] + l_spec$bd4[2]) + 
+      prop_tru[3] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[1] + l_spec$bd4[3]) + 
+      prop_tru[4] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[1]) + 
+      prop_tru[5] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[2]) + 
+      prop_tru[6] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[3]) + 
+      prop_tru[7] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[1]) + 
+      prop_tru[8] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[2]) + 
+      prop_tru[9] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[3])  
+  }
   
   # rev 2
-  # averages over combinations from f1_2:   ~ 1 + bs + d3 + d4
-  # pref is included as intercept = mu + bp for this cohort
-  # mu + bs[2] + bp + bd1[3] + bd3[1] + bd4[nonrand]
-  # mu + bs[2] + bp + bd1[3] + bd3[1] + bd4[norif]
-  # mu + bs[2] + bp + bd1[3] + bd3[1] + bd4[rif]    
-  # mu + bs[2] + bp + bd1[3] + bd3[2] + bd4[nonrand]
-  # mu + bs[2] + bp + bd1[3] + bd3[2] + bd4[norif]
-  # mu + bs[2] + bp + bd1[3] + bd3[2] + bd4[rif]
-  # mu + bs[2] + bp + bd1[3] + bd3[3] + bd4[nonrand]
-  # mu + bs[2] + bp + bd1[3] + bd3[3] + bd4[norif]
-  # mu + bs[2] + bp + bd1[3] + bd3[3] + bd4[rif]
-  # 90% of rev(2) enter into d3, 60% enter d4
-  
-  prop_tru <- numeric(9)
-  # not enter d3, not enter d3 & enter d4
-  prop_tru[1] <- (1-l_spec$l_l$p_d3_entry) - ((1-l_spec$l_l$p_d3_entry) * (l_spec$l_l$p_d4_entry))
-  # not enter d3 & enter d4 & alloc to ctl
-  prop_tru[2] <- (1-l_spec$l_l$p_d3_entry) * (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
-  # not enter d3 & enter d4 & alloc to trt
-  prop_tru[3] <- (1-l_spec$l_l$p_d3_entry) * (l_spec$l_l$p_d4_entry * (l_spec$l_l$p_d4_alloc))
-  # rand d3 level 2
-  # enter d3 & alloc to ctl, enter d3 & alloc to ctl and enter d4
-  prop_tru[4] <- (l_spec$l_l$p_d3_entry * (1-l_spec$l_l$p_d3_alloc)) - ((l_spec$l_l$p_d3_entry*(1-l_spec$l_l$p_d3_alloc))*(l_spec$l_l$p_d4_entry) )
-  # enter d3 & alloc to ctl & enter d4 & alloc to ctl
-  prop_tru[5] <- l_spec$l_l$p_d3_entry * (1-l_spec$l_l$p_d3_alloc) * (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
-  # enter d3 & alloc to ctl & enter d4 & alloc to trt
-  prop_tru[6] <- l_spec$l_l$p_d3_entry * (1-l_spec$l_l$p_d3_alloc) * ((l_spec$l_l$p_d4_entry * l_spec$l_l$p_d4_alloc))
-  # enter d3 & alloc to trt, enter d3 & alloc to ctl and enter d4
-  prop_tru[7] <- (l_spec$l_l$p_d3_entry * (l_spec$l_l$p_d3_alloc)) - ((l_spec$l_l$p_d3_entry*(l_spec$l_l$p_d3_alloc))*(l_spec$l_l$p_d4_entry) )
-  # enter d3 & alloc to trt & enter d4 & alloc to ctl
-  prop_tru[8] <- l_spec$l_l$p_d3_entry * (l_spec$l_l$p_d3_alloc) * (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
-  # enter d3 & alloc to trt & enter d4 & alloc to trt
-  prop_tru[9] <- l_spec$l_l$p_d3_entry * (l_spec$l_l$p_d3_alloc) * ((l_spec$l_l$p_d4_entry * l_spec$l_l$p_d4_alloc))
-  
-  # contribution of non-rand, bp needs to be included here
-  p_rev_2 <- 
-    prop_tru[1] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[1] + l_spec$bd4[1]) + 
-    prop_tru[2] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[1] + l_spec$bd4[2]) + 
-    prop_tru[3] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[1] + l_spec$bd4[3]) + 
-    prop_tru[4] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[1]) + 
-    prop_tru[5] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[2]) + 
-    prop_tru[6] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[3]) + 
-    prop_tru[7] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[1]) + 
-    prop_tru[8] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[2]) + 
-    prop_tru[9] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[3])  
+  if(condition_on_nonrand_dur){
+    
+    # averages over combinations from f1_2:   ~ 1 + bs + d3 + d4 with d3 fixed
+    
+    # mu + bs[2] + bp + bd1[3] + bd3[1] + bd4[nonrand]
+    # mu + bs[2] + bp + bd1[3] + bd3[1] + bd4[norif]
+    # mu + bs[2] + bp + bd1[3] + bd3[1] + bd4[rif]  
+    
+    prop_tru <- numeric(3)
+    # not enter d2, not enter d2 & enter d4
+    prop_tru[1] <- (1-l_spec$l_l$p_d4_entry)
+    # not enter d2 & enter d4 & alloc ctl
+    prop_tru[2] <- (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
+    # not enter d2 & enter d4 & alloc trt
+    prop_tru[3] <- (l_spec$l_l$p_d4_entry * (l_spec$l_l$p_d4_alloc))
+    
+    p_rev_2 <- 
+      prop_tru[1] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[1] + l_spec$bd4[1]) + 
+      prop_tru[2] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[1] + l_spec$bd4[2]) + 
+      prop_tru[3] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[1] + l_spec$bd4[3]) 
+    
+  } else {
+    
+    # averages over combinations from f1_2:   ~ 1 + bs + d3 + d4
+    # pref is included as intercept = mu + bp for this cohort
+    # mu + bs[2] + bp + bd1[3] + bd3[1] + bd4[nonrand]
+    # mu + bs[2] + bp + bd1[3] + bd3[1] + bd4[norif]
+    # mu + bs[2] + bp + bd1[3] + bd3[1] + bd4[rif]    
+    # mu + bs[2] + bp + bd1[3] + bd3[2] + bd4[nonrand]
+    # mu + bs[2] + bp + bd1[3] + bd3[2] + bd4[norif]
+    # mu + bs[2] + bp + bd1[3] + bd3[2] + bd4[rif]
+    # mu + bs[2] + bp + bd1[3] + bd3[3] + bd4[nonrand]
+    # mu + bs[2] + bp + bd1[3] + bd3[3] + bd4[norif]
+    # mu + bs[2] + bp + bd1[3] + bd3[3] + bd4[rif]
+    # 90% of rev(2) enter into d3, 60% enter d4
+    
+    prop_tru <- numeric(9)
+    # not enter d3, not enter d3 & enter d4
+    prop_tru[1] <- (1-l_spec$l_l$p_d3_entry) - ((1-l_spec$l_l$p_d3_entry) * (l_spec$l_l$p_d4_entry))
+    # not enter d3 & enter d4 & alloc to ctl
+    prop_tru[2] <- (1-l_spec$l_l$p_d3_entry) * (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
+    # not enter d3 & enter d4 & alloc to trt
+    prop_tru[3] <- (1-l_spec$l_l$p_d3_entry) * (l_spec$l_l$p_d4_entry * (l_spec$l_l$p_d4_alloc))
+    # rand d3 level 2
+    # enter d3 & alloc to ctl, enter d3 & alloc to ctl and enter d4
+    prop_tru[4] <- (l_spec$l_l$p_d3_entry * (1-l_spec$l_l$p_d3_alloc)) - ((l_spec$l_l$p_d3_entry*(1-l_spec$l_l$p_d3_alloc))*(l_spec$l_l$p_d4_entry) )
+    # enter d3 & alloc to ctl & enter d4 & alloc to ctl
+    prop_tru[5] <- l_spec$l_l$p_d3_entry * (1-l_spec$l_l$p_d3_alloc) * (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
+    # enter d3 & alloc to ctl & enter d4 & alloc to trt
+    prop_tru[6] <- l_spec$l_l$p_d3_entry * (1-l_spec$l_l$p_d3_alloc) * ((l_spec$l_l$p_d4_entry * l_spec$l_l$p_d4_alloc))
+    # enter d3 & alloc to trt, enter d3 & alloc to ctl and enter d4
+    prop_tru[7] <- (l_spec$l_l$p_d3_entry * (l_spec$l_l$p_d3_alloc)) - ((l_spec$l_l$p_d3_entry*(l_spec$l_l$p_d3_alloc))*(l_spec$l_l$p_d4_entry) )
+    # enter d3 & alloc to trt & enter d4 & alloc to ctl
+    prop_tru[8] <- l_spec$l_l$p_d3_entry * (l_spec$l_l$p_d3_alloc) * (l_spec$l_l$p_d4_entry * (1-l_spec$l_l$p_d4_alloc))
+    # enter d3 & alloc to trt & enter d4 & alloc to trt
+    prop_tru[9] <- l_spec$l_l$p_d3_entry * (l_spec$l_l$p_d3_alloc) * ((l_spec$l_l$p_d4_entry * l_spec$l_l$p_d4_alloc))
+    
+    # contribution of non-rand, bp needs to be included here
+    p_rev_2 <- 
+      prop_tru[1] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[1] + l_spec$bd4[1]) + 
+      prop_tru[2] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[1] + l_spec$bd4[2]) + 
+      prop_tru[3] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[1] + l_spec$bd4[3]) + 
+      prop_tru[4] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[1]) + 
+      prop_tru[5] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[2]) + 
+      prop_tru[6] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[3]) + 
+      prop_tru[7] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[1]) + 
+      prop_tru[8] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[2]) + 
+      prop_tru[9] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[3])  
+  }
   
   # rev
   prop_tru <- c(1 - l_spec$l_l$p_pref, l_spec$l_l$p_pref)
@@ -530,7 +576,11 @@ trial_data <- function(l_spec){
   # but here pref is relevant as d1 = 3 only if pref = 1
   d[d1 == 3, eta := l_spec$mu + l_spec$bs[s] + l_spec$bp*pref + l_spec$bd1[3] + l_spec$bd3[d3] + l_spec$bd4[d4]]
   
-  d[, `:=`(s = factor(s), d1 = factor(d1), d2 = factor(d2), d3 = factor(d3), d4 = factor(d4))]
+  d[, `:=`(s = factor(s), 
+           d1 = factor(d1), 
+           d2 = factor(d2, levels = 1:4), 
+           d3 = factor(d3, levels = 1:4), 
+           d4 = factor(d4))]
   
   d[, p := plogis(eta)]
   d[, y := rbinom(.N, 1, p)]
@@ -539,7 +589,7 @@ trial_data <- function(l_spec){
 }
 
 
-multi_model_approach <- function(l_spec){
+multi_model_approach <- function(l_spec, condition_on_nonrand_dur = F){
   
   r <- pbapply::pblapply(X=1:l_spec$N_sim, cl = l_spec$mc_cores, FUN = function(ix){
     
@@ -574,10 +624,19 @@ multi_model_approach <- function(l_spec){
     d_surg_rev_1 <- copy(d[s == 2 & pref == 0])
     d_surg_rev_1[, d1 := factor(2)]
     d_surg_rev_1[, pref := 0]
-    # for those that would have entered d2, assign them their randomised trt
-    d_surg_rev_1[d2_entry == 1, d2 := factor(d_surg_rev_1[d2_entry == 1, d2_alloc + 2], levels = 1:3)]
-    # for those that would not have entered d2, set them to non-rand trt
-    d_surg_rev_1[d2_entry == 0, d2 := factor(1, levels = 1:3)]
+    if(condition_on_nonrand_dur){
+      # if we are assuming the counterfactual where d1 is set to 2, then the pt 
+      # is, at least theoretically, permitted to enter d2, but to avoid bias
+      # with potential trt effects in d2, we force their d2 allocation to nonrand
+      # treatment. For the multimodel setup, the d3 value does not matter as that
+      # is not included in f1_2
+      d_surg_rev_1[, d2 := factor(1, levels = 1:4)]
+    } else {
+      # for those that would not have entered d2, set them to non-rand trt
+      d_surg_rev_1[d2_entry == 0, d2 := factor(1, levels = 1:4)]
+      # for those that would have entered d2, assign them their randomised trt
+      d_surg_rev_1[d2_entry == 1, d2 := factor(d_surg_rev_1[d2_entry == 1, d2_alloc + 2], levels = 1:4)]
+    }
     # and d4 stays at whatever it was
     d_surg_rev_1[, p_hat := predict(f1_2, newdata = d_surg_rev_1, type = "response")]
     p_surg_rev_1_hat <- mean(d_surg_rev_1$p_hat)
@@ -587,9 +646,18 @@ multi_model_approach <- function(l_spec){
     d_surg_rev_2[, d1 := factor(3)]
     # pref doesn't matter because the model had to roll it up into the intercept
     # d_rev_2[, pref := 1]
-    # for those that would have entered d3, assign them their randomised trt
-    d_surg_rev_2[d3_entry == 1, d3 := factor(d_surg_rev_2[d3_entry == 1, d3_alloc + 2], levels = 1:3)]
-    d_surg_rev_2[d3_entry == 0, d3 := factor(1, levels = 1:3)]
+    if(condition_on_nonrand_dur){
+      # similar to above, if we are assuming the counterfactual where d1 is set 
+      # to 3, then the pt is, at least theoretically, permitted to enter d3, 
+      # but to avoid bias with potential trt effects in d3, we force their d3
+      # allocation to nonrand treatment. For the multimodel setup, the d2 value 
+      # does not matter as that is not included in f1_3
+      d_surg_rev_2[, d3 := factor(1, levels = 1:4)]
+    } else {
+      d_surg_rev_2[d3_entry == 0, d3 := factor(1, levels = 1:4)]
+      # for those that would have entered d3, assign them their randomised trt
+      d_surg_rev_2[d3_entry == 1, d3 := factor(d_surg_rev_2[d3_entry == 1, d3_alloc + 2], levels = 1:4)]
+    }
     # and d4 stays at whatever it was
     d_surg_rev_2[, p_hat := predict(f1_3, newdata = d_surg_rev_2, type = "response")]
     p_surg_rev_2_hat <- mean(d_surg_rev_2$p_hat)
@@ -601,11 +669,10 @@ multi_model_approach <- function(l_spec){
     rd_surg_hat <- p_surg_rev_hat - p_surg_dair_hat
     
     # don't really need to do this for all, but:
-    risk_surg <- risk_pars_surg(l_spec)
+    risk_surg <- risk_pars_surg(l_spec, condition_on_nonrand_dur)
     
     
     # duration domain -----
-    
     d_dur_12wk <- copy(d[d1 == 2])
     d_dur_12wk[, d2 := factor(2)]
     d_dur_12wk[, p_hat := predict(f1_2, newdata = d_dur_12wk, type = "response")]
@@ -757,7 +824,7 @@ multi_model_approach <- function(l_spec){
 
 
 
-single_model_approach <- function(l_spec){
+single_model_approach <- function(l_spec, condition_on_nonrand_dur = F){
 
   r <- pbapply::pblapply(X=1:l_spec$N_sim, cl = l_spec$mc_cores, FUN = function(ix){
     
@@ -793,9 +860,20 @@ single_model_approach <- function(l_spec){
     d_surg_rev_1 <- copy(d[s == 2 & pref == 0])
     d_surg_rev_1[, d1 := factor(2)]
     d_surg_rev_1[, pref := 0]
-    d_surg_dair[, d3 := factor(4)]
-    d_surg_rev_1[d2_entry == 1, d2 := factor(d_surg_rev_1[d2_entry == 1, d2_alloc + 2], levels = 1:3)]
-    d_surg_rev_1[d2_entry == 0, d2 := factor(1, levels = 1:3)]
+    if(condition_on_nonrand_dur){
+      # if we are assuming the counterfactual where d1 is set to 2, then the pt 
+      # is, at least theoretically, permitted to enter d2, but to avoid bias
+      # with potential trt effects in d2, we force their d2 allocation to nonrand
+      # treatment. For the single setup, the d3 should then be set to undefined.
+      d_surg_rev_1[, d2 := factor(1, levels = 1:4)]
+      d_surg_rev_1[, d3 := factor(4, levels = 1:4)]
+    } else {
+      # in the counterfactual world where d1 is set to 2 this then implies 
+      # that d3 is undefined
+      d_surg_rev_1[, d3 := factor(4, levels = 1:4)]
+      d_surg_rev_1[d2_entry == 0, d2 := factor(1, levels = 1:4)]
+      d_surg_rev_1[d2_entry == 1, d2 := factor(d_surg_rev_1[d2_entry == 1, d2_alloc + 2], levels = 1:4)]
+    }
     # and d4 stays at whatever it was
     d_surg_rev_1[, p_hat := predict(f2, newdata = d_surg_rev_1, type = "response")]
     p_surg_rev_1_hat <- mean(d_surg_rev_1$p_hat)
@@ -803,11 +881,18 @@ single_model_approach <- function(l_spec){
     # rev(2)
     d_surg_rev_2 <- copy(d[s == 2 & pref == 1])
     d_surg_rev_2[, d1 := factor(3)]
-    d_surg_dair[, d2 := factor(4)]
-    # pref doesn't matter because the model had to roll it up into the intercept
-    # d_rev_2[, pref := 1]
-    d_surg_rev_2[d3_entry == 1, d3 := factor(d_surg_rev_2[d3_entry == 1, d3_alloc + 2], levels = 1:3)]
-    d_surg_rev_2[d3_entry == 0, d3 := factor(1, levels = 1:3)]
+    if(condition_on_nonrand_dur){
+      # if we are assuming the counterfactual where d1 is set to 3, then the pt 
+      # is, at least theoretically, permitted to enter d3, but to avoid bias
+      # with potential trt effects in d3, we force their d3 allocation to nonrand
+      # treatment. For the single setup, the d2 should then be set to undefined.
+      d_surg_rev_2[, d3 := factor(1, levels = 1:4)]
+      d_surg_rev_2[, d2 := factor(4, levels = 1:4)]
+    } else {
+      d_surg_rev_2[, d2 := factor(4, levels = 1:4)]
+      d_surg_rev_2[d3_entry == 0, d3 := factor(1, levels = 1:4)]
+      d_surg_rev_2[d3_entry == 1, d3 := factor(d_surg_rev_2[d3_entry == 1, d3_alloc + 2], levels = 1:4)]
+    }
     # and d4 stays at whatever it was
     d_surg_rev_2[, p_hat := predict(f2, newdata = d_surg_rev_2, type = "response")]
     p_surg_rev_2_hat <- mean(d_surg_rev_2$p_hat)
@@ -819,7 +904,7 @@ single_model_approach <- function(l_spec){
     rd_surg_hat <- p_surg_rev_hat - p_surg_dair_hat
     
     # don't really need to do this for all the sims, but:
-    risk_surg <- risk_pars_surg(l_spec)
+    risk_surg <- risk_pars_surg(l_spec, condition_on_nonrand_dur)
     
     
     # duration domain -----
@@ -1040,7 +1125,8 @@ plot_results <- function(r, scenario = "Null", note = ""){
     facet_wrap(~variable, nrow = 1) +
     theme(
       axis.title = element_blank()
-    )
+    ) +
+    ggtitle("Distribution of risk difference bias (vertical shows mean)")
   
   p2 <- ggplot(l_f$d_fig_2, aes(x = value)) +
     geom_density() +
@@ -1049,7 +1135,8 @@ plot_results <- function(r, scenario = "Null", note = ""){
     facet_wrap2(~variable,  nrow = 4, axes = "x")+
     theme(
       axis.title.x = element_blank()
-    )
+    ) +
+    ggtitle("Distribution of Pr(evt) (vertical shows mean)")
   
   p3 <- ggplot(l_f$d_fig_3, aes(x = value)) +
     geom_density() +
@@ -1058,7 +1145,8 @@ plot_results <- function(r, scenario = "Null", note = ""){
     facet_wrap2(~variable,  nrow = 2, axes = "x")+
     theme(
       axis.title.x = element_blank()
-    )
+    ) +
+    ggtitle("Distribution of risk differences (vertical shows mean)")
   
   layout <- "
     AAAA
@@ -1171,7 +1259,7 @@ examples <- function(){
     l_spec$bd1 = c(0, x, x)
     
     res <- risk_pars_surg(
-      l_spec
+      l_spec, condition_on_nonrand_dur = F
     )
     # square error
     (res["rd"] - 0)^2
@@ -1184,15 +1272,17 @@ examples <- function(){
   # are non-zero, you need to set the logor for both to:
   optimize(obj_surg_f1, c(-1, 1), l_spec)$minimum
   
-  # examples -------
+  # scenario: null -------
   
   # null effects in all domain on log odds scale translates to null on abs 
   # pr scale in all domain
-  single_model_approach(l_spec) |>
+  single_model_approach(l_spec, condition_on_nonrand_dur = T) |>
     plot_results(scenario = "SM Null: no effects in any domain.")
-  multi_model_approach(l_spec) |>
+  multi_model_approach(l_spec, condition_on_nonrand_dur = T) |>
     plot_results(scenario = "MM Null: no effects in any domain.")
   
+  
+  # scenario: abx dur effects induce bias in d1 -------
   
   # introduce abx duration effect 
   # no effects anywhere but d2
@@ -1228,6 +1318,12 @@ examples <- function(){
                  note = "Induces + effect in estimate for d1")
   
   
+  single_model_approach(l_spec, condition_on_nonrand_dur = T) |>
+    plot_results(scenario = "SM +d2: d2 +ve effects",
+                 note = "Remove bias on d1 through conditioning on non-rand duration")
+  
+  
+  # scenario: ext proph effects induce bias in d1 -------
   
   # only the people on rev(2) get d3
   # if there is an effect for d3 then there will be a higher pr of evt in pts 
@@ -1241,12 +1337,18 @@ examples <- function(){
   l_spec$bd4 <- c(0, 0, 0)
   # notice a bias here for ext proph but haven;t determined why
   single_model_approach(l_spec) |>
-    plot_results(scenario = "SM +d3: d3 +ve effects",
-                 note = "Induces + effect in estimate for d1")
+    plot_results(scenario = "SM +d3: d3 +ve effects (conditioning on allocated duration)",
+                 note = "Scenario induces + effect in estimate for d1")
   multi_model_approach(l_spec) |>
-    plot_results(scenario = "MM +d3: d3 +ve effects",
+    plot_results(scenario = "MM +d3: d3 +ve effects (conditioning on allocated duration)",
                  note = "Induces + effect in estimate for d1")
   
+  multi_model_approach(l_spec, condition_on_nonrand_dur = T) |>
+    plot_results(scenario = "MM +d3: d3 +ve effects (conditioning on allocated duration)",
+                 note = "Remove bias on d1 through conditioning on non-rand duration")
+  
+  
+  # scenario: choice domain -------
   
   # but not if effects in d4 alone, i.e. no adjustment required to resolve to 
   # the null in the surgical domain on the risk scale.
@@ -1255,7 +1357,7 @@ examples <- function(){
   l_spec$bd3 <- c(0, 0, 0, 999)
   l_spec$bd4 <- c(0, 0, 1.2)
   multi_model_approach(l_spec) |>
-    plot_results(scenario = "MM +d4: d4 +ve effects",
+    plot_results(scenario = "MM +d4: d4 +ve effects (conditioning on allocated duration)",
                  note = "Surgical domain not impacted here.")
   # surg transform is already zero
   (lor_d1_rev <- optimize(obj_surg_f1, c(-1, 1), l_spec)$minimum)
