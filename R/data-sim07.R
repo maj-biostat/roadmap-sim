@@ -148,7 +148,7 @@ get_sim07_trial_data <- function(
   d[, d1_ix := d1 + (3 * (s - 1))]
 
   # bd1 is irrelevant since d1 == 1 is the ref group, fixed at zero
-  d[d1 == 1, eta := l_spec$mu + l_spec$bs[s] + l_spec$bp[pref] + l_spec$bd4[d4]]
+  d[d1 == 1, eta := l_spec$mu + l_spec$bs[s] + l_spec$bp[pref] + bd1[d1_ix] + l_spec$bd4[d4]]
   # pref is irrelevant as d1 = 2 only occurs if pref = 0
   d[d1 == 2, eta := l_spec$mu + l_spec$bs[s] + bd1[d1_ix] + l_spec$bd2[d2] + l_spec$bd4[d4]]
   # but here pref is relevant as d1 = 3 only if pref = 1
