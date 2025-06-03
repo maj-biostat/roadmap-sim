@@ -604,6 +604,10 @@ model_consistency_check <- function(){
   b_d4 <- c(0, -0.25, 0.5)
   N <- 2500
   
+  idx_s = 1
+  t0 = rep(1, N)
+  id_analys = 1
+  
   r <- pbapply::pblapply(X=1:N_sim, cl = mc_cores, FUN = function(ix){
     
     l_new <- get_trial_data_int(
@@ -629,14 +633,14 @@ model_consistency_check <- function(){
       dec_sup_fut = dec_sup_fut,
       dec_ni_fut = dec_ni_fut,
       
-      idx_s = 1,
-      t0 = rep(1, N),
-      id_analys = 1
+      idx_s = idx_s,
+      t0 = t0,
+      id_analys = id_analys
     )
     
     # create stan data format based on the relevant subsets of pt
     lsd <- get_stan_data_all_int(l_new$d)
-    lsd$ld$pri_mu <- c(0, 0.47)
+    lsd$ld$pri_mu <- c(0.7, 0.7)
     lsd$ld$pri_b_silo <- c(0, 1)
     lsd$ld$pri_b_jnt <- c(0, 1)
     lsd$ld$pri_b_prf <- c(0, 1)
@@ -670,29 +674,31 @@ model_consistency_check <- function(){
       ),   
       format = "matrix"))
     
-    f_2 <- m2$sample(
-      lsd$ld, iter_warmup = 1000, iter_sampling = 3000,
-      parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
-      max_treedepth = 11)
+    # f_2 <- m2$sample(
+    #   lsd$ld, iter_warmup = 1000, iter_sampling = 3000,
+    #   parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
+    #   max_treedepth = 11)
+    # 
+    # # f_2 <- m2$pathfinder(lsd$ld, num_paths=20, single_path_draws=200,
+    # #                      history_size=50, max_lbfgs_iters=100,
+    # #                      refresh = 0, draws = 2000)
+    # 
+    # d_post_2 <- data.table(f_2$draws(
+    #   variables = c(
+    #     
+    #     "lor_d1", 
+    #     "lor_d2",
+    #     "lor_d3",
+    #     "lor_d4",
+    #     "bd2",
+    #     "bd3"
+    #     
+    #   ),   
+    #   format = "matrix"))
     
-    # f_2 <- m2$pathfinder(lsd$ld, num_paths=20, single_path_draws=200,
-    #                      history_size=50, max_lbfgs_iters=100,
-    #                      refresh = 0, draws = 2000)
+    # c(colMeans(d_post_1), colMeans(d_post_2))
     
-    d_post_2 <- data.table(f_2$draws(
-      variables = c(
-        
-        "lor_d1", 
-        "lor_d2",
-        "lor_d3",
-        "lor_d4",
-        "bd2",
-        "bd3"
-        
-      ),   
-      format = "matrix"))
-    
-    c(colMeans(d_post_1), colMeans(d_post_2))
+    c(colMeans(d_post_1))
     
   })
   
@@ -719,6 +725,130 @@ model_consistency_check <- function(){
   d_tbl[, diff_abs := abs(m1 - m2)]
   d_tbl[]
 }
+
+
+model_simplification <- function(){
+  
+  
+  # assume that you are looking at a single silo and interest is in the 
+  # surgical effects
+  library(data.table)
+  library(pbapply)
+  library(ggplot2)
+  
+  N_sim <- 10000
+  mc_cores <- 3
+  
+  r <- do.call(rbind, pbapply::pblapply(X=1:N_sim, cl = mc_cores, FUN = function(ix){
+  
+    N <- 1e3
+    d <- data.table(
+      # ctl/trt allocations ignoring dependencies
+      d1_alloc = rbinom(N, 1, 0.5),
+      d2_alloc = rbinom(N, 1, 0.5),
+      d3_alloc = rbinom(N, 1, 0.5),
+      # sev is a proxy for some set of pt characteristics
+      sev = rnorm(N, 0.8, 0.8)
+    )
+    # preference directs type of revision
+    d[, pref := rbinom(N, 1, prob = plogis(sev))]
+    
+    
+    # dair gets dair, revision gets split
+    d[d1_alloc == 0, d1 := 1]
+    d[d1_alloc == 1 & pref == 0, d1 := 2]
+    d[d1_alloc == 1 & pref == 1, d1 := 3]
+    
+    d[d1 == 2, d2 := 2 + d2_alloc]
+    d[d1 == 3, d3 := 2 + d3_alloc]
+    
+    # d[, .N, keyby = .(pref, d1, d2, d3)]
+    
+    mu <- 0.7
+    # different baseline risk for rev
+    bp <- -0.4
+    bd1 <- c(0, 0, 0)
+    bd2 <- c(0, 0.1, 0)
+    bd3 <- c(0, 0, -0.2)
+    
+    d[d1 == 1, eta := mu + bp*pref + bd1[1]]
+    d[d1 == 2, eta := mu + bp*pref + bd1[2] + bd2[d2]]
+    d[d1 == 3, eta := mu + bp*pref + bd1[3] + bd3[d3]]
+    
+    d[is.na(d2), d2 := 1]
+    d[is.na(d3), d3 := 1]
+    
+    d[, `:=`(d1 = factor(d1), d2 = factor(d2), d3 = factor(d3))]
+    
+    d[, .N, keyby = .(pref, d1, d2, d3)]
+    
+    d[, p := plogis(eta)]
+    d[, y := rbinom(N, 1, p)]
+    #
+    
+    f2 <- glm(
+      y ~ pref + d1 + d2 + d3, data = d, family = binomial,
+      control = glm.control(epsilon = 1e-4, maxit = 100, trace = FALSE))
+    # will push some NAs due to overparam; just want predictions
+    summary(f2)
+    # dair across pref
+    # one-stage across backbone duration
+    # two-stage across ext proph
+    d_uniq <- unique(d[, .(pref, d1, d2, d3, eta)])
+    setkey(d_uniq, d1, pref, d1, d2, d3)
+    d_uniq[, eta_hat := predict(f2, newdata = d_uniq, type = "link")]
+    d_uniq[]
+    
+    # dair
+    d_0 <- copy(d)
+    d_0[, d1 := factor(1)]
+    d_0[, d2 := factor(1)]
+    d_0[, d3 := factor(1)]
+    d_0[, p_hat := predict(f2, newdata = d_0, type = "response")]
+    p_0 <- mean(d_0$p_hat)
+    
+    # rev(1)
+    d_1_1 <- copy(d)
+    d_1_1[, d1 := factor(2)]
+    d_1_1[, d2 := factor(2 + d2_alloc, levels = 1:3)]
+    d_1_1[, d3 := factor(1)]
+    d_1_1[, p_hat := predict(f2, newdata = d_1_1, type = "response")]
+    p_1_1 <- mean(d_1_1$p_hat)
+    
+    # rev(2)
+    d_1_2 <- copy(d)
+    d_1_2[, d1 := factor(3)]
+    d_1_2[, d2 := factor(1)]
+    d_1_2[, d3 := factor(2 + d3_alloc, levels = 1:3)]
+    d_1_2[, p_hat := predict(f2, newdata = d_1_2, type = "response")]
+    p_1_2 <- mean(d_1_2$p_hat)
+    
+    pref_0 <- mean(d$pref == 0)
+    pref_1 <- mean(d$pref == 1)
+    p_1 <- p_1_1 * pref_0 + p_1_2 * pref_1
+    rd <- p_1 - p_0
+    
+    c(p_0 = p_0, p_1 = p_1, 
+      rd = rd, 
+      p_1_1 = p_1_1, p_1_2 = p_1_2, 
+      pref_0 = pref_0, pref_1 = pref_1)
+    
+  }))
+  
+  d_fig <- data.table(r)
+  
+  ggplot(d_fig, aes(x = rd)) + 
+    geom_density() +
+    geom_vline(
+      data = d_fig[, .(mu_rd = mean(rd))],
+      aes(xintercept = mu_rd), lty = 2) +
+    geom_vline(xintercept = 0)
+  
+}
+                                 
+                                 
+                                 
+                                 
 
 model_prior_predictive <- function(){
   
