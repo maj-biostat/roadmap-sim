@@ -242,11 +242,11 @@ risk_pars_dur <- function(
     prop_tru[1] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[1]) +
     prop_tru[2] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[2]) +
     prop_tru[3] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[3]) +
-    prop_tru[4] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[3]) +
-    prop_tru[5] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[3]) +
+    prop_tru[4] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[1]) +
+    prop_tru[5] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[2]) +
     prop_tru[6] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[3]) +
-    prop_tru[7] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[3]) +
-    prop_tru[8] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[3]) +
+    prop_tru[7] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[1]) +
+    prop_tru[8] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[2]) +
     prop_tru[9] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bd1[2] + l_spec$bd2[2] + l_spec$bd4[3])   
   
   # same weights used for the 06wk
@@ -255,11 +255,11 @@ risk_pars_dur <- function(
     prop_tru[1] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[1]) +
     prop_tru[2] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[2]) +
     prop_tru[3] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[3]) +
-    prop_tru[4] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[3]) +
-    prop_tru[5] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[3]) +
+    prop_tru[4] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[1]) +
+    prop_tru[5] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[2]) +
     prop_tru[6] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[3]) +
-    prop_tru[7] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[3]) +
-    prop_tru[8] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[3]) +
+    prop_tru[7] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[1]) +
+    prop_tru[8] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[2]) +
     prop_tru[9] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bd1[2] + l_spec$bd2[3] + l_spec$bd4[3])   
   
   c(rd_dur = p_dur_6wk - p_dur_12wk,
@@ -292,28 +292,28 @@ risk_pars_extp <- function(
   prop_tru[9] <- (l_spec$p_s_alloc[3]) * l_spec$l_c$p_d4_entry * l_spec$l_c$p_d4_alloc
   
   p_extp_0wk <- 
-    prop_tru[1] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[2] + l_spec$bd4[1]) +
-    prop_tru[2] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[2] + l_spec$bd4[2]) +
-    prop_tru[3] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[2] + l_spec$bd4[3]) +
-    prop_tru[4] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[2] + l_spec$bd4[3]) +
-    prop_tru[5] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[2] + l_spec$bd4[3]) +
-    prop_tru[6] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[2] + l_spec$bd4[3]) +
-    prop_tru[7] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[2] + l_spec$bd4[3]) +
-    prop_tru[8] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[2] + l_spec$bd4[3]) +
-    prop_tru[9] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[2] + l_spec$bd4[3])   
+    prop_tru[1] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[1]) +
+    prop_tru[2] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[2]) +
+    prop_tru[3] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[3]) +
+    prop_tru[4] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[1]) +
+    prop_tru[5] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[2]) +
+    prop_tru[6] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[3]) +
+    prop_tru[7] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[1]) +
+    prop_tru[8] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[2]) +
+    prop_tru[9] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[2] + l_spec$bd4[3])   
   
   # same weights used under 1:1 allocation
   
   p_extp_12wk <- 
-    prop_tru[1] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[3] + l_spec$bd4[1]) +
-    prop_tru[2] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[3] + l_spec$bd4[2]) +
-    prop_tru[3] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[3] + l_spec$bd4[3]) +
-    prop_tru[4] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[3] + l_spec$bd4[3]) +
-    prop_tru[5] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[3] + l_spec$bd4[3]) +
-    prop_tru[6] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[3] + l_spec$bd4[3]) +
-    prop_tru[7] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[3] + l_spec$bd4[3]) +
-    prop_tru[8] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[3] + l_spec$bd4[3]) +
-    prop_tru[9] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bp + l_spec$bd1[2] + l_spec$bd3[3] + l_spec$bd4[3])   
+    prop_tru[1] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[1]) +
+    prop_tru[2] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[2]) +
+    prop_tru[3] * plogis(l_spec$mu + l_spec$bs[1] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[3]) +
+    prop_tru[4] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[1]) +
+    prop_tru[5] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[2]) +
+    prop_tru[6] * plogis(l_spec$mu + l_spec$bs[2] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[3]) +
+    prop_tru[7] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[1]) +
+    prop_tru[8] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[2]) +
+    prop_tru[9] * plogis(l_spec$mu + l_spec$bs[3] + l_spec$bp + l_spec$bd1[3] + l_spec$bd3[3] + l_spec$bd4[3])   
   
   c(rd_extp = p_extp_12wk - p_extp_0wk,
     p_extp_0wk = p_extp_0wk, p_extp_12wk = p_extp_12wk)
@@ -1118,15 +1118,20 @@ plot_results <- function(r, scenario = "Null", note = ""){
   
   l_f <- parse_results(r)
   
+  mu_bias <- l_f$d_fig_1[, .(mu = mean(value)), keyby = variable]$mu
   p1 <- ggplot(l_f$d_fig_1, aes(x = value)) +
     geom_density() +
     geom_vline(data = l_f$d_fig_1[, .(mu = mean(value)), keyby = variable],
                aes(xintercept = mu), lwd = 0.2) +
-    facet_wrap(~variable, nrow = 1) +
+    facet_wrap(~variable, nrow = 1)  +
     theme(
-      axis.title = element_blank()
+      axis.title = element_blank(),
+      plot.title = element_text(size = 10),
+      plot.subtitle = element_text(size = 8)
     ) +
-    ggtitle("Distribution of risk difference bias (vertical shows mean)")
+    ggtitle("Distribution of risk difference bias (vertical shows mean)",
+            subtitle = sprintf("means: %.3f, %.3f, %.3f, %.3f",
+                               mu_bias[1],mu_bias[2],mu_bias[3],mu_bias[4]))
   
   p2 <- ggplot(l_f$d_fig_2, aes(x = value)) +
     geom_density() +
@@ -1134,19 +1139,26 @@ plot_results <- function(r, scenario = "Null", note = ""){
                aes(xintercept = mu), lwd = 0.2) +
     facet_wrap2(~variable,  nrow = 4, axes = "x")+
     theme(
-      axis.title.x = element_blank()
+      axis.title.x = element_blank(),
+      plot.title = element_text(size = 10),
+      plot.subtitle = element_text(size = 8)
     ) +
     ggtitle("Distribution of Pr(evt) (vertical shows mean)")
   
+  mu_rd <- l_f$d_fig_3[, .(mu = mean(value)), keyby = variable]$mu
   p3 <- ggplot(l_f$d_fig_3, aes(x = value)) +
     geom_density() +
     geom_vline(data = l_f$d_fig_3[, .(mu = mean(value)), keyby = variable],
                aes(xintercept = mu), lwd = 0.2)  +
     facet_wrap2(~variable,  nrow = 2, axes = "x")+
     theme(
-      axis.title.x = element_blank()
+      axis.title.x = element_blank(),
+      plot.title = element_text(size = 10),
+      plot.subtitle = element_text(size = 8)
     ) +
-    ggtitle("Distribution of risk differences (vertical shows mean)")
+    ggtitle("Distribution of risk differences (vertical shows mean)",
+            subtitle = sprintf("means: %.3f, %.3f, %.3f, %.3f",
+                               mu_rd[1],mu_rd[2],mu_rd[3],mu_rd[4]))
   
   layout <- "
     AAAA
@@ -1365,7 +1377,7 @@ examples <- function(){
 }
 
 
-opt_stuff <- function(){
+parameter_for_scenario_calcs <- function(){
   
   
  
@@ -1376,7 +1388,7 @@ opt_stuff <- function(){
     N_sim = 1000,
     mc_cores = 4,
     # sample size
-    N = 3e6,
+    N = 2500,
     # silo allocation
     p_s_alloc = c(0.3, 0.5, 0.2),
     
@@ -1416,7 +1428,7 @@ opt_stuff <- function(){
     # model parameters
     
     # intercept is early silo
-    mu = res_opt$minimum,
+    mu = 0.7892128894, # 0.9,
     # log-odds (early, late, acute)
     bs = c(0, -0.1, -0.2),
     # log-or
@@ -1429,133 +1441,53 @@ opt_stuff <- function(){
     bd4 = c(0, 0, 0)
   )
   
+  # note that each of these are dependent on mu = 0.7892128894
+  # if mu is changed then each of these will need to be updated
   
-  params <- c(0.8, 0)
-  p_pref <- 0.7
-  mu <- 0.8597366
-  bs <- c(0.0, -0.1, -0.2)
+  multi_model_approach(l_spec, condition_on_nonrand_dur = T) |>
+    plot_results(scenario = "MM Null: no effects in any domain.")
   
-  mu <- 0.820457
-  bd2_3 <- 19.2
+  # RD \approx 0.1 in surgical
+  l_spec$bd1 <- c(0, 0.45, 0.45)
+  l_spec$bd2 <- c(0, 0, 0)
+  l_spec$bd3 <- c(0, 0, 0)
+  l_spec$bd4 <- c(0, 0, 0)
+  multi_model_approach(l_spec, condition_on_nonrand_dur = T) |>
+    plot_results(scenario = "RD 0.1 d1")
   
-  bd1 <- c(0, 0, 0)
-  bp <- -0.4 
-  bd2 <- c(0, 0, 0)
-  p_d2_alloc <- 0.5
-  p_d2_entry <- 0.7
+  # RD \approx 0.1 in abx dur
+  l_spec$bd1 <- c(0, 0, 0)
+  l_spec$bd2 <- c(0, 0, 0.5)
+  l_spec$bd3 <- c(0, 0, 0)
+  l_spec$bd4 <- c(0, 0, 0)
+  multi_model_approach(l_spec, condition_on_nonrand_dur = T) |>
+    plot_results(scenario = "RD 0.1 d2")
   
+  # RD \approx 0.1 in ext proph
+  l_spec$bd1 <- c(0, 0, 0)
+  l_spec$bd2 <- c(0, 0, 0)
+  l_spec$bd3 <- c(0, 0, 0.43)
+  l_spec$bd4 <- c(0, 0, 0)
+  multi_model_approach(l_spec, condition_on_nonrand_dur = T) |>
+    plot_results(scenario = "RD 0.1 d3")
   
-  obj_find_mu_find_d2_3 <- function(params, pr_target_y_dair, pr_target_y_rev){
+  # RD \approx 0.1 in abx choice
+  l_spec$bd1 <- c(0, 0, 0)
+  l_spec$bd2 <- c(0, 0, 0)
+  l_spec$bd3 <- c(0, 0, 0)
+  l_spec$bd4 <- c(0, 0, 0.45)
+  multi_model_approach(l_spec, condition_on_nonrand_dur = T) |>
+    plot_results(scenario = "RD 0.1 d4")
   
-    mu <- params[1]
-    bd2_3 <- params[2]
-    
-    # mu <- res_opt$par[1]
-    # bd2_3 <- res_opt$par[2]
-    
-    res_dair <- 
-      (1-p_pref) * plogis(mu + bs[2] + bd1[1]) +
-      p_pref * plogis(mu + bs[2] + bp + bd1[1]) 
-      
-    # assume bd3 and bd4 all set to zero
-    # mu + bs[2] + bd1[2] + bd2[1]
-    # mu + bs[2] + bd1[2] + bd2[2]
-    # mu + bs[2] + bd1[2] + bd2[3]
-    prop_tru <- numeric(3)
-    # not d2
-    prop_tru[1] <- (1-p_d2_entry)
-    # d2 & d2 alloc ctl
-    prop_tru[2] <- p_d2_entry * (1 - p_d2_alloc) 
-    prop_tru[3] <- p_d2_entry * p_d2_alloc 
-    
-    res_rev_1 <- 
-      prop_tru[1] * plogis(mu + bs[2] + bd1[2] + bd2[1]) + 
-      prop_tru[2] * plogis(mu + bs[2] + bd1[2] + bd2[2]) +
-      prop_tru[3] * plogis(mu + bs[2] + bd1[2] + bd2_3)
-    
-    # assume bd1[3] is zero
-    
-    res_rev_2 <- plogis(mu + bs[2] + bp)
-    
-    res_rev <- ((1-p_pref) * res_rev_1) + (p_pref * res_rev_2)
-    
-    error <- c(res_dair - pr_target_y_dair, res_rev - pr_target_y_rev)
-    
-    # square error
-    sum(error^2)
-    
-  }
- 
-  (res_opt <- optim(par = c(0.8, 0.1), 
-        fn = obj_find_mu_find_d2_3, 
-        pr_target_y_dair = 0.6, 
-        pr_target_y_rev = 0.65,
-        control = list(trace = 0)))
+  # RD \approx 0.1 in all domain
+  l_spec$bd1 <- c(0, 0.47, 0.47)
+  l_spec$bd2 <- c(0, 0, 0.75)
+  l_spec$bd3 <- c(0, 0, 0.55)
+  l_spec$bd4 <- c(0, 0, 0.52)
+  multi_model_approach(l_spec, condition_on_nonrand_dur = T) |>
+    plot_results(scenario = "RD 0.1 all domain")
   
   
   
   
-  # Constants
-  p_pref <- 0.7
-  bs <- c(0.0, -0.1, -0.2)   # bs[2] = -0.1
-  bp <- -0.4
-  
-  bd1 <- c(0, 0, 0)
-  bd2 <- c(0, 0, 0)
-  
-  p_d2_alloc <- 0.5
-  p_d2_entry <- 0.7
-  
-  # Target probabilities
-  pr_target_y_dair <- 0.6
-  pr_target_y_rev <- 0.625
-  
-  # Objective function to minimize
-  obj_find_mu_find_d2_3 <- function(params, pr_target_y_dair, pr_target_y_rev){
-    mu <- params[1]
-    bd2_3 <- params[2]
-    
-    # res_dair: preference-weighted logistic regression
-    res_dair <- 
-      (1 - p_pref) * plogis(mu + bs[2]) +
-      p_pref       * plogis(mu + bs[2] + bp)
-    
-    # rev calculation
-    prop_tru <- c(
-      (1 - p_d2_entry),                        # Not D2
-      p_d2_entry * (1 - p_d2_alloc),           # D2 control
-      p_d2_entry * p_d2_alloc                  # D2 intervention
-    )
-    
-    res_rev_1 <- 
-      prop_tru[1] * plogis(mu + bs[2]) +
-      prop_tru[2] * plogis(mu + bs[2]) +
-      prop_tru[3] * plogis(mu + bs[2] + bd2_3)
-    
-    res_rev_2 <- plogis(mu + bs[2] + bp)
-    
-    res_rev <- (1 - p_pref) * res_rev_1 + p_pref * res_rev_2
-    
-    # Squared error objective
-    error <- c(res_dair - pr_target_y_dair, res_rev - pr_target_y_rev)
-    sum(error^2)
-  }
-  
-  # Run optimization
-  res_opt <- optim(
-    par = c(0.8, 1),  # start at reasonable guesses
-    fn = obj_find_mu_find_d2_3,
-    pr_target_y_dair = pr_target_y_dair,
-    pr_target_y_rev = pr_target_y_rev,
-    method = "L-BFGS-B",
-    lower = c(0, -5),
-    upper = c(2, 25),
-    control = list(trace = 1, factr = 1e7)  # looser tolerance if needed
-  )
-  params <- res_opt$par
-  
-  # Print results
-  cat("Optimized mu:", res_opt$par[1], "\n")
-  cat("Optimized bd2_3:", res_opt$par[2], "\n")
-  cat("Minimum loss:", res_opt$value, "\n")
 }
