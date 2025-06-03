@@ -12,7 +12,7 @@ args = commandArgs(trailingOnly=TRUE)
 if (length(args)<1) {
   log_info("Setting default run method (does nothing)")
   args[1] = "run_none_sim_07"
-  args[2] = "./sim07/cfg-sim07-sc01-v01.yml"
+  args[2] = "./sim07/cfg-sim07-sc01-v02.yml"
 } else {
   log_info("Run method ", args[1])
   log_info("Scenario config ", args[2])
@@ -799,12 +799,10 @@ run_sim_07 <- function(){
   # domain specific
   l_spec$thresh <- list()
   l_spec$thresh$sup <- unlist(g_cfgsc$dec_thresh_sup)
-  l_spec$thresh$ni <- unlist(g_cfgsc$dec_thresh_fut_sup)
-  l_spec$thresh$fut_sup <- unlist(g_cfgsc$dec_thresh_ni)
+  l_spec$thresh$fut_sup <- unlist(g_cfgsc$dec_thresh_fut_sup)
+  l_spec$thresh$ni <- unlist(g_cfgsc$dec_thresh_ni)
   l_spec$thresh$fut_ni <- unlist(g_cfgsc$dec_thresh_fut_ni)
   
-  str(l_spec)
- 
   log_info("Starting simulation with following parameters:");
   log_info("N: ", paste0(l_spec$N, collapse = ", "));
   log_info("b_silo: ", paste0(l_spec$bs, collapse = ", "));
@@ -814,13 +812,15 @@ run_sim_07 <- function(){
   log_info("b_d3: ", paste0(l_spec$bd3, collapse = ", "));
   log_info("b_d4: ", paste0(l_spec$bd4, collapse = ", "));
   
+  # str(l_spec)
+  
   return_posterior = F
   
   e = NULL
   log_info("Starting simulation")
   r <- parallel::mclapply(
-    # X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
-    X=1:5, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    # X=1:5, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
       log_info("Simulation ", ix);
       ll <- tryCatch({
         run_trial(
