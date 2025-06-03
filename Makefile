@@ -173,6 +173,36 @@ sim06:
 	Rscript $(R_OPTS) ./R/sim-06.R run_sim_06 ./sim06/cfg-sim06-sc01-v08.yml
 	sleep 10
 	rm tmp/*.csv
+
+# 3/Jun/2025
+# sequential design sim-07.R 
+.PHONY: sim07
+sim07:
+	Rscript $(R_OPTS) ./R/sim-07.R run_sim_07 ./sim07/cfg-sim07-sc01-v01.yml
+	sleep 10
+	rm tmp/*.csv
+	Rscript $(R_OPTS) ./R/sim-07.R run_sim_07 ./sim07/cfg-sim07-sc01-v02.yml
+	sleep 10
+	rm tmp/*.csv
+	Rscript $(R_OPTS) ./R/sim-07.R run_sim_07 ./sim07/cfg-sim07-sc01-v03.yml
+	sleep 10
+	rm tmp/*.csv
+	Rscript $(R_OPTS) ./R/sim-07.R run_sim_07 ./sim07/cfg-sim07-sc01-v04.yml
+	sleep 10
+	rm tmp/*.csv
+	Rscript $(R_OPTS) ./R/sim-07.R run_sim_07 ./sim07/cfg-sim07-sc01-v05.yml
+	sleep 10
+	rm tmp/*.csv
+	Rscript $(R_OPTS) ./R/sim-07.R run_sim_07 ./sim07/cfg-sim07-sc01-v06.yml
+	sleep 10
+	rm tmp/*.csv
+	Rscript $(R_OPTS) ./R/sim-07.R run_sim_07 ./sim07/cfg-sim07-sc01-v07.yml
+	sleep 10
+	rm tmp/*.csv
+	Rscript $(R_OPTS) ./R/sim-07.R run_sim_07 ./sim07/cfg-sim07-sc01-v08.yml
+	sleep 10
+	rm tmp/*.csv
+	
 	
 
 
