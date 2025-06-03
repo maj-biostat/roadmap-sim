@@ -40,7 +40,6 @@ if(toks[length(toks)] == "roadmap-sim"){
   prefix_fig <- "../fig"
 }
 
-g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim06-sc01-v01.yml"))
 ```
 
 
@@ -54,7 +53,7 @@ g_cfgsc <- config::get(file = paste0(prefix_cfg, "/cfg-sim06-sc01-v01.yml"))
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim06-05"
+sim_lab <- "sim06-06"
 
 flist <- list.files(paste0("data/", sim_lab), pattern = "sim06")
 toks <- list()
@@ -105,7 +104,7 @@ To speed up the model, we aggregate number of successes and number of trials by 
 
 We adopt a revised model where we allow for silo-specific effects in the surgical domain.
 
-If, for whatever reason, the early or chronic silo show variation in the surgical domain effects adjustment for silo is inadequate to account for this and we end up with a poluted version of the surgical domain parameters.
+If, for whatever reason, the early or chronic silo show variation in the surgical domain effects adjustment for silo is inadequate to account for this and we end up with a polluted version of the surgical domain parameters.
 Most other things in the model remain the same as the previous simulation.
 The model is used to compute unit level risk (probability) and assesses decisions based on risk difference for the intervention comparisons by domain.
 
@@ -454,6 +453,7 @@ for(i in 1:length(l)){
   d_tru <- copy(l[[i]]$d_all)
   setnames(d_tru, "id_analys", "analys")
   
+  
   # late acute, surgical arms
   # *** silo isn't included in the keyby because we want to average across 
   # the entire trial population, not silo specific sample sizes.
@@ -514,14 +514,7 @@ for(i in 1:length(l)){
   setkey(d_4_tmp, sim, analys, arm)
   
   d_arm_tmp <- rbind(d_1_tmp, d_2_tmp, d_3_tmp, d_4_tmp)
-  
-  # d_arm_tmp
-  # d_dec_2[value == T, .SD[1], keyby = .(sim, analys, domain, quant)]
-  # dcast(
-  #   d_dec_1[
-  #     sim == 5 & quant %in% c("sup", "fut_sup"), .(sim, analys, quant, d1)],
-  #   sim + analys ~ quant, value.var = "d1"
-  # )
+
   
   d_arm_tmp[, `:=`(
     scenario = i, desc = l_cfg$desc
@@ -556,6 +549,7 @@ for(i in 1:length(l)){
   # observed data
   d_all <- copy(l[[i]]$d_all)
   setnames(d_all, "id_analys", "analys")
+  
   d_all <- merge(d_all, d_enrolment , by = "analys")
   # long version of decision
   d_dec_2 <- melt(
