@@ -323,17 +323,17 @@ for(i in 1:length(l)){
   
   # Add in any rows for which no early stopping happened
   d_dec_stop <- merge(d_dec_stop[, .SD, .SDcols = !c("ia")], 
-                      # all combinations of sim and domain
+                      # all combinations of sim and domain 
+                      # which with leave non-stoppers with NA
                       unique(d_dec_2[, .(sim, domain)]),
                       by = c("sim", "domain"), all.y = T)
-  
   # If domain or trial not stopped then record as having run to the 
   # maximum sample size with no decision made.
   d_dec_stop[is.na(N_stopped), N_stopped := max(d_N$N)]
   d_dec_stop[is.na(stopped_early), stopped_early := F]
   # So now we know where every domain was stopped and the reason for stopping
   # within each sim. Great.
-  d_dec_stop[is.na(quant), quant := "null"]
+  d_dec_stop[is.na(quant), quant := "na"]
   
   d_tbl_2 <- rbind(
     d_tbl_2,
@@ -968,15 +968,35 @@ To avoid any bias in the calculation, we use LOCF to propagate the expectations 
 
 #### Enrolments to stopping
 
+@tbl-sim05-stopn shows the mean *number of enrolments into the platform* until a stopping rule is hit for each of the domains by scenario and stopping rule. 
+In parentheses are the percentage of sims for each decision type and those that were not stopped early (last row) run to the maximum sample size (2500).
+
 ```{r}
 #| label: tbl-sim05-stopn
 #| tbl-cap: 'Expected number of enrolments to hit any stopping rule (including reaching maximum sample size) '
 #| column: page
 #| out-width: 70%
 
-d_tbl_2_cur <- d_tbl_2[, .(N_mu = mean(N_stopped)), keyby = .(scenario, desc, domain)]
-d_tbl_2_cur <- dcast(d_tbl_2_cur, scenario + desc ~ domain, value.var = "N_mu")
+d_tbl_2_cur <- d_tbl_2[
+  , .(N_mu = mean(N_stopped), 
+      pct_sims = sprintf("%.0f%%", 100*.N/l[[1]]$cfg$nsim)), 
+  keyby = .(scenario, desc, domain, quant)]
+d_tbl_2_cur <- dcast(d_tbl_2_cur, scenario + desc + quant ~ domain, value.var = list("N_mu", "pct_sims"))
+
+d_tbl_2_cur[, quant := factor(
+  quant, 
+  levels = c("sup", "fut_sup", "ni", "fut_ni", "na"),
+  labels = c("superiority", "futility (sup)", "ni", "futility (ni)", "-"))]
+
+d_tbl_2_cur <- d_tbl_2_cur[order(scenario, quant)]
 d_tbl_2_cur <- d_tbl_2_cur[, .SD, .SDcols = !c("scenario")]
+
+setcolorder(d_tbl_2_cur, c("desc", "quant",
+                           "N_mu_1", "pct_sims_1", 
+                           "N_mu_2", "pct_sims_2", 
+                           "N_mu_3", "pct_sims_3", 
+                           "N_mu_4", "pct_sims_4"
+                           ))
 
 g_tbl <- d_tbl_2_cur |> 
   gt(groupname_col = "desc") |> 
@@ -989,22 +1009,42 @@ g_tbl <- d_tbl_2_cur |>
     }
   ) |>
   cols_align(
-    columns = 1,
+    columns = 1:2,
     align = "left"
   )  |> 
   cols_align(
-    columns = 2:ncol(d_tbl_2_cur),
+    columns = 3:ncol(d_tbl_2_cur),
     align = "center"
   )  |> 
+  cols_merge(
+    columns = c("N_mu_1", "pct_sims_1"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  )  |> 
+  cols_merge(
+    columns = c("N_mu_2", "pct_sims_2"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  )  |> 
+  cols_merge(
+    columns = c("N_mu_3", "pct_sims_3"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  )  |> 
+  cols_merge(
+    columns = c("N_mu_4", "pct_sims_4"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  ) |> 
   tab_spanner(
     label = html("Expected number of total enrolments to hit stopping rule by domain"),
-    columns = 2:ncol(d_tbl_2_cur)
+    columns = 3:ncol(d_tbl_2_cur)
   )  |>
   cols_label(
-    `1` = "Surgical",
-    `2` = "AB Duration",
-    `3` = "AB Ext-proph",
-    `4` = "AB choice"
+    N_mu_1 = "Surgical",
+    N_mu_2 = "AB Duration",
+    N_mu_3 = "AB Ext-proph",
+    N_mu_4 = "AB choice"
   ) |>
   tab_options(
     table.font.size = "70%"
