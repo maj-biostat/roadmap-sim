@@ -178,7 +178,9 @@ run_trial <- function(
     # 12 months following the last person to be enrolled in the current 
     # analysis set.
     
-    d <- get_sim07_trial_data(l_spec)
+    d <- get_sim07_trial_data(
+      l_spec,
+      dec_sup, dec_ni, dec_sup_fut, dec_ni_fut)
     
     log_info("Trial ", ix, " new data generated ", l_spec$ia)
 

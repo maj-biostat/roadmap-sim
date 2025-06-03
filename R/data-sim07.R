@@ -50,7 +50,23 @@ g_pr_c_pref <- rbind(
 
 
 get_sim07_trial_data <- function(
-    l_spec
+    l_spec,
+    dec_sup = list(
+      surg = NA,
+      ext_proph = NA,
+      ab_choice = NA
+    ),
+    dec_ni = list(
+      ab_dur = NA
+    ),
+    dec_sup_fut = list(
+      surg = NA,
+      ext_proph = NA,
+      ab_choice = NA
+    ),
+    dec_ni_fut = list(
+      ab_dur = NA
+    )
     ){
   
   if(is.null(l_spec$ia)){
@@ -126,21 +142,104 @@ get_sim07_trial_data <- function(
     pref = rbinom(.N, 1, l_spec$l_c$p_pref)  + 1 
   )]
   
-  # dair gets dair, revision gets split
-  d[d1_alloc == 0, d1 := 1]
-  d[d1_alloc == 1 & pref == 1, d1 := 2]
-  d[d1_alloc == 1 & pref == 2, d1 := 3]
+  # surgical -----
+  # assume everyone enters surgical
+  if(is.na(dec_sup$surg) & is.na(dec_sup_fut$surg)){
+    # dair gets dair, revision gets split
+    d[d1_alloc == 0, d1 := 1]
+    d[d1_alloc == 1 & pref == 1, d1 := 2]
+    d[d1_alloc == 1 & pref == 2, d1 := 3]
+    
+  } else if (!is.na(dec_sup$surg)) {
+    # Revision has been deemed superior - allocation is now either one-stage or
+    # two-stage dependent on preference but only for the late silo
   
-  d[d1 == 2 & d2_entry == 0, d2 := 1]
-  d[d1 == 2 & d2_entry == 1, d2 := 2 + d2_alloc]
+    # early and chronic as they were
+    d[s != 2 & d1_alloc == 0, d1 := 1]
+    d[s != 2 & d1_alloc == 1 & pref == 1, d1 := 2]
+    d[s != 2 & d1_alloc == 1 & pref == 2, d1 := 3]
+    
+    # late now onto rev
+    d[s == 2 & pref == 1, d1 := 2]
+    d[s == 2 & pref == 2, d1 := 3]
+    
+  } else if (!is.na(dec_sup_fut$surg)) {
+    # Revert to dair as the best option (superiority assessment is futile)
+    
+    # early and chronic as they were
+    d[s != 2 & d1_alloc == 0, d1 := 1]
+    d[s != 2 & d1_alloc == 1 & pref == 1, d1 := 2]
+    d[s != 2 & d1_alloc == 1 & pref == 2, d1 := 3]
+    
+    # late now onto dair
+    d[s == 2, d1 := 1]
+    d[s == 2, d1 := 1]
+  }
   
-  d[d1 == 3 & d3_entry == 0, d3 := 1]
-  d[d1 == 3 & d3_entry == 1, d3 := 2 + d3_alloc]
+  # abx dur -----
   
-  d[d4_entry == 0, d4 := 1]
-  d[d4_entry == 1, d4 := 2 + d4_alloc]
+  # undefined unless under rev(1)
+  d[d1 %in% c(1, 3), d2 := NA_integer_]
+  if(is.na(dec_ni$ab_dur) & is.na(dec_ni_fut$ab_dur) ){
+    # default
+    d[d1 == 2 & d2_entry == 0, d2 := 1]
+    d[d1 == 2 & d2_entry == 1, d2 := 2 + d2_alloc]
+    
+  } else if (!is.na(dec_ni$ab_dur) ) {   
+    # 6wks is NI to 12wks (or equivalent) so we assume that those receiving one-stage revision
+    # all receive the 6wk trt
+    d[d1 %in% c(2) & d2_entry == 0, d2 := 1]
+    d[d1 %in% c(2) & d2_entry == 1, d2 := 3]
+    
+  } else if (!is.na(dec_ni_fut$ab_dur) ) {
+    # 6wk ni assessment is futile or inferior, everyone now gets 12wk
+    d[d1 %in% c(2) & d2_entry == 0, d2 := 1]
+    d[d1 %in% c(2) & d2_entry == 1, d2 := 2]
+  }
   
-  # d[, .N, keyby = .(s, pref, d1, d2, d3, d4)]
+  # ext proph -----
+  # undefined unless under rev(2)
+  d[d1 %in% c(1, 2), d3 := NA_integer_]
+  if(is.na(dec_sup$ext_proph) & is.na(dec_sup_fut$ext_proph)){
+    # Default situation, we are allocating randomised trt
+    d[d1 == 3 & d3_entry == 0, d3 := 1]
+    d[d1 == 3 & d3_entry == 1, d3 := 2 + d3_alloc]
+    
+  } else if (!is.na(dec_sup$ext_proph)){
+    # 12wks is superior to none so we assume that those receiving two-stage revision
+    # all receive the 12wk trt
+    d[d1 == 3 & d3_entry == 0, d3 := 1]
+    d[d1 == 3 & d3_entry == 1, d3 := 3]
+    
+  } else if (!is.na(dec_sup_fut$ext_proph)){
+    # 12wks is futile, everyone now gets none
+    d[d1 == 3 & d3_entry == 0, d3 := 1]
+    d[d1 == 3 & d3_entry == 1, d3 := 2]
+    
+  }
+  
+  ## Antibiotic choice ----
+  
+  # Choice domain is independent to others but only 60% of the population
+  # enter it.
+  if(is.na(dec_sup$ab_choice) & is.na(dec_sup_fut$ab_choice)){
+    # Default situation
+    d[d4_entry == 0, d4 := 1]
+    d[d4_entry == 1, d4 := 2 + d4_alloc]
+    
+  } else if (!is.na(dec_sup$ab_choice)){
+    # Superiority decision, all get allocated to rif
+    d[d4_entry == 0, d4 := 1]
+    d[d4_entry == 1, d4 := 3]
+    
+  } else if (!is.na(dec_sup_fut$ab_choice)){
+    # rif is futile, everyone now gets none
+    d[d4_entry == 0, d4 := 1]
+    d[d4_entry == 1, d4 := 2]
+    
+  }
+  
+  # compute linear predictor
   
   bd1 <- c(l_spec$l_e$bd1, l_spec$l_l$bd1, l_spec$l_c$bd1)
   # index for d1 is a function of 
