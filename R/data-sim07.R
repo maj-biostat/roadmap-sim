@@ -366,8 +366,8 @@ get_sim07_stan_data <- function(d_all){
     n_d1_p1 = d_mod_d1[pref == 1, n],
     n_d1_p2 = d_mod_d1[pref == 2, n],
     
-    prop_p1 = d_all[, .(wgt = .N/nrow(d_all)), keyby = pref][pref == 1, wgt],
-    prop_p2 = d_all[, .(wgt = .N/nrow(d_all)), keyby = pref][pref == 2, wgt],
+    prop_p1 = d_all[s == 2, .(wgt = .N/nrow(d_all[s == 2])), keyby = pref][pref == 1, wgt],
+    prop_p2 = d_all[s == 2, .(wgt = .N/nrow(d_all[s == 2])), keyby = pref][pref == 2, wgt],
     
     N_d2 = nrow(d_mod_d2),
     d2_s = d_mod_d2[, s], 
