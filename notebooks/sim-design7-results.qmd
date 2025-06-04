@@ -74,29 +74,50 @@ for(i in 1:length(flist)){
 Data is generated based on the empirical distributions obtained mostly from the PIANO study.
 
 We simulate silo membership from a multinomial distribution with probabilities 0.3, 0.5 and 0.2 for early, late and chronic.
-Conditional on silo membership, we simulate site of infection from a multinomial distribution with probabilities 0.4, 0.6 (knee, hip | early),  0.7, 0.3 (knee, hip | late) and  0.5, 0.5 (knee, hip | chronic).
 
-For the surgical domain, we simulate preference towards revision from a multinomial distribution with probabilities 0.66, 0.33 (rev(1), rev(2) | early), 0.3, 0.7 (rev(1), rev(2) | late), 0.25, 0.75 (rev(1), rev(2) | chronic).
+Conditional on silo membership, we generate domain level allocations and entry indicators that are independent of the design but parameterised to silo specific probabilities.
+In contrast to the previous simulations, we have simplified the model by ignoring joint level heterogeneity.
+Adjustment for joint will be reintroduced in the actual analysis model.
 
-We simulate surgical intervention from a multinomial distribution with probabilities 0.85, 0.15 (DAIR, revision | early), 0.5, 0.5 (DAIR, revision | late), 0.2, 0.8 (DAIR, revision | chronic).
-Revision is subsequently decomposed into one and two-stage via the preferences.
+For the early silo, we assume:
 
-A silo-specific index can be computed as $d_1 + (K_{d_1}  (s - 1))$ where $d_1 \in \{1, 2, 3\}$ is the treatment allocation (DAIR, rev(1), rev(2)),  $K_{d_1} = 3$ is the number of surgical treatment types and $s \in \{1, 2, 3\}$ is the silo membership (early, late, chronic).
++ allocation to revision with probability 0.15
++ preference for two-stage revision, rev(2), with probability 0.35
++ entry into antibiotic duration domain with probability 0.7
++ within antibiotic duration domain, allocation to 6 weeks with probability 0.5
++ entry into extended prophylaxis domain with probability 0.9
++ within extended prophylaxis domain, allocation to 12 weeks with probability 0.5
++ entry into antibiotic choice domain with probability 0.6
++ within antibiotic choice domain, allocation to rifampicin with probability 0.5
 
-For the antibiotic duration domain, we fix all participants that have received DAIR or two-stage revision as having non-randomised treatment.
-For all those receiving one-stage, we simulate antibiotic duration intervention from a multinomial distribution with probabilities 0.3, 0.35, 0.35 (non-rand, 12 weeks, 6 weeks | rev(1)).
-That is, 70% of the eligible set get randomised treatment and the split between 12 weeks and 6 weeks is 1:1.
+Similalry, for the late acute silo, we assume:
 
-For the extended prophylaxis domain, we fix all participants that have received DAIR or one-stage revision as having non-randomised treatment.
-For all those receiving one-stage, we simulate extended prophylaxis intervention from a multinomial distribution with probabilities 0.1, 0.45, 0.45 (non-rand, 12 weeks, 6 weeks | rev(2)).
-That is, 90% of the eligible set get randomised treatment and the split between 12 weeks and 6 weeks is 1:1.
++ allocation to revision with probability 0.5
++ preference for two-stage revision, rev(2), with probability 0.7
++ entry into antibiotic duration domain with probability 0.7
++ within antibiotic duration domain, allocation to 6 weeks with probability 0.5
++ entry into extended prophylaxis domain with probability 0.9
++ within extended prophylaxis domain, allocation to 12 weeks with probability 0.5
++ entry into antibiotic choice domain with probability 0.6
++ within antibiotic choice domain, allocation to rifampicin with probability 0.5
 
-For the antibiotic choice domain, we simulate the intervention from a multinomial distribution with probabilities 0.4, 0.3, 0.3 (non-rand, no-rifampicin, rifampicin) unconditional on silo membership.
-That is, 60% of the eligible set get randomised treatment and the split between no-rifampicin and rifampicin is 1:1.
+For the chronic silo, we assume:
+
++ allocation to revision with probability 0.8
++ preference for two-stage revision, rev(2), with probability 0.75
++ entry into antibiotic duration domain with probability 0.7
++ within antibiotic duration domain, allocation to 6 weeks with probability 0.5
++ entry into extended prophylaxis domain with probability 0.9
++ within extended prophylaxis domain, allocation to 12 weeks with probability 0.5
++ entry into antibiotic choice domain with probability 0.6
++ within antibiotic choice domain, allocation to rifampicin with probability 0.5
+
+After the design independent allocations are made, we finalise the participant level domain entry and allocation based on the known design dependencies.
 
 As the trial progresses, decisions may be made which would lead to some allocations being shut off.
+For example, if revision is deemed superiori to DAIR, then subsequent allocations within the late acute silo would direct all participants to revision with a split between one-stage and two-stage continuing to be based on the clinical preferences.
 
-The true log-odds of response by subject is calculated as the sum of their parameters indexed by the levels generated above. 
+The true log-odds of response by subject is calculated as the sum of their parameters indexed by the levels generated above.
 Treatment success is simulated as a bernoulli random variable with probability equal to the inverse logit transform of the log-odds from the linear predictor.
 To speed up the model, we aggregate number of successes and number of trials by covariate group which gives the analogous binomial random variable representation.
 
@@ -104,8 +125,8 @@ To speed up the model, we aggregate number of successes and number of trials by 
 
 We adopt a revised model where we allow for silo-specific effects in the surgical domain.
 
-If, for whatever reason, the early or chronic silo show variation in the surgical domain effects adjustment for silo is inadequate to account for this and we end up with a polluted version of the surgical domain parameters.
-Most other things in the model remain the same as the previous simulation.
+If, for whatever reason, the early or chronic silo show variation in the surgical domain effects, adjustment for silo is inadequate to account for this, and we end up with a polluted version of the surgical domain parameters.
+The remainder of the model is analogous to the previous versions.
 The model is used to compute unit level risk (probability) and assesses decisions based on risk difference for the intervention comparisons by domain.
 
 For the simulations, we have a single, multivariable logistic regression model with a linear predictor that incorporates all domains and is specified as follows:
@@ -113,26 +134,28 @@ For the simulations, we have a single, multivariable logistic regression model w
 $$
 \begin{aligned}
 Y &\sim \text{Binomial}(n, p) \\
-\text{logit}(p) &= \mu + \beta_{s} + \beta_{j} + \beta_{p} + \\ 
-  \quad& \beta_{d1[k_{d1}, s]} + \beta_{d2[k_{d2}]} + \beta_{d3[k_{d3}]} + \beta_{d4[k_{d4}]}  
+\text{logit}(p) &= \begin{cases}
+  \mu + \beta_{s} + \beta_{p} + \beta_{d1[k_{d1}, s]} + \beta_{d4[k_{d4}]} & \text{if dair} \\
+  \mu + \beta_{s} + \beta_{d1[k_{d1}, s]} + \beta_{d2[k_{d2}]} + \beta_{d4[k_{d4}]} & \text{if rev(1)} \\
+  \mu + \beta_{s} + \beta_{p} + \beta_{d1[k_{d1}, s]} + \beta_{d3[k_{d3}]} + \beta_{d4[k_{d4}]} & \text{if rev(2)}
+		 \end{cases}
 \end{aligned}
 $$
 
 for each distinct covariate grouping where:
 
 + $\mu$ represents an overall reference level from which all covariates deviate
-+ $\beta_{s}$ represents the silo deviations, which can be thought of as a seriousness of disease adjustment. We fix the first parameter (early) in this vector to zero for identifiability and the components are for early, late and chronic silo membership. 
-+ $\beta_{j}$ represents the joint deviations, accounting for heterogeneity in outcome due to site of infection. Again, we fix the first parameter (knee) in this vector to zero for identifiability and the components are knee and hip.
-+ $\beta_{p}$ represents the (pre-revealed) preference adjustment, assuming revision was allocated but included irrespective of silo and what the assignment ultimately turned out to be. This accounts for heterogeneity in outcome due to clinical preference for revision type, which can be thought of as expert elicitation on aspects of the patient state and clinicial experience. Again, we fix the first parameter (preference one-stage revision) in this vector to zero for identifiability and the components are preference for one-stage or two-stage. Assuming revision is assigned, we would expect that the original preference would ultimately align with the type of revision received, but there is nothing enforcing this. Arguably, this could be restricted to the late-acute cohort, but we would need to extend the vector of parameters to accommodate for this. The preference indicators are also used to compute the sample weights for aggregating one and two-stage revision into a single overall revision effect.
-+ $\beta_{d1[k_{d1}, s]}$ represents the silo-specific deviations associated with the surgery type. This accounts for heterogeneity in outcome due to surgery type and with the late-acute deviations taken as a randomised comparison of dair vs revision after the agreed weighting is applied. Again, we fix the first parameter (dair in the early cohort) in this vector to zero for identifiability and the components are dair, rev(1), rev(2) for each silo. The reason for the silo-specific context is that if revision effects exist in one silo but not another, then without this conditioning, we will end up with biased inference. For example, if (for whatever reason) there is an revision effect in the early domain but not the late-acute cohort then without this level of adjustment, we would end up reporting a revision effect when we shouldn't be; adjustment for silo doesn't protect us from this, even though it is perfectly collinear with a unit receiving non-randomised or randomised surgical treatment.
-+ $\beta_{d2[k_{d2}]}$ represents the deviations associated with backbone antibiotic duration. This accounts for heterogeneity in outcome due to the assigned backbone antibiotic duration. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, 12 weeks and 6 weeks. The term is included in the model irrespective of what surgery type was received but only units receiving randomised and revealed one-stage are captured within the 12 week/6 week comparison. The other units contribute to the non-randomised set (which is essentially a nuissance variable that we don't particularly care about). We are assuming that there is no silo-specific (or any other) hetereogeneity for this comparison.
-+ $\beta_{d3[k_{d3}]}$ represents the deviations associated with extended prophylaxis duration. This accounts for heterogeneity in outcome due to the assigned extended prophylaxis duration. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, no ext-proph and 12 weeks. The term is included in the model irrespective of what surgery type was received but only units receiving randomised and revealed two-stage are captured within the none/12 week comparison. The other units contribute to the non-randomised set (which again is a nuissance variable that we don't particularly care about). We are assuming that there is no silo-specific hetereogeneity for this comparison.
++ $\beta_{s}$ represents the silo deviations, which can be thought of as a seriousness of disease adjustment. We fix the first parameter (early) to zero for identifiability and the components are for early, late and chronic silo membership. 
++ $\beta_{p}$ represents the (pre-revealed) preference adjustment, assuming revision was allocated but included irrespective of silo and what the assignment ultimately turned out to be. This accounts for heterogeneity in outcome due to clinical preference for revision type, which can be thought of as expert elicitation on aspects of the patient state and clinicial experience. We fix the first parameter (preference one-stage revision) in this vector to zero for identifiability and the components are preference for one-stage or two-stage. The preference indicators are also used to compute the sample weights for aggregating one and two-stage revision into a single overall revision effect.
++ $\beta_{d1[k_{d1}, s]}$ represents the silo-specific deviations associated with the surgery type. This accounts for heterogeneity in outcome due to surgery type and with the late-acute deviations taken as a randomised comparison of dair vs revision after the agreed weighting is applied. We fix the first parameter (dair in the early cohort) in this vector to zero for identifiability and the components are dair, rev(1), rev(2) for each silo. The reason for the silo-specific context is that if revision effects exist in one silo but not another, then without this conditioning, we will end up with biased inference. For example, if (for whatever reason) there is an revision effect in the early domain but not the late-acute cohort then without this level of adjustment, we would end up reporting a revision effect when we shouldn't be; adjustment for silo doesn't protect us from this, even though it is perfectly collinear with a unit receiving non-randomised or randomised surgical treatment.
++ $\beta_{d2[k_{d2}]}$ represents the deviations associated with backbone antibiotic duration. This accounts for heterogeneity in outcome due to the assigned backbone antibiotic duration. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, 12 weeks and 6 weeks. The term is undefined for DAIR and rev(2) participants. Units that receive rev(1) but do not enter into d2 contribute to the non-randomised set. We are assuming that there is no silo-specific (or any other) hetereogeneity for this comparison.
++ $\beta_{d3[k_{d3}]}$ represents the deviations associated with extended prophylaxis duration. This accounts for heterogeneity in outcome due to the assigned extended prophylaxis duration. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, no ext-proph and 12 weeks. The term is undefined for DAIR and rev(1) participants. Units that receive rev(2) but do not enter into d3 contribute to the non-randomised set. We are assuming that there is no silo-specific hetereogeneity for this comparison.
 + $\beta_{d4[k_{d4}]}$ represents the deviations associated with antibiotic choice. This accounts for heterogeneity in outcome due to the assigned antibiotic choice. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, no rifampicin and rifampicin. The term is included for all units for which rifampicin may be indicated. The other units contribute to the non-randomised set. We are assuming that there is no silo-specific hetereogeneity for this comparison.
 
-The simulation model isn't particularly complicated but the way that terms enter the model is convoluted and understanding the dependency implications and consequently interpretations is fairly challenging.
-For the actual trial analysis, the model will be revised to the equivalent Bernoulli likelihood on unit level data and also extended to account for site, randomisation period and prognostic covariates.
+The way that terms enter the model is somewhat convoluted and understanding the dependency implications and consequently interpretations is fairly challenging.
+For the actual trial analysis, the model will be revised to an equivalent Bernoulli likelihood on unit level data but extended to account for joint, site, randomisation period (if required) and prognostic covariates.
 Bar the surgical domain, for which 'by silo' deviations are implicit in the existing parameterisation, no further interactions are included.
-However, given that heterogeneity by site of infection (joint) is of interest (primarily in the surgical domain) the analysis plan will include specification to account for this (essentially by an additional set of surgical domain parameters for which each term could be partially pooled, if that aligns with the prior belief structure).
+Given that heterogeneity by site of infection (joint) is of interest (primarily in the surgical domain) the analysis plan will include specification to account for this.
 
 ### Decision
 
@@ -143,52 +166,54 @@ We can (and presently do) continue to update the posterior inference for the com
 Superiority and non-inferiority are applicable to some domains and not others, however, we define reference and threshold values for all domains, just in case.
 Decisions are made with respect to the average within any `random-effect' terms that might exist within the model.
 
-For the superiority decision, a reference value of `r l[[1]]$cfg$dec_ref$delta_sup` was used and the probability thresholds were:
+For the superiority decision, a reference value of `r l[[1]]$cfg$dec_delta_sup` was used and the probability thresholds were:
 
-+ `r l[[1]]$cfg$dec_probs$thresh_sup[1]` for surgical domain
-+ `r l[[1]]$cfg$dec_probs$thresh_sup[2]` for antibiotic duration domain
-+ `r l[[1]]$cfg$dec_probs$thresh_sup[3]` for extended prophylaxis domain
-+ `r l[[1]]$cfg$dec_probs$thresh_sup[4]` for antibiotic choice domain
++ `r l[[1]]$cfg$dec_thresh_sup[1]` for surgical domain
++ `r l[[1]]$cfg$dec_thresh_sup[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_thresh_sup[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_thresh_sup[4]` for antibiotic choice domain
 
 There was no particular reason for the choice of these thresholds bar the fact that they lead to preferred operating characteristics and give nominal control of the type-i assertion probabilities.
 
-For the futility decision (in relation to superiority) a reference value of `r l[[1]]$cfg$dec_ref$delta_sup_fut` was used and the probability thresholds were:
+For the futility decision (in relation to superiority) a reference value of `r l[[1]]$cfg$dec_delta_sup_fut` was used and the probability thresholds were:
 
-+ `r l[[1]]$cfg$dec_probs$thresh_fut_sup[1]` for surgical domain
-+ `r l[[1]]$cfg$dec_probs$thresh_fut_sup[2]` for antibiotic duration domain
-+ `r l[[1]]$cfg$dec_probs$thresh_fut_sup[3]` for extended prophylaxis domain
-+ `r l[[1]]$cfg$dec_probs$thresh_fut_sup[4]` for antibiotic choice domain
++ `r l[[1]]$cfg$dec_thresh_fut_sup[1]` for surgical domain
++ `r l[[1]]$cfg$dec_thresh_fut_sup[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_thresh_fut_sup[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_thresh_fut_sup[4]` for antibiotic choice domain
 
-The above means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_sup_fut` is less than `r l[[1]]$cfg$dec_probs$thresh_fut_sup[1]` in the surgical domain comparison, then we say the superiority goal is futile.
+The above means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_delta_sup_fut` is less than `r l[[1]]$cfg$dec_probs$dec_thresh_fut_sup[1]` in the surgical domain comparison, then we say the superiority goal is futile.
 
-For the ni decision, a reference value of `r l[[1]]$cfg$dec_ref$delta_ni` was used and the probability thresholds were:
+For the ni decision, a reference value of `r l[[1]]$cfg$dec_delta_ni` was used and the probability thresholds were:
 
-+ `r l[[1]]$cfg$dec_probs$thresh_ni[1]` for surgical domain
-+ `r l[[1]]$cfg$dec_probs$thresh_ni[2]` for antibiotic duration domain
-+ `r l[[1]]$cfg$dec_probs$thresh_ni[3]` for extended prophylaxis domain
-+ `r l[[1]]$cfg$dec_probs$thresh_ni[4]` for antibiotic choice domain
++ `r l[[1]]$cfg$dec_thresh_ni[1]` for surgical domain
++ `r l[[1]]$cfg$dec_thresh_ni[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_thresh_ni[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_thresh_ni[4]` for antibiotic choice domain
 
-The above means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_ni` is greater than `r l[[1]]$cfg$dec_probs$thresh_ni[2]`, in the antibiotic duration domain, then we will say the intervention is non-inferior.
+The above means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_delta_ni` is greater than `r l[[1]]$cfg$dec_thresh_ni[2]`, in the antibiotic duration domain, then we will say the intervention is non-inferior.
 
-The futility decision (in relation to non-inferiority) has a reference value of `r l[[1]]$cfg$dec_ref$delta_ni_fut` and the probability thresholds were:
+The futility decision (in relation to non-inferiority) has a reference value of `r l[[1]]$cfg$dec_delta_ni_fut` and the probability thresholds were:
 
-+ `r l[[1]]$cfg$dec_probs$thresh_fut_ni[1]` for surgical domain
-+ `r l[[1]]$cfg$dec_probs$thresh_fut_ni[2]` for antibiotic duration domain
-+ `r l[[1]]$cfg$dec_probs$thresh_fut_ni[3]` for extended prophylaxis domain
-+ `r l[[1]]$cfg$dec_probs$thresh_fut_ni[4]` for antibiotic choice domain 
++ `r l[[1]]$cfg$dec_thresh_fut_ni[1]` for surgical domain
++ `r l[[1]]$cfg$dec_thresh_fut_ni[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_thresh_fut_ni[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_thresh_fut_ni[4]` for antibiotic choice domain 
 
-This means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_ref$delta_ni_fut` is less than `r l[[1]]$cfg$dec_probs$thresh_fut_ni[2]`, in the antibiotic duration domain, then we say the non-inferiority goal is futile.
+This means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_delta_ni_fut` is less than `r l[[1]]$cfg$dec_thresh_fut_ni[2]`, in the antibiotic duration domain, then we say the non-inferiority goal is futile.
 
 
 ### Prior
 
 The priors were as follows:
 
-+ Reference log-odds of response: logistic distribution, mean `r l[[1]]$cfg$pri$mu[[1]]` and scale `r l[[1]]$cfg$pri$mu[[2]]`
-+ Silo effects: normal distribution, mean `r l[[1]]$cfg$pri$b_silo[[1]]` and scale `r l[[1]]$cfg$pri$b_silo[[2]]`
-+ Joint effects: normal distribution, mean `r l[[1]]$cfg$pri$b_jnt[[1]]` and scale `r l[[1]]$cfg$pri$b_jnt[[2]]`
-+ Preference effects: normal distribution, mean `r l[[1]]$cfg$pri$b_prf[[1]]` and scale `r l[[1]]$cfg$pri$b_prf[[2]]`
-+ Treatment effects: normal distribution, mean `r l[[1]]$cfg$pri$b_trt[[1]]` and scale `r l[[1]]$cfg$pri$b_trt[[2]]`
++ Reference log-odds of response: logistic distribution, mean `r l[[1]]$cfg$pri_bmu[[1]]` and scale `r l[[1]]$cfg$pri_bmu[[2]]`
++ Silo effects: normal distribution, mean `r l[[1]]$cfg$pri_bs[[1]]` and scale `r l[[1]]$cfg$pri_bs[[2]]`
++ Preference effects: normal distribution, mean `r l[[1]]$cfg$pri_bp[[1]]` and scale `r l[[1]]$cfg$pri_bp[[2]]`
++ Treatment effects (domain 1): normal distribution, mean `r l[[1]]$cfg$pri_bd1[[1]]` and scale `r l[[1]]$cfg$pri_bd1[[2]]`
++ Treatment effects (domain 2): normal distribution, mean `r l[[1]]$cfg$pri_bd2[[1]]` and scale `r l[[1]]$cfg$pri_bd2[[2]]`
++ Treatment effects (domain 3): normal distribution, mean `r l[[1]]$cfg$pri_bd3[[1]]` and scale `r l[[1]]$cfg$pri_bd3[[2]]`
++ Treatment effects (domain 4): normal distribution, mean `r l[[1]]$cfg$pri_bd4[[1]]` and scale `r l[[1]]$cfg$pri_bd4[[2]]`
 
 The prior predictive distribution is consistent with a mean probability across of response over the covariate groupings that covers the entire support on the probability scale, is centred around 0.6 and has first and third quarters at 0.4 to 0.8.
 
@@ -950,16 +975,15 @@ ggplot(d_fig, aes(x = N, y = pr_val, group = quant, col = quant)) +
 
 ### Sample sizes
 
-@tbl-sim05-stopn shows the number of enrolments when any stopping decision is made (or for reaching the maximum 2500 sample size).
-This is the total number of enrolments that are expected to have occurred, not how many are contributing to the inference in a given domain.
+@tbl-sim05-stopn shows the mean *number of enrolments into the platform* until a stopping rule is hit for each of the domains by scenario and stopping rule. 
+In parentheses are the percentage of sims for each decision type and those that were not stopped early (last row) run to the maximum sample size (2500).
 
 @fig-n-by-arm shows the number of participants entering into each of the randomised comparisons by domain and scenario.
-
-The expected cumulative sample sizes are calculated by extracting the number of participants entering into each randomised comparison (i.e. restricted to the relevant strata) and taking the cumulative sum of these over time.
+The expected cumulative sample sizes (@fig-n-by-arm) are calculated by extracting the number of participants entering into each randomised comparison (i.e. restricted to the relevant strata) and taking the cumulative sum of these over time.
 For example, the domain 1 (surgical) expected values are based on the participants in the late acute silo that receive randomised surgical intervention.
 Similarly, the domain 2 (antibiotic duration) expected values are based on the participants across all silos that received one-stage revision and then receive one of the randomised treatment allocations (i.e. are not in the non-randomised treatment group for any reason).
 
-If a decision was made in a domain, then subsequent enrolments would be assigned to the relevant arm and so the allocation would be expected to deviate away from 1:1.
+If a decision was made in a domain, then subsequent enrolments would be assigned to the remaining arms and so the allocation would be expected to deviate away from 1:1.
 For example, if a superiority decision was made for domain 1 (and the trial was still ongoing) then all subsequent participants are assigned to the superior intervention.
 Finally, if a decision was made for all research questions, the trial stops early.
 To avoid any bias in the calculation, we use LOCF to propagate the expectations forward through to the maximum number of enrolments.
@@ -968,8 +992,7 @@ To avoid any bias in the calculation, we use LOCF to propagate the expectations 
 
 #### Enrolments to stopping
 
-@tbl-sim05-stopn shows the mean *number of enrolments into the platform* until a stopping rule is hit for each of the domains by scenario and stopping rule. 
-In parentheses are the percentage of sims for each decision type and those that were not stopped early (last row) run to the maximum sample size (2500).
+
 
 ```{r}
 #| label: tbl-sim05-stopn
