@@ -524,108 +524,101 @@ run_trial <- function(
 
 run_sim_07_model_check <- function(){
   
-  
-  log_info(paste0(match.call()[[1]]))
-  
   if(unname(Sys.info()[1]) == "Darwin"){
     log_info("On mac, reset cores to 5")
     mc_cores <- 5
   }
   
+  fname_cfg_loc <- "./etc/sim07/cfg-sim07-sc01-v08.yml"
+  d_rd_smry <- qs::qread("risk_diff_smry.qs")
+  d_rd_smry[scenario == 8 & N == 2500, .(domain, rd)]
+  
+  cfg_loc <- config::get(file = fname_cfg_loc)
+  
+  ix <- 1
+  m1 <- cmdstanr::cmdstan_model("stan/model-sim-07-a.stan")
+  
+  output_dir_mcmc <- paste0(getwd(), "/tmp")
+  
   l_spec <- list(
-    N = 3e3,
+    N = 1,
     # silo allocation
     p_s_alloc = c(0.3, 0.5, 0.2),
     l_e = list(),
     l_l = list(),
-    l_c = list(),
-    # model parameters
-    # intercept is early silo
-    mu = NA, # 0.9,
-    bs = c(0, -0.1, -0.2),
-    # different baseline risk for rev
-    bp = -0.4,
-    # index 4 is never referenced but needs to be there so that the 
-    # calcs in the single model approach don't end up with NA
-    bd2 = c(0, 0, 0, 999),
-    bd3 = c(0, 0, 0, 999),
-    bd4 = c(0, 0, 0)
+    l_c = list()
   )
   # N by analysis
-  l_spec$N <- g_cfgsc$N_pt
-  l_spec$l_e$p_d1_alloc <- g_cfgsc$e_p_d1_alloc
-  l_spec$l_e$p_d2_entry <- g_cfgsc$e_p_d2_entry
-  l_spec$l_e$p_d2_alloc <- g_cfgsc$e_p_d2_alloc
-  l_spec$l_e$p_d3_entry <- g_cfgsc$e_p_d3_entry
-  l_spec$l_e$p_d3_alloc <- g_cfgsc$e_p_d3_alloc
-  l_spec$l_e$p_d4_entry <- g_cfgsc$e_p_d4_entry
-  l_spec$l_e$p_d4_alloc <- g_cfgsc$e_p_d4_alloc
+  l_spec$N <- sum(cfg_loc$N_pt)
+  l_spec$l_e$p_d1_alloc <- cfg_loc$e_p_d1_alloc
+  l_spec$l_e$p_d2_entry <- cfg_loc$e_p_d2_entry
+  l_spec$l_e$p_d2_alloc <- cfg_loc$e_p_d2_alloc
+  l_spec$l_e$p_d3_entry <- cfg_loc$e_p_d3_entry
+  l_spec$l_e$p_d3_alloc <- cfg_loc$e_p_d3_alloc
+  l_spec$l_e$p_d4_entry <- cfg_loc$e_p_d4_entry
+  l_spec$l_e$p_d4_alloc <- cfg_loc$e_p_d4_alloc
   # preference for two-stage
-  l_spec$l_e$p_pref <- g_cfgsc$e_p_pref
+  l_spec$l_e$p_pref <- cfg_loc$e_p_pref
   
-  l_spec$l_l$p_d1_alloc <- g_cfgsc$l_p_d1_alloc
-  l_spec$l_l$p_d2_entry <- g_cfgsc$l_p_d2_entry
-  l_spec$l_l$p_d2_alloc <- g_cfgsc$l_p_d2_alloc
-  l_spec$l_l$p_d3_entry <- g_cfgsc$l_p_d3_entry
-  l_spec$l_l$p_d3_alloc <- g_cfgsc$l_p_d3_alloc
-  l_spec$l_l$p_d4_entry <- g_cfgsc$l_p_d4_entry
-  l_spec$l_l$p_d4_alloc <- g_cfgsc$l_p_d4_alloc
+  l_spec$l_l$p_d1_alloc <- cfg_loc$l_p_d1_alloc
+  l_spec$l_l$p_d2_entry <- cfg_loc$l_p_d2_entry
+  l_spec$l_l$p_d2_alloc <- cfg_loc$l_p_d2_alloc
+  l_spec$l_l$p_d3_entry <- cfg_loc$l_p_d3_entry
+  l_spec$l_l$p_d3_alloc <- cfg_loc$l_p_d3_alloc
+  l_spec$l_l$p_d4_entry <- cfg_loc$l_p_d4_entry
+  l_spec$l_l$p_d4_alloc <- cfg_loc$l_p_d4_alloc
   # preference for two-stage
-  l_spec$l_l$p_pref <- g_cfgsc$l_p_pref
+  l_spec$l_l$p_pref <- cfg_loc$l_p_pref
   
-  l_spec$l_c$p_d1_alloc <- g_cfgsc$c_p_d1_alloc
-  l_spec$l_c$p_d2_entry <- g_cfgsc$c_p_d2_entry
-  l_spec$l_c$p_d2_alloc <- g_cfgsc$c_p_d2_alloc
-  l_spec$l_c$p_d3_entry <- g_cfgsc$c_p_d3_entry
-  l_spec$l_c$p_d3_alloc <- g_cfgsc$c_p_d3_alloc
-  l_spec$l_c$p_d4_entry <- g_cfgsc$c_p_d4_entry
-  l_spec$l_c$p_d4_alloc <- g_cfgsc$c_p_d4_alloc
+  l_spec$l_c$p_d1_alloc <- cfg_loc$c_p_d1_alloc
+  l_spec$l_c$p_d2_entry <- cfg_loc$c_p_d2_entry
+  l_spec$l_c$p_d2_alloc <- cfg_loc$c_p_d2_alloc
+  l_spec$l_c$p_d3_entry <- cfg_loc$c_p_d3_entry
+  l_spec$l_c$p_d3_alloc <- cfg_loc$c_p_d3_alloc
+  l_spec$l_c$p_d4_entry <- cfg_loc$c_p_d4_entry
+  l_spec$l_c$p_d4_alloc <- cfg_loc$c_p_d4_alloc
   # preference for two-stage
-  l_spec$l_c$p_pref <- g_cfgsc$c_p_pref
+  l_spec$l_c$p_pref <- cfg_loc$c_p_pref
   
   # model params
-  l_spec$mu <- g_cfgsc$bmu
-  l_spec$bs <- unlist(g_cfgsc$bs)
-  l_spec$bp <- unlist(g_cfgsc$bp)
+  l_spec$mu <- cfg_loc$bmu
+  l_spec$bs <- unlist(cfg_loc$bs)
+  l_spec$bp <- unlist(cfg_loc$bp)
   # dair, one, two-stage, we compare avg of one and two stage rev to dair
-  l_spec$l_e$bd1 <- unlist(g_cfgsc$bed1)
-  l_spec$l_l$bd1 <- unlist(g_cfgsc$bld1)
-  l_spec$l_c$bd1 <- unlist(g_cfgsc$bcd1)
+  l_spec$l_e$bd1 <- unlist(cfg_loc$bed1)
+  l_spec$l_l$bd1 <- unlist(cfg_loc$bld1)
+  l_spec$l_c$bd1 <- unlist(cfg_loc$bcd1)
   # always ref, 12wk, 6wk as we are assessing if 6wk ni to 12wk
-  l_spec$bd2 <- unlist(g_cfgsc$bd2)
+  l_spec$bd2 <- unlist(cfg_loc$bd2)
   # always ref, 0, 12wk as we are assessing if 12wk sup to none
-  l_spec$bd3 <- unlist(g_cfgsc$bd3)
+  l_spec$bd3 <- unlist(cfg_loc$bd3)
   # always ref, none, rif as we are assessing if rif is sup to none
-  l_spec$bd4 <- unlist(g_cfgsc$bd4)
+  l_spec$bd4 <- unlist(cfg_loc$bd4)
   
   l_spec$prior <- list()
   # location, scale
-  l_spec$prior$mu <- unlist(g_cfgsc$pri_bmu)
-  l_spec$prior$bs <- unlist(g_cfgsc$pri_bs)
-  l_spec$prior$bp <- unlist(g_cfgsc$pri_bp)
-  l_spec$prior$bd1 <- unlist(g_cfgsc$pri_bd1)
-  l_spec$prior$bd2 <- unlist(g_cfgsc$pri_bd2)
-  l_spec$prior$bd3 <- unlist(g_cfgsc$pri_bd3)
-  l_spec$prior$bd4 <- unlist(g_cfgsc$pri_bd4)
+  l_spec$prior$mu <- unlist(cfg_loc$pri_bmu)
+  l_spec$prior$bs <- unlist(cfg_loc$pri_bs)
+  l_spec$prior$bp <- unlist(cfg_loc$pri_bp)
+  l_spec$prior$bd1 <- unlist(cfg_loc$pri_bd1)
+  l_spec$prior$bd2 <- unlist(cfg_loc$pri_bd2)
+  l_spec$prior$bd3 <- unlist(cfg_loc$pri_bd3)
+  l_spec$prior$bd4 <- unlist(cfg_loc$pri_bd4)
   
   l_spec$delta <- list()
-  l_spec$delta$sup <- g_cfgsc$dec_delta_sup
-  l_spec$delta$sup_fut <- g_cfgsc$dec_delta_sup_fut
-  l_spec$delta$ni <- g_cfgsc$dec_delta_ni
-  l_spec$delta$ni_fut <- g_cfgsc$dec_delta_ni_fut
+  l_spec$delta$sup <- cfg_loc$dec_delta_sup
+  l_spec$delta$sup_fut <- cfg_loc$dec_delta_sup_fut
+  l_spec$delta$ni <- cfg_loc$dec_delta_ni
+  l_spec$delta$ni_fut <- cfg_loc$dec_delta_ni_fut
   
   # domain specific
   l_spec$thresh <- list()
-  l_spec$thresh$sup <- unlist(g_cfgsc$dec_thresh_sup)
-  l_spec$thresh$ni <- unlist(g_cfgsc$dec_thresh_fut_sup)
-  l_spec$thresh$sup_fut <- unlist(g_cfgsc$dec_thresh_ni)
-  l_spec$thresh$ni_fut <- unlist(g_cfgsc$dec_thresh_fut_ni)
-  
-  
-  l_spec$N <- 3e3
+  l_spec$thresh$sup <- unlist(cfg_loc$dec_thresh_sup)
+  l_spec$thresh$ni <- unlist(cfg_loc$dec_thresh_fut_sup)
+  l_spec$thresh$sup_fut <- unlist(cfg_loc$dec_thresh_ni)
+  l_spec$thresh$ni_fut <- unlist(cfg_loc$dec_thresh_fut_ni)
   
   str(l_spec)
-  
   
   log_info("Starting simulation with following parameters:");
   log_info("N: ", paste0(l_spec$N, collapse = ", "));
@@ -636,11 +629,16 @@ run_sim_07_model_check <- function(){
   log_info("b_d3: ", paste0(l_spec$bd3, collapse = ", "));
   log_info("b_d4: ", paste0(l_spec$bd4, collapse = ", "));
   
-  
-  N_sim <- 500
+  N_sim <- 1000
   r <- pbapply::pblapply(X=1:N_sim, cl = mc_cores, FUN = function(ix){
     
-    d <- get_sim07_trial_data(l_spec)
+    d <- get_sim07_trial_data(
+      l_spec,
+      dec_sup = list(surg = NA, ext_proph = NA, ab_choice = NA),
+      dec_ni = list(ab_dur = NA),
+      dec_sup_fut = list(surg = NA, ext_proph = NA, ab_choice = NA),
+      dec_ni_fut = list(ab_dur = NA)
+      )
     # d[]
     
     # combine the existing and new data
@@ -663,49 +661,75 @@ run_sim_07_model_check <- function(){
     
     # fit model - does it matter that I continue to fit the model after the
     # decision is made...?
+    # only care about mean so relatively few samples
     f_1 <- m1$sample(
-      lsd$ld, iter_warmup = 1000, iter_sampling = 2000,
+      lsd$ld, iter_warmup = 500, iter_sampling = 500,
       parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
-      max_treedepth = 11,
+      max_treedepth = 10,
       output_dir = output_dir_mcmc,
       output_basename = foutname
     )
+    
+    # f_1 <- m1$pathfinder(
+    #   lsd$ld,
+    #   num_paths=20,
+    #   single_path_draws=200,
+    #   history_size=50,
+    #   max_lbfgs_iters=100,
+    #   refresh = 0,
+    #   draws = 1000,
+    #   output_dir = output_dir_mcmc,
+    #   output_basename = foutname
+    #   )
     
     # extract posterior - marginal probability of outcome by group
     # dair vs rev
     d_post <- data.table(f_1$draws(
       variables = c(
         
-        "lor_d1", # log odds and lor
-        "p_d1_1", "p_d1_23", "rd_d1",
-        
-        "lor_d2",
-        "p_d2_2", "p_d2_3", "rd_d2",
-
-        "lor_d3",
-        "p_d3_2", "p_d3_3", "rd_d3",
-
-        "lor_d4",
-        "p_d4_2", "p_d4_3", "rd_d4"
+        "rd_d1",
+        "rd_d2",
+        "rd_d3",
+        "rd_d4"
         
       ),   # risk scale
       format = "matrix"))
     colMeans(d_post)
-    
     
   })
   d_fig <- data.table(do.call(rbind, r))
   
   d_fig <- melt(d_fig, measure.vars = names(d_fig))
   
+  
   ggplot(d_fig, aes(x = value, group = variable)) +
     geom_density() +
     geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable],
-               aes(xintercept = mu)) +
-    facet_wrap2(~variable, scales = "free_x")
+               aes(xintercept = mu), lwd = 0.2) +
+    geom_point(data = d_fig[, .(mu = mean(value)), keyby = variable],
+               aes(x = mu, y = 0), size = 0.001) +
+    facet_wrap2(~variable, scales = "free_x") +
+    geom_text_repel(
+      data = d_fig[, .(mu = mean(value)), keyby = variable],
+      aes(x = mu, y = 0, label = sprintf("%.3f", mu)),
+      inherit.aes = F,
+      force             = 0.3,
+      nudge_y           = 0.15,
+      direction         = "y",
+      hjust             = 0,
+      segment.size      = 0.2,
+      segment.curvature = -0.1,
+      size = 3
+    ) +
+    theme(
+      axis.title = element_blank(),
+      plot.title = element_text(size = 10),
+      plot.subtitle = element_text(size = 8)
+    ) 
   #
 
-  
+  # 
+  # file.remove("tmp/*.csv")
 }
 
 
