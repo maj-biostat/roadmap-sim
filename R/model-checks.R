@@ -1463,6 +1463,15 @@ parameter_for_scenario_calcs <- function(){
   multi_model_approach(l_spec, condition_on_nonrand_dur = T) |>
     plot_results(scenario = "RD 0.1 d2")
   
+  
+  # RD \approx -0.05 in abx dur
+  l_spec$bd1 <- c(0, 0, 0)
+  l_spec$bd2 <- c(0, 0, -0.22)
+  l_spec$bd3 <- c(0, 0, 0)
+  l_spec$bd4 <- c(0, 0, 0)
+  multi_model_approach(l_spec, condition_on_nonrand_dur = T) |>
+    plot_results(scenario = "RD -0.05 d2")
+  
   # RD \approx 0.1 in ext proph
   l_spec$bd1 <- c(0, 0, 0)
   l_spec$bd2 <- c(0, 0, 0)
@@ -1478,6 +1487,15 @@ parameter_for_scenario_calcs <- function(){
   l_spec$bd4 <- c(0, 0, 0.45)
   multi_model_approach(l_spec, condition_on_nonrand_dur = T) |>
     plot_results(scenario = "RD 0.1 d4")
+  
+  # RD \approx 0.1 in surg, 0.08 in abx choice
+  l_spec$bd1 <- c(0, 0.47, 0.47)
+  l_spec$bd2 <- c(0, 0, 0)
+  l_spec$bd3 <- c(0, 0, 0)
+  l_spec$bd4 <- c(0, 0, 0.39)
+  multi_model_approach(l_spec, condition_on_nonrand_dur = T) |>
+    plot_results(scenario = "RD 0.1 d1, RD 0.05 d4")
+  
   
   # RD \approx 0.1 in all domain
   l_spec$bd1 <- c(0, 0.47, 0.47)
