@@ -34,14 +34,14 @@ default:
   c_p_d4_alloc: 0.5
   c_p_pref: 0.75
   # model parameters
-  bmu: 0.7 # reference logodds from which all others deviate
+  bmu: 0.789 # reference logodds from which all others deviate
   bs: [0, -0.3, -0.2] # early, late, chronic
   bp: [0, -0.2] # pref one-stage, pref two-stage
   # early (dair, rev1, rev2), 
   # late (dair, rev1, rev2), 
   # chronic (dair, rev1, rev2)
   bed1: [0,    0.1,   0.1] 
-  bld1: [-0.1,   0.35,     0.35    ] 
+  bld1: [-0.1,   0.34,     0.34    ] 
   bcd1: [-0.1, 0.0,   0.1] 
   # not silo specific
   bd2: [0, 0, 0] # non-rand, 12wk, 6wk
@@ -61,9 +61,9 @@ default:
   dec_delta_ni: -0.05
   dec_delta_ni_fut: 0.00
   # decision probability thresholds
-  dec_thresh_sup: [0.92, 0.95, 0.95, 0.995] # thresh by domain
+  dec_thresh_sup: [0.93, 0.93, 0.93, 0.99] # thresh by domain
   dec_thresh_ni: [0.975, 0.925, 0.975, 0.975]
-  dec_thresh_fut_sup: [0.30, 0.25, 0.25, 0.25]
+  dec_thresh_fut_sup: [0.30, 0.30, 0.30, 0.30]
   dec_thresh_fut_ni: [0.25, 0.10, 0.25, 0.25]
     
 

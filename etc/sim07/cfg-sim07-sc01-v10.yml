@@ -1,5 +1,5 @@
 default:
-  desc: "RD = 0.1: abx choice rif effect +silo specific d1"
+  desc: "RD = 0.1 surgical, RD = 0.08 abx choice +silo specific d1"
   nsim: 1000
   mc_cores: 40
   # example trials
@@ -41,12 +41,12 @@ default:
   # late (dair, rev1, rev2), 
   # chronic (dair, rev1, rev2)
   bed1: [0,    0.1,   0.1] 
-  bld1: [0,   0,     0    ] 
+  bld1: [-0.1,   0.37,     0.37    ] 
   bcd1: [-0.1, 0.0,   0.1] 
   # not silo specific
   bd2: [0, 0, 0] # non-rand, 12wk, 6wk
   bd3: [0, 0, 0] # non-rand, none, 12wk
-  bd4: [0, -0.1, 0.34] # non-rand, none, rif
+  bd4: [0, -0.1, 0.29] # non-rand, none, rif
   # priors
   pri_bmu: [0.7, 0.7] # mean, scale for each par set
   pri_bs: [0, 1]
