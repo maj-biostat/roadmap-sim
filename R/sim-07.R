@@ -527,11 +527,13 @@ run_sim_07_model_check <- function(){
   if(unname(Sys.info()[1]) == "Darwin"){
     log_info("On mac, reset cores to 5")
     mc_cores <- 5
+  } else {
+    mc_cores <- 50
   }
   
-  fname_cfg_loc <- "./etc/sim07/cfg-sim07-sc01-v08.yml"
+  fname_cfg_loc <- "./etc/sim07/cfg-sim07-sc01-v09.yml"
   d_rd_smry <- qs::qread("risk_diff_smry.qs")
-  d_rd_smry[scenario == 8 & N == 2500, .(domain, rd)]
+  d_rd_smry[scenario == 9 & N == 2500, .(desc, domain, rd)]
   
   cfg_loc <- config::get(file = fname_cfg_loc)
   
@@ -629,7 +631,7 @@ run_sim_07_model_check <- function(){
   log_info("b_d3: ", paste0(l_spec$bd3, collapse = ", "));
   log_info("b_d4: ", paste0(l_spec$bd4, collapse = ", "));
   
-  N_sim <- 1000
+  N_sim <- 500
   r <- pbapply::pblapply(X=1:N_sim, cl = mc_cores, FUN = function(ix){
     
     d <- get_sim07_trial_data(
