@@ -2,6 +2,8 @@ default:
   desc: "RD = 0.1: surgical revision (one-stage only) +silo specific d1"
   nsim: 1000
   mc_cores: 40
+  # example trials
+  nex: 3
   N_pt: [500, 500, 500, 500, 500]
   # cohort distribution
   e_p_d1_alloc: 0.15
@@ -38,9 +40,9 @@ default:
   # early (dair, rev1, rev2), 
   # late (dair, rev1, rev2), 
   # chronic (dair, rev1, rev2)
-  bed1: [0,   0.693, 0.693] 
+  bed1: [0,    0.1,   0.1] 
   bld1: [-0.1,   0.35,     -0.1    ] 
-  bcd1: [0.1, 0.693, 0.693] 
+  bcd1: [-0.1, 0.0,   0.1] 
   # not silo specific
   bd2: [0, 0, 0] # non-rand, 12wk, 6wk
   bd3: [0, 0, 0] # non-rand, none, 12wk

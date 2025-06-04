@@ -12,7 +12,7 @@ args = commandArgs(trailingOnly=TRUE)
 if (length(args)<1) {
   log_info("Setting default run method (does nothing)")
   args[1] = "run_none_sim_07"
-  args[2] = "./sim07/cfg-sim07-sc01-v02.yml"
+  args[2] = "./sim07/cfg-sim07-sc01-v01.yml"
 } else {
   log_info("Run method ", args[1])
   log_info("Scenario config ", args[2])
@@ -151,7 +151,7 @@ run_trial <- function(
   )
   
   if(return_posterior){
-    l_post <- list()
+    d_post_all <- data.table()
   }
   
   
@@ -239,7 +239,10 @@ run_trial <- function(
       format = "matrix"))
     
     if(return_posterior){
-      l_post[[l_spec$ia]] <- copy(d_post)
+      d_post_all <- rbind(
+        d_post_all,
+        cbind(ia = l_spec$ia, d_post)
+      )
     }
     
     d_post_long <- melt(d_post, measure.vars = names(d_post))
@@ -484,7 +487,7 @@ run_trial <- function(
   )
   
   if(return_posterior){
-    l_ret$l_post <- l_post
+    l_ret$d_post_all <- copy(d_post_all)
   }
   # 
   
@@ -816,7 +819,10 @@ run_sim_07 <- function(){
   
   # str(l_spec)
   
-  return_posterior = F
+  if(g_cfgsc$nex > 0){
+    log_info("Creating ", g_cfgsc$nex, " example trials with full posterior")
+    g_cfgsc$ex_trial_ix <- sort(sample(1:g_cfgsc$nsim, size = g_cfgsc$nex, replace = F))
+  }
   
   e = NULL
   log_info("Starting simulation")
@@ -824,6 +830,13 @@ run_sim_07 <- function(){
     X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
     # X=1:5, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
       log_info("Simulation ", ix);
+      
+      if(ix %in% g_cfgsc$ex_trial_ix){
+        return_posterior = T  
+      } else {
+        return_posterior = F
+      }
+      
       ll <- tryCatch({
         run_trial(
           ix,
@@ -948,6 +961,15 @@ run_sim_07 <- function(){
         sim = i, ia = as.integer(rownames(r[[i]]$n_units)), r[[i]]$n_units) 
     } )))
   
+  
+  d_post_all <- data.table(do.call(rbind, lapply(1:length(r), function(i){
+    # if the sim contains full posterior (for example trial) then return
+    if(!is.null(r[[i]]$d_post_all)){
+      cbind(sim = i, r[[i]]$d_post_all)
+    }
+    
+  } )))
+  
   l <- list(
     cfg = g_cfgsc,
     
@@ -964,7 +986,9 @@ run_sim_07 <- function(){
     d_post_smry_1 = d_post_smry_1,
     d_post_smry_2 = d_post_smry_2,
     
-    d_all = d_all
+    d_all = d_all,
+    
+    d_post_all = d_post_all
     
     # d_n_units = d_n_units,
     # d_n_assign = d_n_assign,
