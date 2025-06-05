@@ -522,7 +522,7 @@ run_trial <- function(
 #   
 # }
 
-run_sim_07_model_check <- function(){
+run_sim_07_est_par <- function(){
   
   if(unname(Sys.info()[1]) == "Darwin"){
     log_info("On mac, reset cores to 5")
@@ -734,7 +734,28 @@ run_sim_07_model_check <- function(){
   # file.remove("tmp/*.csv")
 }
 
-
+run_sim_07_beta_bin <- function(){
+  
+  N_sim <- 500
+  N <- 400
+  y0 <- rbinom(N_sim, N, 0.6)
+  y1 <- rbinom(N_sim, N, 0.7)
+  mc_cores <- 5
+  ix <- 1
+  
+  r <- pbapply::pblapply(X=1:N_sim, cl = mc_cores, FUN = function(ix){
+    
+    pi0 <- rbeta(1e4, y0[ix]+1, N-y0[ix]+1)
+    pi1 <- rbeta(1e4, y1[ix]+1, N-y1[ix]+1)
+    rd <- pi1 - pi0
+    hist(rd)
+    mean(rd > 0) > 0.93
+    
+  })
+  
+  mean(unlist(r))
+  
+}
 
 run_sim_07 <- function(){
   
