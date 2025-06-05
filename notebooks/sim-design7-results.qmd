@@ -53,7 +53,7 @@ if(toks[length(toks)] == "roadmap-sim"){
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim07-01"
+sim_lab <- "sim07-02"
 
 flist <- list.files(paste0("data/", sim_lab), pattern = "sim07")
 toks <- list()
@@ -135,9 +135,9 @@ $$
 \begin{aligned}
 Y &\sim \text{Binomial}(n, p) \\
 \text{logit}(p) &= \begin{cases}
-  \mu + \beta_{s} + \beta_{p} + \beta_{d1[k_{d1}, s]} + \beta_{d4[k_{d4}]} & \text{if dair} \\
-  \mu + \beta_{s} + \beta_{d1[k_{d1}, s]} + \beta_{d2[k_{d2}]} + \beta_{d4[k_{d4}]} & \text{if rev(1)} \\
-  \mu + \beta_{s} + \beta_{p} + \beta_{d1[k_{d1}, s]} + \beta_{d3[k_{d3}]} + \beta_{d4[k_{d4}]} & \text{if rev(2)}
+  \mu + \beta_{s} + \beta_{p} + \beta_{d1[k_{d1}, s]} + \beta_{d4[k_{d4}]} & \text{(dair)} \\
+  \mu + \beta_{s} + \beta_{d1[k_{d1}, s]} + \beta_{d2[k_{d2}]} + \beta_{d4[k_{d4}]} & \text{(one-stage)} \\
+  \mu + \beta_{s} + \beta_{p} + \beta_{d1[k_{d1}, s]} + \beta_{d3[k_{d3}]} + \beta_{d4[k_{d4}]} & \text{(two-stage)}
 		 \end{cases}
 \end{aligned}
 $$
