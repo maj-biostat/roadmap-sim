@@ -41,7 +41,7 @@ default:
   # late (dair, rev1, rev2), 
   # chronic (dair, rev1, rev2)
   bed1: [0,    0.1,   0.1] 
-  bld1: [-0.1,   0.34,     0.34    ] 
+  bld1: [-0.1,   0.467,     0.467    ] 
   bcd1: [-0.1, 0.0,   0.1] 
   # not silo specific
   bd2: [0, 0, 0] # non-rand, 12wk, 6wk

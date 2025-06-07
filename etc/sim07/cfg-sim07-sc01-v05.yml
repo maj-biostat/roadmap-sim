@@ -44,7 +44,7 @@ default:
   bld1: [0,   0,     0    ] 
   bcd1: [-0.1, 0.0,   0.1] 
   # not silo specific
-  bd2: [0, -0.1, 0.38] # non-rand, 12wk, 6wk
+  bd2: [0, -0.1, 0.483] # non-rand, 12wk, 6wk
   bd3: [0, 0, 0] # non-rand, none, 12wk
   bd4: [0, 0, 0] # non-rand, none, rif
   # priors

@@ -41,12 +41,12 @@ default:
   # late (dair, rev1, rev2), 
   # chronic (dair, rev1, rev2)
   bed1: [0,    0.1,   0.1] 
-  bld1: [-0.1,   0.36,     0.36    ] 
+  bld1: [-0.1,   0.467,     0.467    ] 
   bcd1: [-0.1, 0.0,   0.1] 
   # not silo specific
   bd2: [0, 0, 0] # non-rand, 12wk, 6wk
   bd3: [0, 0, 0] # non-rand, none, 12wk
-  bd4: [0, -0.1, 0.26] # non-rand, none, rif
+  bd4: [0, -0.1, 0.467] # non-rand, none, rif
   # priors
   pri_bmu: [0.7, 0.7] # mean, scale for each par set
   pri_bs: [0, 1]
