@@ -669,13 +669,15 @@ sim_07_par_sim <- function(){
         "rd_d2",
         "rd_d3",
         "rd_d4",
-        "p_d1_1", "p_d1_1", "p_d1_2", "p_d1_23",
+        "p_d1_1", "p_d1_2", "p_d1_3", "p_d1_23",
         "p_d2_2", "p_d2_3",
         "p_d3_2", "p_d3_3",
         "p_d4_2", "p_d4_3"
         
       ),   # risk scale
       format = "matrix"))
+    d_post[, rd_d1_1 := p_d1_2 - p_d1_1]
+    d_post[, rd_d1_2 := p_d1_3 - p_d1_1]
     colMeans(d_post)
     
   })
@@ -687,30 +689,30 @@ sim_07_par_sim <- function(){
     message(sprintf("%s, %.3f", d_out[i, variable], d_out[i, mu]))
   }
   
-  ggplot(d_fig, aes(x = value, group = variable)) +
-    geom_density() +
-    geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable],
-               aes(xintercept = mu), lwd = 0.2) +
-    geom_point(data = d_fig[, .(mu = mean(value)), keyby = variable],
-               aes(x = mu, y = 0), size = 0.001) +
-    facet_wrap2(~variable, scales = "free_x") +
-    geom_text_repel(
-      data = d_fig[, .(mu = mean(value)), keyby = variable],
-      aes(x = mu, y = 0, label = sprintf("%.3f", mu)),
-      inherit.aes = F,
-      force             = 0.3,
-      nudge_y           = 0.15,
-      direction         = "y",
-      hjust             = 0,
-      segment.size      = 0.2,
-      segment.curvature = -0.1,
-      size = 3
-    ) +
-    theme(
-      axis.title = element_blank(),
-      plot.title = element_text(size = 10),
-      plot.subtitle = element_text(size = 8)
-    ) 
+  #ggplot(d_fig, aes(x = value, group = variable)) +
+  #  geom_density() +
+  #  geom_vline(data = d_fig[, .(mu = mean(value)), keyby = variable],
+  #             aes(xintercept = mu), lwd = 0.2) +
+  #  geom_point(data = d_fig[, .(mu = mean(value)), keyby = variable],
+  #             aes(x = mu, y = 0), size = 0.001) +
+  #  facet_wrap2(~variable, scales = "free_x") +
+  #  geom_text_repel(
+  #    data = d_fig[, .(mu = mean(value)), keyby = variable],
+  #    aes(x = mu, y = 0, label = sprintf("%.3f", mu)),
+  #    inherit.aes = F,
+  #    force             = 0.3,
+  #    nudge_y           = 0.15,
+  #    direction         = "y",
+  #    hjust             = 0,
+  #    segment.size      = 0.2,
+  #    segment.curvature = -0.1,
+  #    size = 3
+  #  ) +
+  #  theme(
+  #    axis.title = element_blank(),
+  #    plot.title = element_text(size = 10),
+  #    plot.subtitle = element_text(size = 8)
+  #  ) 
   #
 
   # 

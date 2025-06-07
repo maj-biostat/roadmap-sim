@@ -1,6 +1,6 @@
 default:
-  desc: "RD = 0.1: ext-proph 12wk effect +silo specific d1"
-  nsim: 1000
+  desc: "RD = 0.12: ext-proph 12wk effect +silo specific d1"
+  nsim: 5000
   mc_cores: 40
   # example trials
   nex: 3
@@ -45,7 +45,7 @@ default:
   bcd1: [-0.1, 0.0,   0.1] 
   # not silo specific
   bd2: [0, 0, 0] # non-rand, 12wk, 6wk
-  bd3: [0, -0.1, 0.444] # non-rand, none, 12wk
+  bd3: [0, -0.1, 0.42] # non-rand, none, 12wk
   bd4: [0, 0, 0] # non-rand, none, rif
   # priors
   pri_bmu: [0.7, 0.7] # mean, scale for each par set
@@ -61,7 +61,7 @@ default:
   dec_delta_ni: -0.05
   dec_delta_ni_fut: 0.00
   # decision probability thresholds
-  dec_thresh_sup: [0.93, 0.93, 0.93, 0.99] # thresh by domain
+  dec_thresh_sup: [0.95, 0.95, 0.95, 0.99] # thresh by domain
   dec_thresh_ni: [0.975, 0.925, 0.975, 0.975]
   dec_thresh_fut_sup: [0.30, 0.30, 0.30, 0.30]
   dec_thresh_fut_ni: [0.25, 0.10, 0.25, 0.25]

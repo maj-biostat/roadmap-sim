@@ -53,7 +53,7 @@ if(toks[length(toks)] == "roadmap-sim"){
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim07-02"
+sim_lab <- "sim07-03"
 
 flist <- list.files(paste0("data/", sim_lab), pattern = "sim07")
 toks <- list()
@@ -230,7 +230,7 @@ For this set of simulations, the number of simulated trials per scenario was `r 
 # Traverse the list of simulation results and for each one summarise the 
 # cumulative probability of each decision type.
 
-i <- 1
+i <- 8
 d_tbl_1 <- data.table()
 
 # For each scenario that was simulated
@@ -1226,24 +1226,23 @@ ggplot(data = d_fig,
 
 ```{r}
 #| label: fig-expected-rd
-#| fig-cap: 'Median value of posterior means for risk difference treatment effects by domain and simulation scenario'
+#| fig-cap: 'Expectation of posterior means for risk difference treatment effects by domain and simulation scenario'
 #| fig-cap-location: margin
 #| fig-height: 5
 #| fig-width: 7
 #| column: page-right
 
-
-
 d_fig <- d_tbl_3[,
-                 .(rd = median(mu_rd),
+                 .(rd = mean(mu_rd),
                    q_025 = quantile(mu_rd, prob = 0.025),
                    q_975 = quantile(mu_rd, prob = 0.975)), 
                  keyby = .(scenario, desc, ia, domain, N)]
 # setorderv(d_fig, cols = "scenario", order = -1L)
 d_fig[, desc := factor(desc, levels = unique(d_fig$desc))]
-d_fig[, domain := factor(domain, 
-                         levels = 1:4, 
-                         labels = c("Surgical", "AB Duration", "AB Ext-proph", "AB Choice"))]
+d_fig[, domain := factor(
+  domain, 
+  levels = 1:4, 
+  labels = c("Surgical", "AB Duration", "AB Ext-proph", "AB Choice"))]
 
 # d_tbl_3[scenario == 8, range(lor)]
 
@@ -1272,6 +1271,101 @@ ggplot(data = d_fig,
         panel.grid.major = element_line(color = "grey",
                                   linewidth = 0.1,
                                   linetype = 1))
+
+```
+
+
+#### Treatment effects - risk difference (tabulated)
+
+```{r}
+#| label: tbl-sim05-rd2
+#| tbl-cap: 'Risk difference (expectation of posterior means and 95% interval)'
+#| column: page
+#| out-width: 70%
+
+
+d_tbl <- d_tbl_3[,
+                 .(rd = mean(mu_rd),
+                   q_025 = quantile(mu_rd, prob = 0.025),
+                   q_975 = quantile(mu_rd, prob = 0.975)), 
+                 keyby = .(scenario, desc, ia, domain, N)]
+# setorderv(d_fig, cols = "scenario", order = -1L)
+d_tbl[, desc := factor(desc, levels = unique(d_fig$desc))]
+d_tbl[, domain := factor(
+  domain, 
+  levels = 1:4, 
+  labels = c("Surgical", "AB Duration", "AB Ext-proph", "AB Choice"))]
+
+d_tbl <- dcast(d_tbl, desc + domain ~ N, value.var = list("rd", "q_025", "q_975"))
+
+ci_names <- function(x = 500){
+  paste0(c("rd_","q_025_", "q_975_"), x)
+}
+setcolorder(
+  d_tbl, 
+  c("desc", "domain", 
+    ci_names(500), ci_names(1000), ci_names(1500), ci_names(2000), ci_names(2500)))
+
+
+g_tbl <- d_tbl |> 
+  gt(groupname_col = "desc") |> 
+  gt::text_transform(
+    locations = cells_row_groups(),
+    fn = function(x) {
+      lapply(x, function(x) {
+        gt::md(paste0("*", x, "*"))
+      })
+    }
+  ) |>
+  cols_align(
+    columns = 1,
+    align = "left"
+  )  |> 
+  cols_align(
+    columns = 2:ncol(d_tbl),
+    align = "center"
+  )  |> 
+  cols_align(
+    columns = 3:ncol(d_tbl_2_cur),
+    align = "right"
+  )  |> 
+  cols_merge(
+    columns = c("rd_500", "q_025_500", "q_975_500"),
+    pattern = "<<{1}>><< ({2}, {3})>>"
+  )  |> 
+  cols_merge(
+    columns = c("rd_1000", "q_025_1000", "q_975_1000"),
+    pattern = "<<{1}>><< ({2}, {3})>>"
+  )  |> 
+  cols_merge(
+    columns = c("rd_1500", "q_025_1500", "q_975_1500"),
+    pattern = "<<{1}>><< ({2}, {3})>>"
+  )  |> 
+  cols_merge(
+    columns = c("rd_2000", "q_025_2000", "q_975_2000"),
+    pattern = "<<{1}>><< ({2}, {3})>>"
+  )  |> 
+  cols_merge(
+    columns = c("rd_2500", "q_025_2500", "q_975_2500"),
+    pattern = "<<{1}>><< ({2}, {3})>>"
+  )  |> 
+  tab_spanner(
+    label = html("Risk difference (expectation of posterior means and 95% interval"),
+    columns = 2:ncol(d_tbl)
+  )  |>
+  cols_label(
+    rd_500 = "500",
+    rd_1000 = "1000",
+    rd_1500 = "1500",
+    rd_2000 = "2000",
+    rd_2500 = "2500"
+  )  |>
+  tab_options(
+    table.font.size = "70%"
+  ) |>
+  fmt_number(decimals = 2, drop_trailing_zeros = TRUE)
+
+g_tbl
 
 ```
 

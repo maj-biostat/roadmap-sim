@@ -266,18 +266,6 @@ get_sim07_trial_data <- function(
 }
 
 
-get_sim07_trial_data_subgrp <- function(
-    l_spec
-){
-  
-  d <- get_sim07_trial_data(l_spec)
-  
-  
-  
-}
-
-
-
 get_sim07_stan_data <- function(d_all){
   
   # convert from binary representation to binomial (successes/trials)
