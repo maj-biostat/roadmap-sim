@@ -40,7 +40,7 @@ source("./R/util.R")
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim07-02"
+sim_lab <- "sim07-04"
 # files of interest
 flist <- list.files(paste0("data/", sim_lab), pattern = "sim07")
 toks <- list()
@@ -51,9 +51,9 @@ for(i in 1:length(flist)){
   toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
 }
 
-ix_scenario <- 2
+ix_scenario <- 6
 
-ix_trial <- l[[ix_scenario]]$cfg$ex_trial_ix[2]
+ix_trial <- l[[ix_scenario]]$cfg$ex_trial_ix[1]
 
 
 
