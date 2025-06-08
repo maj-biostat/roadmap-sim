@@ -1,0 +1,69 @@
+default:
+  desc: "RD = 0.1: surgical revision (one and two-stage) +silo specific d1"
+  nsim: 1000
+  mc_cores: 40
+  # example trials
+  nex: 3
+  N_pt: [500, 500, 500, 500, 500]
+  # cohort distribution
+  e_p_d1_alloc: 0.15
+  e_p_d2_entry: 0.7
+  e_p_d2_alloc: 0.5
+  e_p_d3_entry: 0.9
+  e_p_d3_alloc: 0.5
+  e_p_d4_entry: 0.6
+  e_p_d4_alloc: 0.5
+  # pref for rev(2) | rev
+  e_p_pref: 0.35
+  # late
+  l_p_d1_alloc: 0.5
+  l_p_d2_entry: 0.7
+  l_p_d2_alloc: 0.5
+  l_p_d3_entry: 0.9
+  l_p_d3_alloc: 0.5
+  l_p_d4_entry: 0.6
+  l_p_d4_alloc: 0.5
+  l_p_pref: 0.7
+  # chronic
+  c_p_d1_alloc: 0.8
+  c_p_d2_entry: 0.7
+  c_p_d2_alloc: 0.5
+  c_p_d3_entry: 0.9
+  c_p_d3_alloc: 0.5
+  c_p_d4_entry: 0.6
+  c_p_d4_alloc: 0.5
+  c_p_pref: 0.75
+  # model parameters
+  bmu: 0.789 # reference logodds from which all others deviate
+  bs: [0, -0.3, -0.2] # early, late, chronic
+  bp: [0, -0.2] # pref one-stage, pref two-stage
+  # early (dair, rev1, rev2), 
+  # late (dair, rev1, rev2), 
+  # chronic (dair, rev1, rev2)
+  bed1: [0,    0.1,   0.1] 
+  bld1: [-0.1,   0.34,     0.34    ] 
+  bcd1: [-0.1, 0.0,   0.1] 
+  # not silo specific
+  bd2: [0, 0, 0] # non-rand, 12wk, 6wk
+  bd3: [0, 0, 0] # non-rand, none, 12wk
+  bd4: [0, 0, 0] # non-rand, none, rif
+  # priors
+  pri_bmu: [0.7, 0.7] # mean, scale for each par set
+  pri_bs: [0, 1]
+  pri_bp: [0, 1]
+  pri_bd1: [0, 1]
+  pri_bd2: [0, 1]
+  pri_bd3: [0, 1]
+  pri_bd4: [0, 1]
+  # decision reference values
+  dec_delta_sup: 0
+  dec_delta_sup_fut: 0.05
+  dec_delta_ni: -0.05
+  dec_delta_ni_fut: 0.00
+  # decision probability thresholds
+  dec_thresh_sup: [0.93, 0.93, 0.93, 0.99] # thresh by domain
+  dec_thresh_ni: [0.975, 0.925, 0.975, 0.975]
+  dec_thresh_fut_sup: [0.30, 0.30, 0.30, 0.30]
+  dec_thresh_fut_ni: [0.25, 0.10, 0.25, 0.25]
+    
+
