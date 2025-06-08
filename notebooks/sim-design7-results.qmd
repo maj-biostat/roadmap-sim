@@ -53,7 +53,7 @@ if(toks[length(toks)] == "roadmap-sim"){
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim07-03"
+sim_lab <- "sim07-04"
 
 flist <- list.files(paste0("data/", sim_lab), pattern = "sim07")
 toks <- list()
