@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2025-06-05">
+<meta name="dcterms.date" content="2025-06-17">
 
 <title>MLM vs static regularisation – ROADMAP - design notes and simulations</title>
 <style>
@@ -4742,7 +4742,7 @@ vertical-align: -.125em;
     "search-label": "Search"
   }
 }</script>
-<script>!function(){"use strict";var s={"scripts/annotator.bundle.js":"scripts/annotator.bundle.js?b43fe9","styles/annotator.css":"styles/annotator.css?ce3b25","styles/annotator.css.map":"styles/annotator.css.map?e7c11d","styles/highlights.css":"styles/highlights.css?24baca","styles/highlights.css.map":"styles/highlights.css.map?377599","styles/katex.min.css":"styles/katex.min.css?921c28","styles/katex.min.css.map":"styles/katex.min.css.map?e7e03f","styles/pdfjs-overrides.css":"styles/pdfjs-overrides.css?c95edf","styles/pdfjs-overrides.css.map":"styles/pdfjs-overrides.css.map?1d8ac6","styles/sidebar.css.map":"styles/sidebar.css.map?743602","styles/sidebar.css":"styles/sidebar.css?c63100","styles/ui-playground.css.map":"styles/ui-playground.css.map?894a78","styles/ui-playground.css":"styles/ui-playground.css?531600","scripts/sidebar.bundle.js":"scripts/sidebar.bundle.js?5203d0","scripts/ui-playground.bundle.js":"scripts/ui-playground.bundle.js?9ef589","scripts/annotator.bundle.js.map":"scripts/annotator.bundle.js.map?a3156b","scripts/ui-playground.bundle.js.map":"scripts/ui-playground.bundle.js.map?cfb386","scripts/sidebar.bundle.js.map":"scripts/sidebar.bundle.js.map?853cd1"};function e(s){s.setAttribute("data-hypothesis-asset","")}function t(s,t){var r=s.createElement("link");r.rel="stylesheet",r.type="text/css",r.href=t,e(r),s.head.appendChild(r)}function r(s,t){var r=arguments.length>2&&void 0!==arguments[2]?arguments[2]:{},n=r.esModule,o=void 0===n||n,i=r.forceReload,a=void 0!==i&&i,l=s.createElement("script");o&&(l.type="module"),a&&(t+="#ts=".concat(Date.now())),l.src=t,l.async=!1,e(l),s.head.appendChild(l)}function n(s,t,r,n){var o=s.createElement("link");o.rel=t,o.href=n,o.type="application/annotator+".concat(r),e(o),s.head.appendChild(o)}function o(s,t,r){var n=s.createElement("link");n.rel="preload",n.as=t,n.href=r,"fetch"===t&&(n.crossOrigin="anonymous"),e(n),s.head.appendChild(n)}function i(s,e){return s.assetRoot+"build/"+s.manifest[e]}function a(s){var e=arguments.length>1&&void 0!==arguments[1]?arguments[1]:document;if(-1===s.indexOf("{"))return s;var t=function(){var s,e,t=(arguments.length>0&&void 0!==arguments[0]?arguments[0]:document).currentScript;return t?(s=t.src,(e=s.match(/(https?):\/\/([^:/]+)/))?{protocol:e[1],hostname:e[2]}:null):null}(e);if(!t)throw new Error("Could not process URL template because script origin is unknown");return s=(s=s.replace("{current_host}",t.hostname)).replace("{current_scheme}",t.protocol)}if(function(){var s=[()=>Object.fromEntries([]),()=>new URL(document.location.href),()=>new Request("https://hypothes.is"),()=>Element.prototype.attachShadow,()=>CSS.supports("display: grid"),()=>(document.evaluate("/html/body",document,null,XPathResult.ANY_TYPE,null),!0)];try{return s.every((s=>s()))}catch(s){return!1}}()){var l=function(s){for(var e={},t=s.querySelectorAll("script.js-hypothesis-config"),r=0;r<t.length;r++){var n=void 0;try{n=JSON.parse(t[r].textContent||"")}catch(s){console.warn("Could not parse settings from js-hypothesis-config tags",s),n={}}Object.assign(e,n)}return e}(document),c=a(l.assetRoot||"https://cdn.hypothes.is/hypothesis/1.1652.0/");if(document.querySelector("hypothesis-app")){!function(s,e){o(s,"fetch",e.apiUrl),o(s,"fetch",e.apiUrl+"links");for(var n=0,a=["scripts/sidebar.bundle.js"];n<a.length;n++)r(s,i(e,a[n]),{esModule:!0});for(var l=0,c=["styles/katex.min.css","styles/sidebar.css"];l<c.length;l++)t(s,i(e,c[l]))}(document,{assetRoot:c,manifest:s,apiUrl:l.apiUrl})}else{var p=function(){var s;return null===(s=(arguments.length>0&&void 0!==arguments[0]?arguments[0]:window).chrome)||void 0===s||null===(s=s.runtime)||void 0===s?void 0:s.id}();if(p&&!function(s){return!!(arguments.length>1&&void 0!==arguments[1]?arguments[1]:document).querySelector("script.js-hypothesis-config[data-extension-id=".concat(s,"]"))}(p))throw new Error("Could not start Hypothesis extension as configuration is missing");var d=l,u=a(d.notebookAppUrl||"https://hypothes.is/notebook"),h=a(d.profileAppUrl||"https://hypothes.is/user-profile"),y=a(d.sidebarAppUrl||"https://hypothes.is/app.html");!function(s,e){if(!s.querySelector('link[type="application/annotator+html"]')){n(s,"sidebar","html",e.sidebarAppUrl),n(s,"notebook","html",e.notebookAppUrl),n(s,"profile","html",e.profileAppUrl),o(s,"style",i(e,"styles/annotator.css")),n(s,"hypothesis-client","javascript",e.assetRoot+"build/boot.js");for(var a=0,l=["scripts/annotator.bundle.js"];a<l.length;a++)r(s,i(e,l[a]),{esModule:!1});var c=[];void 0!==window.PDFViewerApplication&&c.push("styles/pdfjs-overrides.css"),c.push("styles/highlights.css");for(var p=0,d=c;p<d.length;p++)t(s,i(e,d[p]))}}(document,{assetRoot:c,manifest:s,notebookAppUrl:u,profileAppUrl:h,sidebarAppUrl:y})}}else console.warn("The Hypothesis annotation tool is not supported in this browser. See https://web.hypothes.is/help/which-browsers-are-supported-by-hypothesis/.")}();
+<script>!function(){"use strict";var s={"scripts/annotator.bundle.js":"scripts/annotator.bundle.js?6ba261","styles/annotator.css":"styles/annotator.css?ce3b25","styles/annotator.css.map":"styles/annotator.css.map?e7c11d","styles/highlights.css":"styles/highlights.css?470b72","styles/highlights.css.map":"styles/highlights.css.map?d94fe5","styles/katex.min.css":"styles/katex.min.css?921c28","styles/katex.min.css.map":"styles/katex.min.css.map?e7e03f","styles/pdfjs-overrides.css":"styles/pdfjs-overrides.css?c95edf","styles/pdfjs-overrides.css.map":"styles/pdfjs-overrides.css.map?1d8ac6","styles/sidebar.css":"styles/sidebar.css?aebac1","styles/sidebar.css.map":"styles/sidebar.css.map?7c95a4","styles/ui-playground.css":"styles/ui-playground.css?e85615","styles/ui-playground.css.map":"styles/ui-playground.css.map?cd3f7b","scripts/annotator.bundle.js.map":"scripts/annotator.bundle.js.map?25d21b","scripts/sidebar.bundle.js":"scripts/sidebar.bundle.js?8a1773","scripts/ui-playground.bundle.js":"scripts/ui-playground.bundle.js?9ef589","scripts/ui-playground.bundle.js.map":"scripts/ui-playground.bundle.js.map?cfb386","scripts/sidebar.bundle.js.map":"scripts/sidebar.bundle.js.map?a6df98"};function e(s){s.setAttribute("data-hypothesis-asset","")}function t(s,t){var r=s.createElement("link");r.rel="stylesheet",r.type="text/css",r.href=t,e(r),s.head.appendChild(r)}function r(s,t){var r=arguments.length>2&&void 0!==arguments[2]?arguments[2]:{},n=r.esModule,o=void 0===n||n,a=r.forceReload,i=void 0!==a&&a,l=s.createElement("script");o&&(l.type="module"),i&&(t+="#ts=".concat(Date.now())),l.src=t,l.async=!1,e(l),s.head.appendChild(l)}function n(s,t,r,n){var o=s.createElement("link");o.rel=t,o.href=n,o.type="application/annotator+".concat(r),e(o),s.head.appendChild(o)}function o(s,t,r){var n=s.createElement("link");n.rel="preload",n.as=t,n.href=r,"fetch"===t&&(n.crossOrigin="anonymous"),e(n),s.head.appendChild(n)}function a(s,e){return s.assetRoot+"build/"+s.manifest[e]}function i(s){var e=arguments.length>1&&void 0!==arguments[1]?arguments[1]:document;if(-1===s.indexOf("{"))return s;var t=function(){var s,e,t=(arguments.length>0&&void 0!==arguments[0]?arguments[0]:document).currentScript;return t?(s=t.src,(e=s.match(/(https?):\/\/([^:/]+)/))?{protocol:e[1],hostname:e[2]}:null):null}(e);if(!t)throw new Error("Could not process URL template because script origin is unknown");return s=(s=s.replace("{current_host}",t.hostname)).replace("{current_scheme}",t.protocol)}if(function(){var s=[()=>Object.fromEntries([]),()=>new URL(document.location.href),()=>new Request("https://hypothes.is"),()=>Element.prototype.attachShadow,()=>CSS.supports("display: grid"),()=>(document.evaluate("/html/body",document,null,XPathResult.ANY_TYPE,null),!0)];try{return s.every((s=>s()))}catch(s){return!1}}()){var l=function(s){for(var e={},t=s.querySelectorAll("script.js-hypothesis-config"),r=0;r<t.length;r++){var n=void 0;try{n=JSON.parse(t[r].textContent||"")}catch(s){console.warn("Could not parse settings from js-hypothesis-config tags",s),n={}}Object.assign(e,n)}return e}(document),c=i(l.assetRoot||"https://cdn.hypothes.is/hypothesis/1.1663.0/");if(document.querySelector("hypothesis-app")){!function(s,e){o(s,"fetch",e.apiUrl),o(s,"fetch",e.apiUrl+"links");for(var n=0,i=["scripts/sidebar.bundle.js"];n<i.length;n++)r(s,a(e,i[n]),{esModule:!0});for(var l=0,c=["styles/katex.min.css","styles/sidebar.css"];l<c.length;l++)t(s,a(e,c[l]))}(document,{assetRoot:c,manifest:s,apiUrl:l.apiUrl})}else{var p=function(){var s;return null===(s=(arguments.length>0&&void 0!==arguments[0]?arguments[0]:window).chrome)||void 0===s||null===(s=s.runtime)||void 0===s?void 0:s.id}();if(p&&!function(s){return!!(arguments.length>1&&void 0!==arguments[1]?arguments[1]:document).querySelector("script.js-hypothesis-config[data-extension-id=".concat(s,"]"))}(p))throw new Error("Could not start Hypothesis extension as configuration is missing");var d=l,u=i(d.notebookAppUrl||"https://hypothes.is/notebook"),h=i(d.profileAppUrl||"https://hypothes.is/user-profile"),y=i(d.sidebarAppUrl||"https://hypothes.is/app.html");!function(s,e){if(!s.querySelector('link[type="application/annotator+html"]')){n(s,"sidebar","html",e.sidebarAppUrl),n(s,"notebook","html",e.notebookAppUrl),n(s,"profile","html",e.profileAppUrl),o(s,"style",a(e,"styles/annotator.css")),n(s,"hypothesis-client","javascript",e.assetRoot+"build/boot.js");for(var i=0,l=["scripts/annotator.bundle.js"];i<l.length;i++)r(s,a(e,l[i]),{esModule:!1});var c=[];void 0!==window.PDFViewerApplication&&c.push("styles/pdfjs-overrides.css"),c.push("styles/highlights.css");for(var p=0,d=c;p<d.length;p++)t(s,a(e,d[p]))}}(document,{assetRoot:c,manifest:s,notebookAppUrl:u,profileAppUrl:h,sidebarAppUrl:y})}}else console.warn("The Hypothesis annotation tool is not supported in this browser. See https://web.hypothes.is/help/which-browsers-are-supported-by-hypothesis/.")}();
 </script>
 <script>
   window.document.addEventListener("DOMContentLoaded", function (_event) {
@@ -4953,7 +4953,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">June 5, 2025</p>
+      <p class="date">June 17, 2025</p>
     </div>
   </div>
   
@@ -4971,94 +4971,99 @@ window.Quarto = {
 </header>
 
 
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package &#39;cmdstanr&#39; was built under R version 4.4.3</code></pre>
+</div>
+</div>
 <p>Provides a cursory examination of the differences between static regularisation via L1 and L2 penalty vs multilevel approach which achieves dynamic shrinkage. Definitely no free lunch. The model we consider simply examines discrete group means with differential allocation across the groups.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Parameter specification</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>get_par <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
-<span id="cb1-2"><a href="#cb1-2"></a>    <span class="at">n_grp =</span> <span class="dv">9</span>,</span>
-<span id="cb1-3"><a href="#cb1-3"></a>    <span class="at">mu =</span> <span class="dv">1</span>,</span>
-<span id="cb1-4"><a href="#cb1-4"></a>    <span class="at">s_y =</span> <span class="fl">0.3</span></span>
-<span id="cb1-5"><a href="#cb1-5"></a>    ){</span>
-<span id="cb1-6"><a href="#cb1-6"></a>  </span>
-<span id="cb1-7"><a href="#cb1-7"></a>  l <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
-<span id="cb1-8"><a href="#cb1-8"></a>  l<span class="sc">$</span>n_grp <span class="ot">&lt;-</span> n_grp</span>
-<span id="cb1-9"><a href="#cb1-9"></a></span>
-<span id="cb1-10"><a href="#cb1-10"></a>  <span class="co"># overall mean effect across all intervention types</span></span>
-<span id="cb1-11"><a href="#cb1-11"></a>  l<span class="sc">$</span>mu <span class="ot">&lt;-</span> mu</span>
-<span id="cb1-12"><a href="#cb1-12"></a>  <span class="co"># within intervention variation attributable to group membership</span></span>
-<span id="cb1-13"><a href="#cb1-13"></a>  l<span class="sc">$</span>s_y <span class="ot">&lt;-</span> s_y</span>
-<span id="cb1-14"><a href="#cb1-14"></a>  <span class="co"># intervention type specific mean</span></span>
-<span id="cb1-15"><a href="#cb1-15"></a>  l<span class="sc">$</span>mu_j <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n_grp, <span class="dv">0</span>, l<span class="sc">$</span>s_y)</span>
-<span id="cb1-16"><a href="#cb1-16"></a></span>
-<span id="cb1-17"><a href="#cb1-17"></a>  l<span class="sc">$</span>d_par <span class="ot">&lt;-</span> <span class="fu">CJ</span>(</span>
-<span id="cb1-18"><a href="#cb1-18"></a>    <span class="at">j =</span> <span class="fu">factor</span>(<span class="dv">1</span><span class="sc">:</span>l<span class="sc">$</span>n_grp, <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span>l<span class="sc">$</span>n_grp)</span>
-<span id="cb1-19"><a href="#cb1-19"></a>  )</span>
-<span id="cb1-20"><a href="#cb1-20"></a>  l<span class="sc">$</span>d_par[, mu <span class="sc">:</span><span class="er">=</span> l<span class="sc">$</span>mu]</span>
-<span id="cb1-21"><a href="#cb1-21"></a>  l<span class="sc">$</span>d_par[, mu_j <span class="sc">:</span><span class="er">=</span> l<span class="sc">$</span>mu_j[j]]</span>
-<span id="cb1-22"><a href="#cb1-22"></a>  </span>
-<span id="cb1-23"><a href="#cb1-23"></a>  l</span>
-<span id="cb1-24"><a href="#cb1-24"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>get_par <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb2-2"><a href="#cb2-2"></a>    <span class="at">n_grp =</span> <span class="dv">9</span>,</span>
+<span id="cb2-3"><a href="#cb2-3"></a>    <span class="at">mu =</span> <span class="dv">1</span>,</span>
+<span id="cb2-4"><a href="#cb2-4"></a>    <span class="at">s_y =</span> <span class="fl">0.3</span></span>
+<span id="cb2-5"><a href="#cb2-5"></a>    ){</span>
+<span id="cb2-6"><a href="#cb2-6"></a>  </span>
+<span id="cb2-7"><a href="#cb2-7"></a>  l <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb2-8"><a href="#cb2-8"></a>  l<span class="sc">$</span>n_grp <span class="ot">&lt;-</span> n_grp</span>
+<span id="cb2-9"><a href="#cb2-9"></a></span>
+<span id="cb2-10"><a href="#cb2-10"></a>  <span class="co"># overall mean effect across all intervention types</span></span>
+<span id="cb2-11"><a href="#cb2-11"></a>  l<span class="sc">$</span>mu <span class="ot">&lt;-</span> mu</span>
+<span id="cb2-12"><a href="#cb2-12"></a>  <span class="co"># within intervention variation attributable to group membership</span></span>
+<span id="cb2-13"><a href="#cb2-13"></a>  l<span class="sc">$</span>s_y <span class="ot">&lt;-</span> s_y</span>
+<span id="cb2-14"><a href="#cb2-14"></a>  <span class="co"># intervention type specific mean</span></span>
+<span id="cb2-15"><a href="#cb2-15"></a>  l<span class="sc">$</span>mu_j <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(n_grp, <span class="dv">0</span>, l<span class="sc">$</span>s_y)</span>
+<span id="cb2-16"><a href="#cb2-16"></a></span>
+<span id="cb2-17"><a href="#cb2-17"></a>  l<span class="sc">$</span>d_par <span class="ot">&lt;-</span> <span class="fu">CJ</span>(</span>
+<span id="cb2-18"><a href="#cb2-18"></a>    <span class="at">j =</span> <span class="fu">factor</span>(<span class="dv">1</span><span class="sc">:</span>l<span class="sc">$</span>n_grp, <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span>l<span class="sc">$</span>n_grp)</span>
+<span id="cb2-19"><a href="#cb2-19"></a>  )</span>
+<span id="cb2-20"><a href="#cb2-20"></a>  l<span class="sc">$</span>d_par[, mu <span class="sc">:</span><span class="er">=</span> l<span class="sc">$</span>mu]</span>
+<span id="cb2-21"><a href="#cb2-21"></a>  l<span class="sc">$</span>d_par[, mu_j <span class="sc">:</span><span class="er">=</span> l<span class="sc">$</span>mu_j[j]]</span>
+<span id="cb2-22"><a href="#cb2-22"></a>  </span>
+<span id="cb2-23"><a href="#cb2-23"></a>  l</span>
+<span id="cb2-24"><a href="#cb2-24"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Data generation function</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>get_data <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
-<span id="cb2-2"><a href="#cb2-2"></a>    <span class="at">N =</span> <span class="dv">2000</span>, </span>
-<span id="cb2-3"><a href="#cb2-3"></a>    <span class="at">par =</span> <span class="cn">NULL</span>,</span>
-<span id="cb2-4"><a href="#cb2-4"></a>    <span class="at">ff =</span> <span class="cf">function</span>(par, j){</span>
-<span id="cb2-5"><a href="#cb2-5"></a>      eta <span class="ot">=</span> par<span class="sc">$</span>mu <span class="sc">+</span> par<span class="sc">$</span>mu_j[j] </span>
-<span id="cb2-6"><a href="#cb2-6"></a>      eta</span>
-<span id="cb2-7"><a href="#cb2-7"></a>    }){</span>
-<span id="cb2-8"><a href="#cb2-8"></a>  </span>
-<span id="cb2-9"><a href="#cb2-9"></a>  <span class="co"># strata</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a>  d <span class="ot">&lt;-</span> <span class="fu">data.table</span>()</span>
-<span id="cb2-11"><a href="#cb2-11"></a>  </span>
-<span id="cb2-12"><a href="#cb2-12"></a>  <span class="co"># intervention - even allocation</span></span>
-<span id="cb2-13"><a href="#cb2-13"></a>  z <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(par<span class="sc">$</span>n_grp, <span class="dv">0</span>, <span class="fl">0.5</span>)</span>
-<span id="cb2-14"><a href="#cb2-14"></a>  d[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>par<span class="sc">$</span>n_grp, <span class="at">size =</span> N, <span class="at">replace =</span> T, <span class="at">prob =</span> <span class="fu">exp</span>(z)<span class="sc">/</span><span class="fu">sum</span>(<span class="fu">exp</span>(z)))]</span>
-<span id="cb2-15"><a href="#cb2-15"></a>  d[, eta <span class="sc">:</span><span class="er">=</span> <span class="fu">ff</span>(par, j)]</span>
-<span id="cb2-16"><a href="#cb2-16"></a>  d[, y <span class="sc">:</span><span class="er">=</span> <span class="fu">rbinom</span>(.N, <span class="dv">1</span>, <span class="fu">plogis</span>(eta))]</span>
-<span id="cb2-17"><a href="#cb2-17"></a>  </span>
-<span id="cb2-18"><a href="#cb2-18"></a>  d  </span>
-<span id="cb2-19"><a href="#cb2-19"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>get_data <span class="ot">&lt;-</span> <span class="cf">function</span>(</span>
+<span id="cb3-2"><a href="#cb3-2"></a>    <span class="at">N =</span> <span class="dv">2000</span>, </span>
+<span id="cb3-3"><a href="#cb3-3"></a>    <span class="at">par =</span> <span class="cn">NULL</span>,</span>
+<span id="cb3-4"><a href="#cb3-4"></a>    <span class="at">ff =</span> <span class="cf">function</span>(par, j){</span>
+<span id="cb3-5"><a href="#cb3-5"></a>      eta <span class="ot">=</span> par<span class="sc">$</span>mu <span class="sc">+</span> par<span class="sc">$</span>mu_j[j] </span>
+<span id="cb3-6"><a href="#cb3-6"></a>      eta</span>
+<span id="cb3-7"><a href="#cb3-7"></a>    }){</span>
+<span id="cb3-8"><a href="#cb3-8"></a>  </span>
+<span id="cb3-9"><a href="#cb3-9"></a>  <span class="co"># strata</span></span>
+<span id="cb3-10"><a href="#cb3-10"></a>  d <span class="ot">&lt;-</span> <span class="fu">data.table</span>()</span>
+<span id="cb3-11"><a href="#cb3-11"></a>  </span>
+<span id="cb3-12"><a href="#cb3-12"></a>  <span class="co"># intervention - even allocation</span></span>
+<span id="cb3-13"><a href="#cb3-13"></a>  z <span class="ot">&lt;-</span> <span class="fu">rnorm</span>(par<span class="sc">$</span>n_grp, <span class="dv">0</span>, <span class="fl">0.5</span>)</span>
+<span id="cb3-14"><a href="#cb3-14"></a>  d[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span>par<span class="sc">$</span>n_grp, <span class="at">size =</span> N, <span class="at">replace =</span> T, <span class="at">prob =</span> <span class="fu">exp</span>(z)<span class="sc">/</span><span class="fu">sum</span>(<span class="fu">exp</span>(z)))]</span>
+<span id="cb3-15"><a href="#cb3-15"></a>  d[, eta <span class="sc">:</span><span class="er">=</span> <span class="fu">ff</span>(par, j)]</span>
+<span id="cb3-16"><a href="#cb3-16"></a>  d[, y <span class="sc">:</span><span class="er">=</span> <span class="fu">rbinom</span>(.N, <span class="dv">1</span>, <span class="fu">plogis</span>(eta))]</span>
+<span id="cb3-17"><a href="#cb3-17"></a>  </span>
+<span id="cb3-18"><a href="#cb3-18"></a>  d  </span>
+<span id="cb3-19"><a href="#cb3-19"></a>}</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb3-2"><a href="#cb3-2"></a>par <span class="ot">&lt;-</span> <span class="fu">get_par</span>(<span class="at">n_grp =</span> <span class="dv">3</span>, <span class="at">mu =</span> <span class="dv">1</span>, <span class="at">s_y =</span> <span class="fl">0.0</span>)</span>
-<span id="cb3-3"><a href="#cb3-3"></a><span class="co"># 100 people per group - will this overcome the prior?</span></span>
-<span id="cb3-4"><a href="#cb3-4"></a>n_per_grp <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb3-5"><a href="#cb3-5"></a>d <span class="ot">&lt;-</span> <span class="fu">get_data</span>(<span class="at">N =</span> n_per_grp <span class="sc">*</span> par<span class="sc">$</span>n_grp, par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb4-2"><a href="#cb4-2"></a>par <span class="ot">&lt;-</span> <span class="fu">get_par</span>(<span class="at">n_grp =</span> <span class="dv">3</span>, <span class="at">mu =</span> <span class="dv">1</span>, <span class="at">s_y =</span> <span class="fl">0.0</span>)</span>
+<span id="cb4-3"><a href="#cb4-3"></a><span class="co"># 100 people per group - will this overcome the prior?</span></span>
+<span id="cb4-4"><a href="#cb4-4"></a>n_per_grp <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a>d <span class="ot">&lt;-</span> <span class="fu">get_data</span>(<span class="at">N =</span> n_per_grp <span class="sc">*</span> par<span class="sc">$</span>n_grp, par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>m1 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">&quot;stan/mlm-ex-04.stan&quot;</span>)</span>
-<span id="cb4-2"><a href="#cb4-2"></a>m2 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">&quot;stan/mlm-ex-05.stan&quot;</span>)</span>
-<span id="cb4-3"><a href="#cb4-3"></a>m3 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">&quot;stan/mlm-ex-06.stan&quot;</span>)</span>
-<span id="cb4-4"><a href="#cb4-4"></a></span>
-<span id="cb4-5"><a href="#cb4-5"></a>ld <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb4-6"><a href="#cb4-6"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d), </span>
-<span id="cb4-7"><a href="#cb4-7"></a>  <span class="at">y =</span> d<span class="sc">$</span>y,  <span class="at">J =</span> <span class="fu">length</span>(<span class="fu">unique</span>(d<span class="sc">$</span>j)),  <span class="at">j =</span> d<span class="sc">$</span>j, <span class="co"># intervention</span></span>
-<span id="cb4-8"><a href="#cb4-8"></a>  <span class="at">pri_s_norm =</span> <span class="dv">1</span>, </span>
-<span id="cb4-9"><a href="#cb4-9"></a>  <span class="at">pri_s_exp =</span> <span class="dv">1</span>, </span>
-<span id="cb4-10"><a href="#cb4-10"></a>  <span class="at">pri_r =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>, </span>
-<span id="cb4-11"><a href="#cb4-11"></a>  <span class="co"># when alpha = 1, we have pure lasso regression (double exp)</span></span>
-<span id="cb4-12"><a href="#cb4-12"></a>  <span class="co"># when alpha = 0, we have pure ridge regression (normal with 1/lambda scale).</span></span>
-<span id="cb4-13"><a href="#cb4-13"></a>  <span class="at">pri_alpha =</span> <span class="fl">0.6</span>,</span>
-<span id="cb4-14"><a href="#cb4-14"></a>  <span class="at">pri_lambda =</span> <span class="dv">1</span>, <span class="co"># scale is 1/pri_lambda</span></span>
-<span id="cb4-15"><a href="#cb4-15"></a>  <span class="at">prior_only =</span> <span class="dv">1</span></span>
-<span id="cb4-16"><a href="#cb4-16"></a>)</span>
-<span id="cb4-17"><a href="#cb4-17"></a></span>
-<span id="cb4-18"><a href="#cb4-18"></a>f1 <span class="ot">&lt;-</span> m1<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb4-19"><a href="#cb4-19"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">5000</span>,</span>
-<span id="cb4-20"><a href="#cb4-20"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb4-21"><a href="#cb4-21"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a>m1 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">&quot;stan/mlm-ex-04.stan&quot;</span>)</span>
+<span id="cb5-2"><a href="#cb5-2"></a>m2 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">&quot;stan/mlm-ex-05.stan&quot;</span>)</span>
+<span id="cb5-3"><a href="#cb5-3"></a>m3 <span class="ot">&lt;-</span> cmdstanr<span class="sc">::</span><span class="fu">cmdstan_model</span>(<span class="st">&quot;stan/mlm-ex-06.stan&quot;</span>)</span>
+<span id="cb5-4"><a href="#cb5-4"></a></span>
+<span id="cb5-5"><a href="#cb5-5"></a>ld <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb5-6"><a href="#cb5-6"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d), </span>
+<span id="cb5-7"><a href="#cb5-7"></a>  <span class="at">y =</span> d<span class="sc">$</span>y,  <span class="at">J =</span> <span class="fu">length</span>(<span class="fu">unique</span>(d<span class="sc">$</span>j)),  <span class="at">j =</span> d<span class="sc">$</span>j, <span class="co"># intervention</span></span>
+<span id="cb5-8"><a href="#cb5-8"></a>  <span class="at">pri_s_norm =</span> <span class="dv">1</span>, </span>
+<span id="cb5-9"><a href="#cb5-9"></a>  <span class="at">pri_s_exp =</span> <span class="dv">1</span>, </span>
+<span id="cb5-10"><a href="#cb5-10"></a>  <span class="at">pri_r =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>, </span>
+<span id="cb5-11"><a href="#cb5-11"></a>  <span class="co"># when alpha = 1, we have pure lasso regression (double exp)</span></span>
+<span id="cb5-12"><a href="#cb5-12"></a>  <span class="co"># when alpha = 0, we have pure ridge regression (normal with 1/lambda scale).</span></span>
+<span id="cb5-13"><a href="#cb5-13"></a>  <span class="at">pri_alpha =</span> <span class="fl">0.6</span>,</span>
+<span id="cb5-14"><a href="#cb5-14"></a>  <span class="at">pri_lambda =</span> <span class="dv">1</span>, <span class="co"># scale is 1/pri_lambda</span></span>
+<span id="cb5-15"><a href="#cb5-15"></a>  <span class="at">prior_only =</span> <span class="dv">1</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a>)</span>
+<span id="cb5-17"><a href="#cb5-17"></a></span>
+<span id="cb5-18"><a href="#cb5-18"></a>f1 <span class="ot">&lt;-</span> m1<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb5-19"><a href="#cb5-19"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">5000</span>,</span>
+<span id="cb5-20"><a href="#cb5-20"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb5-21"><a href="#cb5-21"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
@@ -5072,10 +5077,10 @@ Total execution time: 0.2 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a>f2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb6-2"><a href="#cb6-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">5000</span>,</span>
-<span id="cb6-3"><a href="#cb6-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb6-4"><a href="#cb6-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>f2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb7-2"><a href="#cb7-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">5000</span>,</span>
+<span id="cb7-3"><a href="#cb7-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb7-4"><a href="#cb7-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
@@ -5085,14 +5090,14 @@ Chain 2 finished in 0.1 seconds.
 
 Both chains finished successfully.
 Mean chain execution time: 0.1 seconds.
-Total execution time: 0.1 seconds.</code></pre>
+Total execution time: 0.2 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a>f3 <span class="ot">&lt;-</span> m3<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb8-2"><a href="#cb8-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">5000</span>,</span>
-<span id="cb8-3"><a href="#cb8-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb8-4"><a href="#cb8-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a>f3 <span class="ot">&lt;-</span> m3<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb9-2"><a href="#cb9-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">5000</span>,</span>
+<span id="cb9-3"><a href="#cb9-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb9-4"><a href="#cb9-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
@@ -5102,51 +5107,51 @@ Chain 2 finished in 0.1 seconds.
 
 Both chains finished successfully.
 Mean chain execution time: 0.1 seconds.
-Total execution time: 0.1 seconds.</code></pre>
+Total execution time: 0.2 seconds.</code></pre>
 </div>
 </div>
 <p>The priors on the group level offsets. The elastic net priors are a preset combination of ridge and lasso regression.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Implied priors on the group level deviations from the grand mean</summary>
-<div class="sourceCode cell-code" id="cb10" data-cap-location="bottom"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;z_eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
-<span id="cb10-2"><a href="#cb10-2"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_1, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_1))</span>
-<span id="cb10-3"><a href="#cb10-3"></a>d_1[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;unpooled&quot;</span>]</span>
-<span id="cb10-4"><a href="#cb10-4"></a></span>
-<span id="cb10-5"><a href="#cb10-5"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;z_eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
-<span id="cb10-6"><a href="#cb10-6"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_2, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_2))</span>
-<span id="cb10-7"><a href="#cb10-7"></a>d_2[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;elastic-net&quot;</span>]</span>
-<span id="cb10-8"><a href="#cb10-8"></a></span>
-<span id="cb10-9"><a href="#cb10-9"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f3<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;z_eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
-<span id="cb10-10"><a href="#cb10-10"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_3, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_3))</span>
-<span id="cb10-11"><a href="#cb10-11"></a>d_3[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;mlm&quot;</span>]</span>
-<span id="cb10-12"><a href="#cb10-12"></a></span>
-<span id="cb10-13"><a href="#cb10-13"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_1, d_2, d_3)</span>
-<span id="cb10-14"><a href="#cb10-14"></a>d_fig[, desc <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(desc, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;unpooled&quot;</span>, <span class="st">&quot;elastic-net&quot;</span>, <span class="st">&quot;mlm&quot;</span>))]</span>
-<span id="cb10-15"><a href="#cb10-15"></a></span>
-<span id="cb10-16"><a href="#cb10-16"></a>x <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">min</span>(d_fig<span class="sc">$</span>value), <span class="fu">max</span>(d_fig<span class="sc">$</span>value), <span class="at">len =</span> <span class="dv">1000</span>)</span>
-<span id="cb10-17"><a href="#cb10-17"></a><span class="co"># for ridge</span></span>
-<span id="cb10-18"><a href="#cb10-18"></a>den_2a <span class="ot">&lt;-</span> <span class="fu">dnorm</span>(x, <span class="dv">0</span>, <span class="dv">1</span><span class="sc">/</span>ld<span class="sc">$</span>pri_lambda)</span>
-<span id="cb10-19"><a href="#cb10-19"></a><span class="co"># for lasso</span></span>
-<span id="cb10-20"><a href="#cb10-20"></a>den_2b <span class="ot">&lt;-</span> extraDistr<span class="sc">::</span><span class="fu">dlaplace</span>(x, <span class="dv">0</span>, <span class="dv">1</span><span class="sc">/</span>ld<span class="sc">$</span>pri_lambda)</span>
-<span id="cb10-21"><a href="#cb10-21"></a></span>
-<span id="cb10-22"><a href="#cb10-22"></a>d_sta <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
-<span id="cb10-23"><a href="#cb10-23"></a>  <span class="fu">data.table</span>(<span class="at">desc =</span> <span class="st">&quot;elastic-net&quot;</span>, <span class="at">mod =</span> <span class="st">&quot;ridge&quot;</span>, <span class="at">x =</span> x, <span class="at">y =</span> den_2a),</span>
-<span id="cb10-24"><a href="#cb10-24"></a>  <span class="fu">data.table</span>(<span class="at">desc =</span> <span class="st">&quot;elastic-net&quot;</span>, <span class="at">mod =</span> <span class="st">&quot;lasso&quot;</span>, <span class="at">x =</span> x, <span class="at">y =</span> den_2b)</span>
-<span id="cb10-25"><a href="#cb10-25"></a>)</span>
-<span id="cb10-26"><a href="#cb10-26"></a>d_sta[, desc <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(desc, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;unpooled&quot;</span>, <span class="st">&quot;elastic-net&quot;</span>, <span class="st">&quot;mlm&quot;</span>))]</span>
-<span id="cb10-27"><a href="#cb10-27"></a></span>
-<span id="cb10-28"><a href="#cb10-28"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> value, <span class="at">group =</span> variable)) <span class="sc">+</span></span>
-<span id="cb10-29"><a href="#cb10-29"></a>  <span class="fu">geom_line</span>(</span>
-<span id="cb10-30"><a href="#cb10-30"></a>    <span class="at">data =</span> d_sta[mod <span class="sc">==</span> <span class="st">&quot;lasso&quot;</span>],</span>
-<span id="cb10-31"><a href="#cb10-31"></a>    <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">group =</span> desc), <span class="at">inherit.aes =</span> F,</span>
-<span id="cb10-32"><a href="#cb10-32"></a>    <span class="at">col =</span> <span class="dv">2</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">lwd =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb10-33"><a href="#cb10-33"></a>  <span class="fu">geom_line</span>(</span>
-<span id="cb10-34"><a href="#cb10-34"></a>    <span class="at">data =</span> d_sta[mod <span class="sc">==</span> <span class="st">&quot;ridge&quot;</span>],</span>
-<span id="cb10-35"><a href="#cb10-35"></a>    <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">group =</span> desc), <span class="at">inherit.aes =</span> F,</span>
-<span id="cb10-36"><a href="#cb10-36"></a>    <span class="at">col =</span> <span class="dv">3</span>, <span class="at">lty =</span> <span class="dv">5</span>, <span class="at">lwd =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb10-37"><a href="#cb10-37"></a>  <span class="fu">geom_density</span>(<span class="at">lwd =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
-<span id="cb10-38"><a href="#cb10-38"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>desc, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb11" data-cap-location="bottom"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;z_eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
+<span id="cb11-2"><a href="#cb11-2"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_1, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_1))</span>
+<span id="cb11-3"><a href="#cb11-3"></a>d_1[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;unpooled&quot;</span>]</span>
+<span id="cb11-4"><a href="#cb11-4"></a></span>
+<span id="cb11-5"><a href="#cb11-5"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;z_eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
+<span id="cb11-6"><a href="#cb11-6"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_2, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_2))</span>
+<span id="cb11-7"><a href="#cb11-7"></a>d_2[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;elastic-net&quot;</span>]</span>
+<span id="cb11-8"><a href="#cb11-8"></a></span>
+<span id="cb11-9"><a href="#cb11-9"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f3<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;z_eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
+<span id="cb11-10"><a href="#cb11-10"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_3, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_3))</span>
+<span id="cb11-11"><a href="#cb11-11"></a>d_3[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;mlm&quot;</span>]</span>
+<span id="cb11-12"><a href="#cb11-12"></a></span>
+<span id="cb11-13"><a href="#cb11-13"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_1, d_2, d_3)</span>
+<span id="cb11-14"><a href="#cb11-14"></a>d_fig[, desc <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(desc, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;unpooled&quot;</span>, <span class="st">&quot;elastic-net&quot;</span>, <span class="st">&quot;mlm&quot;</span>))]</span>
+<span id="cb11-15"><a href="#cb11-15"></a></span>
+<span id="cb11-16"><a href="#cb11-16"></a>x <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fu">min</span>(d_fig<span class="sc">$</span>value), <span class="fu">max</span>(d_fig<span class="sc">$</span>value), <span class="at">len =</span> <span class="dv">1000</span>)</span>
+<span id="cb11-17"><a href="#cb11-17"></a><span class="co"># for ridge</span></span>
+<span id="cb11-18"><a href="#cb11-18"></a>den_2a <span class="ot">&lt;-</span> <span class="fu">dnorm</span>(x, <span class="dv">0</span>, <span class="dv">1</span><span class="sc">/</span>ld<span class="sc">$</span>pri_lambda)</span>
+<span id="cb11-19"><a href="#cb11-19"></a><span class="co"># for lasso</span></span>
+<span id="cb11-20"><a href="#cb11-20"></a>den_2b <span class="ot">&lt;-</span> extraDistr<span class="sc">::</span><span class="fu">dlaplace</span>(x, <span class="dv">0</span>, <span class="dv">1</span><span class="sc">/</span>ld<span class="sc">$</span>pri_lambda)</span>
+<span id="cb11-21"><a href="#cb11-21"></a></span>
+<span id="cb11-22"><a href="#cb11-22"></a>d_sta <span class="ot">&lt;-</span> <span class="fu">rbind</span>(</span>
+<span id="cb11-23"><a href="#cb11-23"></a>  <span class="fu">data.table</span>(<span class="at">desc =</span> <span class="st">&quot;elastic-net&quot;</span>, <span class="at">mod =</span> <span class="st">&quot;ridge&quot;</span>, <span class="at">x =</span> x, <span class="at">y =</span> den_2a),</span>
+<span id="cb11-24"><a href="#cb11-24"></a>  <span class="fu">data.table</span>(<span class="at">desc =</span> <span class="st">&quot;elastic-net&quot;</span>, <span class="at">mod =</span> <span class="st">&quot;lasso&quot;</span>, <span class="at">x =</span> x, <span class="at">y =</span> den_2b)</span>
+<span id="cb11-25"><a href="#cb11-25"></a>)</span>
+<span id="cb11-26"><a href="#cb11-26"></a>d_sta[, desc <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(desc, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;unpooled&quot;</span>, <span class="st">&quot;elastic-net&quot;</span>, <span class="st">&quot;mlm&quot;</span>))]</span>
+<span id="cb11-27"><a href="#cb11-27"></a></span>
+<span id="cb11-28"><a href="#cb11-28"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> value, <span class="at">group =</span> variable)) <span class="sc">+</span></span>
+<span id="cb11-29"><a href="#cb11-29"></a>  <span class="fu">geom_line</span>(</span>
+<span id="cb11-30"><a href="#cb11-30"></a>    <span class="at">data =</span> d_sta[mod <span class="sc">==</span> <span class="st">&quot;lasso&quot;</span>],</span>
+<span id="cb11-31"><a href="#cb11-31"></a>    <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">group =</span> desc), <span class="at">inherit.aes =</span> F,</span>
+<span id="cb11-32"><a href="#cb11-32"></a>    <span class="at">col =</span> <span class="dv">2</span>, <span class="at">lty =</span> <span class="dv">2</span>, <span class="at">lwd =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb11-33"><a href="#cb11-33"></a>  <span class="fu">geom_line</span>(</span>
+<span id="cb11-34"><a href="#cb11-34"></a>    <span class="at">data =</span> d_sta[mod <span class="sc">==</span> <span class="st">&quot;ridge&quot;</span>],</span>
+<span id="cb11-35"><a href="#cb11-35"></a>    <span class="fu">aes</span>(<span class="at">x =</span> x, <span class="at">y =</span> y, <span class="at">group =</span> desc), <span class="at">inherit.aes =</span> F,</span>
+<span id="cb11-36"><a href="#cb11-36"></a>    <span class="at">col =</span> <span class="dv">3</span>, <span class="at">lty =</span> <span class="dv">5</span>, <span class="at">lwd =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb11-37"><a href="#cb11-37"></a>  <span class="fu">geom_density</span>(<span class="at">lwd =</span> <span class="fl">0.2</span>) <span class="sc">+</span></span>
+<span id="cb11-38"><a href="#cb11-38"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>desc, <span class="at">ncol =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-prior-01" class="quarto-float quarto-figure quarto-figure-center anchored" data-cap-location="bottom">
@@ -5164,121 +5169,121 @@ Figure 1: Implied priors on the group level deviations from the grand mean
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
-<span id="cb11-2"><a href="#cb11-2"></a>par <span class="ot">&lt;-</span> <span class="fu">get_par</span>(<span class="at">n_grp =</span> <span class="dv">10</span>, <span class="at">mu =</span> <span class="dv">1</span>, <span class="at">s_y =</span> <span class="fl">0.5</span>)</span>
-<span id="cb11-3"><a href="#cb11-3"></a><span class="co"># 100 people per group - will this overcome the prior?</span></span>
-<span id="cb11-4"><a href="#cb11-4"></a>n_per_grp <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb11-5"><a href="#cb11-5"></a>d <span class="ot">&lt;-</span> <span class="fu">get_data</span>(<span class="at">N =</span> n_per_grp <span class="sc">*</span> par<span class="sc">$</span>n_grp, par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a><span class="fu">set.seed</span>(<span class="dv">1</span>)</span>
+<span id="cb12-2"><a href="#cb12-2"></a>par <span class="ot">&lt;-</span> <span class="fu">get_par</span>(<span class="at">n_grp =</span> <span class="dv">10</span>, <span class="at">mu =</span> <span class="dv">1</span>, <span class="at">s_y =</span> <span class="fl">0.5</span>)</span>
+<span id="cb12-3"><a href="#cb12-3"></a><span class="co"># 100 people per group - will this overcome the prior?</span></span>
+<span id="cb12-4"><a href="#cb12-4"></a>n_per_grp <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb12-5"><a href="#cb12-5"></a>d <span class="ot">&lt;-</span> <span class="fu">get_data</span>(<span class="at">N =</span> n_per_grp <span class="sc">*</span> par<span class="sc">$</span>n_grp, par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>ld <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb12-2"><a href="#cb12-2"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d), </span>
-<span id="cb12-3"><a href="#cb12-3"></a>  <span class="at">y =</span> d<span class="sc">$</span>y,  <span class="at">J =</span> <span class="fu">length</span>(<span class="fu">unique</span>(d<span class="sc">$</span>j)),  <span class="at">j =</span> d<span class="sc">$</span>j, <span class="co"># intervention</span></span>
-<span id="cb12-4"><a href="#cb12-4"></a>  <span class="at">pri_s_norm =</span> <span class="dv">2</span>, </span>
-<span id="cb12-5"><a href="#cb12-5"></a>  <span class="at">pri_s_exp =</span> <span class="dv">1</span>, </span>
-<span id="cb12-6"><a href="#cb12-6"></a>  <span class="at">pri_r =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>,  </span>
-<span id="cb12-7"><a href="#cb12-7"></a>  <span class="co"># when alpha = 1, we have pure lasso regression (double exp)</span></span>
-<span id="cb12-8"><a href="#cb12-8"></a>  <span class="co"># when alpha = 0, we have pure ridge regression (normal with 1/lambda scale).</span></span>
-<span id="cb12-9"><a href="#cb12-9"></a>  <span class="at">pri_alpha =</span> <span class="fl">0.9</span>,</span>
-<span id="cb12-10"><a href="#cb12-10"></a>  <span class="at">pri_lambda =</span> <span class="fl">0.76</span>, <span class="co"># scale is 1/pri_lambda for both ridge and lasso</span></span>
-<span id="cb12-11"><a href="#cb12-11"></a>  <span class="at">prior_only =</span> <span class="dv">0</span></span>
-<span id="cb12-12"><a href="#cb12-12"></a>)</span>
-<span id="cb12-13"><a href="#cb12-13"></a></span>
-<span id="cb12-14"><a href="#cb12-14"></a>f1 <span class="ot">&lt;-</span> m1<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb12-15"><a href="#cb12-15"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
-<span id="cb12-16"><a href="#cb12-16"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb12-17"><a href="#cb12-17"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>ld <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb13-2"><a href="#cb13-2"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d), </span>
+<span id="cb13-3"><a href="#cb13-3"></a>  <span class="at">y =</span> d<span class="sc">$</span>y,  <span class="at">J =</span> <span class="fu">length</span>(<span class="fu">unique</span>(d<span class="sc">$</span>j)),  <span class="at">j =</span> d<span class="sc">$</span>j, <span class="co"># intervention</span></span>
+<span id="cb13-4"><a href="#cb13-4"></a>  <span class="at">pri_s_norm =</span> <span class="dv">2</span>, </span>
+<span id="cb13-5"><a href="#cb13-5"></a>  <span class="at">pri_s_exp =</span> <span class="dv">1</span>, </span>
+<span id="cb13-6"><a href="#cb13-6"></a>  <span class="at">pri_r =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>,  </span>
+<span id="cb13-7"><a href="#cb13-7"></a>  <span class="co"># when alpha = 1, we have pure lasso regression (double exp)</span></span>
+<span id="cb13-8"><a href="#cb13-8"></a>  <span class="co"># when alpha = 0, we have pure ridge regression (normal with 1/lambda scale).</span></span>
+<span id="cb13-9"><a href="#cb13-9"></a>  <span class="at">pri_alpha =</span> <span class="fl">0.9</span>,</span>
+<span id="cb13-10"><a href="#cb13-10"></a>  <span class="at">pri_lambda =</span> <span class="fl">0.76</span>, <span class="co"># scale is 1/pri_lambda for both ridge and lasso</span></span>
+<span id="cb13-11"><a href="#cb13-11"></a>  <span class="at">prior_only =</span> <span class="dv">0</span></span>
+<span id="cb13-12"><a href="#cb13-12"></a>)</span>
+<span id="cb13-13"><a href="#cb13-13"></a></span>
+<span id="cb13-14"><a href="#cb13-14"></a>f1 <span class="ot">&lt;-</span> m1<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb13-15"><a href="#cb13-15"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
+<span id="cb13-16"><a href="#cb13-16"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb13-17"><a href="#cb13-17"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Running MCMC with 2 parallel chains...
+
+Chain 1 finished in 1.1 seconds.
+Chain 2 finished in 1.1 seconds.
+
+Both chains finished successfully.
+Mean chain execution time: 1.1 seconds.
+Total execution time: 1.2 seconds.</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>f2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb15-2"><a href="#cb15-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
+<span id="cb15-3"><a href="#cb15-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb15-4"><a href="#cb15-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Running MCMC with 2 parallel chains...
+
+Chain 1 finished in 0.8 seconds.
+Chain 2 finished in 0.8 seconds.
+
+Both chains finished successfully.
+Mean chain execution time: 0.8 seconds.
+Total execution time: 0.9 seconds.</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>f3 <span class="ot">&lt;-</span> m3<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb17-2"><a href="#cb17-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
+<span id="cb17-3"><a href="#cb17-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb17-4"><a href="#cb17-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
 Chain 1 finished in 0.7 seconds.
-Chain 2 finished in 0.7 seconds.
+Chain 2 finished in 0.8 seconds.
 
 Both chains finished successfully.
 Mean chain execution time: 0.7 seconds.
-Total execution time: 0.8 seconds.</code></pre>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>f2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb14-2"><a href="#cb14-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
-<span id="cb14-3"><a href="#cb14-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb14-4"><a href="#cb14-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Running MCMC with 2 parallel chains...
-
-Chain 1 finished in 0.5 seconds.
-Chain 2 finished in 0.5 seconds.
-
-Both chains finished successfully.
-Mean chain execution time: 0.5 seconds.
-Total execution time: 0.6 seconds.</code></pre>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>f3 <span class="ot">&lt;-</span> m3<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb16-2"><a href="#cb16-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
-<span id="cb16-3"><a href="#cb16-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb16-4"><a href="#cb16-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Running MCMC with 2 parallel chains...
-
-Chain 1 finished in 0.4 seconds.
-Chain 2 finished in 0.5 seconds.
-
-Both chains finished successfully.
-Mean chain execution time: 0.4 seconds.
-Total execution time: 0.5 seconds.</code></pre>
+Total execution time: 0.9 seconds.</code></pre>
 </div>
 </div>
 <p>Treatment group posteriors. By adjusting <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\lambda\)</span> in the elastic net model we can a-priori determine the magnitude of regularisation we want to achieve. In practice, the quantities should be pre-specified and a sensitivity analysis on the main analysis based on varying these quantities.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Posterior inference on the group level means</summary>
-<div class="sourceCode cell-code" id="cb18" data-cap-location="bottom"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>d_0 <span class="ot">&lt;-</span> d[, .(<span class="at">desc =</span> <span class="st">&quot;observed&quot;</span>, <span class="at">eta =</span> <span class="fu">qlogis</span>(<span class="fu">mean</span>(y))), keyby <span class="ot">=</span> j]</span>
-<span id="cb18-2"><a href="#cb18-2"></a></span>
-<span id="cb18-3"><a href="#cb18-3"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
-<span id="cb18-4"><a href="#cb18-4"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_1, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_1), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
-<span id="cb18-5"><a href="#cb18-5"></a>d_1[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;unpooled&quot;</span>]</span>
-<span id="cb18-6"><a href="#cb18-6"></a></span>
-<span id="cb18-7"><a href="#cb18-7"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
-<span id="cb18-8"><a href="#cb18-8"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_2, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_2), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
-<span id="cb18-9"><a href="#cb18-9"></a>d_2[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;elastic-net&quot;</span>]</span>
-<span id="cb18-10"><a href="#cb18-10"></a></span>
-<span id="cb18-11"><a href="#cb18-11"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f3<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
-<span id="cb18-12"><a href="#cb18-12"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_3, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_3), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
-<span id="cb18-13"><a href="#cb18-13"></a>d_3[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;mlm&quot;</span>]</span>
-<span id="cb18-14"><a href="#cb18-14"></a></span>
-<span id="cb18-15"><a href="#cb18-15"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_1, d_2, d_3)</span>
-<span id="cb18-16"><a href="#cb18-16"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">&quot;eta[&quot;</span>, <span class="st">&quot;&quot;</span>, variable, <span class="at">fixed =</span> T)]</span>
-<span id="cb18-17"><a href="#cb18-17"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">&quot;]&quot;</span>, <span class="st">&quot;&quot;</span>, j, <span class="at">fixed =</span> T)]</span>
-<span id="cb18-18"><a href="#cb18-18"></a>d_fig[, variable <span class="sc">:</span><span class="er">=</span> <span class="cn">NULL</span>]</span>
-<span id="cb18-19"><a href="#cb18-19"></a>d_fig[, desc <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(</span>
-<span id="cb18-20"><a href="#cb18-20"></a>  desc, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;observed&quot;</span>, <span class="st">&quot;unpooled&quot;</span>, <span class="st">&quot;elastic-net&quot;</span>, <span class="st">&quot;mlm&quot;</span>))]</span>
-<span id="cb18-21"><a href="#cb18-21"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_fig, d_0)</span>
-<span id="cb18-22"><a href="#cb18-22"></a></span>
-<span id="cb18-23"><a href="#cb18-23"></a>d_fig <span class="ot">&lt;-</span> d_fig[, .(</span>
-<span id="cb18-24"><a href="#cb18-24"></a>  <span class="at">mu =</span> <span class="fu">mean</span>(eta), </span>
-<span id="cb18-25"><a href="#cb18-25"></a>  <span class="at">q5 =</span> <span class="fu">quantile</span>(eta, <span class="at">prob =</span> <span class="fl">0.05</span>),</span>
-<span id="cb18-26"><a href="#cb18-26"></a>  <span class="at">q95 =</span> <span class="fu">quantile</span>(eta, <span class="at">prob =</span> <span class="fl">0.95</span>)), keyby <span class="ot">=</span> .(desc, j)]</span>
-<span id="cb18-27"><a href="#cb18-27"></a></span>
-<span id="cb18-28"><a href="#cb18-28"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(j, <span class="at">levels =</span> <span class="fu">paste0</span>(<span class="dv">1</span><span class="sc">:</span>par<span class="sc">$</span>n_grp))]</span>
-<span id="cb18-29"><a href="#cb18-29"></a></span>
-<span id="cb18-30"><a href="#cb18-30"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> j, <span class="at">y =</span> mu, <span class="at">group =</span> desc, <span class="at">col =</span> desc)) <span class="sc">+</span></span>
-<span id="cb18-31"><a href="#cb18-31"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.6</span>)) <span class="sc">+</span></span>
-<span id="cb18-32"><a href="#cb18-32"></a>  <span class="fu">geom_linerange</span>(</span>
-<span id="cb18-33"><a href="#cb18-33"></a>    <span class="fu">aes</span>(<span class="at">ymin =</span> q5, <span class="at">ymax =</span> q95),</span>
-<span id="cb18-34"><a href="#cb18-34"></a>    <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.6</span>)) <span class="sc">+</span></span>
-<span id="cb18-35"><a href="#cb18-35"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">&quot;&quot;</span>) <span class="sc">+</span></span>
-<span id="cb18-36"><a href="#cb18-36"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> d[, .N, <span class="at">keyby =</span> .(j)],</span>
-<span id="cb18-37"><a href="#cb18-37"></a>            <span class="fu">aes</span>(<span class="at">x =</span> j, <span class="at">y =</span> <span class="fu">min</span>(d_fig<span class="sc">$</span>q5, <span class="at">na.rm =</span> T) <span class="sc">-</span> <span class="fl">0.2</span>, </span>
-<span id="cb18-38"><a href="#cb18-38"></a>                <span class="at">label =</span> N), <span class="at">inherit.aes =</span> F) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb19" data-cap-location="bottom"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a>d_0 <span class="ot">&lt;-</span> d[, .(<span class="at">desc =</span> <span class="st">&quot;observed&quot;</span>, <span class="at">eta =</span> <span class="fu">qlogis</span>(<span class="fu">mean</span>(y))), keyby <span class="ot">=</span> j]</span>
+<span id="cb19-2"><a href="#cb19-2"></a></span>
+<span id="cb19-3"><a href="#cb19-3"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
+<span id="cb19-4"><a href="#cb19-4"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_1, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_1), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
+<span id="cb19-5"><a href="#cb19-5"></a>d_1[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;unpooled&quot;</span>]</span>
+<span id="cb19-6"><a href="#cb19-6"></a></span>
+<span id="cb19-7"><a href="#cb19-7"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
+<span id="cb19-8"><a href="#cb19-8"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_2, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_2), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
+<span id="cb19-9"><a href="#cb19-9"></a>d_2[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;elastic-net&quot;</span>]</span>
+<span id="cb19-10"><a href="#cb19-10"></a></span>
+<span id="cb19-11"><a href="#cb19-11"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f3<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
+<span id="cb19-12"><a href="#cb19-12"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_3, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_3), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
+<span id="cb19-13"><a href="#cb19-13"></a>d_3[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;mlm&quot;</span>]</span>
+<span id="cb19-14"><a href="#cb19-14"></a></span>
+<span id="cb19-15"><a href="#cb19-15"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_1, d_2, d_3)</span>
+<span id="cb19-16"><a href="#cb19-16"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">&quot;eta[&quot;</span>, <span class="st">&quot;&quot;</span>, variable, <span class="at">fixed =</span> T)]</span>
+<span id="cb19-17"><a href="#cb19-17"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">&quot;]&quot;</span>, <span class="st">&quot;&quot;</span>, j, <span class="at">fixed =</span> T)]</span>
+<span id="cb19-18"><a href="#cb19-18"></a>d_fig[, variable <span class="sc">:</span><span class="er">=</span> <span class="cn">NULL</span>]</span>
+<span id="cb19-19"><a href="#cb19-19"></a>d_fig[, desc <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(</span>
+<span id="cb19-20"><a href="#cb19-20"></a>  desc, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;observed&quot;</span>, <span class="st">&quot;unpooled&quot;</span>, <span class="st">&quot;elastic-net&quot;</span>, <span class="st">&quot;mlm&quot;</span>))]</span>
+<span id="cb19-21"><a href="#cb19-21"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_fig, d_0)</span>
+<span id="cb19-22"><a href="#cb19-22"></a></span>
+<span id="cb19-23"><a href="#cb19-23"></a>d_fig <span class="ot">&lt;-</span> d_fig[, .(</span>
+<span id="cb19-24"><a href="#cb19-24"></a>  <span class="at">mu =</span> <span class="fu">mean</span>(eta), </span>
+<span id="cb19-25"><a href="#cb19-25"></a>  <span class="at">q5 =</span> <span class="fu">quantile</span>(eta, <span class="at">prob =</span> <span class="fl">0.05</span>),</span>
+<span id="cb19-26"><a href="#cb19-26"></a>  <span class="at">q95 =</span> <span class="fu">quantile</span>(eta, <span class="at">prob =</span> <span class="fl">0.95</span>)), keyby <span class="ot">=</span> .(desc, j)]</span>
+<span id="cb19-27"><a href="#cb19-27"></a></span>
+<span id="cb19-28"><a href="#cb19-28"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(j, <span class="at">levels =</span> <span class="fu">paste0</span>(<span class="dv">1</span><span class="sc">:</span>par<span class="sc">$</span>n_grp))]</span>
+<span id="cb19-29"><a href="#cb19-29"></a></span>
+<span id="cb19-30"><a href="#cb19-30"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> j, <span class="at">y =</span> mu, <span class="at">group =</span> desc, <span class="at">col =</span> desc)) <span class="sc">+</span></span>
+<span id="cb19-31"><a href="#cb19-31"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.6</span>)) <span class="sc">+</span></span>
+<span id="cb19-32"><a href="#cb19-32"></a>  <span class="fu">geom_linerange</span>(</span>
+<span id="cb19-33"><a href="#cb19-33"></a>    <span class="fu">aes</span>(<span class="at">ymin =</span> q5, <span class="at">ymax =</span> q95),</span>
+<span id="cb19-34"><a href="#cb19-34"></a>    <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.6</span>)) <span class="sc">+</span></span>
+<span id="cb19-35"><a href="#cb19-35"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">&quot;&quot;</span>) <span class="sc">+</span></span>
+<span id="cb19-36"><a href="#cb19-36"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> d[, .N, <span class="at">keyby =</span> .(j)],</span>
+<span id="cb19-37"><a href="#cb19-37"></a>            <span class="fu">aes</span>(<span class="at">x =</span> j, <span class="at">y =</span> <span class="fu">min</span>(d_fig<span class="sc">$</span>q5, <span class="at">na.rm =</span> T) <span class="sc">-</span> <span class="fl">0.2</span>, </span>
+<span id="cb19-38"><a href="#cb19-38"></a>                <span class="at">label =</span> N), <span class="at">inherit.aes =</span> F) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-post-01" class="quarto-float quarto-figure quarto-figure-center anchored" data-cap-location="bottom">
@@ -5296,120 +5301,120 @@ Figure 2: Posterior inference on the group level means
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1"></a><span class="fu">set.seed</span>(<span class="dv">2</span>)</span>
-<span id="cb19-2"><a href="#cb19-2"></a>par <span class="ot">&lt;-</span> <span class="fu">get_par</span>(<span class="at">n_grp =</span> <span class="dv">10</span>, <span class="at">mu =</span> <span class="dv">1</span>, <span class="at">s_y =</span> <span class="fl">0.5</span>)</span>
-<span id="cb19-3"><a href="#cb19-3"></a>n_per_grp <span class="ot">&lt;-</span> <span class="dv">500</span></span>
-<span id="cb19-4"><a href="#cb19-4"></a>d <span class="ot">&lt;-</span> <span class="fu">get_data</span>(<span class="at">N =</span> n_per_grp <span class="sc">*</span> par<span class="sc">$</span>n_grp, par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a><span class="fu">set.seed</span>(<span class="dv">2</span>)</span>
+<span id="cb20-2"><a href="#cb20-2"></a>par <span class="ot">&lt;-</span> <span class="fu">get_par</span>(<span class="at">n_grp =</span> <span class="dv">10</span>, <span class="at">mu =</span> <span class="dv">1</span>, <span class="at">s_y =</span> <span class="fl">0.5</span>)</span>
+<span id="cb20-3"><a href="#cb20-3"></a>n_per_grp <span class="ot">&lt;-</span> <span class="dv">500</span></span>
+<span id="cb20-4"><a href="#cb20-4"></a>d <span class="ot">&lt;-</span> <span class="fu">get_data</span>(<span class="at">N =</span> n_per_grp <span class="sc">*</span> par<span class="sc">$</span>n_grp, par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1"></a>ld <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb20-2"><a href="#cb20-2"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d), </span>
-<span id="cb20-3"><a href="#cb20-3"></a>  <span class="at">y =</span> d<span class="sc">$</span>y,  <span class="at">J =</span> <span class="fu">length</span>(<span class="fu">unique</span>(d<span class="sc">$</span>j)),  <span class="at">j =</span> d<span class="sc">$</span>j, <span class="co"># intervention</span></span>
-<span id="cb20-4"><a href="#cb20-4"></a>  <span class="at">pri_s_norm =</span> <span class="dv">2</span>, </span>
-<span id="cb20-5"><a href="#cb20-5"></a>  <span class="at">pri_s_exp =</span> <span class="dv">1</span>, </span>
-<span id="cb20-6"><a href="#cb20-6"></a>  <span class="at">pri_r =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>,  </span>
-<span id="cb20-7"><a href="#cb20-7"></a>  <span class="co"># when alpha = 1, we have pure lasso regression (double exp)</span></span>
-<span id="cb20-8"><a href="#cb20-8"></a>  <span class="co"># when alpha = 0, we have pure ridge regression (normal with 1/lambda scale).</span></span>
-<span id="cb20-9"><a href="#cb20-9"></a>  <span class="at">pri_alpha =</span> <span class="fl">0.9</span>,</span>
-<span id="cb20-10"><a href="#cb20-10"></a>  <span class="at">pri_lambda =</span> <span class="fl">0.76</span>, <span class="co"># scale is 1/pri_lambda for both ridge and lasso</span></span>
-<span id="cb20-11"><a href="#cb20-11"></a>  <span class="at">prior_only =</span> <span class="dv">0</span></span>
-<span id="cb20-12"><a href="#cb20-12"></a>)</span>
-<span id="cb20-13"><a href="#cb20-13"></a></span>
-<span id="cb20-14"><a href="#cb20-14"></a>f1 <span class="ot">&lt;-</span> m1<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb20-15"><a href="#cb20-15"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
-<span id="cb20-16"><a href="#cb20-16"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb20-17"><a href="#cb20-17"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1"></a>ld <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb21-2"><a href="#cb21-2"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d), </span>
+<span id="cb21-3"><a href="#cb21-3"></a>  <span class="at">y =</span> d<span class="sc">$</span>y,  <span class="at">J =</span> <span class="fu">length</span>(<span class="fu">unique</span>(d<span class="sc">$</span>j)),  <span class="at">j =</span> d<span class="sc">$</span>j, <span class="co"># intervention</span></span>
+<span id="cb21-4"><a href="#cb21-4"></a>  <span class="at">pri_s_norm =</span> <span class="dv">2</span>, </span>
+<span id="cb21-5"><a href="#cb21-5"></a>  <span class="at">pri_s_exp =</span> <span class="dv">1</span>, </span>
+<span id="cb21-6"><a href="#cb21-6"></a>  <span class="at">pri_r =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>,  </span>
+<span id="cb21-7"><a href="#cb21-7"></a>  <span class="co"># when alpha = 1, we have pure lasso regression (double exp)</span></span>
+<span id="cb21-8"><a href="#cb21-8"></a>  <span class="co"># when alpha = 0, we have pure ridge regression (normal with 1/lambda scale).</span></span>
+<span id="cb21-9"><a href="#cb21-9"></a>  <span class="at">pri_alpha =</span> <span class="fl">0.9</span>,</span>
+<span id="cb21-10"><a href="#cb21-10"></a>  <span class="at">pri_lambda =</span> <span class="fl">0.76</span>, <span class="co"># scale is 1/pri_lambda for both ridge and lasso</span></span>
+<span id="cb21-11"><a href="#cb21-11"></a>  <span class="at">prior_only =</span> <span class="dv">0</span></span>
+<span id="cb21-12"><a href="#cb21-12"></a>)</span>
+<span id="cb21-13"><a href="#cb21-13"></a></span>
+<span id="cb21-14"><a href="#cb21-14"></a>f1 <span class="ot">&lt;-</span> m1<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb21-15"><a href="#cb21-15"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
+<span id="cb21-16"><a href="#cb21-16"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb21-17"><a href="#cb21-17"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 1 finished in 3.8 seconds.
-Chain 2 finished in 4.1 seconds.
+Chain 1 finished in 6.3 seconds.
+Chain 2 finished in 6.9 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 4.0 seconds.
-Total execution time: 4.2 seconds.</code></pre>
+Mean chain execution time: 6.6 seconds.
+Total execution time: 7.0 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1"></a>f2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb22-2"><a href="#cb22-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
-<span id="cb22-3"><a href="#cb22-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb22-4"><a href="#cb22-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1"></a>f2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb23-2"><a href="#cb23-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
+<span id="cb23-3"><a href="#cb23-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb23-4"><a href="#cb23-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 2 finished in 3.0 seconds.
-Chain 1 finished in 3.2 seconds.
+Chain 2 finished in 5.1 seconds.
+Chain 1 finished in 5.2 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 3.1 seconds.
-Total execution time: 3.2 seconds.</code></pre>
+Mean chain execution time: 5.1 seconds.
+Total execution time: 5.3 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1"></a>f3 <span class="ot">&lt;-</span> m3<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb24-2"><a href="#cb24-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
-<span id="cb24-3"><a href="#cb24-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb24-4"><a href="#cb24-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1"></a>f3 <span class="ot">&lt;-</span> m3<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb25-2"><a href="#cb25-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
+<span id="cb25-3"><a href="#cb25-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb25-4"><a href="#cb25-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 1 finished in 3.4 seconds.
-Chain 2 finished in 3.7 seconds.
+Chain 1 finished in 5.7 seconds.
+Chain 2 finished in 6.1 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 3.5 seconds.
-Total execution time: 3.7 seconds.</code></pre>
+Mean chain execution time: 5.9 seconds.
+Total execution time: 6.2 seconds.</code></pre>
 </div>
 </div>
 <p>However, note that larger data sets will still overwhelm the static regularisation as shown in <a href="#fig-post-02" class="quarto-xref">Figure 3</a>.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Posterior inference on the group level means</summary>
-<div class="sourceCode cell-code" id="cb26" data-cap-location="bottom"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1"></a>d_0 <span class="ot">&lt;-</span> d[, .(<span class="at">desc =</span> <span class="st">&quot;observed&quot;</span>, <span class="at">eta =</span> <span class="fu">qlogis</span>(<span class="fu">mean</span>(y))), keyby <span class="ot">=</span> j]</span>
-<span id="cb26-2"><a href="#cb26-2"></a></span>
-<span id="cb26-3"><a href="#cb26-3"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
-<span id="cb26-4"><a href="#cb26-4"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_1, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_1), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
-<span id="cb26-5"><a href="#cb26-5"></a>d_1[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;unpooled&quot;</span>]</span>
-<span id="cb26-6"><a href="#cb26-6"></a></span>
-<span id="cb26-7"><a href="#cb26-7"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
-<span id="cb26-8"><a href="#cb26-8"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_2, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_2), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
-<span id="cb26-9"><a href="#cb26-9"></a>d_2[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;elastic-net&quot;</span>]</span>
-<span id="cb26-10"><a href="#cb26-10"></a></span>
-<span id="cb26-11"><a href="#cb26-11"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f3<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
-<span id="cb26-12"><a href="#cb26-12"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_3, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_3), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
-<span id="cb26-13"><a href="#cb26-13"></a>d_3[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;mlm&quot;</span>]</span>
-<span id="cb26-14"><a href="#cb26-14"></a></span>
-<span id="cb26-15"><a href="#cb26-15"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_1, d_2, d_3)</span>
-<span id="cb26-16"><a href="#cb26-16"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">&quot;eta[&quot;</span>, <span class="st">&quot;&quot;</span>, variable, <span class="at">fixed =</span> T)]</span>
-<span id="cb26-17"><a href="#cb26-17"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">&quot;]&quot;</span>, <span class="st">&quot;&quot;</span>, j, <span class="at">fixed =</span> T)]</span>
-<span id="cb26-18"><a href="#cb26-18"></a>d_fig[, variable <span class="sc">:</span><span class="er">=</span> <span class="cn">NULL</span>]</span>
-<span id="cb26-19"><a href="#cb26-19"></a>d_fig[, desc <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(</span>
-<span id="cb26-20"><a href="#cb26-20"></a>  desc, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;observed&quot;</span>, <span class="st">&quot;unpooled&quot;</span>, <span class="st">&quot;elastic-net&quot;</span>, <span class="st">&quot;mlm&quot;</span>))]</span>
-<span id="cb26-21"><a href="#cb26-21"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_fig, d_0)</span>
-<span id="cb26-22"><a href="#cb26-22"></a></span>
-<span id="cb26-23"><a href="#cb26-23"></a>d_fig <span class="ot">&lt;-</span> d_fig[, .(</span>
-<span id="cb26-24"><a href="#cb26-24"></a>  <span class="at">mu =</span> <span class="fu">mean</span>(eta), </span>
-<span id="cb26-25"><a href="#cb26-25"></a>  <span class="at">q5 =</span> <span class="fu">quantile</span>(eta, <span class="at">prob =</span> <span class="fl">0.05</span>),</span>
-<span id="cb26-26"><a href="#cb26-26"></a>  <span class="at">q95 =</span> <span class="fu">quantile</span>(eta, <span class="at">prob =</span> <span class="fl">0.95</span>)), keyby <span class="ot">=</span> .(desc, j)]</span>
-<span id="cb26-27"><a href="#cb26-27"></a></span>
-<span id="cb26-28"><a href="#cb26-28"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(j, <span class="at">levels =</span> <span class="fu">paste0</span>(<span class="dv">1</span><span class="sc">:</span>par<span class="sc">$</span>n_grp))]</span>
-<span id="cb26-29"><a href="#cb26-29"></a></span>
-<span id="cb26-30"><a href="#cb26-30"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> j, <span class="at">y =</span> mu, <span class="at">group =</span> desc, <span class="at">col =</span> desc)) <span class="sc">+</span></span>
-<span id="cb26-31"><a href="#cb26-31"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.6</span>)) <span class="sc">+</span></span>
-<span id="cb26-32"><a href="#cb26-32"></a>  <span class="fu">geom_linerange</span>(</span>
-<span id="cb26-33"><a href="#cb26-33"></a>    <span class="fu">aes</span>(<span class="at">ymin =</span> q5, <span class="at">ymax =</span> q95),</span>
-<span id="cb26-34"><a href="#cb26-34"></a>    <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.6</span>)) <span class="sc">+</span></span>
-<span id="cb26-35"><a href="#cb26-35"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">&quot;&quot;</span>) <span class="sc">+</span></span>
-<span id="cb26-36"><a href="#cb26-36"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> d[, .N, <span class="at">keyby =</span> .(j)],</span>
-<span id="cb26-37"><a href="#cb26-37"></a>            <span class="fu">aes</span>(<span class="at">x =</span> j, <span class="at">y =</span> <span class="fu">min</span>(d_fig<span class="sc">$</span>q5, <span class="at">na.rm =</span> T) <span class="sc">-</span> <span class="fl">0.2</span>, </span>
-<span id="cb26-38"><a href="#cb26-38"></a>                <span class="at">label =</span> N), <span class="at">inherit.aes =</span> F) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb27" data-cap-location="bottom"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a>d_0 <span class="ot">&lt;-</span> d[, .(<span class="at">desc =</span> <span class="st">&quot;observed&quot;</span>, <span class="at">eta =</span> <span class="fu">qlogis</span>(<span class="fu">mean</span>(y))), keyby <span class="ot">=</span> j]</span>
+<span id="cb27-2"><a href="#cb27-2"></a></span>
+<span id="cb27-3"><a href="#cb27-3"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
+<span id="cb27-4"><a href="#cb27-4"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_1, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_1), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
+<span id="cb27-5"><a href="#cb27-5"></a>d_1[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;unpooled&quot;</span>]</span>
+<span id="cb27-6"><a href="#cb27-6"></a></span>
+<span id="cb27-7"><a href="#cb27-7"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
+<span id="cb27-8"><a href="#cb27-8"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_2, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_2), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
+<span id="cb27-9"><a href="#cb27-9"></a>d_2[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;elastic-net&quot;</span>]</span>
+<span id="cb27-10"><a href="#cb27-10"></a></span>
+<span id="cb27-11"><a href="#cb27-11"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f3<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
+<span id="cb27-12"><a href="#cb27-12"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_3, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_3), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
+<span id="cb27-13"><a href="#cb27-13"></a>d_3[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;mlm&quot;</span>]</span>
+<span id="cb27-14"><a href="#cb27-14"></a></span>
+<span id="cb27-15"><a href="#cb27-15"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_1, d_2, d_3)</span>
+<span id="cb27-16"><a href="#cb27-16"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">&quot;eta[&quot;</span>, <span class="st">&quot;&quot;</span>, variable, <span class="at">fixed =</span> T)]</span>
+<span id="cb27-17"><a href="#cb27-17"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">&quot;]&quot;</span>, <span class="st">&quot;&quot;</span>, j, <span class="at">fixed =</span> T)]</span>
+<span id="cb27-18"><a href="#cb27-18"></a>d_fig[, variable <span class="sc">:</span><span class="er">=</span> <span class="cn">NULL</span>]</span>
+<span id="cb27-19"><a href="#cb27-19"></a>d_fig[, desc <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(</span>
+<span id="cb27-20"><a href="#cb27-20"></a>  desc, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;observed&quot;</span>, <span class="st">&quot;unpooled&quot;</span>, <span class="st">&quot;elastic-net&quot;</span>, <span class="st">&quot;mlm&quot;</span>))]</span>
+<span id="cb27-21"><a href="#cb27-21"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_fig, d_0)</span>
+<span id="cb27-22"><a href="#cb27-22"></a></span>
+<span id="cb27-23"><a href="#cb27-23"></a>d_fig <span class="ot">&lt;-</span> d_fig[, .(</span>
+<span id="cb27-24"><a href="#cb27-24"></a>  <span class="at">mu =</span> <span class="fu">mean</span>(eta), </span>
+<span id="cb27-25"><a href="#cb27-25"></a>  <span class="at">q5 =</span> <span class="fu">quantile</span>(eta, <span class="at">prob =</span> <span class="fl">0.05</span>),</span>
+<span id="cb27-26"><a href="#cb27-26"></a>  <span class="at">q95 =</span> <span class="fu">quantile</span>(eta, <span class="at">prob =</span> <span class="fl">0.95</span>)), keyby <span class="ot">=</span> .(desc, j)]</span>
+<span id="cb27-27"><a href="#cb27-27"></a></span>
+<span id="cb27-28"><a href="#cb27-28"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(j, <span class="at">levels =</span> <span class="fu">paste0</span>(<span class="dv">1</span><span class="sc">:</span>par<span class="sc">$</span>n_grp))]</span>
+<span id="cb27-29"><a href="#cb27-29"></a></span>
+<span id="cb27-30"><a href="#cb27-30"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> j, <span class="at">y =</span> mu, <span class="at">group =</span> desc, <span class="at">col =</span> desc)) <span class="sc">+</span></span>
+<span id="cb27-31"><a href="#cb27-31"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.6</span>)) <span class="sc">+</span></span>
+<span id="cb27-32"><a href="#cb27-32"></a>  <span class="fu">geom_linerange</span>(</span>
+<span id="cb27-33"><a href="#cb27-33"></a>    <span class="fu">aes</span>(<span class="at">ymin =</span> q5, <span class="at">ymax =</span> q95),</span>
+<span id="cb27-34"><a href="#cb27-34"></a>    <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.6</span>)) <span class="sc">+</span></span>
+<span id="cb27-35"><a href="#cb27-35"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">&quot;&quot;</span>) <span class="sc">+</span></span>
+<span id="cb27-36"><a href="#cb27-36"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> d[, .N, <span class="at">keyby =</span> .(j)],</span>
+<span id="cb27-37"><a href="#cb27-37"></a>            <span class="fu">aes</span>(<span class="at">x =</span> j, <span class="at">y =</span> <span class="fu">min</span>(d_fig<span class="sc">$</span>q5, <span class="at">na.rm =</span> T) <span class="sc">-</span> <span class="fl">0.2</span>, </span>
+<span id="cb27-38"><a href="#cb27-38"></a>                <span class="at">label =</span> N), <span class="at">inherit.aes =</span> F) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-post-02" class="quarto-float quarto-figure quarto-figure-center anchored" data-cap-location="bottom">
@@ -5427,66 +5432,49 @@ Figure 3: Posterior inference on the group level means
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1"></a><span class="fu">set.seed</span>(<span class="dv">7</span>)</span>
-<span id="cb27-2"><a href="#cb27-2"></a>par <span class="ot">&lt;-</span> <span class="fu">get_par</span>(<span class="at">n_grp =</span> <span class="dv">2</span>, <span class="at">mu =</span> <span class="dv">1</span>, <span class="at">s_y =</span> <span class="fl">0.5</span>)</span>
-<span id="cb27-3"><a href="#cb27-3"></a>n_per_grp <span class="ot">&lt;-</span> <span class="dv">200</span></span>
-<span id="cb27-4"><a href="#cb27-4"></a>d <span class="ot">&lt;-</span> <span class="fu">get_data</span>(<span class="at">N =</span> n_per_grp <span class="sc">*</span> par<span class="sc">$</span>n_grp, par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a><span class="fu">set.seed</span>(<span class="dv">7</span>)</span>
+<span id="cb28-2"><a href="#cb28-2"></a>par <span class="ot">&lt;-</span> <span class="fu">get_par</span>(<span class="at">n_grp =</span> <span class="dv">2</span>, <span class="at">mu =</span> <span class="dv">1</span>, <span class="at">s_y =</span> <span class="fl">0.5</span>)</span>
+<span id="cb28-3"><a href="#cb28-3"></a>n_per_grp <span class="ot">&lt;-</span> <span class="dv">200</span></span>
+<span id="cb28-4"><a href="#cb28-4"></a>d <span class="ot">&lt;-</span> <span class="fu">get_data</span>(<span class="at">N =</span> n_per_grp <span class="sc">*</span> par<span class="sc">$</span>n_grp, par)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1"></a>ld <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
-<span id="cb28-2"><a href="#cb28-2"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d), </span>
-<span id="cb28-3"><a href="#cb28-3"></a>  <span class="at">y =</span> d<span class="sc">$</span>y,  <span class="at">J =</span> <span class="fu">length</span>(<span class="fu">unique</span>(d<span class="sc">$</span>j)),  <span class="at">j =</span> d<span class="sc">$</span>j, <span class="co"># intervention</span></span>
-<span id="cb28-4"><a href="#cb28-4"></a>  <span class="at">pri_s_norm =</span> <span class="dv">2</span>, </span>
-<span id="cb28-5"><a href="#cb28-5"></a>  <span class="at">pri_s_exp =</span> <span class="dv">1</span>, </span>
-<span id="cb28-6"><a href="#cb28-6"></a>  <span class="at">pri_r =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>,  </span>
-<span id="cb28-7"><a href="#cb28-7"></a>  <span class="co"># when alpha = 1, we have pure lasso regression (double exp)</span></span>
-<span id="cb28-8"><a href="#cb28-8"></a>  <span class="co"># when alpha = 0, we have pure ridge regression (normal with 1/lambda scale).</span></span>
-<span id="cb28-9"><a href="#cb28-9"></a>  <span class="at">pri_alpha =</span> <span class="fl">0.9</span>,</span>
-<span id="cb28-10"><a href="#cb28-10"></a>  <span class="at">pri_lambda =</span> <span class="fl">0.76</span>, <span class="co"># scale is 1/pri_lambda for both ridge and lasso</span></span>
-<span id="cb28-11"><a href="#cb28-11"></a>  <span class="at">prior_only =</span> <span class="dv">0</span></span>
-<span id="cb28-12"><a href="#cb28-12"></a>)</span>
-<span id="cb28-13"><a href="#cb28-13"></a></span>
-<span id="cb28-14"><a href="#cb28-14"></a>f1 <span class="ot">&lt;-</span> m1<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb28-15"><a href="#cb28-15"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
-<span id="cb28-16"><a href="#cb28-16"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb28-17"><a href="#cb28-17"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1"></a>ld <span class="ot">&lt;-</span> <span class="fu">list</span>(</span>
+<span id="cb29-2"><a href="#cb29-2"></a>  <span class="at">N =</span> <span class="fu">nrow</span>(d), </span>
+<span id="cb29-3"><a href="#cb29-3"></a>  <span class="at">y =</span> d<span class="sc">$</span>y,  <span class="at">J =</span> <span class="fu">length</span>(<span class="fu">unique</span>(d<span class="sc">$</span>j)),  <span class="at">j =</span> d<span class="sc">$</span>j, <span class="co"># intervention</span></span>
+<span id="cb29-4"><a href="#cb29-4"></a>  <span class="at">pri_s_norm =</span> <span class="dv">2</span>, </span>
+<span id="cb29-5"><a href="#cb29-5"></a>  <span class="at">pri_s_exp =</span> <span class="dv">1</span>, </span>
+<span id="cb29-6"><a href="#cb29-6"></a>  <span class="at">pri_r =</span> <span class="dv">1</span><span class="sc">/</span><span class="dv">2</span>,  </span>
+<span id="cb29-7"><a href="#cb29-7"></a>  <span class="co"># when alpha = 1, we have pure lasso regression (double exp)</span></span>
+<span id="cb29-8"><a href="#cb29-8"></a>  <span class="co"># when alpha = 0, we have pure ridge regression (normal with 1/lambda scale).</span></span>
+<span id="cb29-9"><a href="#cb29-9"></a>  <span class="at">pri_alpha =</span> <span class="fl">0.9</span>,</span>
+<span id="cb29-10"><a href="#cb29-10"></a>  <span class="at">pri_lambda =</span> <span class="fl">0.76</span>, <span class="co"># scale is 1/pri_lambda for both ridge and lasso</span></span>
+<span id="cb29-11"><a href="#cb29-11"></a>  <span class="at">prior_only =</span> <span class="dv">0</span></span>
+<span id="cb29-12"><a href="#cb29-12"></a>)</span>
+<span id="cb29-13"><a href="#cb29-13"></a></span>
+<span id="cb29-14"><a href="#cb29-14"></a>f1 <span class="ot">&lt;-</span> m1<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb29-15"><a href="#cb29-15"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
+<span id="cb29-16"><a href="#cb29-16"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb29-17"><a href="#cb29-17"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
 
-Chain 1 finished in 0.3 seconds.
-Chain 2 finished in 0.3 seconds.
+Chain 1 finished in 0.4 seconds.
+Chain 2 finished in 0.5 seconds.
 
 Both chains finished successfully.
-Mean chain execution time: 0.3 seconds.
-Total execution time: 0.3 seconds.</code></pre>
+Mean chain execution time: 0.4 seconds.
+Total execution time: 0.6 seconds.</code></pre>
 </div>
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1"></a>f2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb30-2"><a href="#cb30-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
-<span id="cb30-3"><a href="#cb30-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb30-4"><a href="#cb30-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-<div class="cell-output cell-output-stdout">
-<pre><code>Running MCMC with 2 parallel chains...
-
-Chain 1 finished in 0.2 seconds.
-Chain 2 finished in 0.2 seconds.
-
-Both chains finished successfully.
-Mean chain execution time: 0.2 seconds.
-Total execution time: 0.3 seconds.</code></pre>
-</div>
-<details class="code-fold">
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb32"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1"></a>f3 <span class="ot">&lt;-</span> m3<span class="sc">$</span><span class="fu">sample</span>(</span>
-<span id="cb32-2"><a href="#cb32-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
-<span id="cb32-3"><a href="#cb32-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
-<span id="cb32-4"><a href="#cb32-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1"></a>f2 <span class="ot">&lt;-</span> m2<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb31-2"><a href="#cb31-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
+<span id="cb31-3"><a href="#cb31-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb31-4"><a href="#cb31-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Running MCMC with 2 parallel chains...
@@ -5496,51 +5484,68 @@ Chain 2 finished in 0.4 seconds.
 
 Both chains finished successfully.
 Mean chain execution time: 0.4 seconds.
-Total execution time: 0.4 seconds.</code></pre>
+Total execution time: 0.5 seconds.</code></pre>
+</div>
+<details class="code-fold">
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1"></a>f3 <span class="ot">&lt;-</span> m3<span class="sc">$</span><span class="fu">sample</span>(</span>
+<span id="cb33-2"><a href="#cb33-2"></a>  ld, <span class="at">iter_warmup =</span> <span class="dv">1000</span>, <span class="at">iter_sampling =</span> <span class="dv">1000</span>,</span>
+<span id="cb33-3"><a href="#cb33-3"></a>    <span class="at">parallel_chains =</span> <span class="dv">2</span>, <span class="at">chains =</span> <span class="dv">2</span>, <span class="at">refresh =</span> <span class="dv">0</span>, <span class="at">show_exceptions =</span> F,</span>
+<span id="cb33-4"><a href="#cb33-4"></a>    <span class="at">max_treedepth =</span> <span class="dv">10</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stdout">
+<pre><code>Running MCMC with 2 parallel chains...
+
+Chain 1 finished in 0.7 seconds.
+Chain 2 finished in 0.7 seconds.
+
+Both chains finished successfully.
+Mean chain execution time: 0.7 seconds.
+Total execution time: 0.8 seconds.</code></pre>
 </div>
 </div>
 <p>And in the case with smaller number of groups, there is probably immaterial differences between the approaches as shown in <a href="#fig-post-03" class="quarto-xref">Figure 4</a>.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Posterior inference on the group level means</summary>
-<div class="sourceCode cell-code" id="cb34" data-cap-location="bottom"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1"></a>d_0 <span class="ot">&lt;-</span> d[, .(<span class="at">desc =</span> <span class="st">&quot;observed&quot;</span>, <span class="at">eta =</span> <span class="fu">qlogis</span>(<span class="fu">mean</span>(y))), keyby <span class="ot">=</span> j]</span>
-<span id="cb34-2"><a href="#cb34-2"></a></span>
-<span id="cb34-3"><a href="#cb34-3"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
-<span id="cb34-4"><a href="#cb34-4"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_1, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_1), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
-<span id="cb34-5"><a href="#cb34-5"></a>d_1[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;unpooled&quot;</span>]</span>
-<span id="cb34-6"><a href="#cb34-6"></a></span>
-<span id="cb34-7"><a href="#cb34-7"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
-<span id="cb34-8"><a href="#cb34-8"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_2, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_2), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
-<span id="cb34-9"><a href="#cb34-9"></a>d_2[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;elastic-net&quot;</span>]</span>
-<span id="cb34-10"><a href="#cb34-10"></a></span>
-<span id="cb34-11"><a href="#cb34-11"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f3<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
-<span id="cb34-12"><a href="#cb34-12"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_3, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_3), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
-<span id="cb34-13"><a href="#cb34-13"></a>d_3[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;mlm&quot;</span>]</span>
-<span id="cb34-14"><a href="#cb34-14"></a></span>
-<span id="cb34-15"><a href="#cb34-15"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_1, d_2, d_3)</span>
-<span id="cb34-16"><a href="#cb34-16"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">&quot;eta[&quot;</span>, <span class="st">&quot;&quot;</span>, variable, <span class="at">fixed =</span> T)]</span>
-<span id="cb34-17"><a href="#cb34-17"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">&quot;]&quot;</span>, <span class="st">&quot;&quot;</span>, j, <span class="at">fixed =</span> T)]</span>
-<span id="cb34-18"><a href="#cb34-18"></a>d_fig[, variable <span class="sc">:</span><span class="er">=</span> <span class="cn">NULL</span>]</span>
-<span id="cb34-19"><a href="#cb34-19"></a>d_fig[, desc <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(</span>
-<span id="cb34-20"><a href="#cb34-20"></a>  desc, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;observed&quot;</span>, <span class="st">&quot;unpooled&quot;</span>, <span class="st">&quot;elastic-net&quot;</span>, <span class="st">&quot;mlm&quot;</span>))]</span>
-<span id="cb34-21"><a href="#cb34-21"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_fig, d_0)</span>
-<span id="cb34-22"><a href="#cb34-22"></a></span>
-<span id="cb34-23"><a href="#cb34-23"></a>d_fig <span class="ot">&lt;-</span> d_fig[, .(</span>
-<span id="cb34-24"><a href="#cb34-24"></a>  <span class="at">mu =</span> <span class="fu">mean</span>(eta), </span>
-<span id="cb34-25"><a href="#cb34-25"></a>  <span class="at">q5 =</span> <span class="fu">quantile</span>(eta, <span class="at">prob =</span> <span class="fl">0.05</span>),</span>
-<span id="cb34-26"><a href="#cb34-26"></a>  <span class="at">q95 =</span> <span class="fu">quantile</span>(eta, <span class="at">prob =</span> <span class="fl">0.95</span>)), keyby <span class="ot">=</span> .(desc, j)]</span>
-<span id="cb34-27"><a href="#cb34-27"></a></span>
-<span id="cb34-28"><a href="#cb34-28"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(j, <span class="at">levels =</span> <span class="fu">paste0</span>(<span class="dv">1</span><span class="sc">:</span>par<span class="sc">$</span>n_grp))]</span>
-<span id="cb34-29"><a href="#cb34-29"></a></span>
-<span id="cb34-30"><a href="#cb34-30"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> j, <span class="at">y =</span> mu, <span class="at">group =</span> desc, <span class="at">col =</span> desc)) <span class="sc">+</span></span>
-<span id="cb34-31"><a href="#cb34-31"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.6</span>)) <span class="sc">+</span></span>
-<span id="cb34-32"><a href="#cb34-32"></a>  <span class="fu">geom_linerange</span>(</span>
-<span id="cb34-33"><a href="#cb34-33"></a>    <span class="fu">aes</span>(<span class="at">ymin =</span> q5, <span class="at">ymax =</span> q95),</span>
-<span id="cb34-34"><a href="#cb34-34"></a>    <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.6</span>)) <span class="sc">+</span></span>
-<span id="cb34-35"><a href="#cb34-35"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">&quot;&quot;</span>) <span class="sc">+</span></span>
-<span id="cb34-36"><a href="#cb34-36"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> d[, .N, <span class="at">keyby =</span> .(j)],</span>
-<span id="cb34-37"><a href="#cb34-37"></a>            <span class="fu">aes</span>(<span class="at">x =</span> j, <span class="at">y =</span> <span class="fu">min</span>(d_fig<span class="sc">$</span>q5, <span class="at">na.rm =</span> T) <span class="sc">-</span> <span class="fl">0.2</span>, </span>
-<span id="cb34-38"><a href="#cb34-38"></a>                <span class="at">label =</span> N), <span class="at">inherit.aes =</span> F) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb35" data-cap-location="bottom"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1"></a>d_0 <span class="ot">&lt;-</span> d[, .(<span class="at">desc =</span> <span class="st">&quot;observed&quot;</span>, <span class="at">eta =</span> <span class="fu">qlogis</span>(<span class="fu">mean</span>(y))), keyby <span class="ot">=</span> j]</span>
+<span id="cb35-2"><a href="#cb35-2"></a></span>
+<span id="cb35-3"><a href="#cb35-3"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f1<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
+<span id="cb35-4"><a href="#cb35-4"></a>d_1 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_1, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_1), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
+<span id="cb35-5"><a href="#cb35-5"></a>d_1[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;unpooled&quot;</span>]</span>
+<span id="cb35-6"><a href="#cb35-6"></a></span>
+<span id="cb35-7"><a href="#cb35-7"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f2<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
+<span id="cb35-8"><a href="#cb35-8"></a>d_2 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_2, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_2), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
+<span id="cb35-9"><a href="#cb35-9"></a>d_2[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;elastic-net&quot;</span>]</span>
+<span id="cb35-10"><a href="#cb35-10"></a></span>
+<span id="cb35-11"><a href="#cb35-11"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">data.table</span>(f3<span class="sc">$</span><span class="fu">draws</span>(<span class="at">variables =</span> <span class="st">&quot;eta&quot;</span>, <span class="at">format =</span> <span class="st">&quot;matrix&quot;</span>))</span>
+<span id="cb35-12"><a href="#cb35-12"></a>d_3 <span class="ot">&lt;-</span> <span class="fu">melt</span>(d_3, <span class="at">measure.vars =</span> <span class="fu">names</span>(d_3), <span class="at">value.name =</span> <span class="st">&quot;eta&quot;</span>)</span>
+<span id="cb35-13"><a href="#cb35-13"></a>d_3[, desc <span class="sc">:</span><span class="er">=</span> <span class="st">&quot;mlm&quot;</span>]</span>
+<span id="cb35-14"><a href="#cb35-14"></a></span>
+<span id="cb35-15"><a href="#cb35-15"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_1, d_2, d_3)</span>
+<span id="cb35-16"><a href="#cb35-16"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">&quot;eta[&quot;</span>, <span class="st">&quot;&quot;</span>, variable, <span class="at">fixed =</span> T)]</span>
+<span id="cb35-17"><a href="#cb35-17"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">gsub</span>(<span class="st">&quot;]&quot;</span>, <span class="st">&quot;&quot;</span>, j, <span class="at">fixed =</span> T)]</span>
+<span id="cb35-18"><a href="#cb35-18"></a>d_fig[, variable <span class="sc">:</span><span class="er">=</span> <span class="cn">NULL</span>]</span>
+<span id="cb35-19"><a href="#cb35-19"></a>d_fig[, desc <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(</span>
+<span id="cb35-20"><a href="#cb35-20"></a>  desc, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">&quot;observed&quot;</span>, <span class="st">&quot;unpooled&quot;</span>, <span class="st">&quot;elastic-net&quot;</span>, <span class="st">&quot;mlm&quot;</span>))]</span>
+<span id="cb35-21"><a href="#cb35-21"></a>d_fig <span class="ot">&lt;-</span> <span class="fu">rbind</span>(d_fig, d_0)</span>
+<span id="cb35-22"><a href="#cb35-22"></a></span>
+<span id="cb35-23"><a href="#cb35-23"></a>d_fig <span class="ot">&lt;-</span> d_fig[, .(</span>
+<span id="cb35-24"><a href="#cb35-24"></a>  <span class="at">mu =</span> <span class="fu">mean</span>(eta), </span>
+<span id="cb35-25"><a href="#cb35-25"></a>  <span class="at">q5 =</span> <span class="fu">quantile</span>(eta, <span class="at">prob =</span> <span class="fl">0.05</span>),</span>
+<span id="cb35-26"><a href="#cb35-26"></a>  <span class="at">q95 =</span> <span class="fu">quantile</span>(eta, <span class="at">prob =</span> <span class="fl">0.95</span>)), keyby <span class="ot">=</span> .(desc, j)]</span>
+<span id="cb35-27"><a href="#cb35-27"></a></span>
+<span id="cb35-28"><a href="#cb35-28"></a>d_fig[, j <span class="sc">:</span><span class="er">=</span> <span class="fu">factor</span>(j, <span class="at">levels =</span> <span class="fu">paste0</span>(<span class="dv">1</span><span class="sc">:</span>par<span class="sc">$</span>n_grp))]</span>
+<span id="cb35-29"><a href="#cb35-29"></a></span>
+<span id="cb35-30"><a href="#cb35-30"></a><span class="fu">ggplot</span>(d_fig, <span class="fu">aes</span>(<span class="at">x =</span> j, <span class="at">y =</span> mu, <span class="at">group =</span> desc, <span class="at">col =</span> desc)) <span class="sc">+</span></span>
+<span id="cb35-31"><a href="#cb35-31"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_dodge</span>(<span class="at">width =</span> <span class="fl">0.6</span>)) <span class="sc">+</span></span>
+<span id="cb35-32"><a href="#cb35-32"></a>  <span class="fu">geom_linerange</span>(</span>
+<span id="cb35-33"><a href="#cb35-33"></a>    <span class="fu">aes</span>(<span class="at">ymin =</span> q5, <span class="at">ymax =</span> q95),</span>
+<span id="cb35-34"><a href="#cb35-34"></a>    <span class="at">position =</span> <span class="fu">position_dodge2</span>(<span class="at">width =</span> <span class="fl">0.6</span>)) <span class="sc">+</span></span>
+<span id="cb35-35"><a href="#cb35-35"></a>  <span class="fu">scale_color_discrete</span>(<span class="st">&quot;&quot;</span>) <span class="sc">+</span></span>
+<span id="cb35-36"><a href="#cb35-36"></a>  <span class="fu">geom_text</span>(<span class="at">data =</span> d[, .N, <span class="at">keyby =</span> .(j)],</span>
+<span id="cb35-37"><a href="#cb35-37"></a>            <span class="fu">aes</span>(<span class="at">x =</span> j, <span class="at">y =</span> <span class="fu">min</span>(d_fig<span class="sc">$</span>q5, <span class="at">na.rm =</span> T) <span class="sc">-</span> <span class="fl">0.2</span>, </span>
+<span id="cb35-38"><a href="#cb35-38"></a>                <span class="at">label =</span> N), <span class="at">inherit.aes =</span> F) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 <div id="fig-post-03" class="quarto-float quarto-figure quarto-figure-center anchored" data-cap-location="bottom">

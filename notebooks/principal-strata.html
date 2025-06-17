@@ -6,7 +6,7 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
-<meta name="dcterms.date" content="2025-06-05">
+<meta name="dcterms.date" content="2025-06-17">
 
 <title>Principal strata analyses – ROADMAP - design notes and simulations</title>
 <style>
@@ -4742,7 +4742,7 @@ vertical-align: -.125em;
     "search-label": "Search"
   }
 }</script>
-<script>!function(){"use strict";var s={"scripts/annotator.bundle.js":"scripts/annotator.bundle.js?b43fe9","styles/annotator.css":"styles/annotator.css?ce3b25","styles/annotator.css.map":"styles/annotator.css.map?e7c11d","styles/highlights.css":"styles/highlights.css?24baca","styles/highlights.css.map":"styles/highlights.css.map?377599","styles/katex.min.css":"styles/katex.min.css?921c28","styles/katex.min.css.map":"styles/katex.min.css.map?e7e03f","styles/pdfjs-overrides.css":"styles/pdfjs-overrides.css?c95edf","styles/pdfjs-overrides.css.map":"styles/pdfjs-overrides.css.map?1d8ac6","styles/sidebar.css.map":"styles/sidebar.css.map?743602","styles/sidebar.css":"styles/sidebar.css?c63100","styles/ui-playground.css.map":"styles/ui-playground.css.map?894a78","styles/ui-playground.css":"styles/ui-playground.css?531600","scripts/sidebar.bundle.js":"scripts/sidebar.bundle.js?5203d0","scripts/ui-playground.bundle.js":"scripts/ui-playground.bundle.js?9ef589","scripts/annotator.bundle.js.map":"scripts/annotator.bundle.js.map?a3156b","scripts/ui-playground.bundle.js.map":"scripts/ui-playground.bundle.js.map?cfb386","scripts/sidebar.bundle.js.map":"scripts/sidebar.bundle.js.map?853cd1"};function e(s){s.setAttribute("data-hypothesis-asset","")}function t(s,t){var r=s.createElement("link");r.rel="stylesheet",r.type="text/css",r.href=t,e(r),s.head.appendChild(r)}function r(s,t){var r=arguments.length>2&&void 0!==arguments[2]?arguments[2]:{},n=r.esModule,o=void 0===n||n,i=r.forceReload,a=void 0!==i&&i,l=s.createElement("script");o&&(l.type="module"),a&&(t+="#ts=".concat(Date.now())),l.src=t,l.async=!1,e(l),s.head.appendChild(l)}function n(s,t,r,n){var o=s.createElement("link");o.rel=t,o.href=n,o.type="application/annotator+".concat(r),e(o),s.head.appendChild(o)}function o(s,t,r){var n=s.createElement("link");n.rel="preload",n.as=t,n.href=r,"fetch"===t&&(n.crossOrigin="anonymous"),e(n),s.head.appendChild(n)}function i(s,e){return s.assetRoot+"build/"+s.manifest[e]}function a(s){var e=arguments.length>1&&void 0!==arguments[1]?arguments[1]:document;if(-1===s.indexOf("{"))return s;var t=function(){var s,e,t=(arguments.length>0&&void 0!==arguments[0]?arguments[0]:document).currentScript;return t?(s=t.src,(e=s.match(/(https?):\/\/([^:/]+)/))?{protocol:e[1],hostname:e[2]}:null):null}(e);if(!t)throw new Error("Could not process URL template because script origin is unknown");return s=(s=s.replace("{current_host}",t.hostname)).replace("{current_scheme}",t.protocol)}if(function(){var s=[()=>Object.fromEntries([]),()=>new URL(document.location.href),()=>new Request("https://hypothes.is"),()=>Element.prototype.attachShadow,()=>CSS.supports("display: grid"),()=>(document.evaluate("/html/body",document,null,XPathResult.ANY_TYPE,null),!0)];try{return s.every((s=>s()))}catch(s){return!1}}()){var l=function(s){for(var e={},t=s.querySelectorAll("script.js-hypothesis-config"),r=0;r<t.length;r++){var n=void 0;try{n=JSON.parse(t[r].textContent||"")}catch(s){console.warn("Could not parse settings from js-hypothesis-config tags",s),n={}}Object.assign(e,n)}return e}(document),c=a(l.assetRoot||"https://cdn.hypothes.is/hypothesis/1.1652.0/");if(document.querySelector("hypothesis-app")){!function(s,e){o(s,"fetch",e.apiUrl),o(s,"fetch",e.apiUrl+"links");for(var n=0,a=["scripts/sidebar.bundle.js"];n<a.length;n++)r(s,i(e,a[n]),{esModule:!0});for(var l=0,c=["styles/katex.min.css","styles/sidebar.css"];l<c.length;l++)t(s,i(e,c[l]))}(document,{assetRoot:c,manifest:s,apiUrl:l.apiUrl})}else{var p=function(){var s;return null===(s=(arguments.length>0&&void 0!==arguments[0]?arguments[0]:window).chrome)||void 0===s||null===(s=s.runtime)||void 0===s?void 0:s.id}();if(p&&!function(s){return!!(arguments.length>1&&void 0!==arguments[1]?arguments[1]:document).querySelector("script.js-hypothesis-config[data-extension-id=".concat(s,"]"))}(p))throw new Error("Could not start Hypothesis extension as configuration is missing");var d=l,u=a(d.notebookAppUrl||"https://hypothes.is/notebook"),h=a(d.profileAppUrl||"https://hypothes.is/user-profile"),y=a(d.sidebarAppUrl||"https://hypothes.is/app.html");!function(s,e){if(!s.querySelector('link[type="application/annotator+html"]')){n(s,"sidebar","html",e.sidebarAppUrl),n(s,"notebook","html",e.notebookAppUrl),n(s,"profile","html",e.profileAppUrl),o(s,"style",i(e,"styles/annotator.css")),n(s,"hypothesis-client","javascript",e.assetRoot+"build/boot.js");for(var a=0,l=["scripts/annotator.bundle.js"];a<l.length;a++)r(s,i(e,l[a]),{esModule:!1});var c=[];void 0!==window.PDFViewerApplication&&c.push("styles/pdfjs-overrides.css"),c.push("styles/highlights.css");for(var p=0,d=c;p<d.length;p++)t(s,i(e,d[p]))}}(document,{assetRoot:c,manifest:s,notebookAppUrl:u,profileAppUrl:h,sidebarAppUrl:y})}}else console.warn("The Hypothesis annotation tool is not supported in this browser. See https://web.hypothes.is/help/which-browsers-are-supported-by-hypothesis/.")}();
+<script>!function(){"use strict";var s={"scripts/annotator.bundle.js":"scripts/annotator.bundle.js?6ba261","styles/annotator.css":"styles/annotator.css?ce3b25","styles/annotator.css.map":"styles/annotator.css.map?e7c11d","styles/highlights.css":"styles/highlights.css?470b72","styles/highlights.css.map":"styles/highlights.css.map?d94fe5","styles/katex.min.css":"styles/katex.min.css?921c28","styles/katex.min.css.map":"styles/katex.min.css.map?e7e03f","styles/pdfjs-overrides.css":"styles/pdfjs-overrides.css?c95edf","styles/pdfjs-overrides.css.map":"styles/pdfjs-overrides.css.map?1d8ac6","styles/sidebar.css":"styles/sidebar.css?aebac1","styles/sidebar.css.map":"styles/sidebar.css.map?7c95a4","styles/ui-playground.css":"styles/ui-playground.css?e85615","styles/ui-playground.css.map":"styles/ui-playground.css.map?cd3f7b","scripts/annotator.bundle.js.map":"scripts/annotator.bundle.js.map?25d21b","scripts/sidebar.bundle.js":"scripts/sidebar.bundle.js?8a1773","scripts/ui-playground.bundle.js":"scripts/ui-playground.bundle.js?9ef589","scripts/ui-playground.bundle.js.map":"scripts/ui-playground.bundle.js.map?cfb386","scripts/sidebar.bundle.js.map":"scripts/sidebar.bundle.js.map?a6df98"};function e(s){s.setAttribute("data-hypothesis-asset","")}function t(s,t){var r=s.createElement("link");r.rel="stylesheet",r.type="text/css",r.href=t,e(r),s.head.appendChild(r)}function r(s,t){var r=arguments.length>2&&void 0!==arguments[2]?arguments[2]:{},n=r.esModule,o=void 0===n||n,a=r.forceReload,i=void 0!==a&&a,l=s.createElement("script");o&&(l.type="module"),i&&(t+="#ts=".concat(Date.now())),l.src=t,l.async=!1,e(l),s.head.appendChild(l)}function n(s,t,r,n){var o=s.createElement("link");o.rel=t,o.href=n,o.type="application/annotator+".concat(r),e(o),s.head.appendChild(o)}function o(s,t,r){var n=s.createElement("link");n.rel="preload",n.as=t,n.href=r,"fetch"===t&&(n.crossOrigin="anonymous"),e(n),s.head.appendChild(n)}function a(s,e){return s.assetRoot+"build/"+s.manifest[e]}function i(s){var e=arguments.length>1&&void 0!==arguments[1]?arguments[1]:document;if(-1===s.indexOf("{"))return s;var t=function(){var s,e,t=(arguments.length>0&&void 0!==arguments[0]?arguments[0]:document).currentScript;return t?(s=t.src,(e=s.match(/(https?):\/\/([^:/]+)/))?{protocol:e[1],hostname:e[2]}:null):null}(e);if(!t)throw new Error("Could not process URL template because script origin is unknown");return s=(s=s.replace("{current_host}",t.hostname)).replace("{current_scheme}",t.protocol)}if(function(){var s=[()=>Object.fromEntries([]),()=>new URL(document.location.href),()=>new Request("https://hypothes.is"),()=>Element.prototype.attachShadow,()=>CSS.supports("display: grid"),()=>(document.evaluate("/html/body",document,null,XPathResult.ANY_TYPE,null),!0)];try{return s.every((s=>s()))}catch(s){return!1}}()){var l=function(s){for(var e={},t=s.querySelectorAll("script.js-hypothesis-config"),r=0;r<t.length;r++){var n=void 0;try{n=JSON.parse(t[r].textContent||"")}catch(s){console.warn("Could not parse settings from js-hypothesis-config tags",s),n={}}Object.assign(e,n)}return e}(document),c=i(l.assetRoot||"https://cdn.hypothes.is/hypothesis/1.1663.0/");if(document.querySelector("hypothesis-app")){!function(s,e){o(s,"fetch",e.apiUrl),o(s,"fetch",e.apiUrl+"links");for(var n=0,i=["scripts/sidebar.bundle.js"];n<i.length;n++)r(s,a(e,i[n]),{esModule:!0});for(var l=0,c=["styles/katex.min.css","styles/sidebar.css"];l<c.length;l++)t(s,a(e,c[l]))}(document,{assetRoot:c,manifest:s,apiUrl:l.apiUrl})}else{var p=function(){var s;return null===(s=(arguments.length>0&&void 0!==arguments[0]?arguments[0]:window).chrome)||void 0===s||null===(s=s.runtime)||void 0===s?void 0:s.id}();if(p&&!function(s){return!!(arguments.length>1&&void 0!==arguments[1]?arguments[1]:document).querySelector("script.js-hypothesis-config[data-extension-id=".concat(s,"]"))}(p))throw new Error("Could not start Hypothesis extension as configuration is missing");var d=l,u=i(d.notebookAppUrl||"https://hypothes.is/notebook"),h=i(d.profileAppUrl||"https://hypothes.is/user-profile"),y=i(d.sidebarAppUrl||"https://hypothes.is/app.html");!function(s,e){if(!s.querySelector('link[type="application/annotator+html"]')){n(s,"sidebar","html",e.sidebarAppUrl),n(s,"notebook","html",e.notebookAppUrl),n(s,"profile","html",e.profileAppUrl),o(s,"style",a(e,"styles/annotator.css")),n(s,"hypothesis-client","javascript",e.assetRoot+"build/boot.js");for(var i=0,l=["scripts/annotator.bundle.js"];i<l.length;i++)r(s,a(e,l[i]),{esModule:!1});var c=[];void 0!==window.PDFViewerApplication&&c.push("styles/pdfjs-overrides.css"),c.push("styles/highlights.css");for(var p=0,d=c;p<d.length;p++)t(s,a(e,d[p]))}}(document,{assetRoot:c,manifest:s,notebookAppUrl:u,profileAppUrl:h,sidebarAppUrl:y})}}else console.warn("The Hypothesis annotation tool is not supported in this browser. See https://web.hypothes.is/help/which-browsers-are-supported-by-hypothesis/.")}();
 </script>
 <script>
   window.document.addEventListener("DOMContentLoaded", function (_event) {
@@ -4960,7 +4960,7 @@ window.Quarto = {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">June 5, 2025</p>
+      <p class="date">June 17, 2025</p>
     </div>
   </div>
   
@@ -4981,9 +4981,15 @@ window.Quarto = {
 <div class="cell">
 <details class="code-fold">
 <summary>Libraries and globals</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">source</span>(<span class="st">&quot;./R/init.R&quot;</span>)</span>
-<span id="cb1-2"><a href="#cb1-2"></a><span class="fu">source</span>(<span class="st">&quot;./R/util.R&quot;</span>)</span>
-<span id="cb1-3"><a href="#cb1-3"></a><span class="fu">source</span>(<span class="st">&quot;./R/data.R&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a><span class="fu">source</span>(<span class="st">&quot;./R/init.R&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: package &#39;cmdstanr&#39; was built under R version 4.4.3</code></pre>
+</div>
+<details class="code-fold">
+<summary>Libraries and globals</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="fu">source</span>(<span class="st">&quot;./R/util.R&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2"></a><span class="fu">source</span>(<span class="st">&quot;./R/data.R&quot;</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <section id="introduction" class="level2">
@@ -5006,165 +5012,165 @@ window.Quarto = {
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>mc_cores <span class="ot">&lt;-</span> <span class="dv">1</span></span>
-<span id="cb2-2"><a href="#cb2-2"></a><span class="cf">if</span>(<span class="fu">unname</span>(<span class="fu">Sys.info</span>()[<span class="dv">1</span>]) <span class="sc">==</span> <span class="st">&quot;Darwin&quot;</span>){</span>
-<span id="cb2-3"><a href="#cb2-3"></a>  <span class="fu">log_info</span>(<span class="st">&quot;On mac, reset cores to 5&quot;</span>)</span>
-<span id="cb2-4"><a href="#cb2-4"></a>  mc_cores <span class="ot">&lt;-</span> <span class="dv">5</span></span>
-<span id="cb2-5"><a href="#cb2-5"></a>  N_sim <span class="ot">&lt;-</span> <span class="dv">250</span></span>
-<span id="cb2-6"><a href="#cb2-6"></a>} <span class="cf">else</span> <span class="cf">if</span> (<span class="fu">unname</span>(<span class="fu">Sys.info</span>()[<span class="dv">1</span>]) <span class="sc">==</span> <span class="st">&quot;Linux&quot;</span>){</span>
-<span id="cb2-7"><a href="#cb2-7"></a>  <span class="fu">log_info</span>(<span class="st">&quot;On linux, reset cores to 40&quot;</span>)</span>
-<span id="cb2-8"><a href="#cb2-8"></a>  mc_cores <span class="ot">&lt;-</span> <span class="dv">40</span></span>
-<span id="cb2-9"><a href="#cb2-9"></a>  N_sim <span class="ot">&lt;-</span> <span class="dv">5000</span></span>
-<span id="cb2-10"><a href="#cb2-10"></a>}</span>
-<span id="cb2-11"><a href="#cb2-11"></a></span>
-<span id="cb2-12"><a href="#cb2-12"></a>dec_sup <span class="ot">=</span> <span class="fu">list</span>(</span>
-<span id="cb2-13"><a href="#cb2-13"></a>  <span class="at">surg =</span> <span class="cn">NA</span>,</span>
-<span id="cb2-14"><a href="#cb2-14"></a>  <span class="at">ext_proph =</span> <span class="cn">NA</span>,</span>
-<span id="cb2-15"><a href="#cb2-15"></a>  <span class="at">ab_choice =</span> <span class="cn">NA</span></span>
-<span id="cb2-16"><a href="#cb2-16"></a>)</span>
-<span id="cb2-17"><a href="#cb2-17"></a>dec_ni <span class="ot">=</span> <span class="fu">list</span>(</span>
-<span id="cb2-18"><a href="#cb2-18"></a>  <span class="at">ab_dur =</span> <span class="cn">NA</span></span>
-<span id="cb2-19"><a href="#cb2-19"></a>)</span>
-<span id="cb2-20"><a href="#cb2-20"></a>dec_sup_fut <span class="ot">=</span> <span class="fu">list</span>(</span>
-<span id="cb2-21"><a href="#cb2-21"></a>  <span class="at">surg =</span> <span class="cn">NA</span>,</span>
-<span id="cb2-22"><a href="#cb2-22"></a>  <span class="at">ext_proph =</span> <span class="cn">NA</span>,</span>
-<span id="cb2-23"><a href="#cb2-23"></a>  <span class="at">ab_choice =</span> <span class="cn">NA</span></span>
-<span id="cb2-24"><a href="#cb2-24"></a>)</span>
-<span id="cb2-25"><a href="#cb2-25"></a>dec_ni_fut <span class="ot">=</span> <span class="fu">list</span>(</span>
-<span id="cb2-26"><a href="#cb2-26"></a>  <span class="at">ab_dur =</span> <span class="cn">NA</span></span>
-<span id="cb2-27"><a href="#cb2-27"></a>)</span>
-<span id="cb2-28"><a href="#cb2-28"></a></span>
-<span id="cb2-29"><a href="#cb2-29"></a>mu <span class="ot">&lt;-</span> <span class="dv">0</span></span>
-<span id="cb2-30"><a href="#cb2-30"></a>b_silo <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.0</span>, <span class="sc">-</span><span class="fl">0.3</span>, <span class="sc">-</span><span class="fl">0.2</span>)</span>
-<span id="cb2-31"><a href="#cb2-31"></a>b_jnt <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.4</span>)</span>
-<span id="cb2-32"><a href="#cb2-32"></a>b_pref <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.0</span>, <span class="sc">-</span><span class="fl">0.2</span>)</span>
-<span id="cb2-33"><a href="#cb2-33"></a></span>
-<span id="cb2-34"><a href="#cb2-34"></a><span class="co"># dair, one, two-stage, we compare avg of one and two stage rev to dair</span></span>
-<span id="cb2-35"><a href="#cb2-35"></a></span>
-<span id="cb2-36"><a href="#cb2-36"></a><span class="co"># null (late acute silo)</span></span>
-<span id="cb2-37"><a href="#cb2-37"></a><span class="co"># b_d1 &lt;- c(0, 0.693, 0.693, 0, 0, 0, 0, 0.693, 0.693)</span></span>
-<span id="cb2-38"><a href="#cb2-38"></a><span class="co"># &quot;Moderate (OR 1.75) surgical revision effect (one-stage only)&quot;</span></span>
-<span id="cb2-39"><a href="#cb2-39"></a>b_d1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.693</span>, <span class="fl">0.693</span>, <span class="sc">-</span><span class="fl">0.1</span>, <span class="fl">0.4596</span>, <span class="sc">-</span><span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.4</span>, <span class="fl">0.2</span>)</span>
-<span id="cb2-40"><a href="#cb2-40"></a></span>
-<span id="cb2-41"><a href="#cb2-41"></a><span class="co"># always ref, 12wk, 6wk as we are assessing if 6wk ni to 12wk</span></span>
-<span id="cb2-42"><a href="#cb2-42"></a>b_d2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="fl">0.25</span>, <span class="fl">0.5</span>)</span>
-<span id="cb2-43"><a href="#cb2-43"></a><span class="co"># always ref, 0, 12wk as we are assessing if 12wk sup to none</span></span>
-<span id="cb2-44"><a href="#cb2-44"></a>b_d3 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="fl">0.25</span>, <span class="fl">0.5</span>)</span>
-<span id="cb2-45"><a href="#cb2-45"></a><span class="co"># always ref, none, rif as we are assessing if rif is sup to none</span></span>
-<span id="cb2-46"><a href="#cb2-46"></a>b_d4 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="fl">0.25</span>, <span class="fl">0.5</span>)</span>
-<span id="cb2-47"><a href="#cb2-47"></a>N <span class="ot">&lt;-</span> <span class="dv">2500</span></span>
-<span id="cb2-48"><a href="#cb2-48"></a></span>
-<span id="cb2-49"><a href="#cb2-49"></a>l_new <span class="ot">&lt;-</span> <span class="fu">get_trial_data_int</span>(</span>
-<span id="cb2-50"><a href="#cb2-50"></a>      <span class="at">N =</span> N, </span>
-<span id="cb2-51"><a href="#cb2-51"></a>      </span>
-<span id="cb2-52"><a href="#cb2-52"></a>      <span class="co"># reference level log odds of response</span></span>
-<span id="cb2-53"><a href="#cb2-53"></a>      <span class="at">mu =</span> mu,</span>
-<span id="cb2-54"><a href="#cb2-54"></a>      <span class="co"># silo effects</span></span>
-<span id="cb2-55"><a href="#cb2-55"></a>      <span class="co"># silo 1 as the one for late acute</span></span>
-<span id="cb2-56"><a href="#cb2-56"></a>      <span class="co"># silo 2 as the one for late acute</span></span>
-<span id="cb2-57"><a href="#cb2-57"></a>      <span class="co"># silo 3 is LATE ACUTE</span></span>
-<span id="cb2-58"><a href="#cb2-58"></a>      <span class="at">b_silo =</span> b_silo,</span>
-<span id="cb2-59"><a href="#cb2-59"></a>      <span class="at">b_jnt =</span> b_jnt,</span>
-<span id="cb2-60"><a href="#cb2-60"></a>      <span class="at">b_pref =</span> b_pref,</span>
-<span id="cb2-61"><a href="#cb2-61"></a>      <span class="co"># dair, one, two-stage</span></span>
-<span id="cb2-62"><a href="#cb2-62"></a>      <span class="at">b_d1 =</span> b_d1,</span>
-<span id="cb2-63"><a href="#cb2-63"></a>      <span class="at">b_d2 =</span> b_d2,</span>
-<span id="cb2-64"><a href="#cb2-64"></a>      <span class="at">b_d3 =</span> b_d3,</span>
-<span id="cb2-65"><a href="#cb2-65"></a>      <span class="at">b_d4 =</span> b_d4,</span>
-<span id="cb2-66"><a href="#cb2-66"></a>      </span>
-<span id="cb2-67"><a href="#cb2-67"></a>      <span class="at">dec_sup =</span> dec_sup,</span>
-<span id="cb2-68"><a href="#cb2-68"></a>      <span class="at">dec_ni =</span> dec_ni,</span>
-<span id="cb2-69"><a href="#cb2-69"></a>      <span class="at">dec_sup_fut =</span> dec_sup_fut,</span>
-<span id="cb2-70"><a href="#cb2-70"></a>      <span class="at">dec_ni_fut =</span> dec_ni_fut,</span>
-<span id="cb2-71"><a href="#cb2-71"></a>      </span>
-<span id="cb2-72"><a href="#cb2-72"></a>      <span class="at">idx_s =</span> <span class="dv">1</span>,</span>
-<span id="cb2-73"><a href="#cb2-73"></a>      <span class="at">t0 =</span> <span class="fu">rep</span>(<span class="dv">1</span>, N),</span>
-<span id="cb2-74"><a href="#cb2-74"></a>      <span class="at">id_analys =</span> <span class="dv">1</span></span>
-<span id="cb2-75"><a href="#cb2-75"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>mc_cores <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb4-2"><a href="#cb4-2"></a><span class="cf">if</span>(<span class="fu">unname</span>(<span class="fu">Sys.info</span>()[<span class="dv">1</span>]) <span class="sc">==</span> <span class="st">&quot;Darwin&quot;</span>){</span>
+<span id="cb4-3"><a href="#cb4-3"></a>  <span class="fu">log_info</span>(<span class="st">&quot;On mac, reset cores to 5&quot;</span>)</span>
+<span id="cb4-4"><a href="#cb4-4"></a>  mc_cores <span class="ot">&lt;-</span> <span class="dv">5</span></span>
+<span id="cb4-5"><a href="#cb4-5"></a>  N_sim <span class="ot">&lt;-</span> <span class="dv">250</span></span>
+<span id="cb4-6"><a href="#cb4-6"></a>} <span class="cf">else</span> <span class="cf">if</span> (<span class="fu">unname</span>(<span class="fu">Sys.info</span>()[<span class="dv">1</span>]) <span class="sc">==</span> <span class="st">&quot;Linux&quot;</span>){</span>
+<span id="cb4-7"><a href="#cb4-7"></a>  <span class="fu">log_info</span>(<span class="st">&quot;On linux, reset cores to 40&quot;</span>)</span>
+<span id="cb4-8"><a href="#cb4-8"></a>  mc_cores <span class="ot">&lt;-</span> <span class="dv">40</span></span>
+<span id="cb4-9"><a href="#cb4-9"></a>  N_sim <span class="ot">&lt;-</span> <span class="dv">5000</span></span>
+<span id="cb4-10"><a href="#cb4-10"></a>}</span>
+<span id="cb4-11"><a href="#cb4-11"></a></span>
+<span id="cb4-12"><a href="#cb4-12"></a>dec_sup <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb4-13"><a href="#cb4-13"></a>  <span class="at">surg =</span> <span class="cn">NA</span>,</span>
+<span id="cb4-14"><a href="#cb4-14"></a>  <span class="at">ext_proph =</span> <span class="cn">NA</span>,</span>
+<span id="cb4-15"><a href="#cb4-15"></a>  <span class="at">ab_choice =</span> <span class="cn">NA</span></span>
+<span id="cb4-16"><a href="#cb4-16"></a>)</span>
+<span id="cb4-17"><a href="#cb4-17"></a>dec_ni <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb4-18"><a href="#cb4-18"></a>  <span class="at">ab_dur =</span> <span class="cn">NA</span></span>
+<span id="cb4-19"><a href="#cb4-19"></a>)</span>
+<span id="cb4-20"><a href="#cb4-20"></a>dec_sup_fut <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb4-21"><a href="#cb4-21"></a>  <span class="at">surg =</span> <span class="cn">NA</span>,</span>
+<span id="cb4-22"><a href="#cb4-22"></a>  <span class="at">ext_proph =</span> <span class="cn">NA</span>,</span>
+<span id="cb4-23"><a href="#cb4-23"></a>  <span class="at">ab_choice =</span> <span class="cn">NA</span></span>
+<span id="cb4-24"><a href="#cb4-24"></a>)</span>
+<span id="cb4-25"><a href="#cb4-25"></a>dec_ni_fut <span class="ot">=</span> <span class="fu">list</span>(</span>
+<span id="cb4-26"><a href="#cb4-26"></a>  <span class="at">ab_dur =</span> <span class="cn">NA</span></span>
+<span id="cb4-27"><a href="#cb4-27"></a>)</span>
+<span id="cb4-28"><a href="#cb4-28"></a></span>
+<span id="cb4-29"><a href="#cb4-29"></a>mu <span class="ot">&lt;-</span> <span class="dv">0</span></span>
+<span id="cb4-30"><a href="#cb4-30"></a>b_silo <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.0</span>, <span class="sc">-</span><span class="fl">0.3</span>, <span class="sc">-</span><span class="fl">0.2</span>)</span>
+<span id="cb4-31"><a href="#cb4-31"></a>b_jnt <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.4</span>)</span>
+<span id="cb4-32"><a href="#cb4-32"></a>b_pref <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.0</span>, <span class="sc">-</span><span class="fl">0.2</span>)</span>
+<span id="cb4-33"><a href="#cb4-33"></a></span>
+<span id="cb4-34"><a href="#cb4-34"></a><span class="co"># dair, one, two-stage, we compare avg of one and two stage rev to dair</span></span>
+<span id="cb4-35"><a href="#cb4-35"></a></span>
+<span id="cb4-36"><a href="#cb4-36"></a><span class="co"># null (late acute silo)</span></span>
+<span id="cb4-37"><a href="#cb4-37"></a><span class="co"># b_d1 &lt;- c(0, 0.693, 0.693, 0, 0, 0, 0, 0.693, 0.693)</span></span>
+<span id="cb4-38"><a href="#cb4-38"></a><span class="co"># &quot;Moderate (OR 1.75) surgical revision effect (one-stage only)&quot;</span></span>
+<span id="cb4-39"><a href="#cb4-39"></a>b_d1 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="fl">0.693</span>, <span class="fl">0.693</span>, <span class="sc">-</span><span class="fl">0.1</span>, <span class="fl">0.4596</span>, <span class="sc">-</span><span class="fl">0.1</span>, <span class="fl">0.1</span>, <span class="fl">0.4</span>, <span class="fl">0.2</span>)</span>
+<span id="cb4-40"><a href="#cb4-40"></a></span>
+<span id="cb4-41"><a href="#cb4-41"></a><span class="co"># always ref, 12wk, 6wk as we are assessing if 6wk ni to 12wk</span></span>
+<span id="cb4-42"><a href="#cb4-42"></a>b_d2 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="fl">0.25</span>, <span class="fl">0.5</span>)</span>
+<span id="cb4-43"><a href="#cb4-43"></a><span class="co"># always ref, 0, 12wk as we are assessing if 12wk sup to none</span></span>
+<span id="cb4-44"><a href="#cb4-44"></a>b_d3 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="fl">0.25</span>, <span class="fl">0.5</span>)</span>
+<span id="cb4-45"><a href="#cb4-45"></a><span class="co"># always ref, none, rif as we are assessing if rif is sup to none</span></span>
+<span id="cb4-46"><a href="#cb4-46"></a>b_d4 <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="sc">-</span><span class="fl">0.25</span>, <span class="fl">0.5</span>)</span>
+<span id="cb4-47"><a href="#cb4-47"></a>N <span class="ot">&lt;-</span> <span class="dv">2500</span></span>
+<span id="cb4-48"><a href="#cb4-48"></a></span>
+<span id="cb4-49"><a href="#cb4-49"></a>l_new <span class="ot">&lt;-</span> <span class="fu">get_trial_data_int</span>(</span>
+<span id="cb4-50"><a href="#cb4-50"></a>      <span class="at">N =</span> N, </span>
+<span id="cb4-51"><a href="#cb4-51"></a>      </span>
+<span id="cb4-52"><a href="#cb4-52"></a>      <span class="co"># reference level log odds of response</span></span>
+<span id="cb4-53"><a href="#cb4-53"></a>      <span class="at">mu =</span> mu,</span>
+<span id="cb4-54"><a href="#cb4-54"></a>      <span class="co"># silo effects</span></span>
+<span id="cb4-55"><a href="#cb4-55"></a>      <span class="co"># silo 1 as the one for late acute</span></span>
+<span id="cb4-56"><a href="#cb4-56"></a>      <span class="co"># silo 2 as the one for late acute</span></span>
+<span id="cb4-57"><a href="#cb4-57"></a>      <span class="co"># silo 3 is LATE ACUTE</span></span>
+<span id="cb4-58"><a href="#cb4-58"></a>      <span class="at">b_silo =</span> b_silo,</span>
+<span id="cb4-59"><a href="#cb4-59"></a>      <span class="at">b_jnt =</span> b_jnt,</span>
+<span id="cb4-60"><a href="#cb4-60"></a>      <span class="at">b_pref =</span> b_pref,</span>
+<span id="cb4-61"><a href="#cb4-61"></a>      <span class="co"># dair, one, two-stage</span></span>
+<span id="cb4-62"><a href="#cb4-62"></a>      <span class="at">b_d1 =</span> b_d1,</span>
+<span id="cb4-63"><a href="#cb4-63"></a>      <span class="at">b_d2 =</span> b_d2,</span>
+<span id="cb4-64"><a href="#cb4-64"></a>      <span class="at">b_d3 =</span> b_d3,</span>
+<span id="cb4-65"><a href="#cb4-65"></a>      <span class="at">b_d4 =</span> b_d4,</span>
+<span id="cb4-66"><a href="#cb4-66"></a>      </span>
+<span id="cb4-67"><a href="#cb4-67"></a>      <span class="at">dec_sup =</span> dec_sup,</span>
+<span id="cb4-68"><a href="#cb4-68"></a>      <span class="at">dec_ni =</span> dec_ni,</span>
+<span id="cb4-69"><a href="#cb4-69"></a>      <span class="at">dec_sup_fut =</span> dec_sup_fut,</span>
+<span id="cb4-70"><a href="#cb4-70"></a>      <span class="at">dec_ni_fut =</span> dec_ni_fut,</span>
+<span id="cb4-71"><a href="#cb4-71"></a>      </span>
+<span id="cb4-72"><a href="#cb4-72"></a>      <span class="at">idx_s =</span> <span class="dv">1</span>,</span>
+<span id="cb4-73"><a href="#cb4-73"></a>      <span class="at">t0 =</span> <span class="fu">rep</span>(<span class="dv">1</span>, N),</span>
+<span id="cb4-74"><a href="#cb4-74"></a>      <span class="at">id_analys =</span> <span class="dv">1</span></span>
+<span id="cb4-75"><a href="#cb4-75"></a>    )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 <p>implement data function to create data directed by principal strata membership</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a><span class="co"># Assume probability of being in each PS ( n=(0,0), c=(0,1), a=(1,1) )</span></span>
-<span id="cb3-2"><a href="#cb3-2"></a><span class="co"># has same distribution across all silos.</span></span>
-<span id="cb3-3"><a href="#cb3-3"></a></span>
-<span id="cb3-4"><a href="#cb3-4"></a>l_new<span class="sc">$</span>d[, ps <span class="sc">:</span><span class="er">=</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, .N, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.6</span>, <span class="fl">0.2</span>))]</span>
-<span id="cb3-5"><a href="#cb3-5"></a></span>
-<span id="cb3-6"><a href="#cb3-6"></a><span class="co"># never</span></span>
-<span id="cb3-7"><a href="#cb3-7"></a>l_new<span class="sc">$</span>d[ps <span class="sc">==</span> <span class="dv">1</span>, d1_rec <span class="sc">:</span><span class="er">=</span> <span class="dv">1</span>]</span>
-<span id="cb3-8"><a href="#cb3-8"></a><span class="co"># complier</span></span>
-<span id="cb3-9"><a href="#cb3-9"></a>l_new<span class="sc">$</span>d[ps <span class="sc">==</span> <span class="dv">2</span>, d1_rec <span class="sc">:</span><span class="er">=</span> <span class="fu">copy</span>(d1)]</span>
-<span id="cb3-10"><a href="#cb3-10"></a><span class="co"># always</span></span>
-<span id="cb3-11"><a href="#cb3-11"></a>l_new<span class="sc">$</span>d[ps <span class="sc">==</span> <span class="dv">3</span> <span class="sc">&amp;</span> silo <span class="sc">==</span> <span class="dv">1</span>, d1_rec <span class="sc">:</span><span class="er">=</span> <span class="fu">sample</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>, .N, <span class="at">replace =</span> T, <span class="at">prob =</span> g_pr_e_pref[<span class="dv">2</span>, <span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>])]</span>
-<span id="cb3-12"><a href="#cb3-12"></a>l_new<span class="sc">$</span>d[ps <span class="sc">==</span> <span class="dv">3</span> <span class="sc">&amp;</span> silo <span class="sc">==</span> <span class="dv">2</span>, d1_rec <span class="sc">:</span><span class="er">=</span> <span class="fu">sample</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>, .N, <span class="at">replace =</span> T, <span class="at">prob =</span> g_pr_l_pref[<span class="dv">2</span>, <span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>])]</span>
-<span id="cb3-13"><a href="#cb3-13"></a>l_new<span class="sc">$</span>d[ps <span class="sc">==</span> <span class="dv">3</span> <span class="sc">&amp;</span> silo <span class="sc">==</span> <span class="dv">3</span>, d1_rec <span class="sc">:</span><span class="er">=</span> <span class="fu">sample</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>, .N, <span class="at">replace =</span> T, <span class="at">prob =</span> g_pr_c_pref[<span class="dv">2</span>, <span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>])]</span>
-<span id="cb3-14"><a href="#cb3-14"></a></span>
-<span id="cb3-15"><a href="#cb3-15"></a><span class="co"># recompute a revised version of y based on the revised view of d1</span></span>
-<span id="cb3-16"><a href="#cb3-16"></a></span>
-<span id="cb3-17"><a href="#cb3-17"></a>l_new<span class="sc">$</span>d[, d1_ix <span class="sc">:</span><span class="er">=</span> d1_rec <span class="sc">+</span> (l_new<span class="sc">$</span>K_d1 <span class="sc">*</span> (silo <span class="sc">-</span> <span class="dv">1</span>))]</span>
-<span id="cb3-18"><a href="#cb3-18"></a><span class="co"># Outcome</span></span>
-<span id="cb3-19"><a href="#cb3-19"></a>l_new<span class="sc">$</span>d[, mu <span class="sc">:</span><span class="er">=</span> mu]</span>
-<span id="cb3-20"><a href="#cb3-20"></a>l_new<span class="sc">$</span>d[, b_silo <span class="sc">:</span><span class="er">=</span> b_silo[silo]]</span>
-<span id="cb3-21"><a href="#cb3-21"></a>l_new<span class="sc">$</span>d[, b_jnt <span class="sc">:</span><span class="er">=</span> b_jnt[jnt]]</span>
-<span id="cb3-22"><a href="#cb3-22"></a>l_new<span class="sc">$</span>d[, b_pref <span class="sc">:</span><span class="er">=</span> b_pref[pref_rev]]</span>
-<span id="cb3-23"><a href="#cb3-23"></a><span class="co"># use calculated index to pick up correct silo specific parameter</span></span>
-<span id="cb3-24"><a href="#cb3-24"></a>l_new<span class="sc">$</span>d[, b_d1 <span class="sc">:</span><span class="er">=</span> b_d1[d1_ix]]</span>
-<span id="cb3-25"><a href="#cb3-25"></a>l_new<span class="sc">$</span>d[, b_d2 <span class="sc">:</span><span class="er">=</span> b_d2[d2]]</span>
-<span id="cb3-26"><a href="#cb3-26"></a>l_new<span class="sc">$</span>d[, b_d3 <span class="sc">:</span><span class="er">=</span> b_d3[d3]]</span>
-<span id="cb3-27"><a href="#cb3-27"></a>l_new<span class="sc">$</span>d[, b_d4 <span class="sc">:</span><span class="er">=</span> b_d4[d4]]</span>
-<span id="cb3-28"><a href="#cb3-28"></a>  </span>
-<span id="cb3-29"><a href="#cb3-29"></a><span class="co"># Think about preference as something that is induced in the clinician by</span></span>
-<span id="cb3-30"><a href="#cb3-30"></a><span class="co"># the status of the patient, i.e. it is a kind of baseline adjustment.</span></span>
-<span id="cb3-31"><a href="#cb3-31"></a>l_new<span class="sc">$</span>d[, eta <span class="sc">:</span><span class="er">=</span> mu <span class="sc">+</span> b_silo <span class="sc">+</span> b_jnt <span class="sc">+</span> b_pref <span class="sc">+</span> b_d1 <span class="sc">+</span> b_d2 <span class="sc">+</span> b_d3 <span class="sc">+</span> b_d4      ]</span>
-<span id="cb3-32"><a href="#cb3-32"></a></span>
-<span id="cb3-33"><a href="#cb3-33"></a>l_new<span class="sc">$</span>d[, y <span class="sc">:</span><span class="er">=</span> <span class="fu">rbinom</span>(.N, <span class="dv">1</span>, <span class="fu">plogis</span>(eta))]</span>
-<span id="cb3-34"><a href="#cb3-34"></a>  </span>
-<span id="cb3-35"><a href="#cb3-35"></a>  </span>
-<span id="cb3-36"><a href="#cb3-36"></a>l_new<span class="sc">$</span>d[]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode numberSource r number-lines code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="co"># Assume probability of being in each PS ( n=(0,0), c=(0,1), a=(1,1) )</span></span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="co"># has same distribution across all silos.</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a></span>
+<span id="cb5-4"><a href="#cb5-4"></a>l_new<span class="sc">$</span>d[, ps <span class="sc">:</span><span class="er">=</span> <span class="fu">sample</span>(<span class="dv">1</span><span class="sc">:</span><span class="dv">3</span>, .N, <span class="at">replace =</span> <span class="cn">TRUE</span>, <span class="at">prob =</span> <span class="fu">c</span>(<span class="fl">0.2</span>, <span class="fl">0.6</span>, <span class="fl">0.2</span>))]</span>
+<span id="cb5-5"><a href="#cb5-5"></a></span>
+<span id="cb5-6"><a href="#cb5-6"></a><span class="co"># never</span></span>
+<span id="cb5-7"><a href="#cb5-7"></a>l_new<span class="sc">$</span>d[ps <span class="sc">==</span> <span class="dv">1</span>, d1_rec <span class="sc">:</span><span class="er">=</span> <span class="dv">1</span>]</span>
+<span id="cb5-8"><a href="#cb5-8"></a><span class="co"># complier</span></span>
+<span id="cb5-9"><a href="#cb5-9"></a>l_new<span class="sc">$</span>d[ps <span class="sc">==</span> <span class="dv">2</span>, d1_rec <span class="sc">:</span><span class="er">=</span> <span class="fu">copy</span>(d1)]</span>
+<span id="cb5-10"><a href="#cb5-10"></a><span class="co"># always</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a>l_new<span class="sc">$</span>d[ps <span class="sc">==</span> <span class="dv">3</span> <span class="sc">&amp;</span> silo <span class="sc">==</span> <span class="dv">1</span>, d1_rec <span class="sc">:</span><span class="er">=</span> <span class="fu">sample</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>, .N, <span class="at">replace =</span> T, <span class="at">prob =</span> g_pr_e_pref[<span class="dv">2</span>, <span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>])]</span>
+<span id="cb5-12"><a href="#cb5-12"></a>l_new<span class="sc">$</span>d[ps <span class="sc">==</span> <span class="dv">3</span> <span class="sc">&amp;</span> silo <span class="sc">==</span> <span class="dv">2</span>, d1_rec <span class="sc">:</span><span class="er">=</span> <span class="fu">sample</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>, .N, <span class="at">replace =</span> T, <span class="at">prob =</span> g_pr_l_pref[<span class="dv">2</span>, <span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>])]</span>
+<span id="cb5-13"><a href="#cb5-13"></a>l_new<span class="sc">$</span>d[ps <span class="sc">==</span> <span class="dv">3</span> <span class="sc">&amp;</span> silo <span class="sc">==</span> <span class="dv">3</span>, d1_rec <span class="sc">:</span><span class="er">=</span> <span class="fu">sample</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>, .N, <span class="at">replace =</span> T, <span class="at">prob =</span> g_pr_c_pref[<span class="dv">2</span>, <span class="dv">2</span><span class="sc">:</span><span class="dv">3</span>])]</span>
+<span id="cb5-14"><a href="#cb5-14"></a></span>
+<span id="cb5-15"><a href="#cb5-15"></a><span class="co"># recompute a revised version of y based on the revised view of d1</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a></span>
+<span id="cb5-17"><a href="#cb5-17"></a>l_new<span class="sc">$</span>d[, d1_ix <span class="sc">:</span><span class="er">=</span> d1_rec <span class="sc">+</span> (l_new<span class="sc">$</span>K_d1 <span class="sc">*</span> (silo <span class="sc">-</span> <span class="dv">1</span>))]</span>
+<span id="cb5-18"><a href="#cb5-18"></a><span class="co"># Outcome</span></span>
+<span id="cb5-19"><a href="#cb5-19"></a>l_new<span class="sc">$</span>d[, mu <span class="sc">:</span><span class="er">=</span> mu]</span>
+<span id="cb5-20"><a href="#cb5-20"></a>l_new<span class="sc">$</span>d[, b_silo <span class="sc">:</span><span class="er">=</span> b_silo[silo]]</span>
+<span id="cb5-21"><a href="#cb5-21"></a>l_new<span class="sc">$</span>d[, b_jnt <span class="sc">:</span><span class="er">=</span> b_jnt[jnt]]</span>
+<span id="cb5-22"><a href="#cb5-22"></a>l_new<span class="sc">$</span>d[, b_pref <span class="sc">:</span><span class="er">=</span> b_pref[pref_rev]]</span>
+<span id="cb5-23"><a href="#cb5-23"></a><span class="co"># use calculated index to pick up correct silo specific parameter</span></span>
+<span id="cb5-24"><a href="#cb5-24"></a>l_new<span class="sc">$</span>d[, b_d1 <span class="sc">:</span><span class="er">=</span> b_d1[d1_ix]]</span>
+<span id="cb5-25"><a href="#cb5-25"></a>l_new<span class="sc">$</span>d[, b_d2 <span class="sc">:</span><span class="er">=</span> b_d2[d2]]</span>
+<span id="cb5-26"><a href="#cb5-26"></a>l_new<span class="sc">$</span>d[, b_d3 <span class="sc">:</span><span class="er">=</span> b_d3[d3]]</span>
+<span id="cb5-27"><a href="#cb5-27"></a>l_new<span class="sc">$</span>d[, b_d4 <span class="sc">:</span><span class="er">=</span> b_d4[d4]]</span>
+<span id="cb5-28"><a href="#cb5-28"></a>  </span>
+<span id="cb5-29"><a href="#cb5-29"></a><span class="co"># Think about preference as something that is induced in the clinician by</span></span>
+<span id="cb5-30"><a href="#cb5-30"></a><span class="co"># the status of the patient, i.e. it is a kind of baseline adjustment.</span></span>
+<span id="cb5-31"><a href="#cb5-31"></a>l_new<span class="sc">$</span>d[, eta <span class="sc">:</span><span class="er">=</span> mu <span class="sc">+</span> b_silo <span class="sc">+</span> b_jnt <span class="sc">+</span> b_pref <span class="sc">+</span> b_d1 <span class="sc">+</span> b_d2 <span class="sc">+</span> b_d3 <span class="sc">+</span> b_d4      ]</span>
+<span id="cb5-32"><a href="#cb5-32"></a></span>
+<span id="cb5-33"><a href="#cb5-33"></a>l_new<span class="sc">$</span>d[, y <span class="sc">:</span><span class="er">=</span> <span class="fu">rbinom</span>(.N, <span class="dv">1</span>, <span class="fu">plogis</span>(eta))]</span>
+<span id="cb5-34"><a href="#cb5-34"></a>  </span>
+<span id="cb5-35"><a href="#cb5-35"></a>  </span>
+<span id="cb5-36"><a href="#cb5-36"></a>l_new<span class="sc">$</span>d[]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output cell-output-stdout">
 <pre><code>Indices: &lt;silo&gt;, &lt;d1&gt;, &lt;ps&gt;, &lt;silo__ps&gt;
          id    t0 id_analys  silo   jnt pref_rev    d1    d2    d3    d4 d1_ix
       &lt;int&gt; &lt;num&gt;     &lt;num&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;
-   1:     1     1         1     1     1        1     1     1     1     1     1
-   2:     2     1         1     3     1        2     3     1     2     1     9
-   3:     3     1         1     1     1        1     1     1     1     3     2
-   4:     4     1         1     1     2        2     1     1     1     3     2
-   5:     5     1         1     2     1        2     3     1     3     3     6
+   1:     1     1         1     2     1        2     1     1     1     1     4
+   2:     2     1         1     3     2        2     1     1     1     1     7
+   3:     3     1         1     2     1        1     2     2     1     2     6
+   4:     4     1         1     2     1        1     1     1     1     3     4
+   5:     5     1         1     2     1        2     1     1     1     1     4
   ---                                                                         
-2496:  2496     1         1     3     2        2     3     1     2     1     9
-2497:  2497     1         1     3     2        1     2     2     1     3     8
-2498:  2498     1         1     2     1        1     2     2     1     2     4
-2499:  2499     1         1     1     2        1     1     1     1     1     2
-2500:  2500     1         1     3     1        2     3     1     1     1     9
-         mu b_silo b_jnt b_pref  b_d1  b_d2  b_d3  b_d4   eta     y    ps
-      &lt;num&gt;  &lt;num&gt; &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;int&gt; &lt;int&gt;
-   1:     0    0.0     0    0.0   0.0     0  0.00   0.0  0.00     0     1
-   2:     0    0.0     0   -0.2  -0.1     0 -0.25   0.0 -0.55     1     2
-   3:     0    0.0     0    0.0   0.2     0  0.00   0.5  0.70     0     3
-   4:     0    0.0     0   -0.2   0.2     0  0.00   0.5  0.50     1     3
-   5:     0   -0.2     0   -0.2  -0.1     0  0.00   0.5  0.00     0     2
-  ---                                                                    
-2496:     0    0.0     0   -0.2  -0.1     0 -0.25   0.0 -0.55     0     2
-2497:     0    0.0     0    0.0  -0.1     0  0.00   0.5  0.40     0     2
-2498:     0   -0.2     0    0.0   0.0     0  0.00   0.0 -0.20     1     1
-2499:     0    0.0     0    0.0   0.2     0  0.00   0.0  0.20     0     3
-2500:     0    0.0     0   -0.2  -0.1     0  0.00   0.0 -0.30     0     2
+2496:  2496     1         1     1     1        1     1     1     1     3     1
+2497:  2497     1         1     3     1        2     3     1     3     1     9
+2498:  2498     1         1     1     2        2     1     1     1     3     1
+2499:  2499     1         1     3     2        2     1     1     1     3     7
+2500:  2500     1         1     3     1        2     3     1     2     1     7
+         mu b_silo b_jnt b_pref   b_d1  b_d2  b_d3  b_d4    eta     y    ps
+      &lt;num&gt;  &lt;num&gt; &lt;num&gt;  &lt;num&gt;  &lt;num&gt; &lt;num&gt; &lt;num&gt; &lt;num&gt;  &lt;num&gt; &lt;int&gt; &lt;int&gt;
+   1:     0   -0.2   0.0   -0.2 -0.100     0     0  0.00 -0.500     1     2
+   2:     0   -0.3   0.4   -0.2  0.000     0     0  0.00 -0.100     1     2
+   3:     0   -0.2   0.0   -0.2  0.693     0     0  0.00  0.293     0     3
+   4:     0   -0.2   0.0   -0.2 -0.100     0     0 -0.25 -0.750     1     1
+   5:     0   -0.2   0.0   -0.2 -0.100     0     0  0.00 -0.500     0     2
+  ---                                                                      
+2496:     0   -0.3   0.0   -0.2 -0.100     0     0 -0.25 -0.850     0     1
+2497:     0   -0.3   0.0   -0.2  0.200     0     0  0.00 -0.300     1     2
+2498:     0   -0.3   0.4   -0.2 -0.100     0     0 -0.25 -0.450     0     2
+2499:     0   -0.3   0.4   -0.2  0.000     0     0 -0.25 -0.350     1     2
+2500:     0   -0.3   0.0   -0.2  0.000     0     0  0.00 -0.500     0     1
       d1_rec
        &lt;num&gt;
    1:      1
-   2:      3
-   3:      2
-   4:      2
-   5:      3
+   2:      1
+   3:      3
+   4:      1
+   5:      1
   ---       
-2496:      3
-2497:      2
+2496:      1
+2497:      3
 2498:      1
-2499:      2
-2500:      3</code></pre>
+2499:      1
+2500:      1</code></pre>
 </div>
 </div>
 
