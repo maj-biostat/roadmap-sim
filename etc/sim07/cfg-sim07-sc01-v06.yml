@@ -61,8 +61,8 @@ default:
   dec_delta_ni: -0.05
   dec_delta_ni_fut: 0.00
   # decision probability thresholds
-  dec_thresh_sup: [0.95, 0.95, 0.95, 0.99] # thresh by domain
-  dec_thresh_ni: [0.975, 0.925, 0.975, 0.975]
+  dec_thresh_sup: [0.96, 0.96, 0.96, 0.99] # thresh by domain
+  dec_thresh_ni: [0.975, 0.945, 0.975, 0.975]
   dec_thresh_fut_sup: [0.30, 0.30, 0.30, 0.30]
   dec_thresh_fut_ni: [0.25, 0.10, 0.25, 0.25]
   
