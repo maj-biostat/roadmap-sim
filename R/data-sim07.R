@@ -242,6 +242,8 @@ get_sim07_trial_data <- function(
   # compute linear predictor
   
   bd1 <- c(l_spec$l_e$bd1, l_spec$l_l$bd1, l_spec$l_c$bd1)
+  
+  # bd1 <- c(0, rnorm(8))
   # index for d1 is a function of 
   # d1 (3 levels - dair, rev(1), rev(2)) and silo membership (1:3)
   d[, d1_ix := d1 + (3 * (s - 1))]
@@ -264,6 +266,10 @@ get_sim07_trial_data <- function(
   
   d
 }
+
+
+
+
 
 
 get_sim07_stan_data <- function(d_all){
@@ -412,6 +418,200 @@ get_sim07_stan_data <- function(d_all){
 }
 
 
+get_sim07_trial_data_subgrp <- function(
+    l_spec
+){
+  
+  
+  # just demo for explanation purposes
+  
+  d <- get_sim07_trial_data(l_spec)
+  
+  # d1 -------
+  # subgroups fixed to those in protocol
+  # arbitrary distribution for each subgroup
+  # site of infection (knee, hip) 
+  # pr(site = knee| e) = 0.4
+  # pr(site = knee| l) = 0.7
+  # pr(site = knee| c) = 0.5
+  d[s == 1, d1_sg_1 := sample(1:2, size = .N, replace = T, prob = c(0.4, 0.6))]
+  d[s == 2, d1_sg_1 := sample(1:2, size = .N, replace = T, prob = c(0.7, 0.3))]
+  d[s == 3, d1_sg_1 := sample(1:2, size = .N, replace = T, prob = c(0.5, 0.5))]
+  
+  # duration of symptom at entry (3 category)
+  d[, d1_sg_2 := sample(1:3, size = .N, replace = T, prob = c(0.25, 0.5, 0.25))]
+
+  # one of causative org is s aureus Pr(s aureus) = 0.3
+  d[, d1_sg_3 := sample(1:2, size = .N, replace = T, prob = c(0.7, 0.3))]
+
+  # crp at entry > 100 Pr(crp > 100) = 0.2
+  d[, d1_sg_4 := sample(1:2, size = .N, replace = T, prob = c(0.8, 0.2))]
+
+  
+  # d2 -------
+  # silo (already present in model)
+  d[, d2_sg_1 := copy(s)]
+  # one of causative org is s aureus Pr(s aureus) = 0.3 (same as d1)
+  d[, d2_sg_2 := copy(d1_sg_3)]
+  # revision all ideal
+  d[, d2_sg_3 := sample(1:2, size = .N, replace = T, prob = c(0.5, 0.5))]
+  
+  
+  # d3 ------
+  # silo (already present in model)
+  d[, d3_sg_1 := copy(s)]
+  # one of causative org is s aureus Pr(s aureus) = 0.3 (same as d1)
+  d[, d3_sg_2 := copy(d1_sg_3)]
+  # Categorised duration between first-stage and reimplantation procedure
+  d[, d3_sg_3 := sample(1:3, size = .N, replace = T, prob = c(0.3, 0.4, 0.3))]
+  
+  # d4 ------
+  # type of surgery already present
+  d[, d4_sg_1 := copy(d1)]
+  # one of causative org is s aureus Pr(s aureus) = 0.3 (same as d1)
+  d[, d4_sg_2 := copy(d1_sg_3)]
+  
+  
+  # revise linear predictor ------
+  
+  # main effects for bd1 as before
+  bd1_star <- c(l_spec$l_e$bd1, l_spec$l_l$bd1, l_spec$l_c$bd1)
+  
+  # d1 subgroups
+  # silo (already dealt with as there are silo specific effects)
+  # now deal with:
+  # site of infection (2 level)
+  # duration symptom (assume 3 level), 
+  # staph (2 level), 
+  # crp at baseline (2 level), 
+  # duration index implant (assume 3 level), 
+  # rev type (3 level main effects already present)
+  
+  bd1_sg_sig <- 0.3
+  # 3 x 2, (dair, rev(1), rev(2)) x (knee, hip) possibilities for pr(trt success)
+  bd1_sg_1 <- matrix(rnorm(6, 0, bd1_sg_sig), ncol = 2, nrow = 3)
+  # 3x3, (dair, rev(1), rev(2)) x (short, med, long duration of symptoms) 
+  # bd1_sg_2 <- matrix(rnorm(9, 0, bd1_sg_sig), ncol = 3, nrow = 3)
+  # # stapha 
+  # bd1_sg_3 <- matrix(rnorm(6, 0, bd1_sg_sig), ncol = 2, nrow = 3)
+  # # crp level
+  # bd1_sg_4 <- matrix(rnorm(6, 0, bd1_sg_sig), ncol = 2, nrow = 3)
+  
+  # d2 subgroups
+  # bd2_sg_sig <- 0.2
+  # bd2_sg_1 <- matrix(rnorm(9, 0, bd2_sg_sig), ncol = 3, nrow = 3)
+  # bd2_sg_2 <- matrix(rnorm(6, 0, bd2_sg_sig), ncol = 2, nrow = 3)
+  # bd2_sg_3 <- matrix(rnorm(9, 0, bd2_sg_sig), ncol = 3, nrow = 3)
+  
+  # d3 subgroups
+  # bd3_sg_sig <- 0.24
+  # bd3_sg_1 <- matrix(rnorm(9, 0, bd3_sg_sig), ncol = 3, nrow = 3)
+  # bd3_sg_2 <- matrix(rnorm(6, 0, bd3_sg_sig), ncol = 2, nrow = 3)
+  # bd3_sg_3 <- matrix(rnorm(9, 0, bd3_sg_sig), ncol = 3, nrow = 3)
+  
+  # d4 subgroups
+  # bd4_sg_sig <- 0.1
+  # # type of surgery
+  # bd4_sg_1 <- matrix(rnorm(9, 0, bd4_sg_sig), ncol = 3, nrow = 3)
+  # # at least one is staph
+  # bd4_sg_2 <- matrix(rnorm(6, 0, bd4_sg_sig), ncol = 2, nrow = 3)
+  
+  d[, bd1_star := bd1_star[d1_ix] ]
+  d[, bd1_sg_1 := bd1_sg_1[cbind(d1, d1_sg_1)]]
+  d[, bd1 := bd1_star +  bd1_sg_1]
+  # + bd1_sg_2[cbind(d1, d1_sg_2)] + bd1_sg_3[cbind(d1, d1_sg_3)] + bd1_sg_4[cbind(d1, d1_sg_4)] ]
+  # d[, bd2 := l_spec$bd2[d2] + bd2_sg_1[cbind(d2, d2_sg_1)] + bd2_sg_2[cbind(d2, d2_sg_2)] + bd2_sg_3[cbind(d2, d2_sg_3)] ]
+  # d[, bd3 := l_spec$bd3[d3] + bd3_sg_1[cbind(d3, d3_sg_1) ] + bd3_sg_2[cbind(d3, d3_sg_2)] + bd3_sg_3[cbind(d3, d3_sg_3)] ]
+  # d[, bd4 := l_spec$bd4[d4] + bd4_sg_1[cbind(d4, d4_sg_1) ] + bd4_sg_2[cbind(d4, d4_sg_2)] ]
+  
+  # bd1 is irrelevant since d1 == 1 is the ref group, fixed at zero
+  d[, eta := l_spec$mu + l_spec$bs[s] + l_spec$bp[pref] + bd1]
+  
+  # bd1 is irrelevant since d1 == 1 is the ref group, fixed at zero
+  # d[d1 == 1, eta := l_spec$mu + l_spec$bs[s] + l_spec$bp[pref] + bd1 + bd4]
+  # # pref is irrelevant as d1 = 2 only occurs if pref = 0
+  # d[d1 == 2, eta := l_spec$mu + l_spec$bs[s] + bd1 + bd2 + bd4]
+  # # but here pref is relevant as d1 = 3 only if pref = 1
+  # d[d1 == 3, eta := l_spec$mu + l_spec$bs[s] + l_spec$bp[pref] + bd1 + bd3 + bd4]
+  
+  # bd1 is irrelevant since d1 == 1 is the ref group, fixed at zero
+  # d[d1 == 1, eta := l_spec$mu + l_spec$bs[s] + l_spec$bp[pref] + bd1 + l_spec$bd4[d4]]
+  # # pref is irrelevant as d1 = 2 only occurs if pref = 0
+  # d[d1 == 2, eta := l_spec$mu + l_spec$bs[s] + bd1 + l_spec$bd2[d2] + l_spec$bd4[d4]]
+  # # but here pref is relevant as d1 = 3 only if pref = 1
+  # d[d1 == 3, eta := l_spec$mu + l_spec$bs[s] + l_spec$bp[pref] + bd1 + l_spec$bd3[d3] + l_spec$bd4[d4]]
+  
+  d[, `:=`(s = factor(s), 
+           d1 = factor(d1), 
+           d2 = factor(d2, levels = 1:4), 
+           d3 = factor(d3, levels = 1:4), 
+           d4 = factor(d4))]
+  
+  d[, p := plogis(eta)]
+  d[, y := rbinom(.N, 1, p)]
+  
+  d_tmp <- unique(d[, .(s, pref, d1, d1_sg_1, bd1_star, bd1_sg_1, eta)])
+  setkey(d_tmp, s, pref, d1, d1_sg_1)
+  d_tmp[]
+  d[]
+  
+}
+
+
+get_sim07_stan_data_subgrp <- function(d_all){
+  
+  # convert from binary representation to binomial (successes/trials)
+  d_mod <- d_all[, .(y = sum(y), n = .N, p_tru = round(unique(p), 3)), 
+                 keyby = .(
+                   s, pref, 
+                   d1, d1_sg_1)]
+  
+  d_mod[, `:=`(
+    s = as.integer(s),
+    d1 = as.integer(d1),
+    d1_sg_1 = as.integer(d1_sg_1)
+    # ,
+    # d1_sg_2 = as.integer(d1_sg_2),
+    # d1_sg_3 = as.integer(d1_sg_3),
+    # d1_sg_4 = as.integer(d1_sg_4)
+  )]
+  
+  d_mod[, eta_obs := qlogis(y / n)]
+  d_mod[, p_obs := y / n]
+  
+  K_d1 <- length(unique(d_all$d1))
+  d_mod[, d1_ix := d1 + (K_d1 * (s - 1))]
+  
+  
+  
+  ld <- list(
+    # full dataset
+    N = nrow(d_mod), 
+    y = d_mod[, y], 
+    n = d_mod[, n], 
+    s = d_mod[, s], 
+    pref = d_mod[, pref],
+    d1 = d_mod[, d1],
+    d1_sg_1 = d_mod[, d1_sg_1],
+    # d1_sg_2 = d_mod[, d1_sg_2],
+    # d1_sg_3 = d_mod[, d1_sg_3],
+    # d1_sg_4 = d_mod[, d1_sg_4],
+    
+    # Number of levels for silos, joints, pref and each trt.
+    K_s = length(unique(d_mod$s)), 
+    K_p = length(unique(d_mod$pref)), 
+    K_d1 = d_mod[, length(unique(d1))],
+    
+    prior_only = 0
+  )
+  
+  list(
+    d_mod = d_mod,
+    
+    ld = ld
+  )
+  
+}
 
 
 
