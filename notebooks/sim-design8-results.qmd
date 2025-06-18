@@ -1,0 +1,1286 @@
+---
+title: "Simulation results 8"
+subtitle: "Sequential design with early stopping (restricted action set) - risk based"
+date: today
+date-modified: last-modified
+sidebar: false
+navbar: true
+# this is necessary to remove an unwanted boarder around a tabset
+include-in-header:
+  - text: |
+      <style>
+      .panel-tabset > .nav-tabs,
+      .panel-tabset > .tab-content {
+        border: none;
+      }
+      </style>
+---
+
+
+
+
+
+```{r}
+#| label: libs
+#| code-summary: Libraries and globals
+
+source("./R/init.R")
+source("./R/util.R")
+source("./R/data.R")
+log_info("Called simulation-results 8 notebook")
+
+toks <- unlist(tstrsplit(getwd(), "/")) 
+if(toks[length(toks)] == "roadmap-sim"){
+  prefix_cfg <- "./etc/sim08/"
+  prefix_stan <- "./stan"
+  prefix_fig <- "./fig"
+} else {
+  prefix_cfg <- "../etc/sim08/"
+  prefix_stan <- "../stan"
+  prefix_fig <- "../fig"
+}
+
+```
+
+
+
+```{r}
+#| label: loadfiles
+#| code-summary: Load simulation results
+
+# Each input file corresponds to the results from a single simulation
+# scenario/configuration.
+# Load all the files into a single list.
+
+# files of interest
+sim_lab <- "sim08-01"
+
+flist <- list.files(paste0("data/", sim_lab), pattern = "sim08")
+toks <- list()
+l <- list()
+i <- 1
+for(i in 1:length(flist)){
+  l[[i]] <- qs::qread(file.path(paste0("data/", sim_lab), flist[i]))
+  toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
+}
+
+
+```
+
+## Introduction
+
+### Data generation
+
+Data is generated based on the empirical distributions obtained mostly from the PIANO study.
+
+We simulate silo membership from a multinomial distribution with probabilities 0.3, 0.5 and 0.2 for early, late and chronic.
+
+Conditional on silo membership, we generate domain level allocations and entry indicators that are independent of the design but parameterised to silo specific probabilities.
+In contrast to the previous simulations, we have simplified the model by ignoring joint level heterogeneity.
+Adjustment for joint will be reintroduced in the actual analysis model.
+
+For the early silo, we assume:
+
++ allocation to revision with probability 0.15
++ preference for two-stage revision, rev(2), with probability 0.35
++ entry into antibiotic duration domain with probability 0.7
++ within antibiotic duration domain, allocation to 6 weeks with probability 0.5
++ entry into extended prophylaxis domain with probability 0.9
++ within extended prophylaxis domain, allocation to 12 weeks with probability 0.5
++ entry into antibiotic choice domain with probability 0.6
++ within antibiotic choice domain, allocation to rifampicin with probability 0.5
+
+Similalry, for the late acute silo, we assume:
+
++ allocation to revision with probability 0.5
++ preference for two-stage revision, rev(2), with probability 0.7
++ entry into antibiotic duration domain with probability 0.7
++ within antibiotic duration domain, allocation to 6 weeks with probability 0.5
++ entry into extended prophylaxis domain with probability 0.9
++ within extended prophylaxis domain, allocation to 12 weeks with probability 0.5
++ entry into antibiotic choice domain with probability 0.6
++ within antibiotic choice domain, allocation to rifampicin with probability 0.5
+
+For the chronic silo, we assume:
+
++ allocation to revision with probability 0.8
++ preference for two-stage revision, rev(2), with probability 0.75
++ entry into antibiotic duration domain with probability 0.7
++ within antibiotic duration domain, allocation to 6 weeks with probability 0.5
++ entry into extended prophylaxis domain with probability 0.9
++ within extended prophylaxis domain, allocation to 12 weeks with probability 0.5
++ entry into antibiotic choice domain with probability 0.6
++ within antibiotic choice domain, allocation to rifampicin with probability 0.5
+
+After the design independent allocations are made, we finalise the participant level domain entry and allocation based on the known design dependencies.
+
+As the trial progresses, decisions may be made which would lead to some allocations being shut off.
+For example, if revision is deemed superiori to DAIR, then subsequent allocations within the late acute silo would direct all participants to revision with a split between one-stage and two-stage continuing to be based on the clinical preferences.
+
+The underlying unit level log-odds of response is calculated as the sum of the relevant parameters per the indexing described above.
+Treatment success is simulated as a bernoulli random variable with probability equal to the inverse logit transform of the log-odds from the linear predictor.
+However, to speed up the model, we aggregate number of successes and number of trials by covariate group which gives the analogous binomial random variable representation.
+
+In contrast to simulation 7, this simulation returns to decisions made on the log odds scale
+
+### Model
+
+We adopt a revised model where we allow for silo-specific effects in the surgical domain.
+
+If, for whatever reason, the early or chronic silo show variation in the surgical domain effects, adjustment for silo is inadequate to account for this, and we end up with a polluted version of the surgical domain parameters.
+The remainder of the model is analogous to the previous versions.
+The model is used to compute unit level risk (probability) and assesses decisions based on risk difference for the intervention comparisons by domain.
+
+For the simulations, we have a single, multivariable logistic regression model with a linear predictor that incorporates all domains and is specified as follows:
+
+$$
+\begin{aligned}
+Y &\sim \text{Binomial}(n, p) \\
+\text{logit}(p) &= \begin{cases}
+  \mu + \beta_{s} + \beta_{p} + \beta_{d1[k_{d1}, s]} + \beta_{d4[k_{d4}]} & \text{(dair)} \\
+  \mu + \beta_{s} + \beta_{d1[k_{d1}, s]} + \beta_{d2[k_{d2}]} + \beta_{d4[k_{d4}]} & \text{(one-stage)} \\
+  \mu + \beta_{s} + \beta_{p} + \beta_{d1[k_{d1}, s]} + \beta_{d3[k_{d3}]} + \beta_{d4[k_{d4}]} & \text{(two-stage)}
+		 \end{cases}
+\end{aligned}
+$$
+
+for each distinct covariate grouping where:
+
++ $\mu$ represents an overall reference level from which all covariates deviate
++ $\beta_{s}$ represents the silo deviations, which can be thought of as a seriousness of disease adjustment. We fix the first parameter (early) to zero for identifiability and the components are for early, late and chronic silo membership. 
++ $\beta_{p}$ represents the (pre-revealed) preference adjustment, assuming revision was allocated but included irrespective of silo and what the assignment ultimately turned out to be. This accounts for heterogeneity in outcome due to clinical preference for revision type, which can be thought of as expert elicitation on aspects of the patient state and clinicial experience. We fix the first parameter (preference one-stage revision) in this vector to zero for identifiability and the components are preference for one-stage or two-stage. The preference indicators are also used to compute the sample weights for aggregating one and two-stage revision into a single overall revision effect.
++ $\beta_{d1[k_{d1}, s]}$ represents the silo-specific deviations associated with the surgery type. This accounts for heterogeneity in outcome due to surgery type and with the late-acute deviations taken as a randomised comparison of dair vs revision after the agreed weighting is applied. We fix the first parameter (dair in the early cohort) in this vector to zero for identifiability and the components are dair, rev(1), rev(2) for each silo. The reason for the silo-specific context is that if revision effects exist in one silo but not another, then without this conditioning, we will end up with biased inference. For example, if (for whatever reason) there is an revision effect in the early domain but not the late-acute cohort then without this level of adjustment, we would end up reporting a revision effect when we shouldn't be; adjustment for silo doesn't protect us from this, even though it is perfectly collinear with a unit receiving non-randomised or randomised surgical treatment.
++ $\beta_{d2[k_{d2}]}$ represents the deviations associated with backbone antibiotic duration. This accounts for heterogeneity in outcome due to the assigned backbone antibiotic duration. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, 12 weeks and 6 weeks. The term is undefined for DAIR and rev(2) participants. Units that receive rev(1) but do not enter into d2 contribute to the non-randomised set. We are assuming that there is no silo-specific (or any other) hetereogeneity for this comparison.
++ $\beta_{d3[k_{d3}]}$ represents the deviations associated with extended prophylaxis duration. This accounts for heterogeneity in outcome due to the assigned extended prophylaxis duration. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, no ext-proph and 12 weeks. The term is undefined for DAIR and rev(1) participants. Units that receive rev(2) but do not enter into d3 contribute to the non-randomised set. We are assuming that there is no silo-specific hetereogeneity for this comparison.
++ $\beta_{d4[k_{d4}]}$ represents the deviations associated with antibiotic choice. This accounts for heterogeneity in outcome due to the assigned antibiotic choice. The first parameter (non-randomised treatment) in this vector is set to zero for identifiability and the components are non-randomised, no rifampicin and rifampicin. The term is included for all units for which rifampicin may be indicated. The other units contribute to the non-randomised set. We are assuming that there is no silo-specific hetereogeneity for this comparison.
+
+The way that terms enter the model is somewhat convoluted and understanding the dependency implications and consequently interpretations is fairly challenging.
+For the actual trial analysis, the model will be revised to an equivalent Bernoulli likelihood on unit level data but extended to account for joint, site, randomisation period (if required) and prognostic covariates.
+Bar the surgical domain, for which 'by silo' deviations are implicit in the existing parameterisation, no further interactions are included.
+Given that heterogeneity by site of infection (joint) is of interest (primarily in the surgical domain) the analysis plan will include specification to account for this.
+
+### Decision
+
+At each interim, we assess the posterior and if a decision threshold is met, we act.
+For example, if a superiority decision is reached in one of the domains for which this decision type is relevant, then we consider that domain dealt with and all subsequent participants are assigned to receive the superior intervention.
+We can (and presently do) continue to update the posterior inference for the comparison that has stopped in subsequent interim analyses until we get to the point where all questions have been answered in all domains, at which point the trial will stop.
+
+Superiority and non-inferiority are applicable to some domains and not others, however, we define reference and threshold values for all domains, just in case.
+Decisions are made with respect to the average within any `random-effect' terms that might exist within the model.
+
+For the superiority decision, a reference value of `r l[[1]]$cfg$dec_delta_sup` was used and the probability thresholds were:
+
++ `r l[[1]]$cfg$dec_thresh_sup[1]` for surgical domain
++ `r l[[1]]$cfg$dec_thresh_sup[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_thresh_sup[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_thresh_sup[4]` for antibiotic choice domain
+
+There was no particular reason for the choice of these thresholds bar the fact that they lead to preferred operating characteristics and give nominal control of the type-i assertion probabilities.
+
+For the futility decision (in relation to superiority) a reference value of `r l[[1]]$cfg$dec_delta_sup_fut` was used and the probability thresholds were:
+
++ `r l[[1]]$cfg$dec_thresh_fut_sup[1]` for surgical domain
++ `r l[[1]]$cfg$dec_thresh_fut_sup[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_thresh_fut_sup[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_thresh_fut_sup[4]` for antibiotic choice domain
+
+The above means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_delta_sup_fut` is less than `r l[[1]]$cfg$dec_probs$dec_thresh_fut_sup[1]` in the surgical domain comparison, then we say the superiority goal is futile.
+
+For the ni decision, a reference value of `r l[[1]]$cfg$dec_delta_ni` was used and the probability thresholds were:
+
++ `r l[[1]]$cfg$dec_thresh_ni[1]` for surgical domain
++ `r l[[1]]$cfg$dec_thresh_ni[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_thresh_ni[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_thresh_ni[4]` for antibiotic choice domain
+
+The above means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_delta_ni` is greater than `r l[[1]]$cfg$dec_thresh_ni[2]`, in the antibiotic duration domain, then we will say the intervention is non-inferior.
+
+The futility decision (in relation to non-inferiority) has a reference value of `r l[[1]]$cfg$dec_delta_ni_fut` and the probability thresholds were:
+
++ `r l[[1]]$cfg$dec_thresh_fut_ni[1]` for surgical domain
++ `r l[[1]]$cfg$dec_thresh_fut_ni[2]` for antibiotic duration domain
++ `r l[[1]]$cfg$dec_thresh_fut_ni[3]` for extended prophylaxis domain
++ `r l[[1]]$cfg$dec_thresh_fut_ni[4]` for antibiotic choice domain 
+
+This means, for example, that if the probability that the risk difference is greater than `r l[[1]]$cfg$dec_delta_ni_fut` is less than `r l[[1]]$cfg$dec_thresh_fut_ni[2]`, in the antibiotic duration domain, then we say the non-inferiority goal is futile.
+
+
+### Prior
+
+The priors were as follows:
+
++ Reference log-odds of response: logistic distribution, mean `r l[[1]]$cfg$pri_bmu[[1]]` and scale `r l[[1]]$cfg$pri_bmu[[2]]`
++ Silo effects: normal distribution, mean `r l[[1]]$cfg$pri_bs[[1]]` and scale `r l[[1]]$cfg$pri_bs[[2]]`
++ Preference effects: normal distribution, mean `r l[[1]]$cfg$pri_bp[[1]]` and scale `r l[[1]]$cfg$pri_bp[[2]]`
++ Treatment effects (domain 1): normal distribution, mean `r l[[1]]$cfg$pri_bd1[[1]]` and scale `r l[[1]]$cfg$pri_bd1[[2]]`
++ Treatment effects (domain 2): normal distribution, mean `r l[[1]]$cfg$pri_bd2[[1]]` and scale `r l[[1]]$cfg$pri_bd2[[2]]`
++ Treatment effects (domain 3): normal distribution, mean `r l[[1]]$cfg$pri_bd3[[1]]` and scale `r l[[1]]$cfg$pri_bd3[[2]]`
++ Treatment effects (domain 4): normal distribution, mean `r l[[1]]$cfg$pri_bd4[[1]]` and scale `r l[[1]]$cfg$pri_bd4[[2]]`
+
+The prior predictive distribution is consistent with a mean probability across of response over the covariate groupings that covers the entire support on the probability scale, is centred around 0.6 and has first and third quarters at 0.4 to 0.8.
+
+## Simulation results
+
+For this set of simulations, the number of simulated trials per scenario was `r l[[1]]$cfg$nsim`, the simulation label is `r sim_lab`.
+
+```{r, echo = T}
+#| label: cprobdec
+#| code-summary: Cumulative probability of each decision type
+
+# Cumulative probability of decisions:
+
+# Traverse the list of simulation results and for each one summarise the 
+# cumulative probability of each decision type.
+
+i <- 1
+d_tbl_1 <- data.table()
+
+# For each scenario that was simulated
+for(i in 1:length(l)){
+  
+  # extract the decision matrix - sim, analysis, quantity, domain level decision
+  d_dec_1 <- copy(l[[i]]$d_decision)
+  # config for scenario
+  l_cfg <- copy(l[[i]]$cfg)
+  
+  # number of enrolments at each interim (interim sample size sequence)
+  d_N <- data.table(ia = seq_along(l_cfg$N_pt), N = cumsum(l_cfg$N_pt))
+  
+  # long version of decisions
+  d_dec_2 <- melt(d_dec_1, 
+                  id.vars = c("sim", "ia", "quant"), 
+                  variable.name = "domain")
+
+  # Should be right, but just in case...
+  if(any(is.na(d_dec_2$value))){
+    message("Some of the decision values are NA in index ", i, " file ", flist[i])
+    d_dec_2[is.na(value), value := FALSE]
+  }
+  d_dec_2[, domain := as.numeric(gsub("d", "", domain))]
+  
+  # Domains 1, 3 and 4 will stop for superiority or futility for superiority.
+  # Domaain 2 will stop for NI or futility for NI.
+  # No other stopping rules apply and so we only evaluate the operating 
+  # characteristics on these, i.e. we do not care about the results for the 
+  # cumualative probability of ni for domain 1, 3 and 4 because we would never
+  # stop for this. 
+  d_dec_2 <- rbind(
+    d_dec_2[domain %in% c(1, 3, 4) & quant %in% c("sup", "fut_sup")],
+    d_dec_2[domain %in% c(2) & quant %in% c("ni", "fut_ni")]
+  )
+  
+  
+  # compute the cumulative instances of a decision being made by sim, each 
+  # decision type and by parameter
+  d_dec_2[, value := as.logical(cumsum(value)>0), keyby = .(sim, quant, domain)]
+  
+  d_dec_2 <- merge(d_dec_2, d_N, by = "ia")
+  
+  # cumulative proportion for which each decision quantity has been met by 
+  # analysis and domain
+  d_dec_cumprob <- d_dec_2[, .(pr_val = mean(value)), keyby = .(ia, N, quant, domain)]
+  
+  d_tbl_1 <- rbind(
+    d_tbl_1,
+    cbind(scenario = i, desc = l_cfg$desc, d_dec_cumprob)
+  )
+
+}
+
+
+```
+
+
+```{r, echo = T}
+#| label: expenrolment
+#| code-summary: Expected enrolment progression
+
+# Expected sample size
+
+# Similar to above but focus on expected sample size
+
+# Traverse the list of simulation results and for each one summarise the 
+# sample sizes at which stopping for a domain occurs for any reason.
+
+# All we are trying to get to is the expected sample size by domain and 
+# are not really interested in what decision was made. The cumulative prob
+# of each decision type is computed previously.
+
+i <- 2
+d_tbl_2 <- data.table()
+
+for(i in 1:length(l)){
+  
+  # extract the decision matrix - sim, analysis, quantity, domain level decision
+  d_dec_1 <- copy(l[[i]]$d_decision)
+  # config for scenario
+  l_cfg <- copy(l[[i]]$cfg)
+  # interim looks
+  d_N <- data.table(ia = seq_along(l_cfg$N_pt), N = cumsum(l_cfg$N_pt))
+  
+  # long version of decision
+  d_dec_2 <- melt(d_dec_1, 
+                  id.vars = c("sim", "ia", "quant"), 
+                  variable.name = "domain")
+  # Should be right, but just in case...
+  if(any(is.na(d_dec_2$value))){
+    message("Some of the decision values are NA in index ", i, " file ", flist[i])
+    d_dec_2[is.na(value), value := FALSE]
+  }
+  d_dec_2[, domain := as.numeric(gsub("d", "", domain))]
+  d_dec_2 <- merge(d_dec_2, d_N, by = "ia")
+  
+  # First instance of any decision rule being hit by sim and domain.
+  
+  # Domains 1, 3 and 4 will stop for superiority or futility for superiority.
+  # Domaain 2 will stop for NI or futility for NI.
+  
+  # Sometimes a decision rule will not be hit for a domain and it will continue
+  # to the max sample size. We will deal with that in a minute.
+  d_dec_stop <- rbind(
+    d_dec_2[
+      domain %in% c(1, 3, 4) & value == T & quant %in% c("sup", "fut_sup"), 
+      .SD[1], keyby = .(sim, domain)],
+    d_dec_2[
+      domain %in% c(2) & value == T & quant %in% c("ni", "fut_ni"), 
+      .SD[1], keyby = .(sim, domain)]
+  )
+  setnames(d_dec_stop, "N", "N_stopped")
+  setnames(d_dec_stop, "value", "stopped_early")
+  
+  # Add in any rows for which no early stopping happened
+  d_dec_stop <- merge(d_dec_stop[, .SD, .SDcols = !c("ia")], 
+                      # all combinations of sim and domain 
+                      # which with leave non-stoppers with NA
+                      unique(d_dec_2[, .(sim, domain)]),
+                      by = c("sim", "domain"), all.y = T)
+  # If domain or trial not stopped then record as having run to the 
+  # maximum sample size with no decision made.
+  d_dec_stop[is.na(N_stopped), N_stopped := max(d_N$N)]
+  d_dec_stop[is.na(stopped_early), stopped_early := F]
+  # So now we know where every domain was stopped and the reason for stopping
+  # within each sim. Great.
+  d_dec_stop[is.na(quant), quant := "na"]
+  
+  d_tbl_2 <- rbind(
+    d_tbl_2,
+    cbind(
+      scenario = i, 
+      desc = l_cfg$desc, 
+      d_dec_stop
+      )
+  )
+
+}
+
+```
+
+
+
+```{r, echo = T}
+#| label: distpostmeanuncondit
+#| code-summary: Distributions of posterior means (unconditional)
+
+# Distribution of posterior means for parameters of interest.
+
+# Some simulated trials will have stopped prior to the maximum sample size and
+# these will have NA for their posterior means. If you were to summarise these 
+# posterior means, they would be conditional on the trial having 'survived' 
+# until the relevant interim. This means that you have missing data at later 
+# interims, which creates a selection bias in that your selection of sims at any
+# given interim are not a random sample, but rather a sample conditioned on the 
+# stopping rules. 
+
+# If you do not account for this in some way then a summary can be either 
+# optimistic or pessimistic depending on how the stopping rules interact 
+# with the data. Here we try to account for this missingness by imputing the 
+# missing posterior means with locf within each simulation.
+# Note that this is really only a partial 'fix' to get a sense of whether 
+# our estimates is representative of the parameter values we used to simulate
+# the data.
+
+i <- 1
+d_tbl_3 <- data.table()
+
+for(i in 1:length(l)){
+  
+  # config for scenario
+  l_cfg <- copy(l[[i]]$cfg)
+  # params
+  d_pars <- copy(l[[i]]$d_post_smry_1)
+  d_pars <- d_pars[par %in% c("lor", "rd")]
+  
+  # interim looks
+  d_N <- data.table(ia = seq_along(l_cfg$N_pt), N = cumsum(l_cfg$N_pt))
+  
+  d_pars <- dcast(d_pars, sim + ia + domain ~ par, value.var = c("mu", "se"))
+  
+  # locf
+  d_pars[, `:=`(mu_lor = nafill(mu_lor, type = "locf"),
+                se_lor = nafill(se_lor, type = "locf")
+                ), 
+         keyby = .(sim, domain)]
+  #
+  
+  d_pars <- merge(d_pars, d_N, by = "ia")
+  
+  d_tbl_3 <- rbind(
+    d_tbl_3,
+    cbind(
+      scenario = i, desc = l_cfg$desc,
+      d_pars[, .(ia, sim, domain, N, mu_lor, se_lor)]
+      )
+  )
+
+}
+
+```
+
+```{r, echo = T}
+#| label: nbyarm
+#| code-summary: Number of participants for each randomised comparison over time
+
+# 
+
+i <- 1
+d_N_by_arm <- data.table()
+
+for(i in 1:length(l)){
+  
+  # extract the decision matrix - sim, analysis, quantity, domain level decision
+  d_dec_1 <- copy(l[[i]]$d_decision)
+  # long version of decisions
+  d_dec_2 <- melt(
+    d_dec_1, id.vars = c("sim", "ia", "quant"), variable.name = "domain")
+  # Should be right, but just in case...
+  if(any(is.na(d_dec_2$value))){
+    message("Some of the decision values are NA in index ", i, " file ", flist[i])
+    d_dec_2[is.na(value), value := FALSE]
+  }
+  d_dec_2[, domain := as.numeric(gsub("d", "", domain))]
+  # Domains 1, 3 and 4 will stop for superiority or futility for superiority.
+  # Domaain 2 will stop for NI or futility for NI.
+  # No other stopping rules apply and so we only evaluate the operating 
+  # characteristics on these, i.e. we do not care about the results for the 
+  # cumualative probability of ni for domain 1, 3 and 4 because we would never
+  # stop for this. 
+  d_dec_2 <- rbind(
+    d_dec_2[domain %in% c(1, 3, 4) & quant %in% c("sup", "fut_sup")],
+    d_dec_2[domain %in% c(2) & quant %in% c("ni", "fut_ni")]
+  )
+  
+  # config for scenario
+  l_cfg <- copy(l[[i]]$cfg)
+  # interim looks
+  d_enrolment <- data.table(ia = seq_along(l_cfg$N_pt), N_enrol = cumsum(l_cfg$N_pt))
+  # observed trial data sets
+  d_tru <- copy(l[[i]]$d_all)
+  d_tru[, `:=`(
+    d1 = as.integer(d1),
+    d2 = as.integer(d2),
+    d3 = as.integer(d3),
+    d4 = as.integer(d4))]
+  
+  
+  # late acute, surgical arms
+  # *** silo isn't included in the keyby because we want to average across 
+  # the entire trial population, not silo specific sample sizes.
+  d_1_tmp <- d_tru[
+    s == 2, .(N = sum(N), domain = 1), keyby = .(sim, ia, d1)]
+  d_1_tmp[, N := cumsum(N), keyby = .(sim, d1)]
+  setnames(d_1_tmp, old = "d1", "arm")
+  d_1_tmp <- merge(
+    d_1_tmp, 
+    CJ(sim = 1:max(d_tru$sim), ia = 1:5, arm = 1:3, domain = 1), 
+    by = c("sim", "ia", "arm", "domain"),
+    all.y = T)
+  d_1_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm)]
+  setkey(d_1_tmp, sim, ia, arm)
+  
+  # one-stage revision, ab duration randomised arms
+  d_2_tmp <- d_tru[
+    d1 == 2 & d2 %in% 2:3, 
+    .(N = sum(N), domain = 2), keyby = .(sim, ia, d2)]
+  d_2_tmp[, N := cumsum(N), keyby = .(sim, d2)]
+  setnames(d_2_tmp, old = "d2", "arm")
+  d_2_tmp <- merge(
+    d_2_tmp, 
+    CJ(sim = 1:max(d_tru$sim), ia = 1:5, arm = 2:3, domain = 2), 
+    by = c("sim", "ia", "arm", "domain"),
+    all.y = T)
+  d_2_tmp[ia == 1 & is.na(N), N := 0]
+  d_2_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm)]
+  setkey(d_2_tmp, sim, ia, arm)
+  
+  # two-stage revision, extended prophy randomised arms
+  d_3_tmp <- d_tru[
+    d1 == 3 & d3 %in% 2:3, 
+    .(N = sum(N), domain = 3), keyby = .(sim, ia, d3)]
+  d_3_tmp[, N := cumsum(N), keyby = .(sim, d3)]
+  setnames(d_3_tmp, old = "d3", "arm")
+  d_3_tmp <- merge(
+    d_3_tmp, 
+    CJ(sim = 1:max(d_tru$sim), ia = 1:5, arm = 2:3, domain = 3), 
+    by = c("sim", "ia", "arm", "domain"),
+    all.y = T)
+  d_3_tmp[ia == 1 & is.na(N), N := 0]
+  d_3_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm)]
+  setkey(d_3_tmp, sim, ia, arm)
+  
+  # ab choice randomised arms
+  d_4_tmp <- d_tru[
+    d4 %in% 2:3, .(N = sum(N), domain = 4), keyby = .(sim, ia, d4)]
+  d_4_tmp[, N := cumsum(N), keyby = .(sim, d4)]
+  setnames(d_4_tmp, old = "d4", "arm")
+  d_4_tmp <- merge(
+    d_4_tmp, 
+    CJ(sim = 1:max(d_tru$sim), ia = 1:5, arm = 2:3, domain = 4), 
+    by = c("sim", "ia", "arm", "domain"),
+    all.y = T)
+  d_4_tmp[ia == 1 & is.na(N), N := 0]
+  d_4_tmp[, N := nafill(N, type = "locf"), keyby = .(sim, arm)]
+  setkey(d_4_tmp, sim, ia, arm)
+  
+  d_arm_tmp <- rbind(d_1_tmp, d_2_tmp, d_3_tmp, d_4_tmp)
+
+  
+  d_arm_tmp[, `:=`(
+    scenario = i, desc = l_cfg$desc
+  )]
+  
+  d_arm_tmp <- merge(
+    d_arm_tmp,
+    d_enrolment,
+    by = "ia")
+  
+  d_N_by_arm <- rbind(d_N_by_arm, d_arm_tmp)
+
+}
+```
+
+
+```{r, echo = T}
+#| label: empiricalrisk
+#| code-summary: Summaries of empirical probability of treatment success
+
+i <- 1
+d_tbl_4 <- data.table()
+
+for(i in 1:length(l)){
+  
+  # extract the decision matrix - sim, analysis, quantity, domain level decision
+  d_dec_1 <- copy(l[[i]]$d_decision)
+  # config for scenario
+  l_cfg <- copy(l[[i]]$cfg)
+  # interim looks
+  d_enrolment <- data.table(ia = seq_along(l_cfg$N_pt), N_enrol = cumsum(l_cfg$N_pt))
+  # observed data
+  d_all <- copy(l[[i]]$d_all)
+  
+  d_all <- merge(d_all, d_enrolment , by = "ia")
+  # long version of decision
+  d_dec_2 <- melt(
+    d_dec_1, id.vars = c("sim", "ia", "quant"), variable.name = "domain")
+  # Should be right, but just in case...
+  if(any(is.na(d_dec_2$value))){
+    message("Some of the decision values are NA in index ", i, " file ", flist[i])
+    d_dec_2[is.na(value), value := FALSE]
+  }
+  d_dec_2[, domain := as.numeric(gsub("d", "", domain))]
+  d_dec_2 <- merge(d_dec_2, d_N, by = "ia")
+  
+  # First instance of any decision rule being hit by sim and domain.
+  
+  # Domains 1, 3 and 4 will stop for superiority or futility for superiority.
+  # Domaain 2 will stop for NI or futility for NI.
+  
+  # Sometimes a decision rule will not be hit for a domain and it will continue
+  # to the max sample size. We will deal with that in a minute.
+  d_dec_stop <- rbind(
+    d_dec_2[
+      domain %in% c(1, 3, 4) & value == T & quant %in% c("sup", "fut_sup"), 
+      .SD[1], keyby = .(sim, domain)],
+    d_dec_2[
+      domain %in% c(2) & value == T & quant %in% c("ni", "fut_ni"), 
+      .SD[1], keyby = .(sim, domain)]
+  )
+  setnames(d_dec_stop, "N", "N_stopped")
+  setnames(d_dec_stop, "value", "stopped_early")
+  # Add in any rows for which no early stopping happened
+  d_dec_stop <- merge(
+    d_dec_stop[, .SD, .SDcols = !c("ia")], 
+    # all combinations of sim and domain
+    unique(d_dec_2[, .(sim, domain)]),
+    by = c("sim", "domain"), all.y = T)
+  # If domain or trial not stopped then record as having run to the 
+  # maximum sample size with no decision made.
+  d_dec_stop[is.na(N_stopped), N_stopped := max(d_N$N)]
+  d_dec_stop[is.na(stopped_early), stopped_early := F]
+  # So now we know where every domain was stopped and the reason for stopping
+  # within each sim. Great.
+  d_dec_stop[is.na(quant), quant := "null"]
+  
+  d_domain_1 <- d_all[
+    s == 2 & d1 %in% 1:3, .(sim, ia, s, pref, arm = d1, y, N, N_enrol)]
+  d_domain_1 <- merge(d_domain_1, d_dec_stop[domain == 1], by = c("sim"))
+  d_domain_1 <- d_domain_1[N_enrol <= N_stopped, ]
+  d_domain_1 <- d_domain_1[, .(domain = 1, y = sum(y), N = sum(N)), keyby = .(arm)]
+  d_domain_1[, p_hat := y / N]
+  
+  d_domain_2 <- d_all[
+    d1 == 2 & d2 %in% 2:3, .(sim, ia, s, pref, arm = d2, y, N, N_enrol)]
+  d_domain_2 <- merge(d_domain_2, d_dec_stop[domain == 2], by = c("sim"))
+  d_domain_2 <- d_domain_2[N_enrol <= N_stopped, ]
+  d_domain_2 <- d_domain_2[, .(domain = 2, y = sum(y), N = sum(N)), keyby = .(arm)]
+  d_domain_2[, p_hat := y / N]
+  
+  d_domain_3 <- d_all[
+    d1 == 3 & d3 %in% 2:3, .(sim, ia, s, pref, arm = d3, y, N, N_enrol)]
+  d_domain_3 <- merge(d_domain_3, d_dec_stop[domain == 3], by = c("sim"))
+  d_domain_3 <- d_domain_3[N_enrol <= N_stopped, ]
+  d_domain_3 <- d_domain_3[, .(domain = 3, y = sum(y), N = sum(N)), keyby = .(arm)]
+  d_domain_3[, p_hat := y / N]
+  
+  d_domain_4 <- d_all[
+    d4 %in% 2:3, .(sim, ia, s, pref, arm = d4, y, N, N_enrol)]
+  d_domain_4 <- merge(d_domain_4, d_dec_stop[domain == 4], by = c("sim"))
+  d_domain_4 <- d_domain_4[N_enrol <= N_stopped, ]
+  d_domain_4 <- d_domain_4[, .(domain = 4, y = sum(y), N = sum(N)), keyby = .(arm)]
+  d_domain_4[, p_hat := y / N]
+  
+  d_domain <- rbind(
+    d_domain_1, d_domain_2, d_domain_3, d_domain_4
+  )
+  
+  d_tbl_4 <- rbind(
+    d_tbl_4, 
+    cbind(scenario = i, desc = l_cfg$desc, d_domain)
+  )
+  
+}
+
+
+
+```
+
+### Probability of triggering decision
+
+@tbl-sim05-cumprobsup shows the cumulative probability of a superiority decision across each of the scenarios simulated (the same information is shown in @fig-cum-prob-sup).
+Operating characteristics are shown only for the relevant domains and the futility of a superiority decision is included in parentheses.
+
+::: {.panel-tabset  .nav-pills}
+
+#### Superiority decision - tabulated
+
+<!-- 2. AB duration of therapy is only indirectly relevant here because that domain assesses non-inferiority. I think that the revised rules for NI will influence other domains in that when AB duration is deemed NI, then all subsequent participants are assumed to get 6 weeks which redirects some of those that would have otherwise entered into the self-select group, which is effectively the group that inform decisions in the surgical domain. But note that this is a theory and I am yet to verify it. -->
+
+```{r}
+#| label: tbl-sim05-cumprobsup
+#| tbl-cap: 'Cumulative probability of superiority (futility in parentheses) decision at each interim (shown by total enrolment by interim)'
+#| column: page
+#| out-width: 70%
+
+d_tbl_1_cur <- d_tbl_1[quant %in% c("sup", "fut_sup") & domain %in% c(1, 3, 4), .SD]
+setorderv(d_tbl_1_cur, cols = c("scenario", "domain", "ia", "quant"), 
+          order = c(1, 1, 1, -1))
+d_tbl_1_cur <- dcast(d_tbl_1_cur, scenario + desc + domain ~ quant + N, value.var = "pr_val")
+d_tbl_1_cur <- d_tbl_1_cur[, .SD, .SDcols = !c("scenario")]
+
+d_tbl_1_cur[, domain := factor(domain, 
+                               levels = c(1, 3, 4), 
+                               labels = c("Surgical", "AB Ext-proph", "AB Choice"))]
+
+g_tbl <- d_tbl_1_cur |> 
+  gt(groupname_col = "desc") |> 
+  gt::text_transform(
+    locations = cells_row_groups(),
+    fn = function(x) {
+      lapply(x, function(x) {
+        gt::md(paste0("*", x, "*"))
+      })
+    }
+  ) |>
+  cols_align(
+    columns = 1,
+    align = "left"
+  )  |> 
+  cols_align(
+    columns = 2:ncol(d_tbl_1_cur),
+    align = "center"
+  )  |> 
+  cols_merge(
+    columns = c("sup_500", "fut_sup_500"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  )   |> 
+  cols_merge(
+    columns = c("sup_1000", "fut_sup_1000"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  ) |> 
+  cols_merge(
+    columns = c("sup_1500", "fut_sup_1500"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  )  |> 
+  cols_merge(
+    columns = c("sup_2000", "fut_sup_2000"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  )  |> 
+  cols_merge(
+    columns = c("sup_2500", "fut_sup_2500"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  ) |>
+  tab_spanner(
+    label = md("Cumulative probability of **superiority** (futility) decision"),
+    columns = 3:ncol(d_tbl_1_cur)
+  )  |>
+  cols_label(
+    domain = "Domain",
+    sup_500 = html("500"),
+    sup_1000 = html("1000"),
+    sup_1500 = html("1500"),
+    sup_2000 = html("2000"),
+    sup_2500 = html("2500")
+  ) |>
+  tab_options(
+    table.font.size = "70%"
+  ) |>
+  fmt_number(decimals = 3, drop_trailing_zeros = TRUE)
+
+g_tbl
+
+```
+
+#### Superiority decision - visualisation
+
+```{r}
+#| label: fig-cum-prob-sup
+#| fig-cap: 'Cumulative probabilities for superiority assessments'
+#| fig-height: 5
+#| fig-width: 6
+#| column: page-right
+
+d_fig <- d_tbl_1[quant %in% c("sup", "fut_sup") & domain %in% c(1, 3, 4), .SD]
+setorderv(d_fig, cols = c("scenario", "domain", "ia", "quant"), 
+          order = c(1, 1, 1, -1))
+
+d_fig[, domain := factor(domain, 
+                         levels = c(1, 3, 4), 
+                         labels = c("Surgical", "AB Ext-proph", "AB Choice"))]
+
+d_fig[, quant := factor(quant, 
+                        levels = c("sup", "fut_sup"), 
+                        labels = c("Superiority", "Futility"))]
+
+d_fig[, desc := factor(desc, 
+                        levels = unique(d_fig$desc), 
+                        labels = unique(d_fig$desc))]
+
+
+ggplot(d_fig, aes(x = N, y = pr_val, group = quant, col = quant)) +
+  geom_line(lwd = 0.25) +
+  scale_y_continuous("") +
+  scale_color_discrete("") +
+  # facet_grid(desc ~ domain) + 
+  # facet_grid2(desc ~ domain, render_empty = FALSE)
+  ggh4x::facet_grid2(desc ~ domain , 
+             labeller = labeller(desc = label_wrap_gen(35)), 
+             scales = "free",
+             axes = "y",
+             independent = "y") +
+  # theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    strip.text.y.right = element_text(angle = 0,
+                                      hjust = 0,
+                                      vjust = 0.2,
+                                      size = 4),
+    axis.ticks = element_blank(),
+    strip.text.x.top = element_text(size = 4),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "grey",
+                                  linewidth = 0.1,
+                                  linetype = 1),
+    axis.text.y = element_text(size = 4), 
+    axis.text.x = element_text(size = 4), 
+    axis.title.x = element_text(size = 5),
+    legend.text = element_text(size = 4)
+  )
+
+
+
+```
+
+:::
+
+@tbl-sim05-cumprobni shows the cumulative probability of a non-inferiority decision with futility shown in parentheses (the same information is shown in @fig-cum-prob-ni).
+The results are only shown for the domains for which non-inferiority is evaluated.
+
+The "Null effect in all domains" is actually a bit of a misnomer as the true null with regards to the NI decision would be at the NI margin, whereas the scenario refers to the setting where all effects are set to zero. Thus an inflation over the usual type-i assertion probability is to be expected.
+
+::: {.panel-tabset  .nav-pills}
+
+#### Non-inferiority - tabulated
+
+```{r}
+#| label: tbl-sim05-cumprobni
+#| tbl-cap: 'Cumulative probability of NI (futility in parentheses) decision at each interim (shown by total enrolment by interim)'
+#| column: page
+#| out-width: 70%
+
+d_tbl_1_cur <- d_tbl_1[quant %in% c("ni", "fut_ni") & domain %in% c(2), .SD]
+setorderv(d_tbl_1_cur, cols = c("scenario", "domain", "ia", "quant"), 
+          order = c(1, 1, 1, -1))
+d_tbl_1_cur <- dcast(d_tbl_1_cur, scenario + desc + domain ~ quant + N, value.var = "pr_val")
+d_tbl_1_cur <- d_tbl_1_cur[, .SD, .SDcols = !c("scenario")]
+
+d_tbl_1_cur[, domain := factor(domain, 
+                               levels = c(2), 
+                               labels = c("AB Duration"))]
+
+g_tbl <- d_tbl_1_cur |> 
+  gt(groupname_col = "desc") |> 
+  gt::text_transform(
+    locations = cells_row_groups(),
+    fn = function(x) {
+      lapply(x, function(x) {
+        gt::md(paste0("*", x, "*"))
+      })
+    }
+  ) |>
+  cols_align(
+    columns = 1,
+    align = "left"
+  )  |> 
+  cols_align(
+    columns = 2:ncol(d_tbl_1_cur),
+    align = "center"
+  )  |> 
+  cols_merge(
+    columns = c("ni_500", "fut_ni_500"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  )   |> 
+  cols_merge(
+    columns = c("ni_1000", "fut_ni_1000"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  ) |> 
+  cols_merge(
+    columns = c("ni_1500", "fut_ni_1500"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  )  |> 
+  cols_merge(
+    columns = c("ni_2000", "fut_ni_2000"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  )  |> 
+  cols_merge(
+    columns = c("ni_2500", "fut_ni_2500"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  ) |>
+  tab_spanner(
+    label = md("Cumulative probability of **NI** (futility) decision"),
+    columns = 3:ncol(d_tbl_1_cur)
+  )  |>
+  cols_label(
+    domain = "Domain",
+    ni_500 = html("500"),
+    ni_1000 = html("1000"),
+    ni_1500 = html("1500"),
+    ni_2000 = html("2000"),
+    ni_2500 = html("2500")
+  ) |>
+  tab_options(
+    table.font.size = "70%"
+  ) |>
+  fmt_number(decimals = 3, drop_trailing_zeros = TRUE)
+
+g_tbl
+
+```
+
+
+#### Non-inferiority - visualisation
+
+```{r}
+#| label: fig-cum-prob-ni
+#| fig-cap: 'Cumulative probabilities for NI assessments'
+#| fig-height: 4
+#| fig-width: 4
+#| out-width: 70%
+#| column: page-right
+
+d_fig <- d_tbl_1[quant %in% c("ni", "fut_ni") & domain %in% c(2), .SD]
+setorderv(d_fig, cols = c("scenario", "domain", "ia", "quant"), 
+          order = c(1, 1, 1, -1))
+
+d_fig[, domain := factor(domain, 
+                               levels = c(2), 
+                               labels = c("AB Duration"))]
+
+d_fig[, quant := factor(quant, 
+                        levels = c("ni", "fut_ni"), 
+                        labels = c("NI", "Futility for NI"))]
+
+d_fig[, desc := factor(desc, 
+                        levels = unique(d_fig$desc), 
+                        labels = unique(d_fig$desc))]
+
+
+ggplot(d_fig, aes(x = N, y = pr_val, group = quant, col = quant)) +
+  geom_line(lwd = 0.25) +
+  scale_y_continuous("", breaks = seq(0, 1, by = 0.2)) +
+  scale_color_discrete("") +
+  # facet_grid(desc ~ domain, space = "free") +
+  ggh4x::facet_grid2(desc ~ domain , 
+             labeller = labeller(desc = label_wrap_gen(35)), 
+             scales = "free",
+             axes = "y",
+             independent = "y") +
+  
+  ggh4x::force_panelsizes(cols = unit(c(4), "cm"), TRUE) +
+  # facet_manual(
+  #   . ~ desc, design = matrix(1:17, ncol = 1),
+  #   widths = unit(3, "cm")
+  # ) +
+  # theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    strip.text.y.right = element_text(angle = 0,
+                                      hjust = 0,
+                                      vjust = 0.2,
+                                      size = 4),
+    axis.ticks = element_blank(),
+    strip.text.x.top = element_text(size = 4),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "grey",
+                                  linewidth = 0.1,
+                                  linetype = 1),
+    axis.text.y = element_text(size = 4), 
+    axis.text.x = element_text(size = 4), 
+    axis.title.x = element_text(size = 5),
+    legend.text = element_text(size = 4)
+  )
+
+
+```
+
+:::
+
+### Sample sizes
+
+@tbl-sim05-stopn shows the mean *number of enrolments into the platform* until a stopping rule is hit for each of the domains by scenario and stopping rule. 
+In parentheses are the percentage of sims for each decision type and those that were not stopped early (last row) run to the maximum sample size (2500).
+
+@fig-n-by-arm shows the number of participants entering into each of the randomised comparisons by domain and scenario.
+The expected cumulative sample sizes (@fig-n-by-arm) are calculated by extracting the number of participants entering into each randomised comparison (i.e. restricted to the relevant strata) and taking the cumulative sum of these over time.
+For example, the domain 1 (surgical) expected values are based on the participants in the late acute silo that receive randomised surgical intervention.
+Similarly, the domain 2 (antibiotic duration) expected values are based on the participants across all silos that received one-stage revision and then receive one of the randomised treatment allocations (i.e. are not in the non-randomised treatment group for any reason).
+
+If a decision was made in a domain, then subsequent enrolments would be assigned to the remaining arms and so the allocation would be expected to deviate away from 1:1.
+For example, if a superiority decision was made for domain 1 (and the trial was still ongoing) then all subsequent participants are assigned to the superior intervention.
+Finally, if a decision was made for all research questions, the trial stops early.
+To avoid any bias in the calculation, we use LOCF to propagate the expectations forward through to the maximum number of enrolments.
+
+::: {.panel-tabset  .nav-pills}
+
+#### Enrolments to stopping
+
+
+
+```{r}
+#| label: tbl-sim05-stopn
+#| tbl-cap: 'Expected number of enrolments to hit any stopping rule (including reaching maximum sample size) '
+#| column: page
+#| out-width: 70%
+
+d_tbl_2_cur <- d_tbl_2[
+  , .(N_mu = mean(N_stopped), 
+      pct_sims = sprintf("%.0f%%", 100*.N/l[[1]]$cfg$nsim)), 
+  keyby = .(scenario, desc, domain, quant)]
+d_tbl_2_cur <- dcast(d_tbl_2_cur, scenario + desc + quant ~ domain, value.var = list("N_mu", "pct_sims"))
+
+d_tbl_2_cur[, quant := factor(
+  quant, 
+  levels = c("sup", "fut_sup", "ni", "fut_ni", "na"),
+  labels = c("superiority", "futility (sup)", "ni", "futility (ni)", "-"))]
+
+d_tbl_2_cur <- d_tbl_2_cur[order(scenario, quant)]
+d_tbl_2_cur <- d_tbl_2_cur[, .SD, .SDcols = !c("scenario")]
+
+setcolorder(d_tbl_2_cur, c("desc", "quant",
+                           "N_mu_1", "pct_sims_1", 
+                           "N_mu_2", "pct_sims_2", 
+                           "N_mu_3", "pct_sims_3", 
+                           "N_mu_4", "pct_sims_4"
+                           ))
+
+g_tbl <- d_tbl_2_cur |> 
+  gt(groupname_col = "desc") |> 
+  gt::text_transform(
+    locations = cells_row_groups(),
+    fn = function(x) {
+      lapply(x, function(x) {
+        gt::md(paste0("*", x, "*"))
+      })
+    }
+  ) |>
+  cols_align(
+    columns = 1:2,
+    align = "left"
+  )  |> 
+  cols_align(
+    columns = 3:ncol(d_tbl_2_cur),
+    align = "center"
+  )  |> 
+  cols_merge(
+    columns = c("N_mu_1", "pct_sims_1"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  )  |> 
+  cols_merge(
+    columns = c("N_mu_2", "pct_sims_2"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  )  |> 
+  cols_merge(
+    columns = c("N_mu_3", "pct_sims_3"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  )  |> 
+  cols_merge(
+    columns = c("N_mu_4", "pct_sims_4"
+                ),
+    pattern = "<<{1}>><< ({2})>>"
+  ) |> 
+  tab_spanner(
+    label = html("Expected number of total enrolments to hit stopping rule by domain"),
+    columns = 3:ncol(d_tbl_2_cur)
+  )  |>
+  cols_label(
+    N_mu_1 = "Surgical",
+    N_mu_2 = "AB Duration",
+    N_mu_3 = "AB Ext-proph",
+    N_mu_4 = "AB choice"
+  ) |>
+  tab_options(
+    table.font.size = "70%"
+  ) |>
+  fmt_number(decimals = 0, drop_trailing_zeros = TRUE)
+
+g_tbl
+```
+
+#### Sample size of randomised comparisons
+
+```{r}
+#| label: fig-n-by-arm
+#| fig-cap: 'Expected number of participants on domain arms'
+#| fig-height: 5
+#| fig-width: 7
+#| column: page-right
+
+d_fig_1 <- d_N_by_arm[, .(mu_N = mean(N)), keyby = .(desc, domain, arm, N_enrol)]
+d_fig_1[, desc := factor(
+  desc,
+  levels = unique(d_N_by_arm$desc))]
+d_fig_1[
+  , domain := factor(
+    domain,
+    levels = 1:4,
+    labels = c("Surgical", "AB Duration", "AB Ext-proph", "AB Choice"))]
+
+d_fig_2 <- d_N_by_arm[
+  domain == 1 & arm %in% 2:3, 
+  .(N = sum(N), arm = 4), 
+  keyby = .(ia, sim, domain, scenario, desc, N_enrol)]
+d_fig_2 <- d_fig_2[, .(mu_N = mean(N)), keyby = .(desc, domain, arm, N_enrol)]
+
+d_fig_2[, desc := factor(
+  desc,
+  levels = unique(d_N_by_arm$desc))]
+d_fig_2[
+  , domain := factor(
+    domain,
+    levels = 1:4,
+    labels = c("Surgical", "AB Duration", "AB Ext-proph", "AB Choice"))]
+  
+d_fig_1[, arm := factor(arm)]
+ggplot(d_fig_1, aes(x = N_enrol, y = mu_N, col = arm)) +
+  geom_line(lwd = 0.2) +
+  geom_point(size = 0.4) +
+  geom_line(
+    data = d_fig_2, 
+    aes(x = N_enrol, y = mu_N), lwd = 0.2, lty = 2, inherit.aes = F) +
+  scale_x_continuous("") +
+  scale_y_continuous("Expected number of participants") +
+  scale_color_discrete("Treatment arm: ") +
+  ggh4x::facet_grid2(
+    desc ~ domain, 
+    labeller = labeller(desc = label_wrap_gen(35)), 
+    scales = "free_y", independent = "y") +
+  # theme_minimal() +
+  theme(
+    legend.position = "bottom",
+    strip.text.y.right = element_text(angle = 0,
+                                      hjust = 0,
+                                      vjust = 0.2,
+                                      size = 4),
+    axis.ticks = element_blank(),
+    strip.text.x.top = element_text(size = 4),
+    panel.grid.minor = element_blank(),
+    panel.grid.major = element_line(color = "grey",
+                                  linewidth = 0.1,
+                                  linetype = 1),
+    axis.title.y=element_text(size = 5),
+    axis.text.y = element_text(size = 4), 
+    axis.text.x = element_text(size = 4), 
+    axis.title.x = element_text(size = 5),
+    legend.text = element_text(size = 4)
+  )
+
+
+```
+
+:::
+
+### Parameter estimation
+
+@fig-expected-or shows the median value and 95% quantiles from the posterior mean odds ratios obtained from the simulations by each domain and scenario.
+The estimates are unconditional, in that they ignore the stopping rule and propagate estimates forward with LOCF so that we are working from a random sample (albeit with static imputation) rather than a dependent sample of simulations.
+
+The AB duration domain has high variance in the distribution of posterior means that we anticipate to observe. 
+
+
+::: {.panel-tabset  .nav-pills}
+
+#### Treatment effects - odds ratios
+
+```{r}
+#| label: fig-expected-or
+#| fig-cap: 'Median value of posterior means for odds-ratio treatment effects by domain and simulation scenario'
+#| fig-height: 5
+#| fig-width: 7
+#| column: page-right
+
+# ggplot2::theme_update(text = element_text(size = 8))
+# ggplot2::theme_update(legend.position = "bottom")
+# # ggplot2::theme_update(legend.title = element_blank())
+# ggplot2::theme_update(axis.text.x = element_text(size = 8))
+# ggplot2::theme_update(axis.text.y = element_text(size = 8))
+
+d_fig <- d_tbl_3[,
+                 .(or = median(exp(mu_lor)),
+                   q_025 = quantile(exp(mu_lor), prob = 0.025),
+                   q_975 = quantile(exp(mu_lor), prob = 0.975)), 
+                 keyby = .(scenario, desc, ia, domain, N)]
+# setorderv(d_fig, cols = "scenario", order = -1L)
+d_fig[, desc := factor(desc, levels = unique(d_fig$desc))]
+d_fig[, domain := factor(domain, 
+                         levels = 1:4, 
+                         labels = c("Surgical", "AB Duration", "AB Ext-proph", "AB Choice"))]
+
+# d_tbl_3[scenario == 8, range(lor)]
+
+ggplot(data = d_fig,  
+       aes(x = N, y = or)) +
+  geom_line(lwd = 0.25) +
+  geom_errorbar(aes(ymin = q_025, ymax = q_975), lwd = 0.25, width = 50) +
+  scale_x_continuous("") +
+  scale_y_continuous("OR") +
+  ggh4x::facet_grid2(desc ~ domain , 
+             labeller = labeller(desc = label_wrap_gen(35)), 
+             scales = "free",
+             axes = "y",
+             independent = "y") +
+  # theme_minimal() +
+  theme(text = element_text(size = 6),
+        strip.text.y.right = element_text(angle = 0,
+                                      hjust = 0,
+                                      vjust = 0.2,
+                                      size = 4),
+        strip.text.x = element_text(angle = 0, size = 5),
+        axis.ticks = element_blank(),
+        axis.text.x = element_text(angle = 45, vjust = 1, hjust=1, size = 5),
+        axis.text.y = element_text(size = 5),
+        panel.grid.minor = element_blank(),
+        panel.grid.major = element_line(color = "grey",
+                                  linewidth = 0.1,
+                                  linetype = 1))
+
+
+
+```
+
+
+
+:::
+
+### Proportion with treatment success
+
+@tbl-sim05-risk shows the empirical proportion having treatment success within the randomised comparisons subsets averaged over the simulations.
+For example, the values for the surgical domain shows the empirical proportion having treatment success within the late acute silo by treatment arm (dair, rev(1), rev(2)).
+
+```{r}
+#| label: tbl-sim05-risk
+#| tbl-cap: 'Expected number of enrolments to hit any stopping rule (including reaching maximum sample size) '
+#| column: page
+#| out-width: 80%
+
+d_tbl_4_cur <- dcast(d_tbl_4, scenario + desc + domain ~ arm, value.var = "p_hat")
+d_tbl_4_cur[, domain := factor(
+  domain, 
+  levels = c(1, 2, 3, 4), 
+  labels = c("Surgical", "AB Duration",  "AB Ext-proph", "AB Choice"))]
+d_tbl_4_cur <- d_tbl_4_cur[, .(desc, domain, `1`, `2`, `3`)]
+
+g_tbl <- d_tbl_4_cur |> 
+  gt(groupname_col = "desc") |> 
+  gt::text_transform(
+    locations = cells_row_groups(),
+    fn = function(x) {
+      lapply(x, function(x) {
+        gt::md(paste0("*", x, "*"))
+      })
+    }
+  ) |>
+  cols_align(
+    columns = 1,
+    align = "left"
+  )  |> 
+  cols_align(
+    columns = 2:ncol(d_tbl_4_cur),
+    align = "center"
+  )  |> 
+  cols_label(
+    domain = "Domain"
+  )  |>
+  tab_spanner(
+    label = html("Empirical risk by domain and treatment arm"),
+    columns = 2:ncol(d_tbl_4_cur)
+  ) |>
+  tab_options(
+    table.font.size = "70%"
+  ) |>
+  fmt_number(decimals = 2, drop_trailing_zeros = TRUE) |>
+  sub_missing(
+    columns = everything(),
+    rows = everything(),
+    missing_text = "-"
+  )
+
+g_tbl
+```
+
+
+
+
+
+
+
