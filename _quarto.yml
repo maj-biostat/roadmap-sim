@@ -48,6 +48,7 @@ website:
         - notebooks/sim-design6-ex03.qmd
         - notebooks/sim-design7-results.qmd
         - notebooks/sim-design7-ex01.qmd
+        - notebooks/sim-design8-results.qmd
       - section: "Design notes"
         contents:
         - notebooks/design-notes-01.qmd
