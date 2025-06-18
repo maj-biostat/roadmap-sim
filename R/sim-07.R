@@ -729,91 +729,256 @@ sim_07_subgrp_dev <- function(){
     mc_cores <- 50
   }
   
-  ix <- 1
-  m1 <- cmdstanr::cmdstan_model("stan/model-sim-07-a.stan")
+  # Classical setup ----
   
-  output_dir_mcmc <- paste0(getwd(), "/tmp")
-  
-  l_spec <- list(
-    N = 1,
-    # silo allocation
-    p_s_alloc = c(0.3, 0.5, 0.2),
-    l_e = list(),
-    l_l = list(),
-    l_c = list()
+  set.seed(2254)
+  dX <- CJ(domA = factor(1:3), s = factor(1:3), j = factor(1:2))
+  X <- model.matrix(~ domA + s + j + domA:s + domA:j, data = dX)
+  b <- c(
+    qlogis(0.4),
+    0.2,  0.1, # trt
+    -0.1, -0.4, # silo
+    -0.2, # joint
+    
+    # intxn shift rev(1) & late
+    # intxn shift rev(2) & late
+    # intxn shift rev(1) & chronic
+    # intxn shift rev(2) & chronic
+    rnorm(4, 0, 0.3), 
+    
+    # intxn shift rev(1) & hip
+    # intxn shift rev(2) & hip
+    rnorm(2, 0, 0.3) 
   )
-  # N by analysis
-  l_spec$N <- 5000
-  l_spec$l_e$p_d1_alloc <- g_cfgsc$e_p_d1_alloc
-  l_spec$l_e$p_d2_entry <- g_cfgsc$e_p_d2_entry
-  l_spec$l_e$p_d2_alloc <- g_cfgsc$e_p_d2_alloc
-  l_spec$l_e$p_d3_entry <- g_cfgsc$e_p_d3_entry
-  l_spec$l_e$p_d3_alloc <- g_cfgsc$e_p_d3_alloc
-  l_spec$l_e$p_d4_entry <- g_cfgsc$e_p_d4_entry
-  l_spec$l_e$p_d4_alloc <- g_cfgsc$e_p_d4_alloc
-  # preference for two-stage
-  l_spec$l_e$p_pref <- g_cfgsc$e_p_pref
+  p_tru <- as.numeric(plogis(X %*% b))
   
-  l_spec$l_l$p_d1_alloc <- g_cfgsc$l_p_d1_alloc
-  l_spec$l_l$p_d2_entry <- g_cfgsc$l_p_d2_entry
-  l_spec$l_l$p_d2_alloc <- g_cfgsc$l_p_d2_alloc
-  l_spec$l_l$p_d3_entry <- g_cfgsc$l_p_d3_entry
-  l_spec$l_l$p_d3_alloc <- g_cfgsc$l_p_d3_alloc
-  l_spec$l_l$p_d4_entry <- g_cfgsc$l_p_d4_entry
-  l_spec$l_l$p_d4_alloc <- g_cfgsc$l_p_d4_alloc
-  # preference for two-stage
-  l_spec$l_l$p_pref <- g_cfgsc$l_p_pref
+  # large sample estimates approximate true values
+  N <- 2e6
+  d <- data.table(
+    domA = factor(sample(1:3, size = N, replace = T)),
+    s = factor(sample(1:3, size = N, replace = T)),
+    j = factor(sample(1:2, size = N, replace = T))
+  )
+  X <- model.matrix(~ domA + s + j + domA:s + domA:j, data = d)
+  d[, eta :=  X %*% b]
+  d[, y := rbinom(.N, 1, plogis(eta))]
   
-  l_spec$l_c$p_d1_alloc <- g_cfgsc$c_p_d1_alloc
-  l_spec$l_c$p_d2_entry <- g_cfgsc$c_p_d2_entry
-  l_spec$l_c$p_d2_alloc <- g_cfgsc$c_p_d2_alloc
-  l_spec$l_c$p_d3_entry <- g_cfgsc$c_p_d3_entry
-  l_spec$l_c$p_d3_alloc <- g_cfgsc$c_p_d3_alloc
-  l_spec$l_c$p_d4_entry <- g_cfgsc$c_p_d4_entry
-  l_spec$l_c$p_d4_alloc <- g_cfgsc$c_p_d4_alloc
-  # preference for two-stage
-  l_spec$l_c$p_pref <- g_cfgsc$c_p_pref
+  f_1 <- glm(y ~ domA + s + j + domA:s + domA:j, data = d, family = binomial)
   
-  # model params
-  l_spec$mu <- g_cfgsc$bmu
-  l_spec$bs <- unlist(g_cfgsc$bs)
-  l_spec$bp <- unlist(g_cfgsc$bp)
-  # dair, one, two-stage, we compare avg of one and two stage rev to dair
-  l_spec$l_e$bd1 <- unlist(g_cfgsc$bed1)
-  l_spec$l_l$bd1 <- unlist(g_cfgsc$bld1)
-  l_spec$l_c$bd1 <- unlist(g_cfgsc$bcd1)
-  # always ref, 12wk, 6wk as we are assessing if 6wk ni to 12wk
-  l_spec$bd2 <- unlist(g_cfgsc$bd2)
-  # always ref, 0, 12wk as we are assessing if 12wk sup to none
-  l_spec$bd3 <- unlist(g_cfgsc$bd3)
-  # always ref, none, rif as we are assessing if rif is sup to none
-  l_spec$bd4 <- unlist(g_cfgsc$bd4)
+  d_out <- data.table(
+    p_1 = predict(
+      f_1, 
+      newdata = data.table(domA = factor(1, levels = 1:3), s = d$s, j = d$j), 
+      type = "response"),
+    p_2 = predict(
+      f_1, 
+      newdata = data.table(domA = factor(2, levels = 1:3), s = d$s, j = d$j), 
+      type = "response"),
+    p_3 = predict(
+      f_1, 
+      newdata = data.table(domA = factor(3, levels = 1:3), s = d$s, j = d$j), 
+      type = "response"),
+    s = d$s,
+    j = d$j
+    )
+  d_smry <- d_out[
+    , .(mu_p_1 = mean(p_1), mu_p_2 = mean(p_2), mu_p_3 = mean(p_3)), keyby = s]
+  d_smry[, rd_2_1 := mu_p_2 - mu_p_1]
+  d_smry[, rd_3_1 := mu_p_3 - mu_p_1]
+  d_smry[]
+  # strata level risk in treatment arm 1, 2, 3 then rd 2 vs 1 and 3 vs 1
+  # for example:
+  # Key: <s>
+  #   s    mu_p_1    mu_p_2    mu_p_3       rd_2_1      rd_3_1
+  # <fctr>     <num>     <num>     <num>        <num>       <num>
+  # 1:      1 0.3774311 0.4216500 0.4054096  0.044218902  0.02797854
+  # 2:      2 0.3536127 0.3464584 0.3904160 -0.007154337  0.03680327
+  # 3:      3 0.2871736 0.4192520 0.2569424  0.132078417 -0.03023120
   
-  l_spec$prior <- list()
-  # location, scale
-  l_spec$prior$mu <- unlist(g_cfgsc$pri_bmu)
-  l_spec$prior$bs <- unlist(g_cfgsc$pri_bs)
-  l_spec$prior$bp <- unlist(g_cfgsc$pri_bp)
-  l_spec$prior$bd1 <- unlist(g_cfgsc$pri_bd1)
-  l_spec$prior$bd2 <- unlist(g_cfgsc$pri_bd2)
-  l_spec$prior$bd3 <- unlist(g_cfgsc$pri_bd3)
-  l_spec$prior$bd4 <- unlist(g_cfgsc$pri_bd4)
+  data.table(marginaleffects::avg_predictions(f_1, by = c("domA", "s")))[order(s, domA)]
+  # comparisons(f_1,  by = c("domA", "s"))
+  data.table(marginaleffects::comparisons(f_1, variables = "domA", by = "s"))[
+    order(s), .(contrast, s, estimate)]
+  # contrast      s     estimate
+  # <char> <fctr>        <num>
+  # 1: mean(2) - mean(1)      1  0.044218902
+  # 2: mean(3) - mean(1)      1  0.027978538
+  # 3: mean(2) - mean(1)      2 -0.007154337
+  # 4: mean(3) - mean(1)      2  0.036803269
+  # 5: mean(2) - mean(1)      3  0.132078418
+  # 6: mean(3) - mean(1)      3 -0.030231201
   
-  l_spec$delta <- list()
-  l_spec$delta$sup <- g_cfgsc$dec_delta_sup
-  l_spec$delta$sup_fut <- g_cfgsc$dec_delta_sup_fut
-  l_spec$delta$ni <- g_cfgsc$dec_delta_ni
-  l_spec$delta$ni_fut <- g_cfgsc$dec_delta_ni_fut
+  d_smry <- d_out[
+    , .(mu_p_1 = mean(p_1), mu_p_2 = mean(p_2), mu_p_3 = mean(p_3)), keyby = j]
+  d_smry[, rd_2_1 := mu_p_2 - mu_p_1]
+  d_smry[, rd_3_1 := mu_p_3 - mu_p_1]
+  d_smry[]
+  # Key: <j>
+  #   j    mu_p_1    mu_p_2    mu_p_3     rd_2_1      rd_3_1
+  # <fctr>     <num>     <num>     <num>      <num>       <num>
+  #   1:      1 0.3619614 0.4217142 0.3701458 0.05975279 0.008184397
+  # 2:      2 0.3169593 0.3698630 0.3318754 0.05290368 0.014916107
+
+  data.table(marginaleffects::comparisons(f_1, variables = "domA", by = "j"))[
+    order(j), .(contrast, j, estimate)]
+  # contrast      j    estimate
+  # <char> <fctr>       <num>
+  #   1: mean(2) - mean(1)      1 0.059752789
+  # 2: mean(3) - mean(1)      1 0.008184397
+  # 3: mean(2) - mean(1)      2 0.052903684
+  # 4: mean(3) - mean(1)      2 0.014916107
   
-  # domain specific
-  l_spec$thresh <- list()
-  l_spec$thresh$sup <- unlist(g_cfgsc$dec_thresh_sup)
-  l_spec$thresh$ni <- unlist(g_cfgsc$dec_thresh_fut_sup)
-  l_spec$thresh$sup_fut <- unlist(g_cfgsc$dec_thresh_ni)
-  l_spec$thresh$ni_fut <- unlist(g_cfgsc$dec_thresh_fut_ni)
+  
+  # Bayesian setup --------
+  
+  # fixed main effects with random effect for subgroup/interaction
+  m2 <- cmdstanr::cmdstan_model("stan/model-sim-07-a-subgrp1.stan")
+  
+  # looking at a large sample comparison, but don't expect exact match
+  N <- 1e6
+  d <- data.table(
+    domA = factor(sample(1:3, size = N, replace = T)),
+    s = factor(sample(1:3, size = N, replace = T)),
+    j = factor(sample(1:2, size = N, replace = T))
+  )
+  X <- model.matrix(~ domA + s + j + domA:s + domA:j, data = d)
+  # use same beta from above
+  d[, eta :=  X %*% b]
+  d[, p_tru := plogis(eta)]
+  d[, y := rbinom(.N, 1, p_tru)]
+  
+  # aggregate - otherwise takes for ever
+  d_mod <- d[, .(y = sum(y), n = .N), keyby = .(domA, s, j)]
+  
+  ld <- list(
+    N = nrow(d_mod),
+    y = d_mod$y, n = d_mod$n,
+    domA = d_mod$domA, s = d_mod$s, j = d_mod$j,
+    N_s = d_mod[, .N, keyby = s][, N],
+    N_j = d_mod[, .N, keyby = j][, N],
+    ix_s1 = d_mod[s == 1, , which = T],
+    ix_s2 = d_mod[s == 2, , which = T],
+    ix_s3 = d_mod[s == 3, , which = T],
+    ix_j1 = d_mod[j == 1, , which = T],
+    ix_j2 = d_mod[j == 2, , which = T]
+  )
+  
+  # m2 <- cmdstanr::cmdstan_model("stan/model-sim-07-a-subgrp1.stan")
+  f_2 <- m2$sample(
+    ld, iter_warmup = 1000, iter_sampling = 2000,
+    parallel_chains = 1, chains = 1, refresh = 1000, show_exceptions = F,
+    max_treedepth = 13
+  )
+  
+  f_3 <- glm(cbind(y, n-y) ~ domA + s + j + domA:s + domA:j, data = d_mod, family = binomial)
+  
+  # results and compare to classical without shrinkage
+  d_post <- data.table(
+    f_2$draws(
+      variables = c(
+        "mu_p_dA_s1", "mu_p_dA_s2", "mu_p_dA_s3"), format = "matrix"))
+  d_post <- melt(d_post, measure.vars = names(d_post))
+  d_out <- data.table(marginaleffects::avg_predictions(f_3, by = c("domA", "s")))
+  
+  # average risk in silo 1 for treatment arm 1, 2, 3
+  # average risk in silo 2 for treatment arm 1, 2, 3
+  # average risk in silo 3 for treatment arm 1, 2, 3
+  cbind(
+    d_post[, .(mu = mean(value)), keyby = variable],
+    d_out[order(s, domA), .(s, domA, estimate, conf.low, conf.high)]
+  )
+  
+  d_post <- data.table(
+    f_2$draws(
+      variables = c("mu_rd_s1", "mu_rd_s2", "mu_rd_s3"), format = "matrix"))
+  d_post <- melt(d_post, measure.vars = names(d_post))
+  
+  # silo specific risk diff trt effects (rev(1) vs dair, rev(2) vs dair)
+  d_out <- data.table(marginaleffects::comparisons(f_1, variables = "domA", by = "s"))
+  cbind(
+    d_post[, .(mu = mean(value)), keyby = variable],
+    d_out[order(s), .(contrast, s, estimate, conf.low, conf.high)]
+  )
+  
+
+  
+  # Simulation --------
+  
+  N <- 2500
+  r <- pbapply::pblapply(X=1:2000, cl = mc_cores, FUN = function(ix){
+      
+      d <- data.table(
+        domA = factor(sample(1:3, size = N, replace = T)),
+        s = factor(sample(1:3, size = N, replace = T)),
+        j = factor(sample(1:2, size = N, replace = T))
+      )
+      X <- model.matrix(~ domA + s + j + domA:s + domA:j, data = d)
+      d[, eta :=  X %*% b]
+      d[, p_tru := plogis(eta)]
+      d[, y := rbinom(.N, 1, p_tru)]
+      # d[, .(p_obs = mean(y), p_tru = unique(p_tru)), keyby = .(domA, s, j)]
+      
+      d_mod <- d[, .(y = sum(y), n = .N), keyby = .(domA, s, j)]
+      
+      ld <- list(
+        N = nrow(d_mod),
+        y = d_mod$y, n = d_mod$n,
+        domA = d_mod$domA, s = d_mod$s, j = d_mod$j,
+        N_s = d_mod[, .N, keyby = s][, N],
+        N_j = d_mod[, .N, keyby = j][, N],
+        ix_s1 = d_mod[s == 1, , which = T],
+        ix_s2 = d_mod[s == 2, , which = T],
+        ix_s3 = d_mod[s == 3, , which = T],
+        ix_j1 = d_mod[j == 1, , which = T],
+        ix_j2 = d_mod[j == 2, , which = T]
+      )
+      
+      # m2 <- cmdstanr::cmdstan_model("stan/model-sim-07-a-subgrp1.stan")
+      f_4 <- m2$sample(
+        ld, iter_warmup = 1000, iter_sampling = 2000,
+        parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
+        max_treedepth = 13
+      )
+      
+      f_5 <- glm(
+        cbind(y, n-y) ~ domA + s + j + domA:s + domA:j, 
+        data = d_mod, family = binomial)
+      
+      d_post <- data.table(
+        f_4$draws(
+          variables = c("mu_rd_s1", "mu_rd_s2", "mu_rd_s3",
+                        "mu_rd_j1", "mu_rd_j2"), format = "matrix"))
+      d_post <- melt(d_post, measure.vars = names(d_post))
+      # silo specific risk diff trt effects:
+      # silo 1 (rev(1) vs dair, rev(2) vs dair)
+      # silo 2 (rev(1) vs dair, rev(2) vs dair)
+      # silo 3 (rev(1) vs dair, rev(2) vs dair)
+      # joint 1 (rev(1) vs dair, rev(2) vs dair)
+      # joint 2 (rev(1) vs dair, rev(2) vs dair)
+      d_post <- d_post[, .(mu = mean(value)), keyby = variable]
+      
+      d_out_s <- data.table(marginaleffects::comparisons(f_5, variables = "domA", by = "s"))
+      d_out_j <- data.table(marginaleffects::comparisons(f_5, variables = "domA", by = "j"))
+      
+      cbind(
+        d_post, 
+        rbind(d_out_s[order(s), .(contrast, subgrp = s, estimate)], 
+              d_out_j[order(j), .(contrast, subgrp = j, estimate)])
+      )
+      
+    })
+  
+  d_res <- rbindlist(r, idcol = "id_sim")
+  d_res[, .(mu_b = mean(mu), mu_f = mean(estimate)), keyby = variable]
   
   
-  # add subgroup information
+  
+  
+  
+  
+  
+  
+  
   
   
   
