@@ -53,7 +53,7 @@ if(toks[length(toks)] == "roadmap-sim"){
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim07-04"
+sim_lab <- "sim07-05"
 
 flist <- list.files(paste0("data/", sim_lab), pattern = "sim07")
 toks <- list()
@@ -1096,6 +1096,9 @@ d_fig_1[
     levels = 1:4,
     labels = c("Surgical", "AB Duration", "AB Ext-proph", "AB Choice"))]
 
+
+# additional arm to show the total N for revision(1) and revision(2) in the 
+# surgical domain
 d_fig_2 <- d_N_by_arm[
   domain == 1 & arm %in% 2:3, 
   .(N = sum(N), arm = 4), 
