@@ -1,0 +1,1043 @@
+library(data.table)
+library(ggplot2)
+library(patchwork)
+library(fastglm)
+library(parallel)
+library(pbapply)
+library(kableExtra)
+
+
+
+# Same allocation/outcome structure as sim09_cohort_01, but d2/d3/d4 are now
+# drawn directly from domain_state (a single 3-way sample() per domain,
+# rather than a two-step enter/split). d1 is unchanged for now - see note
+# in the accompanying discussion for how to extend it the same way.
+sim09_batch_01 <- function(
+    l_spec,
+    l_dom_state = sim09_domain_state_open(),   
+    seed = NULL
+) {
+  if (!is.null(seed)) set.seed(seed)
+  
+  stopifnot(abs(sum(l_spec$p_silo) - 1) < 1e-8)
+  stopifnot(abs(sum(l_spec$p_surg_lnrd1) - 1) < 1e-8)
+  stopifnot(abs(sum(l_spec$p_surg_enrd1) - 1) < 1e-8)
+  stopifnot(abs(sum(l_spec$p_surg_cnrd1) - 1) < 1e-8)
+  stopifnot(abs(sum(l_dom_state$d1) - 1) < 1e-8)
+  stopifnot(abs(sum(l_dom_state$d2) - 1) < 1e-8)
+  stopifnot(abs(sum(l_dom_state$d3) - 1) < 1e-8)
+  stopifnot(abs(sum(l_dom_state$d4) - 1) < 1e-8)
+  
+  # all possible regime option levels
+  full_reg_effect <- setNames(rep(0, length(l_spec$reg_opts)), l_spec$reg_opts)
+  if (length(l_spec$reg_effect) > 0) {
+    unknown <- setdiff(names(l_spec$reg_effect), l_spec$reg_opts)
+    if (length(unknown) > 0) {
+      stop("reg_effect has names not matching a realised silo_d1_d2_d3 combination: ",
+           paste(unknown, collapse = ", "))
+    }
+    full_reg_effect[names(l_spec$reg_effect)] <- l_spec$reg_effect
+  }
+  # always fix the reference level at zero
+  full_reg_effect["l_dair_nad2_nad3"] <- 0
+  
+  n <- length(l_spec$is:l_spec$ie)
+  d <- data.table(
+    id   = l_spec$is:l_spec$ie,
+    t_0 = l_spec$t_0[l_spec$is:l_spec$ie],
+    silo = sample(names(l_spec$p_silo), n, replace = TRUE, prob = l_spec$p_silo)
+  )
+  
+  # d1: surgery received
+  # The l silo draws from l_dom_state$d1 (the randomised comparison, which can be 
+  # stopped like the other domains). The other three silos are non-randomised 
+  # clinician choice and are fixed distributions.
+  d[, d1 := character(.N)]
+  idx_l <- d$silo == "l"
+  d[idx_l, d1 := sample(names(l_dom_state$d1), .N, replace = TRUE, prob = l_dom_state$d1)]
+  
+  for (s in c("lnrd1", "enrd1", "cnrd1")) {
+    # pick up the sampling dist for this silo
+    p_vec <- switch(s, 
+                    lnrd1 = l_spec$p_surg_lnrd1, 
+                    enrd1 = l_spec$p_surg_enrd1, 
+                    cnrd1 = l_spec$p_surg_cnrd1
+    )
+    # rows for this silo
+    idx <- d$silo == s
+    # 
+    d[idx, d1 := sample(names(p_vec), .N, replace = TRUE, prob = p_vec)]
+  }
+  d[, d1 := factor(d1, levels = c("dair", "r1", "r2"))]
+  
+  
+  # The d2, d3, d4 are coordinated by domain status
+  d[, d2 := "nad2"]
+  idx_r1 <- d$d1 == "r1"
+  d[idx_r1, d2 := sample(names(l_dom_state$d2), .N, replace = TRUE, prob = l_dom_state$d2)]
+  d[, d2 := factor(d2, levels = c("nad2", "wk12", "wk6"))]
+  
+  d[, d3 := "nad3"]
+  idx_r2 <- d$d1 == "r2"
+  d[idx_r2, d3 := sample(names(l_dom_state$d3), .N, replace = TRUE, prob = l_dom_state$d3)]
+  d[, d3 := factor(d3, levels = c("nad3", "wk12", "none"))]
+  
+  d[, d4 := sample(names(l_dom_state$d4), .N, replace = TRUE, prob = l_dom_state$d4)]
+  d[, d4 := factor(d4, levels = c("nad4", "norif", "rif"))]
+  
+  d[, silo := factor(silo, levels = c("l", "lnrd1", "enrd1", "cnrd1"))]
+  
+  # outcome full silo:d1:d2:d3 interaction + additive d4
+  reg_key <- paste(d$silo, d$d1, d$d2, d$d3, sep = "_")
+  d[, reg := factor(reg_key, levels = l_spec$reg_opts)]
+  d[, d1b := copy(d1)]
+  d[d1 != "dair", d1b := "rev"]
+  d[, d1b := droplevels(d1b)]
+  
+  intercept <- qlogis(l_spec$response_p_ref)
+  lp <- intercept + full_reg_effect[reg_key] + l_spec$d4_effect[as.character(d$d4)]
+  
+  d[, eta := lp]
+  d[, p := plogis(eta)]
+  d[, y := rbinom(.N, 1, p)]
+  
+  d[]
+}
+
+
+# Replace domains allocation with an arbitrary probability vector over any 
+# subset of its levels (the rest are set to 0) 
+# eg. sim09_set_domain(state, "d1", c(r1 = 1/3, r2 = 2/3)).
+sim09_set_domain <- function(state, domain, vec) {
+  stopifnot(abs(sum(vec) - 1) < 1e-8)
+  stopifnot(all(names(vec) %in% names(state[[domain]])))
+  # set up a empty vector with names aligning to the original
+  full <- setNames(rep(0, length(state[[domain]])), names(state[[domain]]))
+  full[names(vec)] <- vec
+  state[[domain]] <- full
+  state
+}
+
+# Each open domain is a simplex over its possible values, which includes the 
+# non-randomised option if applicable.
+# - still open, default ratio: c(nad2 = 0.3, wk12 = 0.35, wk6 = 0.35)
+# - still open, re-weighted (e.g. RAR): c(nad2 = 0.3, wk12 = 0.20, wk6 = 0.50)
+# - closed, reverts to standard care: c(nad2 = 1,   wk12 = 0,    wk6 = 0)
+# - closed, winner becomes routine: c(nad2 = 0,   wk12 = 0,    wk6 = 1)
+# Ground truth (reg_effect / d4_effect below) never changes - only the
+# allocation are updated.
+sim09_domain_state_open <- function() {
+  list(
+    # 'l' silo only - randomised dair vs revision,
+    d1 = c(dair = 0.50, r1 = 1/6, r2 = 1/3),   
+    # revision split r1/r2 (2/3 to r2) is just best guess
+    d2 = c(nad2 = 0.3, wk12 = 0.35, wk6 = 0.35),
+    d3 = c(nad3 = 0.3, wk12 = 0.35, none  = 0.35),
+    d4 = c(nad4 = 0.3, norif  = 0.35, rif   = 0.35)
+  )
+}
+
+
+
+
+sim09_enrol_time_int <- function(
+    N,
+    lambda = function(t, lambda_inf = 1.52, ramp_up = 90) { lambda_inf * pmin(t/ramp_up, 1) },
+    lambda_max = 1.52,
+    ramp_up_period  = 90
+) {
+  
+  t <- 0
+  events <- numeric(0)
+  while (length(events) < N) {
+    # Propose next event from homogeneous PP
+    t <- t + rexp(1, rate = lambda_max)
+    
+    # Accept with probability lambda(t) / lambda_max
+    lambda_t <- lambda(t, lambda_max, ramp_up_period)
+    if (runif(1) < lambda_t / lambda_max) {
+      events <- c(events, t)
+    }
+  }
+  # event times
+  events
+}
+
+sim09_reg_opts <- function() {
+  combos_per_silo <- c(
+    "dair_nad2_nad3", 
+    "r1_wk12_nad3", 
+    "r1_wk6_nad3", 
+    "r1_nad2_nad3",
+    "r2_nad2_wk12", 
+    "r2_nad2_none", 
+    "r2_nad2_nad3"
+  )
+  silos <- c("l", "lnrd1", "enrd1", "cnrd1")
+  as.vector(outer(silos, combos_per_silo, paste, sep = "_"))
+}
+
+sim09_trt_cont <- function(){
+  
+  l <- list()
+  
+  # regimes contributing to d1 effect of interest
+  l$d1_trt_regs <- c(
+    "l_r1_wk12_nad3",
+    "l_r1_wk6_nad3",
+    "l_r1_nad2_nad3",
+    "l_r2_nad2_wk12",
+    "l_r2_nad2_none",
+    "l_r2_nad2_nad3"
+  )
+  
+  # regimes contributing to d2 effect of interest
+  l$d2_wk12_regs <- c(
+    "l_r1_wk12_nad3",
+    "lnrd1_r1_wk12_nad3",
+    "enrd1_r1_wk12_nad3",
+    "cnrd1_r1_wk12_nad3"
+  )
+  l$d2_wk6_regs <- c(
+    "l_r1_wk6_nad3",
+    "lnrd1_r1_wk6_nad3",
+    "enrd1_r1_wk6_nad3",
+    "cnrd1_r1_wk6_nad3"
+  )
+  
+  # regimes contributing to d3 effect of interest
+  l$d3_wk12_regs <- c(
+    "l_r2_nad2_wk12",
+    "lnrd1_r2_nad2_wk12",
+    "enrd1_r2_nad2_wk12",
+    "cnrd1_r2_nad2_wk12"
+  )
+  l$d3_none_regs <- c(
+    "l_r2_nad2_none",
+    "lnrd1_r2_nad2_none",
+    "enrd1_r2_nad2_none",
+    "cnrd1_r2_nad2_none"
+  )
+  
+  l
+}
+
+sim09_update_cfg <- function(l_spec){
+  
+  if(unname(Sys.info()[1]) == "Darwin"){
+    message("On mac, resetting cores to 5")
+    l_spec$mc_cores <- 5
+  } else {
+    message(paste0("Allocated ", l_spec$mc_cores, " cores"))
+  }
+  
+  l_spec$n_batch <- unlist(l_spec$n_batch)
+  l_spec$p_silo <- unlist(l_spec$p_silo)
+  
+  l_spec$p_surg_lnrd1 <- unlist(l_spec$p_surg_lnrd1)
+  l_spec$p_surg_enrd1 <- unlist(l_spec$p_surg_enrd1)
+  l_spec$p_surg_cnrd1 <- unlist(l_spec$p_surg_cnrd1)
+  
+  # first index will always be fixed at zero irrespective of what is put
+  l_spec$reg_effect <-  unlist(l_spec$reg_effect)
+  l_spec$d4_effect <- unlist(l_spec$d4_effect)
+  
+  l_spec$n_batch <- unlist(l_spec$n_batch)
+  
+  l_spec$reg_opts <- sim09_reg_opts()
+  stopifnot(all(l_spec$reg_opts == names(l_spec$reg_effect)))
+  
+  l_tmp <- sim09_trt_cont()
+  l_spec$d1_trt_regs <- l_tmp$d1_trt_regs
+  l_spec$d2_wk12_regs <- l_tmp$d2_wk12_regs
+  l_spec$d2_wk6_regs <- l_tmp$d2_wk6_regs
+  l_spec$d3_wk12_regs <- l_tmp$d3_wk12_regs
+  l_spec$d3_none_regs <- l_tmp$d3_none_regs
+  
+  l_spec$t_0 <- sim09_enrol_time_int(sum(l_spec$n_batch))
+  
+  if(l_spec$nex > 0){
+    l_spec$nex <- pmin(l_spec$nex, l_spec$n_sim)
+    l_spec$ex_trial_ix <- sort(sample(1:l_spec$n_sim, size = l_spec$nex, replace = F))
+    l_spec$ex_trial_ix[1] <- 1
+  }
+  
+  l_spec
+}
+
+sim09_default_cfg <- function(){
+  l_spec <- list()
+  
+  if(unname(Sys.info()[1]) == "Darwin"){
+    message("On mac, resetting cores to 5")
+    l_spec$mc_cores <- 5
+  } else {
+    
+    l_spec$mc_cores <- 60
+    message(paste0("Allocated ", l_spec$mc_cores, " cores"))
+  }
+  
+  l_spec$n_sim <- 10
+  
+  l_spec$p_silo <- c(l = 0.4, lnrd1 = 0.1, enrd1 = 0.3, cnrd1 = 0.2)
+  l_spec$p_surg_lnrd1 <- c(dair = 0.5, r1 = 0.2, r2 = 0.3)
+  l_spec$p_surg_enrd1 <- c(dair = 0.8, r1 = 0.1, r2 = 0.1)
+  l_spec$p_surg_cnrd1 <- c(dair = 0.2, r1 = 0.2, r2 = 0.6)
+  # regime effects of dependent domain elements
+  l_spec$reg_effect <- c(
+    l_dair_nad2_nad3 = 0, 
+    lnrd1_dair_nad2_nad3 = 0, 
+    enrd1_dair_nad2_nad3 = 0, 
+    cnrd1_dair_nad2_nad3 = 0, 
+    # e.g.contrib to rand surg domain 
+    l_r1_wk12_nad3 = 0, 
+    lnrd1_r1_wk12_nad3 = 0,
+    enrd1_r1_wk12_nad3 = 0, 
+    cnrd1_r1_wk12_nad3 = 0, 
+    # e.g. contrib to rand surg domain 
+    l_r1_wk6_nad3 = 0, 
+    lnrd1_r1_wk6_nad3 = 0, 
+    enrd1_r1_wk6_nad3 = 0, 
+    cnrd1_r1_wk6_nad3 = 0, 
+    # e.g. contrib to rand surg domain 
+    l_r1_nad2_nad3 = 0, 
+    lnrd1_r1_nad2_nad3 = 0, 
+    enrd1_r1_nad2_nad3 = 0, 
+    cnrd1_r1_nad2_nad3 = 0, 
+    # e.g. contrib to rand surg domain 
+    l_r2_nad2_wk12 = 0, 
+    lnrd1_r2_nad2_wk12 = 0, 
+    enrd1_r2_nad2_wk12 = 0, 
+    cnrd1_r2_nad2_wk12 = 0, 
+    # e.g. contrib to rand surg domain 
+    l_r2_nad2_none = 0, 
+    lnrd1_r2_nad2_none = 0, 
+    enrd1_r2_nad2_none = 0, 
+    cnrd1_r2_nad2_none = 0, 
+    # e.g. contrib to rand surg domain 
+    l_r2_nad2_nad3 = 0, 
+    lnrd1_r2_nad2_nad3 = 0, 
+    enrd1_r2_nad2_nad3 = 0, 
+    cnrd1_r2_nad2_nad3 = 0
+    )
+  l_spec$d4_effect <- c(nad4 = 0, norif = 0, rif = 0)
+  l_spec$response_p_ref <- 0.6
+  
+  l_spec$desc <- "Default cfg"
+  l_spec$nex <- 3
+  l_spec$ex_trial_ix <- c(1, 2, 3)
+  l_spec$n_batch <- c(500, 500, 500, 500, 500)
+  
+  l_spec$reg_opts <- sim09_reg_opts()
+  stopifnot(all(l_spec$reg_opts == names(l_spec$reg_effect)))
+  
+  l_tmp <- sim09_trt_cont()
+  
+  l_spec$d1_trt_regs <- l_tmp$d1_trt_regs
+  l_spec$d2_wk12_regs <- l_tmp$d2_wk12_regs
+  l_spec$d2_wk6_regs <- l_tmp$d2_wk6_regs
+  l_spec$d3_wk12_regs <- l_tmp$d3_wk12_regs
+  l_spec$d3_none_regs <- l_tmp$d3_none_regs
+
+  l_spec$t_0 <- sim09_enrol_time_int(sum(l_spec$n_batch))
+  
+  l_spec
+}
+
+# example data generation
+sim09_ex_dat_1 <- function(){
+  
+  # CFG
+  default_cfg <- T
+  if(!default_cfg){
+    f_cfgsc <- file.path("./etc/sim09/cfg-sim09-sc01-v01.yml")
+    l_spec <- config::get(file = f_cfgsc)
+    l_spec <- sim09_update_cfg(l_spec)
+  } else {
+    l_spec <- sim09_default_cfg()
+  }
+  # coordinates size of batch
+  l_spec$is <- 1
+  l_spec$ie <- sum(l_spec$n_batch)
+  # starting state for domains
+  l_dom_state = sim09_domain_state_open()
+  
+  d_batch <- sim09_batch_01(l_spec, l_dom_state = l_dom_state)
+  
+  ## figs ------------
+  d_fig <- d_batch[silo == "l"]
+  d_fig[, d1_b := copy(d1)]
+  d_fig[d1 != "dair", d1_b := "rev"]
+  p_1 <- ggplot( d_fig, aes(x = d1_b, fill = d1)) + geom_bar() + scale_x_discrete("") +
+    ggtitle(
+      "Surgical (late silo only)",
+      subtitle = paste0("rand trt N = ", nrow(d_fig), "/", nrow(d_batch))
+    )
+  
+  d_fig <- d_batch[d1 == "r1"]
+  p_2 <- ggplot( d_fig, aes(x = d2, fill = silo)) + geom_bar() + scale_x_discrete("") +
+    ggtitle(
+      "Duration A (r1 rev all silo)",
+      subtitle = paste0("rand trt N = ", nrow(d_fig[d2 != "nad2"]), "/", nrow(d_batch))
+    )
+  
+  d_fig <- d_batch[d1 == "r2"]
+  p_3 <- ggplot( d_fig, aes(x = d3, fill = silo)) + geom_bar() + scale_x_discrete("") +
+    ggtitle(
+      "Duration B (r2 rev all silo)",
+      subtitle = paste0("rand trt N = ", nrow(d_fig[d3 != "nad3"]), "/", nrow(d_batch))
+      )
+  
+  d_fig <- copy(d_batch)
+  p_4 <- ggplot( d_fig, aes(x = d4, fill = silo)) + geom_bar() + scale_x_discrete("") +
+    ggtitle(
+      "Choice (applicable pathogen all silo)",
+      subtitle = paste0("rand trt N = ", nrow(d_fig[d4 != "nad4"]), "/", nrow(d_batch))
+      )
+  
+  p_1 + p_2 + p_3 + p_4
+  
+  # 
+  d_fig <- copy(d_batch)
+  d_fig <- d_fig[, .(count = .N), keyby = .(silo, reg)]
+  d_fig[, prop := count / sum(count), keyby = silo]
+  d_fig[, n := sum(count), keyby = silo]
+  d_fig[, silo_lab := paste0(silo, ", N = ", n)]
+  sort(unique(d_fig$silo_lab))
+  d_fig[, silo_lab := factor(silo_lab, levels = c(
+    "enrd1, N = 773", "l, N = 992", "lnrd1, N = 276",
+    "cnrd1, N = 459"
+  ))]
+  p_1 <- ggplot(d_fig, aes(
+    x = reg, y = prop)) + 
+    geom_col() + scale_x_discrete("") +
+    geom_text(aes(label = count), col = "red") +
+    coord_flip() +
+    facet_wrap(~ silo_lab, scales = "free_y", labeller = label_both) +
+    ggtitle(
+      "Proportion allocated to each regimen"
+    )
+  p_1
+#  
+  
+  
+  
+}
+
+
+sim09_decision_fn_dummy <- function(d_cum_dat, l_dom_state, batch){
+
+  # just a dummy placeholder update on the third interim so that batch 4 and onwards
+  # don't randomised d2 
+  
+  # in practice, this would possibly invoke the analysis from here and make the 
+  # decision on the basis of the results.
+
+  l_dom_state 
+}
+
+
+
+
+# example sim with interim setup
+sim09_ex_sim_1 <- function(
+    # easily switch out to some different function when I build in analysis code
+    sim09_decision_fn = function(d_cum_dat, l_dom_state, batch)  {l_dom_state}
+  ){
+  
+  set.seed(1)
+  
+  
+  # CFG
+  default_cfg <- F
+  if(!default_cfg){
+    f_cfgsc <- file.path("./etc/sim09/cfg-sim09-sc01-v01.yml")
+    l_spec <- config::get(file = f_cfgsc)
+    l_spec <- sim09_update_cfg(l_spec)
+  } else {
+    l_spec <- sim09_default_cfg()
+  }
+  # starting state for domains
+  l_dom_state = sim09_domain_state_open()
+  
+  # accrued data
+  d_cum_dat   <- data.table()
+  state_log <- vector("list", length(l_spec$n_batch))
+  
+  i <- 1
+  for (i in seq_along(l_spec$n_batch)) {
+    
+    if(i == 1){
+      # starting pt index in data
+      l_spec$is <- 1
+      l_spec$ie <- l_spec$is + l_spec$n_batch[i] - 1
+    } else {
+      l_spec$is <- nrow(d_cum_dat) + 1
+      l_spec$ie <- l_spec$is + l_spec$n_batch[i] - 1
+    }
+    
+    d_batch_dat <- sim09_batch_01(l_spec, l_dom_state = l_dom_state)
+    d_batch_dat[, batch := i]
+    d_cum_dat <- rbind(d_cum_dat, d_batch_dat)
+    
+    # state that generated batch i
+    state_log[[i]] <- l_dom_state         
+    # updated for batch i+1
+    l_dom_state   <- sim09_decision_fn(d_cum_dat, l_dom_state, i)   
+  }
+  
+  list(data = d_cum_dat, state_log = state_log, final_state = l_dom_state)
+  
+  
+}
+
+
+# example sim loop with multivariate model vs equivalent domain level models
+sim09_ex_sim_2 <- function(
+    l_spec, l_dom_state
+    ){
+  
+  
+  d_res <- rbindlist(pbapply::pblapply(
+    X=1:l_spec$n_sim, cl = l_spec$mc_cores, FUN=function(ix) {
+      
+      d_batch <- sim09_batch_01(l_spec, l_dom_state = l_dom_state)
+      
+      # joint model
+      X <- model.matrix(~ reg + d4, data = d_batch)
+      f_1 <- fastglm::fastglm(X, d_batch$y , family = binomial)
+      
+      # proportions with which we will weight params fur d1
+      d_w_b <- d_batch[reg %in% l_spec$d1_trt_regs, .N, keyby = reg]
+      d_w_b[, w := N/sum(d_w_b$N)]
+      setkey(d_w_b, reg)
+      wgt <- d_w_b[l_spec$d1_trt_regs, w]
+      f_1_coef <- coef(f_1)[paste0("reg", l_spec$d1_trt_regs)]
+      jnt_d1 <- as.numeric(wgt %*% f_1_coef)
+      
+      # proportions with which we will weight params fur d2
+      d_w_a <- d_batch[reg %in% l_spec$d2_wk12_regs, .N, keyby = reg]
+      d_w_a[, w := N/sum(d_w_a$N)]
+      setkey(d_w_a, reg)
+      d_w_b <- d_batch[reg %in% l_spec$d2_wk6_regs, .N, keyby = reg]
+      d_w_b[, w := N/sum(d_w_b$N)]
+      setkey(d_w_b, reg)
+      wgt_a <- d_w_a[l_spec$d2_wk12_regs, w]
+      wgt_b <- d_w_b[l_spec$d2_wk6_regs, w]
+      f_1_coef_a <- coef(f_1)[paste0("reg", l_spec$d2_wk12_regs)]
+      f_1_coef_b <- coef(f_1)[paste0("reg", l_spec$d2_wk6_regs)]
+      jnt_d2 <- as.numeric((wgt_b %*% f_1_coef_b) - (wgt_a %*% f_1_coef_a))
+      
+      # proportions with which we will weight params fur d3
+      d_w_a <- d_batch[reg %in% l_spec$d3_none_regs, .N, keyby = reg]
+      d_w_a[, w := N/sum(d_w_a$N)]
+      setkey(d_w_a, reg)
+      d_w_b <- d_batch[reg %in% l_spec$d3_wk12_regs, .N, keyby = reg]
+      d_w_b[, w := N/sum(d_w_b$N)]
+      setkey(d_w_b, reg)
+      wgt_a <- d_w_a[l_spec$d3_none_regs, w]
+      wgt_b <- d_w_b[l_spec$d3_wk12_regs, w]
+      f_1_coef_a <- coef(f_1)[paste0("reg", l_spec$d3_none_regs)]
+      f_1_coef_b <- coef(f_1)[paste0("reg", l_spec$d3_wk12_regs)]
+      jnt_d3 <- as.numeric((wgt_b %*% f_1_coef_b) - (wgt_a %*% f_1_coef_a))
+      
+      # get this for free
+      jnt_d4 <- as.numeric(coef(f_1)["d4rif"] - coef(f_1)["d4norif"])
+      
+      # separate model fits which target the equivalent trt effects
+      d_mod <- d_batch[silo == "l"]
+      X <- model.matrix(~ d1b, data = d_mod)
+      f_2 <- fastglm::fastglm(X, d_mod$y , family = binomial)
+      
+      uni_d1 <- coef(f_2)[2] 
+      
+      d_mod <- d_batch[d1 == "r1"]
+      X <- model.matrix(~ d2, data = d_mod)
+      f_2 <- fastglm::fastglm(X, d_mod$y , family = binomial)
+      
+      uni_d2 <- coef(f_2)["d2wk6"] - coef(f_2)["d2wk12"]
+      
+      d_mod <- d_batch[d1 == "r2"]
+      X <- model.matrix(~ d3, data = d_mod)
+      f_2 <- fastglm::fastglm(X, d_mod$y , family = binomial)
+      
+      uni_d3 <- coef(f_2)["d3wk12"] - coef(f_2)["d3none"]
+      
+      X <- model.matrix(~ d4, data = d_batch)
+      f_2 <- fastglm::fastglm(X, d_batch$y , family = binomial)
+      
+      uni_d4 <- coef(f_2)["d4rif"] - coef(f_2)["d4norif"]
+      
+      data.table(
+        jnt_d1 = jnt_d1, 
+        uni_d1 = uni_d1, 
+        jnt_d2 = jnt_d2, 
+        uni_d2 = uni_d2, 
+        jnt_d3 = jnt_d3, 
+        uni_d3 = uni_d3, 
+        jnt_d4 = jnt_d4, 
+        uni_d4 = uni_d4
+      )
+      
+    }
+  ))
+  
+  d_tbl <- melt(d_res, measure.vars = names(d_res))
+  d_tbl[, c("model", "domain") := tstrsplit(variable, "_", fixed = T)]
+  d_smry <- dcast(
+    d_tbl[, .(
+      mu = mean(value), 
+      sd = sd(value)
+    ), keyby = .(model, domain)], domain ~ model, value.var = list("mu", "sd"))
+  
+  d_smry
+  
+}
+
+# helper
+sim09_get_silo_contrib <- function(reg_opts, prefix = "enrd1"){
+  
+  reg_opts[grep(prefix, reg_opts, fixed = T)]
+  
+}
+
+
+# not a fan, but basic (incomplete) way to set domain effects - take care
+sim09_build_reg_effect <- function(
+    reg_opts, 
+    d1_trt_regs,
+    d2_wk6_regs,
+    d3_wk12_regs,
+    d1_delta = 0, 
+    d2_wk6_delta = 0, 
+    d3_wk12_delta = 0
+    ) {
+  
+  eff <- setNames(rep(0, length(reg_opts)), reg_opts)
+  eff[d1_trt_regs]  <- eff[d1_trt_regs]  + d1_delta      # any revision vs dair
+  eff[d2_wk6_regs]  <- eff[d2_wk6_regs]  + d2_wk6_delta  # wk6 vs wk12 (wk12 stays at 0)
+  eff[d3_wk12_regs] <- eff[d3_wk12_regs] + d3_wk12_delta # wk12 vs none (none stays at 0)
+  eff["l_dair_nad2_nad3"] <- 0
+  eff
+}
+
+# test whether the joint model and univariate model applied to the relevant
+# population can recover the same point value for the effects by weighting
+# the relevatn regime parameters by their proportional representation in the 
+# sample data
+sim09_ex_fit_1 <- function(){
+  
+  set.seed(1)
+  default_cfg <- T
+  if(!default_cfg){
+    f_cfgsc <- file.path("./etc/sim09/cfg-sim09-sc01-v01.yml")
+    l_spec <- config::get(file = f_cfgsc)
+    l_spec <- sim09_update_cfg(l_spec)
+  } else {
+    l_spec <- sim09_default_cfg()
+  }
+  # coordinates size of batch
+  l_spec$n_batch <- c(2500)
+  l_spec$is <- 1
+  l_spec$ie <- sum(l_spec$n_batch)
+  l_spec$n_sim <- 10000
+  
+  # starting state for domains
+  l_dom_state = sim09_domain_state_open()
+  
+  # Scenario - positive effect restricted to d1 ------------
+  # contrive an effect solely attributable to revision...
+  # set all revision effects, no sub domain effects
+  # these are all relative to l_dair_nad2_nad3 holding d4 constant
+  # l_spec$reg_opts[grep("l_", l_spec$reg_opts , fixed = T)]
+  l_spec$reg_effect <- sim09_build_reg_effect(
+    reg_opts = l_spec$reg_opts, 
+    d1_trt_regs = l_spec$d1_trt_regs,
+    d2_wk6_regs = l_spec$d2_wk12_regs,
+    d3_wk12_regs = l_spec$d3_wk12_regs,
+    d1_delta = 1, 
+    d2_wk6_delta = 0, 
+    d3_wk12_delta = 0
+  )
+  
+  d_tbl <- sim09_ex_sim_2(l_spec, l_dom_state)
+  kableExtra::kbl(
+    d_tbl, digits = 3, format = "simple", 
+    caption = paste0(
+      "n_sim ", l_spec$n_sim, " n ", sum(l_spec$n_batch)))
+  # Table: n_sim 10000 n 2500
+  # 
+  # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
+  # -------  -------  -------  -------  -------
+  # d1         1.025    1.003    0.148    0.145
+  # d2         0.000   -0.001    0.298    0.263
+  # d3         0.000    0.000    0.202    0.185
+  # d4         0.001    0.001    0.103    0.099
+  
+  
+  
+  # Scenario - negative effect associ with d2 wk6 pollutes d1 ------------
+  # just an effect in d2
+  # l_spec$reg_opts[grep("l_", l_spec$reg_opts , fixed = T)]
+  l_spec$test_fx <- c(
+    
+    # d2 wk6 reduces log odds trt success
+    # the reference group is not diff from l_dair_nad2_nad3
+    lnrd1_r1_wk12_nad3 = 0.0,
+    # deleterious
+    lnrd1_r1_wk6_nad3 = -1, 
+    
+    enrd1_r1_wk12_nad3 = 0.0, 
+    enrd1_r1_wk6_nad3 = -1, 
+    
+    cnrd1_r1_wk12_nad3 = 0.0, 
+    cnrd1_r1_wk6_nad3 = -1, 
+    
+    # d3 wk12 increases log odds trt success
+    
+    lnrd1_r2_nad2_none = 0.0,
+    enrd1_r2_nad2_none = 0.0, 
+    cnrd1_r2_nad2_none = 0.0,
+    
+    lnrd1_r2_nad2_wk12 = 0.0,
+    enrd1_r2_nad2_wk12 = 0.0,
+    cnrd1_r2_nad2_wk12 = 0.0,
+    
+    # d1 contributions
+    l_r1_wk12_nad3 = 0.0,
+    l_r1_wk6_nad3 = -1, 
+    # assume that non-randomised trt defaults to 12wks
+    l_r1_nad2_nad3 = 0.0,
+    
+    l_r2_nad2_wk12 = 0.0,
+    l_r2_nad2_none = 0.0,
+    l_r2_nad2_nad3 = 0.0
+    
+  )
+  full_reg_effects <- setNames(rep(0, length(l_spec$reg_effect)), l_spec$reg_opts)
+  full_reg_effects[names(l_spec$test_fx)] <- l_spec$test_fx
+  l_spec$reg_effect <- full_reg_effects
+  
+  d_tbl <- sim09_ex_sim_2(l_spec, l_dom_state)
+  kableExtra::kbl(
+    d_tbl, digits = 3, format = "simple", 
+    caption = paste0(
+      "n_sim ", l_spec$n_sim, " n ", sum(l_spec$n_batch)))
+  # Table: n_sim 10000 n 2500
+  # 
+  # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
+  # -------  -------  -------  -------  -------
+  # d1        -0.113   -0.116    0.131    0.129
+  # d2        -1.036   -1.006    0.265    0.249
+  # d3        -0.002   -0.002    0.178    0.175
+  # d4         0.002    0.001    0.100    0.098
+  
+  # Scenario - positive effect associ with 12wk pollutes d1 ------------
+  # just an effect in d3 
+  # l_spec$reg_opts[grep("l_", l_spec$reg_opts , fixed = T)]
+  l_spec$test_fx <- c(
+    
+    # d2 wk6 reduces log odds trt success
+    # the reference group is not diff from l_dair_nad2_nad3
+    lnrd1_r1_wk12_nad3 = 0.0,
+    # deleterious
+    lnrd1_r1_wk6_nad3 = 0.0, 
+    
+    enrd1_r1_wk12_nad3 = 0.0, 
+    enrd1_r1_wk6_nad3 = 0.0,
+    
+    cnrd1_r1_wk12_nad3 = 0.0, 
+    cnrd1_r1_wk6_nad3 = 0.0,
+    
+    # d3 wk12 increases log odds trt success
+    
+    lnrd1_r2_nad2_none = 0.0,
+    enrd1_r2_nad2_none = 0.0, 
+    cnrd1_r2_nad2_none = 0.0,
+    
+    lnrd1_r2_nad2_wk12 = 1.0,
+    enrd1_r2_nad2_wk12 = 1.0,
+    cnrd1_r2_nad2_wk12 = 1.0,
+    
+    # d1 contributions
+    l_r1_wk12_nad3 = 0.0,
+    l_r1_wk6_nad3 = 0.0,
+    # assume that non-randomised trt defaults to 12wks
+    l_r1_nad2_nad3 = 0.0,
+    
+    l_r2_nad2_wk12 = 1.0,
+    l_r2_nad2_none = 0.0,
+    l_r2_nad2_nad3 = 0.0
+    
+  )
+  full_reg_effects <- setNames(rep(0, length(l_spec$reg_effect)), l_spec$reg_opts)
+  full_reg_effects[names(l_spec$test_fx)] <- l_spec$test_fx
+  l_spec$reg_effect <- full_reg_effects
+  
+  d_tbl <- sim09_ex_sim_2(l_spec, l_dom_state)
+  kableExtra::kbl(
+    d_tbl, digits = 3, format = "simple", 
+    caption = paste0(
+      "n_sim ", l_spec$n_sim, " n ", sum(l_spec$n_batch)))
+  # Table: n_sim 10000 n 2500
+  # 
+  # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
+  # -------  -------  -------  -------  -------
+  # d1         0.240    0.201    0.136    0.131
+  # d2         0.004    0.004    0.264    0.249
+  # d3         1.036    1.005    0.235    0.196
+  # d4        -0.002   -0.002    0.101    0.099
+  
+  # Scenario - positive effect associ with rif ------------
+  # just an effect in d3 
+  # l_spec$reg_opts[grep("l_", l_spec$reg_opts , fixed = T)]
+  l_spec$test_fx <- c()
+  l_spec$d4_effect["rif"]  <- 1
+  full_reg_effects <- setNames(rep(0, length(l_spec$reg_effect)), l_spec$reg_opts)
+  full_reg_effects[names(l_spec$test_fx)] <- l_spec$test_fx
+  l_spec$reg_effect <- full_reg_effects
+  
+  d_tbl <- sim09_ex_sim_2(l_spec, l_dom_state)
+  kableExtra::kbl(
+    d_tbl, digits = 3, format = "simple", 
+    caption = paste0(
+      "n_sim ", l_spec$n_sim, " n ", sum(l_spec$n_batch)))
+  # Table: n_sim 10000 n 2500
+  # 
+  # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
+  # -------  -------  -------  -------  -------
+  # d1         0.007   -0.001    0.139    0.135
+  # d2         0.002    0.003    0.301    0.262
+  # d3        -0.005   -0.006    0.190    0.183
+  # d4         1.014    1.004    0.110    0.108
+  
+  
+  # Scenario - opposite effects in d2/d3 ------------
+  # just an effect in d3 
+  # l_spec$reg_opts[grep("l_", l_spec$reg_opts , fixed = T)]
+  l_spec$test_fx <- c(
+    
+    # d2 wk6 reduces log odds trt success
+    # the reference group is not diff from l_dair_nad2_nad3
+    # assume that non-randomised trt defaults to 12wks
+    l_r1_wk12_nad3 = 0.0,
+    l_r1_wk6_nad3 = -0.75,
+    
+    lnrd1_r1_wk12_nad3 = 0.0,
+    # deleterious
+    lnrd1_r1_wk6_nad3 = -0.75,
+    
+    enrd1_r1_wk12_nad3 = 0.0, 
+    enrd1_r1_wk6_nad3 = -0.75,
+    
+    cnrd1_r1_wk12_nad3 = 0.0, 
+    cnrd1_r1_wk6_nad3 = -0.75,
+    
+    # d3 wk12 increases log odds trt success
+    
+    l_r2_nad2_none = 0.0,
+    l_r2_nad2_wk12 = 1.0,
+    
+    lnrd1_r2_nad2_none = 0.0,
+    lnrd1_r2_nad2_wk12 = 1.0,
+    
+    enrd1_r2_nad2_none = 0.0, 
+    enrd1_r2_nad2_wk12 = 1.0,
+    
+    cnrd1_r2_nad2_none = 0.0,
+    cnrd1_r2_nad2_wk12 = 1.0
+  )
+  l_spec$d4_effect["rif"]  <- 0
+  full_reg_effects <- setNames(rep(0, length(l_spec$reg_effect)), l_spec$reg_opts)
+  full_reg_effects[names(l_spec$test_fx)] <- l_spec$test_fx
+  l_spec$reg_effect <- full_reg_effects
+  
+  d_tbl <- sim09_ex_sim_2(l_spec, l_dom_state)
+  kableExtra::kbl(
+    d_tbl, digits = 3, format = "simple", 
+    caption = paste0(
+      "n_sim ", l_spec$n_sim, " n ", sum(l_spec$n_batch)))
+  # Table: n_sim 10000 n 2500
+  # 
+  # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
+  # -------  -------  -------  -------  -------
+  # d1         0.154    0.111    0.135    0.129
+  # d2        -0.778   -0.756    0.262    0.249
+  # d3         1.034    1.005    0.230    0.195
+  # d4         0.000    0.000    0.100    0.097
+  
+  
+  
+}
+
+
+
+
+
+
+
+# more complete setup of nested design based on what is likely to happen in 
+# trial and bar the inclusion of things like site, joint, prognostic factors
+# etc.
+# just uses a linear (not logistic) model for convenience
+sim09_partial_nest_01 <- function(){
+  
+  library(data.table)
+  set.seed(1)
+  
+  d_cells <- rbind(
+    # late silo, randomised d1 as dair vs rev but clincician selects r1/r2
+    # no nad1 as some form of surgery is necessary to proceed to any other form
+    # of treatment
+    data.table(silo = "l", d1 = "dair", d2 = "nad2", d3 = "nad3"),
+    data.table(silo = "l", d1 = "r1", d2 = "wk12", d3 = "nad3"),
+    data.table(silo = "l", d1 = "r1", d2 = "wk6",  d3 = "nad3"),
+    # d2 can receive non-rand trt even though r1 was revision type
+    data.table(silo = "l", d1 = "r1", d2 = "nad2",  d3 = "nad3"),
+    data.table(silo = "l", d1 = "r2", d2 = "nad2", d3 = "wk12"),
+    data.table(silo = "l", d1 = "r2", d2 = "nad2", d3 = "none"),
+    # d3 can receive non-rand trt even though r2 was revision type
+    data.table(silo = "l", d1 = "r2", d2 = "nad2", d3 = "nad3"),
+    
+    # late silo, non-randomised d1, clincician selects dair/r1/r2
+    data.table(silo = "lnrd1", d1 = "dair", d2 = "nad2", d3 = "nad3"),
+    data.table(silo = "lnrd1", d1 = "r1", d2 = "wk12", d3 = "nad3"),
+    data.table(silo = "lnrd1", d1 = "r1", d2 = "wk6",  d3 = "nad3"),
+    data.table(silo = "lnrd1", d1 = "r1", d2 = "nad2",  d3 = "nad3"),
+    data.table(silo = "lnrd1", d1 = "r2", d2 = "nad2", d3 = "wk12"),
+    data.table(silo = "lnrd1", d1 = "r2", d2 = "nad2", d3 = "none"),
+    data.table(silo = "lnrd1", d1 = "r2", d2 = "nad2", d3 = "nad3"),
+    
+    # early silo, non-rand d1
+    data.table(silo = "enrd1", d1 = "dair", d2 = "nad2", d3 = "nad3"),
+    data.table(silo = "enrd1", d1 = "r1", d2 = "wk12", d3 = "nad3"),
+    data.table(silo = "enrd1", d1 = "r1", d2 = "wk6",  d3 = "nad3"),
+    data.table(silo = "enrd1", d1 = "r1", d2 = "nad2",  d3 = "nad3"),
+    data.table(silo = "enrd1", d1 = "r2", d2 = "nad2", d3 = "wk12"),
+    data.table(silo = "enrd1", d1 = "r2", d2 = "nad2", d3 = "none"),
+    data.table(silo = "enrd1", d1 = "r2", d2 = "nad2", d3 = "nad3"),
+    
+    # chronic silo, non-rand d1
+    data.table(silo = "cnrd1", d1 = "dair", d2 = "nad2", d3 = "nad3"),
+    data.table(silo = "cnrd1", d1 = "r1", d2 = "wk12", d3 = "nad3"),
+    data.table(silo = "cnrd1", d1 = "r1", d2 = "wk6", d3 = "nad3"),
+    data.table(silo = "cnrd1", d1 = "r1", d2 = "nad2", d3 = "nad3"),
+    data.table(silo = "cnrd1", d1 = "r2", d2 = "nad2", d3 = "wk12"),
+    data.table(silo = "cnrd1", d1 = "r2", d2 = "nad2", d3 = "none"),
+    data.table(silo = "cnrd1", d1 = "r2", d2 = "nad2", d3 = "nad3")
+  )
+  d_cells <- d_cells[rep(1:.N, each = 3), ]
+  # nad4 exists to demarcate non-randomised pts, i.e. pt inelig for d4
+  d_cells[, d4 := rep(c("rif", "norif", "nad4"), length = .N)]
+  
+  
+  dat <- d_cells[rep(seq_len(nrow(d_cells)), each = 4), ]
+  dat$silo <- factor(dat$silo, levels = c("l", "lnrd1", "enrd1", "cnrd1"))
+  dat$d1 <- factor(dat$d1, levels = c("dair", "r1", "r2"))
+  dat$d2 <- factor(dat$d2, levels = c("nad2", "wk12", "wk6"))
+  dat$d3 <- factor(dat$d3, levels = c("nad3", "wk12", "none"))
+  dat$d4 <- factor(dat$d4, levels = c("nad4", "norif", "rif"))
+  dat$y <- rnorm(nrow(dat))
+  
+  # ---- 1. Naive coding: cross Surg:d2 and Surg:d3 without respecting that
+  f_1 <- lm(y ~ silo * d1 + d1:d2 + d1:d3 + d4, data = dat)
+  X_1 <- model.matrix(f_1)
+  ncol(X_1)
+  # identifiable
+  qr(X_1)$rank
+  names(coef(f_1))[is.na(coef(f_1))]
+  # rows indicate linear combination of cols
+  alias(f_1)  
+  summary(f_1)
+  
+  # Explicit nested coding by collapsing silo, Surg, d2, d3 into the
+  # regimen combinations keeping the non-rand and rand elements separate as
+  # best we can
+  dat$reg <- with(dat, interaction(silo, d1, d2, d3, drop = TRUE, sep = "_"))
+  levels(dat$reg)
+  nlevels(dat$reg)
+  
+  f_2 <- lm(y ~ reg + d4, data = dat)
+  X_2 <- model.matrix(f_2)
+  ncol(X_2)
+  qr(X_2)$rank
+  summary(f_2)
+  
+  # Coefficients:
+  #   Estimate Std. Error t value Pr(>|t|)  
+  # (Intercept)              0.35426    0.28560   1.240   0.2158  
+  # reglnrd1_dair_nad2_nad3  0.31421    0.39020   0.805   0.4213  
+  # regenrd1_dair_nad2_nad3  0.36355    0.39020   0.932   0.3522  
+  # regcnrd1_dair_nad2_nad3 -0.20377    0.39020  -0.522   0.6019  
+  # regl_r1_nad2_nad3       -0.10345    0.39020  -0.265   0.7911  
+  # reglnrd1_r1_nad2_nad3   -0.31784    0.39020  -0.815   0.4160  
+  # regenrd1_r1_nad2_nad3   -0.02606    0.39020  -0.067   0.9468  
+  # regcnrd1_r1_nad2_nad3    0.02472    0.39020   0.063   0.9495  
+  # regl_r2_nad2_nad3       -0.54299    0.39020  -1.392   0.1651  
+  # reglnrd1_r2_nad2_nad3   -0.02678    0.39020  -0.069   0.9453  
+  # regenrd1_r2_nad2_nad3   -0.19812    0.39020  -0.508   0.6120  
+  # regcnrd1_r2_nad2_nad3   -0.26283    0.39020  -0.674   0.5011  
+  # regl_r1_wk12_nad3       -0.23754    0.39020  -0.609   0.5431  
+  # reglnrd1_r1_wk12_nad3   -0.44692    0.39020  -1.145   0.2529  
+  # regenrd1_r1_wk12_nad3   -0.39909    0.39020  -1.023   0.3072  
+  # regcnrd1_r1_wk12_nad3   -0.07476    0.39020  -0.192   0.8482  
+  # regl_r1_wk6_nad3        -0.37908    0.39020  -0.972   0.3321  
+  # reglnrd1_r1_wk6_nad3    -0.19629    0.39020  -0.503   0.6153  
+  # regenrd1_r1_wk6_nad3    -0.13091    0.39020  -0.335   0.7375  
+  # regcnrd1_r1_wk6_nad3    -0.48827    0.39020  -1.251   0.2118  
+  # regl_r2_nad2_wk12       -0.08503    0.39020  -0.218   0.8276  
+  # reglnrd1_r2_nad2_wk12   -0.82041    0.39020  -2.103   0.0363 *
+  # regenrd1_r2_nad2_wk12   -0.68172    0.39020  -1.747   0.0816 .
+  # regcnrd1_r2_nad2_wk12    0.20568    0.39020   0.527   0.5985  
+  # regl_r2_nad2_none        0.08783    0.39020   0.225   0.8221  
+  # reglnrd1_r2_nad2_none   -0.77427    0.39020  -1.984   0.0481 *
+  # regenrd1_r2_nad2_none   -0.53334    0.39020  -1.367   0.1727  
+  # regcnrd1_r2_nad2_none   -0.24627    0.39020  -0.631   0.5284  
+  # d4norif                 -0.12456    0.12772  -0.975   0.3302  
+  # d4rif                   -0.13230    0.12772  -1.036   0.3011  
+  
+  # d1:
+  # contrast between:
+  # log odds response dair:
+  # intercept (b0) is rand dair with non rand d2, non rand d3 and non rand d4
+  
+  # log odds response revision  (which also assumes non rand d4)
+  # q %*% [ (b0 + regl_r1_nad2_nad3), (b0 + regl_r1_wk12_nad3), (b0 + regl_r1_wk6_nad3), 
+  #         (b0 + regl_r2_nad2_nad3), (b0 + regl_r2_nad2_wk12), (b0 + regl_r2_nad2_none) ]'
+  # q is 6x1 vector of weights based on the observed distribution of 
+  # membership in each one of these regimens
+  
+  # could just use above as the contrast on the log odds scale or do g-comp
+  # to translate into a risk diff.
+  
+  # the contrast on the log odds scale should match the effect of revision 
+  # obtained from a d1 specific model fit to the appropriate set of data,
+  # i.e. late silo pts who received randomised trt for d1
+  
+  # d2: 
+  # Estimand: The effect of assignment to 12-week versus 6-week antibiotic 
+  # duration in patients who receive a one-stage revision and are eligible for 
+  # antibiotic domain on 12-month outcome (from trial entry) under their prior 
+  # treatment pathway and including participant preference for downstream 
+  # participation and conditionally randomised rifampicin.
+  
+  # contrast between:
+  # wk12:
+  # w [ b0 + regl_r1_wk12_nad3, b0 + reglnrd1_r1_wk12_nad3, 
+  #     b0 + regenrd1_r1_wk12_nad3, b0 + regcnrd1_r1_wk12_nad3 ]
+  # 
+  # w is based on obs dis in relevant regs
+  #
+  # wk6:
+  # v [ b0 + regl_r1_wk6_nad3, b0 + reglnrd1_r1_wk6_nad3, 
+  #     b0 + regenrd1_r1_wk6_nad3, b0 + regcnrd1_r1_wk6_nad3 ]
+  #
+  # v is based on obs dis in relevant regs
+  
+  # the contrast on the log odds scale should match the d2 trt effect 
+  # obtained from a d2 specific model fit to the appropriate subset of data,
+  # e.g. r1 pts entering into rand trt for d2
+  
+  
+}
+
