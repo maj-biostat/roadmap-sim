@@ -5,6 +5,386 @@ library(fastglm)
 library(parallel)
 library(pbapply)
 library(kableExtra)
+library(here)
+library(logger)
+library(cmdstanr)
+
+
+f_log <-  here::here("logs", "log.txt")
+logger::log_appender(appender_file(f_log))
+# message(Sys.time(), " Log file initialised ", f_log)
+logger::log_info("*** START UP - Sim09 ***")
+
+
+# Command line arguments list scenario (true dose response),
+# the number of simulations to run, the number of cores
+# to use and the simulator to use.
+args = commandArgs(trailingOnly=TRUE)
+
+# Load cfg based on cmd line args.
+if (length(args)<1) {
+  log_info("Setting default run method (does nothing)")
+  args[1] = "sim09_run_none"
+  args[2] = "sim09/cfg-sim09-sc01-v01.yml"
+} else {
+  log_info("Run method ", args[1])
+  log_info("Scenario config ", args[2])
+}
+
+s_mod <- "
+data{ 
+  
+  int N;
+  
+  array[N] int y;
+  array[N] int n;
+  
+  int K_reg;
+  int K_d4;
+  
+  array[N] int reg;
+  array[N] int d4;
+  
+  // priors
+  vector[2] pri_b_0;
+  vector[2] pri_b_reg;
+  vector[2] pri_b_d4;
+  
+  int prior_only;
+}
+transformed data{
+  
+}
+parameters{
+  real b_0;
+  vector[K_reg-1] b_reg_raw;
+  vector[K_d4-1] b_d4_raw;
+}
+transformed parameters{
+  vector[K_reg] b_reg;
+  vector[K_d4] b_d4;
+  
+  vector[N] eta;
+  
+  b_reg[1] = 0.0;
+  b_d4[1] = 0.0;
+  
+  b_reg[2:K_reg] = b_reg_raw;
+  b_d4[2:K_d4] = b_d4_raw;
+  
+} 
+model{
+  target += logistic_lpdf(b_0 | pri_b_0[1], pri_b_0[2]);
+  target += normal_lpdf(b_reg_raw | pri_b_reg[1], pri_b_reg[2]);
+  target += normal_lpdf(b_d4_raw | pri_b_d4[1], pri_b_d4[2]);
+  
+  if(!prior_only){
+    target += binomial_logit_lpmf(y | n, b_0 + b_reg[reg] + b_d4[d4]);  
+  }
+
+}
+generated quantities{
+  
+}
+"
+
+if(!interactive()){
+  m_1 <- cmdstanr::cmdstan_model(cmdstanr::write_stan_file(s_mod))
+} else {
+  # based on locally stored file - for future use
+  m_1 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09.stan"))
+}
+
+
+sim09_run_trial <- function(
+    l_spec,
+    # initial domain state (allocation wgts)
+    l_dom_state = sim09_domain_state_open(),
+    # function that runs analyses and returns revised domain allocations
+    # once decision threshold realised
+    fn_decision = sim09_decision_fn_01,
+    # data processing function - convert the row level data into binomial data
+    # then put into a list format suitable for stan model
+    fn_data = sim09_stan_data_01,
+    # fit the model and transform the posterior into the weighted contributions
+    # we need
+    fn_stanfit = sim09_stan_fit_01
+){
+  
+  
+  # accrued data
+  d_cum_dat   <- data.table()
+  state_log <- vector("list", length(l_spec$n_batch))
+  
+  i <- 1
+  for (i in seq_along(l_spec$n_batch)) {
+    
+    if(i == 1){
+      # starting pt index in data
+      l_spec$is <- 1
+      l_spec$ie <- l_spec$is + l_spec$n_batch[i] - 1
+    } else {
+      l_spec$is <- nrow(d_cum_dat) + 1
+      l_spec$ie <- l_spec$is + l_spec$n_batch[i] - 1
+    }
+    
+    d_batch_dat <- sim09_batch_01(l_spec, l_dom_state = l_dom_state)
+    d_batch_dat[, batch := i]
+    d_cum_dat <- rbind(d_cum_dat, d_batch_dat)
+    
+    # state that generated batch i
+    state_log[[i]] <- l_dom_state         
+    
+    
+    # updated for batch i+1
+    
+    
+    l_dom_state   <- fn_decision(
+      d_cum_dat, 
+      l_dom_state, 
+      i,
+      l_spec, 
+      fn_data,
+      fn_stanfit
+      )   
+    
+  }
+  
+  list(data = d_cum_dat, state_log = state_log, final_state = l_dom_state)
+  
+  
+}
+
+
+sim09_stan_data_01 <- function(d_cum_dat, l_spec){
+  
+  
+  d_grp_dat <- d_cum_dat[, .(n = .N, y = sum(y)), keyby = .(reg, d4)]
+  d_grp_dat[, ix_reg := as.integer(reg)]
+  d_grp_dat[, ix_d4 := as.integer(d4)]
+  
+  ld <- list(
+    N = nrow(d_grp_dat),
+    n = d_grp_dat$n,
+    y = d_grp_dat$y,
+    K_reg = length(levels(d_grp_dat$reg)),
+    K_d4 = length(levels(d_grp_dat$d4)),
+    reg = d_grp_dat$ix_reg,
+    d4 = d_grp_dat$ix_d4,
+    
+    pri_b_0 = l_spec$pri_b_0,
+    pri_b_reg = l_spec$pri_b_reg,
+    pri_b_d4 = l_spec$pri_b_d4,
+    prior_only = l_spec$prior_only
+  )
+
+  ld
+}
+
+sim09_stan_fit_01 <- function(
+    d_cum_dat,
+    fn_data = sim09_stan_data_01, 
+    l_spec
+    ){
+  
+  ld <- fn_data(d_cum_dat, l_spec)
+  
+  foutname <- paste0(
+    format(Sys.time(), format = "%Y%m%d%H%M%S"), 
+    "-sim-", l_spec$ix_sim, 
+    "-intrm-", max(d_cum_dat$batch))
+  
+  # snk <- capture.output(
+    f_1 <- m_1$sample(
+      ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
+      parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
+      refresh = 0, show_exceptions = F,
+      max_treedepth = 11,
+      output_dir = l_spec$mc_out_dir,
+      output_basename = foutname
+    )
+  # )
+  
+  # transform to get parameters of interest
+  d_b_0 <- data.table(f_1$draws(variables = c("b_0"),  format = "matrix"))
+  d_reg <- data.table(f_1$draws(variables = c("b_reg"),  format = "matrix"))
+  d_d4 <- data.table(f_1$draws(variables = c("b_d4"),  format = "matrix"))
+  
+  d_reg_l <- melt(d_reg, measure.vars = names(d_reg))
+  d_reg_l[, ix_reg := gsub("b_reg[", "", variable, fixed = T)]
+  d_reg_l[, ix_reg := as.integer(gsub("]", "", ix_reg, fixed = T))]
+  d_reg_l[, reg := l_spec$reg_opts[ix_reg]]
+  
+  
+  # domain-level weighted contrasts, from posterior draws
+  # Same weighting logic as sim09_ex_sim_2 (observed proportions across each
+  # domain's contributing regimens), but applied to the full posterior of
+  # b_reg/b_d4 rather than to a single point estimate
+  
+  # column j of b_reg <-> reg_lvls[j]
+  reg_lvls <- levels(d_cum_dat$reg)   
+  # column j of b_d4  <-> d4_lvls[j]
+  d4_lvls  <- levels(d_cum_dat$d4)    
+  
+  m_reg <- as.matrix(f_1$draws(variables = "b_reg", format = "matrix"))
+  colnames(m_reg) <- reg_lvls
+  m_d4  <- as.matrix(f_1$draws(variables = "b_d4",  format = "matrix"))
+  colnames(m_d4) <- d4_lvls
+  
+  # observed-proportion weights for a set of regimens; NA (not 0) if none of
+  # them have been observed yet, so a domain contrast with no supporting data
+  # comes back as NA rather than a silently as zero
+  reg_wgt <- function(regs) {
+    tb <- d_cum_dat[reg %in% regs, .N, keyby = reg]
+    # explicitly recognise zero contribs as no informaiton
+    if (sum(tb$N) == 0) return(setNames(rep(NA_real_, length(regs)), regs))
+    w <- setNames(rep(0, length(regs)), regs)
+    w[as.character(tb$reg)] <- tb$N / sum(tb$N)
+    w[regs]
+  }
+  
+  w_d1 <- reg_wgt(l_spec$d1_trt_regs)
+  post_d1 <- as.numeric(m_reg[, l_spec$d1_trt_regs, drop = FALSE] %*% w_d1)
+  
+  w_d2_12 <- reg_wgt(l_spec$d2_wk12_regs)
+  w_d2_6  <- reg_wgt(l_spec$d2_wk6_regs)
+  post_d2 <- as.numeric(
+    m_reg[, l_spec$d2_wk6_regs,  drop = FALSE] %*% w_d2_6 -
+      m_reg[, l_spec$d2_wk12_regs, drop = FALSE] %*% w_d2_12
+  )
+  
+  w_d3_none <- reg_wgt(l_spec$d3_none_regs)
+  w_d3_12   <- reg_wgt(l_spec$d3_wk12_regs)
+  post_d3 <- as.numeric(
+    m_reg[, l_spec$d3_wk12_regs, drop = FALSE] %*% w_d3_12 -
+      m_reg[, l_spec$d3_none_regs, drop = FALSE] %*% w_d3_none
+  )
+  
+  # d4 is unweighted - it's already a direct contrast between two b_d4 levels
+  post_d4 <- as.numeric(m_d4[, "rif"] - m_d4[, "norif"])
+  
+  d_post <- data.table(
+    d1 = post_d1, d2 = post_d2, d3 = post_d3, d4 = post_d4
+  )
+  
+  list(
+    f_1 = f_1,
+    # one row per posterior draw, one column per domain contrast
+    post = d_post   
+  )
+  
+  
+  
+}
+
+sim09_decision_fn_01 <- function(
+    d_cum_dat, 
+    l_dom_state, 
+    batch,
+    l_spec,
+    fn_data = sim09_stan_data_01,
+    fn_stanfit = sim09_stan_fit_01
+    ){
+  
+  
+  l_fit <- fn_stanfit(
+    d_cum_dat, fn_data, l_spec
+  )
+  
+  # tbd later various stuff to determine effectiveness, non-inferiority etc.
+  
+  # just return boiler plate until we get the fitted parameters sorted.
+  l_dom_state 
+}
+
+sim09_decision_fn_dummy <- function(
+    d_cum_dat, 
+    l_dom_state, 
+    batch
+    ){
+  
+  # just a dummy placeholder update on the third interim so that batch 4 and onwards
+  # don't randomised d2 
+  
+  # in practice, this would possibly invoke the analysis from here and make the 
+  # decision on the basis of the results.
+  
+  l_dom_state 
+}
+
+
+
+sim09_sim_loop <- function(){
+  
+  log_info(paste0(match.call()[[1]]))
+  
+  default_cfg <- F
+  if(!default_cfg){
+    # load sim specification
+    f_spec <- here::here("./etc", args[2])
+    l_spec <- config::get(file = f_spec)
+    stopifnot("Config is null" = !is.null(l_spec))
+    l_spec <- sim09_update_cfg(l_spec)
+  } else {
+    l_spec <- sim09_default_cfg()
+  }
+  
+  # str(l_spec)
+  l_spec$return_posterior = F  ; e = NULL; ix <- 1
+  log_info("Starting simulation")
+  
+  # temp
+  l_dom_state = sim09_domain_state_open()
+  
+  RNGkind("L'Ecuyer-CMRG"); set.seed(1)
+  r <- parallel::mclapply(
+    X=1:l_spec$n_sim, mc.cores = l_spec$mc_cores, FUN=function(ix) {
+      
+      log_info("Simulation ", ix);
+      
+      l_spec$ix_sim <- ix
+      
+      if(ix %in% l_spec$ex_trial_ix){ l_spec$return_posterior = T  
+      } else { l_spec$return_posterior = F }
+      
+      ll <- tryCatch({
+        sim09_run_trial(
+          l_spec,
+          # temp
+          l_dom_state,
+          sim09_decision_fn_01
+        )
+      },
+      error=function(e) {
+        log_info("ERROR in MCLAPPLY LOOP (see terminal output):")
+        message(" ERROR in MCLAPPLY LOOP " , e);
+        log_info("Traceback (see terminal output):")
+        message(traceback())
+        stop(paste0("Stopping with error ", e))
+      })
+      
+      ll
+    })
+  
+  
+  
+  
+}
+
+# sim09_run_none <- function(){
+#   log_info("sim09_run_none: Nothing doing here bud.")
+# }
+# 
+# sim09_main <- function(){
+#   funcname <- paste0(args[1], "()")
+#   log_info("Main, invoking ", funcname)
+#   eval(parse(text=funcname))
+# }
+
+if(!interactive()){
+  sim09_sim_loop()
+}
+
 
 
 
@@ -177,7 +557,7 @@ sim09_reg_opts <- function() {
   as.vector(outer(silos, combos_per_silo, paste, sep = "_"))
 }
 
-sim09_trt_cont <- function(){
+sim09_trt_reg_contribs <- function(){
   
   l <- list()
   
@@ -247,7 +627,7 @@ sim09_update_cfg <- function(l_spec){
   l_spec$reg_opts <- sim09_reg_opts()
   stopifnot(all(l_spec$reg_opts == names(l_spec$reg_effect)))
   
-  l_tmp <- sim09_trt_cont()
+  l_tmp <- sim09_trt_reg_contribs()
   l_spec$d1_trt_regs <- l_tmp$d1_trt_regs
   l_spec$d2_wk12_regs <- l_tmp$d2_wk12_regs
   l_spec$d2_wk6_regs <- l_tmp$d2_wk6_regs
@@ -261,6 +641,15 @@ sim09_update_cfg <- function(l_spec){
     l_spec$ex_trial_ix <- sort(sample(1:l_spec$n_sim, size = l_spec$nex, replace = F))
     l_spec$ex_trial_ix[1] <- 1
   }
+  
+  l_spec$pri_b_0 <- unlist(l_spec$pri_b_0)
+  l_spec$pri_b_reg <- unlist(l_spec$pri_b_reg)
+  l_spec$pri_b_d4 <- unlist(l_spec$pri_b_d4)
+  l_spec$prior_only <- as.logical(l_spec$prior_only)
+  
+  # hardcoded
+  l_spec$mc_out_dir <- here::here("tmp") 
+  
   
   l_spec
 }
@@ -331,7 +720,7 @@ sim09_default_cfg <- function(){
   l_spec$reg_opts <- sim09_reg_opts()
   stopifnot(all(l_spec$reg_opts == names(l_spec$reg_effect)))
   
-  l_tmp <- sim09_trt_cont()
+  l_tmp <- sim09_trt_reg_contribs()
   
   l_spec$d1_trt_regs <- l_tmp$d1_trt_regs
   l_spec$d2_wk12_regs <- l_tmp$d2_wk12_regs
@@ -341,10 +730,49 @@ sim09_default_cfg <- function(){
 
   l_spec$t_0 <- sim09_enrol_time_int(sum(l_spec$n_batch))
   
+  l_spec$pri_b_0 = c(0, 1)
+  l_spec$pri_b_reg = c(0, 1)
+  l_spec$pri_b_d4 = c(0, 1)
+  l_spec$prior_only <- FALSE
+  
+  l_spec$mc_warmup <-  1000
+  l_spec$mc_samp <-  1000
+  l_spec$mc_chain <-  1
+  
+  l_spec$mc_out_dir <- here::here("tmp") 
+  
+  l_spec$dec <- list()
+  l_spec$dec$d1 <- list()
+  l_spec$dec$d2 <- list()
+  l_spec$dec$d3 <- list()
+  l_spec$dec$d4 <- list()
+  
+  # domain rules and values
+  
+  # theta = pr_succsess_rev - pr_succsess_dair
+  # Pr(theta > delta)  > thresh => Superiority
+  # Pr(theta > delta) < thresh => Futility, ie futile if Pr theta > 0.05 is < 0.3
+  l_spec$dec$d1$sup <- list(delta = 0, thresh = 0.95)
+  l_spec$dec$d1$fut <- list(delta = 0.05, thresh = 0.3)
+  
+  # theta = pr_succsess_wk6 - pr_succsess_wk12
+  # Pr(theta > delta) > thresh => Non-inferior
+  # Pr(theta > delta) < thresh => Futility, ie futile if Pr theta > 0.0 is < 0.1
+  l_spec$dec$d2$ni <- list(delta = -0.05, thresh = 0.95)
+  l_spec$dec$d2$fut <- list(delta = 0.0, thresh = 0.1)
+  
+  # theta = pr_succsess_wk12 - pr_succsess_wknone
+  l_spec$dec$d3$sup <- list(delta = 0, thresh = 0.95)
+  l_spec$dec$d3$fut <- list(delta = 0.05, thresh = 0.3)
+  
+  # theta = pr_succsess_rif - pr_succsess_norif
+  l_spec$dec$d4$sup <- list(delta = 0, thresh = 0.99)
+  l_spec$dec$d4$fut <- list(delta = 0.05, thresh = 0.3)
+  
   l_spec
 }
 
-# example data generation
+# Ex DGP figs ---------
 sim09_ex_dat_1 <- function(){
   
   # CFG
@@ -425,24 +853,13 @@ sim09_ex_dat_1 <- function(){
 }
 
 
-sim09_decision_fn_dummy <- function(d_cum_dat, l_dom_state, batch){
-
-  # just a dummy placeholder update on the third interim so that batch 4 and onwards
-  # don't randomised d2 
-  
-  # in practice, this would possibly invoke the analysis from here and make the 
-  # decision on the basis of the results.
-
-  l_dom_state 
-}
 
 
 
-
-# example sim with interim setup
+# Ex prototype/minimal interim setup --------
 sim09_ex_sim_1 <- function(
     # easily switch out to some different function when I build in analysis code
-    sim09_decision_fn = function(d_cum_dat, l_dom_state, batch)  {l_dom_state}
+    fn_decision = sim09_decision_fn_dummy
   ){
   
   set.seed(1)
@@ -483,7 +900,7 @@ sim09_ex_sim_1 <- function(
     # state that generated batch i
     state_log[[i]] <- l_dom_state         
     # updated for batch i+1
-    l_dom_state   <- sim09_decision_fn(d_cum_dat, l_dom_state, i)   
+    l_dom_state   <- fn_decision(d_cum_dat, l_dom_state, i)   
   }
   
   list(data = d_cum_dat, state_log = state_log, final_state = l_dom_state)
@@ -492,7 +909,7 @@ sim09_ex_sim_1 <- function(
 }
 
 
-# example sim loop with multivariate model vs equivalent domain level models
+# Ex MV model vs domain level models -----
 sim09_ex_sim_2 <- function(
     l_spec, l_dom_state
     ){
@@ -503,7 +920,7 @@ sim09_ex_sim_2 <- function(
       
       d_batch <- sim09_batch_01(l_spec, l_dom_state = l_dom_state)
       
-      # joint model
+      # multivariate (joint model) handling all domains at once.
       X <- model.matrix(~ reg + d4, data = d_batch)
       f_1 <- fastglm::fastglm(X, d_batch$y , family = binomial)
       
@@ -621,11 +1038,12 @@ sim09_build_reg_effect <- function(
   eff
 }
 
+# Model fit scenarios ----
 # test whether the joint model and univariate model applied to the relevant
 # population can recover the same point value for the effects by weighting
 # the relevatn regime parameters by their proportional representation in the 
 # sample data
-sim09_ex_fit_1 <- function(){
+sim09_ex_scenarios <- function(){
   
   set.seed(1)
   default_cfg <- T
