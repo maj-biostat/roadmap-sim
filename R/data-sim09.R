@@ -193,51 +193,8 @@ sim09_run_trial <- function(
   
 }
 
-# Once a rule (sup/ni/fut) for a domain flips TRUE, it stays TRUE for every
-# subsequent interim regardless of what a later analysis concludes. 
-# NA  never overrides a locked TRUE, and never itself counts as decided.
-sim09_lock_dec <- function(l_dec_prev, l_dec_new) {
-  if (is.null(l_dec_prev)) return(l_dec_new)
-  
-  l_locked <- l_dec_new
-  for (dm in names(l_dec_new)) {
-    rules <- names(l_dec_new[[dm]])
-    rules <- rules[!grepl("_prob$", rules)]
-    for (rl in rules) {
-      l_locked[[dm]][[rl]] <- isTRUE(l_dec_prev[[dm]][[rl]]) || isTRUE(l_dec_new[[dm]][[rl]])
-    }
-  }
-  l_locked
-}
 
-sim09_d1_alloc <- function(l_dec) {
-  if (isTRUE(l_dec$d1$sup)) return(c(dair = 0.0, r1 = 1/3, r2 = 2/3))   # revision superior
-  if (isTRUE(l_dec$d1$fut)) return(c(dair = 1.0, r1 = 0.0, r2 = 0.0))   # revision futile
-  sim09_domain_state_open()$d1
-}
-sim09_d2_alloc <- function(l_dec) {
-  if (isTRUE(l_dec$d2$ni))  return(c(nad2 = 0.3, wk12 = 0.0, wk6 = 0.7))  # 6wk non-inferior
-  if (isTRUE(l_dec$d2$fut)) return(c(nad2 = 0.3, wk12 = 0.7, wk6 = 0.0))  # 6wk futile
-  sim09_domain_state_open()$d2
-}
-sim09_d3_alloc <- function(l_dec) {
-  if (isTRUE(l_dec$d3$sup)) return(c(nad3 = 0.3, wk12 = 0.7, none = 0.0)) # wk12 superior
-  if (isTRUE(l_dec$d3$fut)) return(c(nad3 = 0.3, wk12 = 0.0, none = 0.7)) # wk12 futile
-  sim09_domain_state_open()$d3
-}
-sim09_d4_alloc <- function(l_dec) {
-  if (isTRUE(l_dec$d4$sup)) return(c(nad4 = 0.3, norif = 0.0, rif = 0.7)) # rif superior
-  if (isTRUE(l_dec$d4$fut)) return(c(nad4 = 0.3, norif = 0.7, rif = 0.0)) # rif futile
-  sim09_domain_state_open()$d4
-}
 
-sim09_update_dom_state <- function(l_dom_state, l_dec) {
-  l_dom_state$d1 <- sim09_d1_alloc(l_dec)
-  l_dom_state$d2 <- sim09_d2_alloc(l_dec)
-  l_dom_state$d3 <- sim09_d3_alloc(l_dec)
-  l_dom_state$d4 <- sim09_d4_alloc(l_dec)
-  l_dom_state
-}
 
 # analysis and decision processing ---------
 sim09_decision_fn_01 <- function(
@@ -292,32 +249,126 @@ sim09_decision_fn_01 <- function(
 }
 
 
-sim09_stan_data_01 <- function(d_cum_dat, l_spec){
-  
-  
-  d_grp_dat <- d_cum_dat[, .(n = .N, y = sum(y)), keyby = .(reg, d4)]
-  d_grp_dat[, ix_reg := as.integer(reg)]
-  d_grp_dat[, ix_d4 := as.integer(d4)]
-  
-  ld <- list(
-    N = nrow(d_grp_dat),
-    n = d_grp_dat$n,
-    y = d_grp_dat$y,
-    K_reg = length(levels(d_grp_dat$reg)),
-    K_d4 = length(levels(d_grp_dat$d4)),
-    reg = d_grp_dat$ix_reg,
-    d4 = d_grp_dat$ix_d4,
-    
-    pri_b_0 = l_spec$pri_b_0,
-    pri_b_reg = l_spec$pri_b_reg,
-    pri_b_d4 = l_spec$pri_b_d4,
-    prior_only = l_spec$prior_only
-  )
 
-  ld
+sim09_decision_fn_dummy <- function(
+    d_cum_dat, 
+    l_dom_state, 
+    batch
+){
+  
+  # just a dummy placeholder update on the third interim so that batch 4 and onwards
+  # don't randomised d2 
+  
+  # in practice, this would possibly invoke the analysis from here and make the 
+  # decision on the basis of the results.
+  
+  l_dom_state 
 }
 
-# Utils standardised prob ----------
+sim09_d1_alloc <- function(l_dec) {
+  if (isTRUE(l_dec$d1$sup)) return(c(dair = 0.0, r1 = 1/3, r2 = 2/3))   # revision superior
+  if (isTRUE(l_dec$d1$fut)) return(c(dair = 1.0, r1 = 0.0, r2 = 0.0))   # revision futile
+  sim09_domain_state_open()$d1
+}
+sim09_d2_alloc <- function(l_dec) {
+  if (isTRUE(l_dec$d2$ni))  return(c(nad2 = 0.3, wk12 = 0.0, wk6 = 0.7))  # 6wk non-inferior
+  if (isTRUE(l_dec$d2$fut)) return(c(nad2 = 0.3, wk12 = 0.7, wk6 = 0.0))  # 6wk futile
+  sim09_domain_state_open()$d2
+}
+sim09_d3_alloc <- function(l_dec) {
+  if (isTRUE(l_dec$d3$sup)) return(c(nad3 = 0.3, wk12 = 0.7, none = 0.0)) # wk12 superior
+  if (isTRUE(l_dec$d3$fut)) return(c(nad3 = 0.3, wk12 = 0.0, none = 0.7)) # wk12 futile
+  sim09_domain_state_open()$d3
+}
+sim09_d4_alloc <- function(l_dec) {
+  if (isTRUE(l_dec$d4$sup)) return(c(nad4 = 0.3, norif = 0.0, rif = 0.7)) # rif superior
+  if (isTRUE(l_dec$d4$fut)) return(c(nad4 = 0.3, norif = 0.7, rif = 0.0)) # rif futile
+  sim09_domain_state_open()$d4
+}
+
+sim09_update_dom_state <- function(l_dom_state, l_dec) {
+  l_dom_state$d1 <- sim09_d1_alloc(l_dec)
+  l_dom_state$d2 <- sim09_d2_alloc(l_dec)
+  l_dom_state$d3 <- sim09_d3_alloc(l_dec)
+  l_dom_state$d4 <- sim09_d4_alloc(l_dec)
+  l_dom_state
+}
+
+
+# Once a rule (sup/ni/fut) for a domain flips TRUE, it stays TRUE for every
+# subsequent interim regardless of what a later analysis concludes. 
+# NA  never overrides a locked TRUE, and never itself counts as decided.
+sim09_lock_dec <- function(l_dec_prev, l_dec_new) {
+  if (is.null(l_dec_prev)) return(l_dec_new)
+  
+  l_locked <- l_dec_new
+  for (dm in names(l_dec_new)) {
+    rules <- names(l_dec_new[[dm]])
+    rules <- rules[!grepl("_prob$", rules)]
+    for (rl in rules) {
+      l_locked[[dm]][[rl]] <- isTRUE(l_dec_prev[[dm]][[rl]]) || isTRUE(l_dec_new[[dm]][[rl]])
+    }
+  }
+  l_locked
+}
+
+# More or less generic superiority/non-inferiority + futility decision rule, 
+# applied posterior samples for domain contrast theta (on whatever scale
+# those draws are - log-odds or risk difference, doesn't matter to this
+# function). 
+# "sup" and "ni" are mechanically identical - Pr(theta > delta) >
+# thresh => success - the distinction is purely in how delta/thresh are
+# chosen (e.g. delta = 0 for superiority, delta = -0.05 for a non-inferiority
+# margin on a risk-difference scale). 
+# Futility is always the mirror check:
+# Pr(theta > delta_fut) < thresh_fut => futile.
+#
+# rule is a list that may contain $sup and/or $ni, and/or $fut, each of the
+# form list(delta = ..., thresh = ...). Domains only need to supply whichever
+# of these apply to them (e.g. d2 supplies ni + fut; d1/d3/d4 supply sup + fut).
+sim09_eval_rule <- function(post_draws, rule) {
+  
+  out <- list()
+  
+  if (!is.null(rule$sup)) {
+    p <- mean(post_draws > rule$sup$delta, na.rm = TRUE)
+    out$sup_prob <- p
+    out$sup <- if (all(is.na(post_draws))) NA else p > rule$sup$thresh
+  }
+  
+  if (!is.null(rule$ni)) {
+    p <- mean(post_draws > rule$ni$delta, na.rm = TRUE)
+    out$ni_prob <- p
+    out$ni <- if (all(is.na(post_draws))) NA else p > rule$ni$thresh
+  }
+  
+  if (!is.null(rule$fut)) {
+    p <- mean(post_draws > rule$fut$delta, na.rm = TRUE)
+    out$fut_prob <- p
+    out$fut <- if (all(is.na(post_draws))) NA else p < rule$fut$thresh
+  }
+  
+  out
+}
+
+
+# apply sim09_eval_rule across all four domains at once, given a data.table
+# of risk-difference (or log-odds) posterior draws with columns d1, d2, d3, d4
+sim09_eval_all_dec <- function(d_post, l_spec) {
+  list(
+    d1 = sim09_eval_rule(d_post$d1, l_spec$dec$d1),
+    d2 = sim09_eval_rule(d_post$d2, l_spec$dec$d2),
+    d3 = sim09_eval_rule(d_post$d3, l_spec$dec$d3),
+    d4 = sim09_eval_rule(d_post$d4, l_spec$dec$d4)
+  )
+}
+
+
+
+
+
+
+# Computing treatment contrasts ----------
 sim09_std_prob <- function(v_b0, m_reg, m_d4, cov_grid) {
   stopifnot(all(cov_grid$reg %in% colnames(m_reg)))
   stopifnot(all(cov_grid$d4  %in% colnames(m_d4)))
@@ -332,7 +383,6 @@ sim09_std_prob <- function(v_b0, m_reg, m_d4, cov_grid) {
   p_acc
 }
 
-# Utils regimen weights ----------
 # observed-proportion weights for a set of regimens; NA (not 0) if none of
 # them have been observed yet, so a domain contrast with no supporting data
 # comes back as NA rather than a silently as zero
@@ -498,7 +548,7 @@ sim09_comp_rd <- function(
   
 }
 
-
+# Model fit ---------------
 sim09_stan_fit_01 <- function(
     d_cum_dat,
     fn_data = sim09_stan_data_01, 
@@ -533,7 +583,7 @@ sim09_stan_fit_01 <- function(
       par = names(dat),
       mu = apply(dat, 2, mean),
       q_025 = apply(dat, 2, function(z){quantile(z, prob = 0.025)}),
-      q_975 = apply(dat, 2, function(z){quantile(z, prob = 0.025)})
+      q_975 = apply(dat, 2, function(z){quantile(z, prob = 0.975)})
     )
   }
   
@@ -554,76 +604,6 @@ sim09_stan_fit_01 <- function(
     d_rd = d_rd
   )
   
-}
-
-# More or less generic superiority/non-inferiority + futility decision rule, 
-# applied posterior samples for domain contrast theta (on whatever scale
-# those draws are - log-odds or risk difference, doesn't matter to this
-# function). 
-# "sup" and "ni" are mechanically identical - Pr(theta > delta) >
-# thresh => success - the distinction is purely in how delta/thresh are
-# chosen (e.g. delta = 0 for superiority, delta = -0.05 for a non-inferiority
-# margin on a risk-difference scale). 
-# Futility is always the mirror check:
-# Pr(theta > delta_fut) < thresh_fut => futile.
-#
-# rule is a list that may contain $sup and/or $ni, and/or $fut, each of the
-# form list(delta = ..., thresh = ...). Domains only need to supply whichever
-# of these apply to them (e.g. d2 supplies ni + fut; d1/d3/d4 supply sup + fut).
-sim09_eval_rule <- function(post_draws, rule) {
-  
-  out <- list()
-  
-  if (!is.null(rule$sup)) {
-    p <- mean(post_draws > rule$sup$delta, na.rm = TRUE)
-    out$sup_prob <- p
-    out$sup <- if (all(is.na(post_draws))) NA else p > rule$sup$thresh
-  }
-  
-  if (!is.null(rule$ni)) {
-    p <- mean(post_draws > rule$ni$delta, na.rm = TRUE)
-    out$ni_prob <- p
-    out$ni <- if (all(is.na(post_draws))) NA else p > rule$ni$thresh
-  }
-  
-  if (!is.null(rule$fut)) {
-    p <- mean(post_draws > rule$fut$delta, na.rm = TRUE)
-    out$fut_prob <- p
-    out$fut <- if (all(is.na(post_draws))) NA else p < rule$fut$thresh
-  }
-  
-  out
-}
-
-
-# apply sim09_eval_rule across all four domains at once, given a data.table
-# of risk-difference (or log-odds) posterior draws with columns d1, d2, d3, d4
-sim09_eval_all_dec <- function(d_post, l_spec) {
-  list(
-    d1 = sim09_eval_rule(d_post$d1, l_spec$dec$d1),
-    d2 = sim09_eval_rule(d_post$d2, l_spec$dec$d2),
-    d3 = sim09_eval_rule(d_post$d3, l_spec$dec$d3),
-    d4 = sim09_eval_rule(d_post$d4, l_spec$dec$d4)
-  )
-}
-
-
-
-
-
-sim09_decision_fn_dummy <- function(
-    d_cum_dat, 
-    l_dom_state, 
-    batch
-    ){
-  
-  # just a dummy placeholder update on the third interim so that batch 4 and onwards
-  # don't randomised d2 
-  
-  # in practice, this would possibly invoke the analysis from here and make the 
-  # decision on the basis of the results.
-  
-  l_dom_state 
 }
 
 
@@ -729,8 +709,368 @@ sim09_batch_01 <- function(
   d[]
 }
 
+sim09_stan_data_01 <- function(d_cum_dat, l_spec){
+  
+  
+  d_grp_dat <- d_cum_dat[, .(n = .N, y = sum(y)), keyby = .(reg, d4)]
+  d_grp_dat[, ix_reg := as.integer(reg)]
+  d_grp_dat[, ix_d4 := as.integer(d4)]
+  
+  ld <- list(
+    N = nrow(d_grp_dat),
+    n = d_grp_dat$n,
+    y = d_grp_dat$y,
+    K_reg = length(levels(d_grp_dat$reg)),
+    K_d4 = length(levels(d_grp_dat$d4)),
+    reg = d_grp_dat$ix_reg,
+    d4 = d_grp_dat$ix_d4,
+    
+    pri_b_0 = l_spec$pri_b_0,
+    pri_b_reg = l_spec$pri_b_reg,
+    pri_b_d4 = l_spec$pri_b_d4,
+    prior_only = l_spec$prior_only
+  )
+  
+  ld
+}
+
+
 
 # Utils --------
+
+# True domain effects implied by the simulation DGP
+#
+# Returns the population-standardised:
+#   - log odds ratios
+#   - risk differences
+#
+# These are fixed for a given l_spec and do not depend on a simulated dataset.
+#
+sim09_true_effects <- function(
+    l_spec,
+    l_dom_state = sim09_domain_state_open()
+    ) {
+  
+  # probability under a particular regimen and d4 level
+  p_reg <- function(reg, d4) {
+    
+    eta <- qlogis(l_spec$response_p_ref) +
+      l_spec$reg_effect[reg] +
+      l_spec$d4_effect[d4]
+    
+    plogis(eta)
+  }
+  
+  # d4 is randomised independently of silo, so just use the domain allocation probabilities
+  w_d4 <- l_dom_state$d4
+  
+  
+  # d1: revision vs DAIR
+  #
+  # rev is a mixture of the six revision regimes:
+  #
+  #   r1_wk12_nad3
+  #   r1_wk6_nad3
+  #   r1_nad2_nad3
+  #   r2_nad2_wk12
+  #   r2_nad2_none
+  #   r2_nad2_nad3
+  #
+  # weights are the expected proportions of revision patients in the regimes.
+  # Probability of each revision regimen conditional on being in
+  # the late silo and receiving revision.
+  
+  p_r1 <- l_dom_state$d1["r1"]
+  p_r2 <- l_dom_state$d1["r2"]
+  # d2 allocation conditional on r1
+  p_d2 <- l_dom_state$d2
+  # d3 allocation conditional on r2
+  p_d3 <- l_dom_state$d3
+  
+  # only randomised treatment levels contribute to the target revision contrast
+  # the nad2/nad3 are retained only where necessary
+  w_d1 <- c(
+    l_r1_wk12_nad3 = unname(p_r1 * p_d2["wk12"]),
+    l_r1_wk6_nad3  = unname(p_r1 * p_d2["wk6"]),
+    l_r1_nad2_nad3 = unname(p_r1 * p_d2["nad2"]),
+    l_r2_nad2_wk12 = unname(p_r2 * p_d3["wk12"]),
+    l_r2_nad2_none = unname(p_r2 * p_d3["none"]),
+    l_r2_nad2_nad3 = unname(p_r2 * p_d3["nad3"])
+  )
+  # need to normalise, because the target is conditional on being a revision
+  # patient rather than conditional on entering the late silo.
+  w_d1 <- w_d1 / sum(w_d1)
+  lor_d1 <- sum(w_d1 * l_spec$reg_effect[names(w_d1)])
+  
+  
+  # d2: wk6 vs wk12
+  # weight according to silo distribution among r1 patients
+  
+  silos <- names(l_spec$p_silo)
+  p_r1_silo <- sapply(
+    silos,
+    function(s) {
+      if (s == "l") {
+        unname(l_spec$p_silo[s] * l_dom_state$d1["r1"])
+      } else {
+        unname(l_spec$p_silo[s] * l_spec[[paste0("p_surg_", s)]][["r1"]])
+      }
+    }
+  )
+  w_silo_r1 <- p_r1_silo / sum(p_r1_silo)
+  
+  
+  # d2 log OR is the weighted contrast in the corresponding regimen effects.
+  reg_wk12_d2 <- paste0(silos, "_r1_wk12_nad3")
+  reg_wk6_d2  <- paste0(silos, "_r1_wk6_nad3")
+  
+  lor_d2 <- sum(
+    w_silo_r1 * (l_spec$reg_effect[reg_wk6_d2] - l_spec$reg_effect[reg_wk12_d2]))
+  
+  
+  # d3: wk12 vs none
+  p_r2_silo <- sapply(
+    silos,
+    function(s) {
+      if (s == "l") {
+        unname(l_spec$p_silo[s] * l_dom_state$d1["r2"])
+      } else {
+        unname(l_spec$p_silo[s] * l_spec[[paste0("p_surg_", s)]][["r2"]])
+      }
+    }
+  )
+  w_silo_r2 <- p_r2_silo / sum(p_r2_silo)
+  
+  reg_wk12_d3 <- paste0(silos, "_r2_nad2_wk12")
+  reg_none_d3 <- paste0(silos, "_r2_nad2_none")
+  
+  lor_d3 <- sum(
+    w_silo_r2 *
+      (l_spec$reg_effect[reg_wk12_d3] - l_spec$reg_effect[reg_none_d3])
+  )
+  
+  # d4: rif vs norif
+  lor_d4 <- l_spec$d4_effect["rif"] - l_spec$d4_effect["norif"]
+  
+  # Risk differences
+  #
+  # urgh. need to average probabilities on the probability scale,
+  # rather than transform the averaged log OR.
+  
+  # d1
+  # prob trt succss for each of d4 level
+  p_dair_d1 <- sapply(
+    names(w_d4),
+    function(d4) {
+      unname(p_reg("l_dair_nad2_nad3", d4))
+    }
+  )
+  
+  p_rev_d1 <- sapply(
+    names(w_d4),
+    function(d4) {
+      
+      sum(
+        w_d1 *
+          sapply(
+            names(w_d1),
+            function(reg) p_reg(reg, d4)
+          )
+      )
+    }
+  )
+  
+  rd_d1 <- sum(
+    w_d4 * (p_rev_d1 - p_dair_d1)
+  )
+  
+  
+  # d2
+  
+  # standardise over the r1 population and d4 distribution.
+  p_wk6_d2 <- numeric(length(w_silo_r1))
+  p_wk12_d2 <- numeric(length(w_silo_r1))
+  
+  names(p_wk6_d2) <- silos
+  names(p_wk12_d2) <- silos
+  
+  for (s in silos) {
+    
+    p_wk6_d2[s] <- sum(
+      w_d4 *
+        sapply(
+          names(w_d4),
+          function(d4) {
+            p_reg(paste0(s, "_r1_wk6_nad3"), d4)
+          }
+        )
+    )
+    
+    p_wk12_d2[s] <- sum(
+      w_d4 *
+        sapply(
+          names(w_d4),
+          function(d4) {
+            p_reg(paste0(s, "_r1_wk12_nad3"), d4)
+          }
+        )
+    )
+  }
+  
+  rd_d2 <- sum(w_silo_r1 * (p_wk6_d2 - p_wk12_d2))
+  
+  
+  # d3 - same deal
+  
+  p_wk12_d3 <- numeric(length(w_silo_r2))
+  p_none_d3 <- numeric(length(w_silo_r2))
+  
+  names(p_wk12_d3) <- silos
+  names(p_none_d3) <- silos
+  
+  for (s in silos) {
+    
+    p_wk12_d3[s] <- sum(
+      w_d4 *
+        sapply(
+          names(w_d4),
+          function(d4) {
+            p_reg(paste0(s, "_r2_nad2_wk12"), d4)
+          }
+        )
+    )
+    
+    p_none_d3[s] <- sum(
+      w_d4 *
+        sapply(
+          names(w_d4),
+          function(d4) {
+            p_reg(paste0(s, "_r2_nad2_none"), d4)
+          }
+        )
+    )
+  }
+  
+  rd_d3 <- sum(w_silo_r2 * (p_wk12_d3 - p_none_d3))
+  
+  
+  # d4
+  
+  # Standardise over the overall regimen distribution.
+  # d4 is additive and randomised independently so this could
+  # be simplified, but retaining the standardisation
+  
+  w_reg <- l_spec$p_silo
+  
+  # probability of each complete regimen in the population
+  # generated under the opening domain allocation
+  #
+  # For d4, only the distribution of reg matters.
+  
+  all_regs <- l_spec$reg_opts
+  
+  # Expected probability of each regimen
+  p_reg_pop <- setNames(numeric(length(all_regs)), all_regs)
+  
+  for (s in silos) {
+    
+    p_s <- l_spec$p_silo[s]
+    
+    if (s == "l") {
+      
+      p_d1_s <- l_dom_state$d1
+      
+    } else {
+      
+      p_d1_s <- switch(
+        s,
+        lnrd1 = l_spec$p_surg_lnrd1,
+        enrd1 = l_spec$p_surg_enrd1,
+        cnrd1 = l_spec$p_surg_cnrd1
+      )
+    }
+    
+    for (d1 in names(p_d1_s)) {
+      
+      if (d1 == "dair") {
+        p_d2_s <- c(nad2 = 1)
+        p_d3_s <- c(nad3 = 1)
+      } else if (d1 == "r1") {
+        p_d2_s <- l_dom_state$d2
+        p_d3_s <- c(nad3 = 1)
+      } else if (d1 == "r2") {
+        p_d2_s <- c(nad2 = 1)
+        p_d3_s <- l_dom_state$d3
+      }
+      
+      for (d2 in names(p_d2_s)) {
+        for (d3 in names(p_d3_s)) {
+          
+          reg <- paste(s, d1, d2, d3, sep = "_")
+          
+          if (reg %in% all_regs) {
+            p_reg_pop[reg] <-
+              p_reg_pop[reg] +
+              p_s *
+              p_d1_s[d1] *
+              p_d2_s[d2] *
+              p_d3_s[d3]
+          }
+        }
+      }
+    }
+  }
+  
+  p_reg_pop <- p_reg_pop / sum(p_reg_pop)
+  
+  
+  p_rif <- sum(
+    p_reg_pop *
+      sapply(
+        all_regs,
+        function(reg) p_reg(reg, "rif")
+      )
+  )
+  
+  p_norif <- sum(
+    p_reg_pop *
+      sapply(
+        all_regs,
+        function(reg) p_reg(reg, "norif")
+      )
+  )
+  
+  rd_d4 <- p_rif - p_norif
+  
+  
+  data.table(
+    domain = paste0("d", 1:4),
+    lor = c(lor_d1, lor_d2, lor_d3, lor_d4),
+    rd  = c(rd_d1, rd_d2, rd_d3, rd_d4)
+  )
+}
+
+sim09_true_regimen_risk <- function(
+    l_spec,
+    l_dom_state = sim09_domain_state_open()
+    ) {
+  
+  d4 <- names(l_spec$d4_effect)
+  reg <- l_spec$reg_opts
+  
+  d_out <- CJ(
+    reg = reg,
+    d4 = d4
+  )
+  
+  d_out[, p := plogis(
+    qlogis(l_spec$response_p_ref) +
+      l_spec$reg_effect[reg] +
+      l_spec$d4_effect[d4]
+  )]
+  
+  d_out
+}
 
 sim09_report_sim_res <- function(){
   
@@ -776,6 +1116,60 @@ sim09_extract_dec_indicators <- function(l_dec){
 }
 
 
+sim09_smry_dec_n <- function(
+    r, l_spec
+    ) {
+  
+  d_out <- rbindlist(
+    lapply(seq_along(r), function(i_sim) {
+      rr <- r[[i_sim]]
+      rbindlist(
+        lapply(seq_along(rr$l_res), function(i_anlys) {
+          z <- rr$l_res[[i_anlys]]
+          if(is.null(z)) { return(NULL) }
+          d_dec <- sim09_extract_dec_indicators(
+            z$l_dec_new
+          )
+          d_dec <- d_dec[dec == TRUE]
+          if (nrow(d_dec) == 0) { return(NULL) }
+          
+          data.table(
+            domain = unique(d_dec$domain),
+            i_anlys = i_anlys,
+            n = sum(l_spec$n_batch[seq_len(i_anlys)])
+          ) 
+          })
+        )
+    }), idcol = "i_sim")
+  
+  
+  # First decision only
+  setorder(d_out, i_sim, domain, i_anlys)
+  
+  d_first <- d_out[, .SD[1], by = .(i_sim, domain)]
+  
+  d_smry <- d_first[
+    ,
+    .(
+      n_decided = .N,
+      pr_decided = .N / l_spec$n_sim,
+      mean_n = mean(n),
+      sd_n = sd(n),
+      median_n = median(n),
+      q_025_n = quantile(n, 0.025),
+      q_975_n = quantile(n, 0.975)
+    ),
+    by = domain
+  ]
+  
+  
+  list(
+    by_sim = d_first,
+    summary = d_smry
+  )
+}
+
+
 sim09_smry_dec_pr <- function(r, l_spec){
   
   d_sims <- rbindlist(lapply(r, function(rr){
@@ -812,41 +1206,128 @@ sim09_smry_dec_pr <- function(r, l_spec){
   
 }
 
-
-sim09_smry_par_est <- function(r, l_spec){
+sim09_smry_effects <- function(
+    r, l_spec,
+    l_dom_state = sim09_domain_state_open()
+    ) {
   
-  d_sims <- rbindlist(lapply(r, function(rr){
-    
-    rbindlist(lapply(rr$l_res, function(z){
-      z$l_smry$d_rd_smry
-    }), idcol = "i_anlys")
-    
-  }), idcol = "i_sim")
+  d_true <- sim09_true_effects(
+    l_spec = l_spec,
+    l_dom_state = l_dom_state
+  )
   
+  d_rd <- rbindlist(
+    lapply(r, function(rr) {
+      rbindlist(
+        lapply(rr$l_res, function(z) {
+          d <- copy(z$l_smry$d_rd_smry)
+          d
+        }), idcol = "i_anlys" )
+    }), idcol = "i_sim")
+  
+  d_lor <- rbindlist(
+    lapply(r, function(rr) {
+      rbindlist(
+        lapply(rr$l_res, function(z) {
+          d <- copy(z$l_smry$d_lor_smry)
+          d
+        }), idcol = "i_anlys" )
+    }), idcol = "i_sim")
+  
+  
+  # Complete analysis grid and carry estimates forward
   d_grid <- CJ(
-    i_sim = 1:l_spec$n_sim,
+    i_sim = seq_len(l_spec$n_sim),
     i_anlys = seq_along(l_spec$n_batch),
     par = paste0("d", 1:4)
   )
   
-  d_sims <- base::merge(d_grid, d_sims, by = c("i_sim", "i_anlys", "par"), all.x = T)
-  
-  d_sims[, mu := nafill(mu, type = "locf"), keyby = .(i_sim, par)]
-  
-  d_out <- d_sims[, .(
-    mu = mean(mu), 
-    q_025 = quantile(mu, prob = 0.025),
-    q_975 = quantile(mu, prob = 0.975)
-  ), keyby = .(i_anlys, par)]
-  
-  kableExtra::kbl(
-    dcast(d_out, par ~ i_anlys, value.var = "mu"),
-    digits = 3, format = "simple"
+  d_rd <- base::merge(
+    d_grid,
+    d_rd,
+    by = c("i_sim", "i_anlys", "par"),
+    all.x = TRUE
   )
   
-  d_out
+  d_lor <- base::merge(
+    d_grid,
+    d_lor,
+    by = c("i_sim", "i_anlys", "par"),
+    all.x = TRUE
+  )
   
+  setorder(d_rd, i_sim, par, i_anlys)
+  setorder(d_lor, i_sim, par, i_anlys)
+  
+  d_rd[, c("mu", "q_025", "q_975") :=
+         lapply(.SD, nafill, type = "locf"),
+       by = .(i_sim, par),
+       .SDcols = c("mu", "q_025", "q_975")]
+  
+  d_lor[, c("mu", "q_025", "q_975") :=
+          lapply(.SD, nafill, type = "locf"),
+        by = .(i_sim, par),
+        .SDcols = c("mu", "q_025", "q_975")]
+  
+  
+  # Add true vals
+  d_rd <- base::merge(
+    d_rd,
+    d_true[, .(par = domain, truth = rd)],
+    by = "par",
+    all.x = TRUE
+  )
+  
+  d_lor <- base::merge(
+    d_lor,
+    d_true[, .(par = domain, truth = lor)],
+    by = "par",
+    all.x = TRUE
+  )
+  
+  
+  d_rd_out <- d_rd[, .(
+    truth = data.table::first(truth),
+    mean_est = mean(mu, na.rm = TRUE),
+    bias = mean(mu - truth, na.rm = TRUE),
+    rmse = sqrt(mean((mu - truth)^2, na.rm = TRUE)),
+    coverage = mean(
+      q_025 <= truth & q_975 >= truth,
+      na.rm = TRUE
+    )
+  ), keyby = .(i_anlys, par)]
+  
+  
+  d_lor_out <- d_lor[, .(
+    truth = data.table::first(truth),
+    mean_est = mean(mu, na.rm = TRUE),
+    bias = mean(mu - truth, na.rm = TRUE),
+    rmse = sqrt(mean((mu - truth)^2, na.rm = TRUE)),
+    coverage = mean(
+      q_025 <= truth & q_975 >= truth,
+      na.rm = TRUE
+    )
+  ), keyby = .(i_anlys, par)]
+  
+  # kableExtra::kbl(
+  #   d_rd_out,
+  #   digits = 3, format = "simple"
+  # )
+  # 
+  # kableExtra::kbl(
+  #   d_lor_out,
+  #   digits = 3, format = "simple"
+  # )
+  
+  
+  list(
+    rd = d_rd_out,
+    lor = d_lor_out
+  )
 }
+
+
+
 
 
 # Replace domains allocation with an arbitrary probability vector over any 
@@ -965,6 +1446,33 @@ sim09_trt_reg_contribs <- function(){
   
   l
 }
+
+# not a fan, but basic (incomplete) way to set domain effects - take care
+sim09_build_reg_effect <- function(
+    reg_opts, 
+    d1_trt_regs,
+    d2_wk6_regs,
+    d3_wk12_regs,
+    d1_delta = 0, 
+    d2_wk6_delta = 0, 
+    d3_wk12_delta = 0
+) {
+  
+  eff <- setNames(rep(0, length(reg_opts)), reg_opts)
+  eff[d1_trt_regs]  <- eff[d1_trt_regs]  + d1_delta      # any revision vs dair
+  eff[d2_wk6_regs]  <- eff[d2_wk6_regs]  + d2_wk6_delta  # wk6 vs wk12 (wk12 stays at 0)
+  eff[d3_wk12_regs] <- eff[d3_wk12_regs] + d3_wk12_delta # wk12 vs none (none stays at 0)
+  eff["l_dair_nad2_nad3"] <- 0
+  eff
+}
+
+# helper
+sim09_get_silo_contrib <- function(reg_opts, prefix = "enrd1"){
+  
+  reg_opts[grep(prefix, reg_opts, fixed = T)]
+  
+}
+
 
 sim09_update_cfg <- function(l_spec){
   
@@ -1375,32 +1883,9 @@ sim09_ex_sim_2 <- function(
   
 }
 
-# helper
-sim09_get_silo_contrib <- function(reg_opts, prefix = "enrd1"){
-  
-  reg_opts[grep(prefix, reg_opts, fixed = T)]
-  
-}
 
 
-# not a fan, but basic (incomplete) way to set domain effects - take care
-sim09_build_reg_effect <- function(
-    reg_opts, 
-    d1_trt_regs,
-    d2_wk6_regs,
-    d3_wk12_regs,
-    d1_delta = 0, 
-    d2_wk6_delta = 0, 
-    d3_wk12_delta = 0
-    ) {
-  
-  eff <- setNames(rep(0, length(reg_opts)), reg_opts)
-  eff[d1_trt_regs]  <- eff[d1_trt_regs]  + d1_delta      # any revision vs dair
-  eff[d2_wk6_regs]  <- eff[d2_wk6_regs]  + d2_wk6_delta  # wk6 vs wk12 (wk12 stays at 0)
-  eff[d3_wk12_regs] <- eff[d3_wk12_regs] + d3_wk12_delta # wk12 vs none (none stays at 0)
-  eff["l_dair_nad2_nad3"] <- 0
-  eff
-}
+
 
 # Model fit scenarios ----
 # test whether the joint model and univariate model applied to the relevant
@@ -1428,6 +1913,7 @@ sim09_ex_scenarios <- function(){
   l_dom_state = sim09_domain_state_open()
   
   # Scenario - positive effect restricted to d1 ------------
+  
   # contrive an effect solely attributable to revision...
   # set all revision effects, no sub domain effects
   # these are all relative to l_dair_nad2_nad3 holding d4 constant
@@ -1450,7 +1936,6 @@ sim09_ex_scenarios <- function(){
   # Table: n_sim 10000 n 2500
   # 
   # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
-  # -------  -------  -------  -------  -------
   # d1         1.025    1.003    0.148    0.145
   # d2         0.000   -0.001    0.298    0.263
   # d3         0.000    0.000    0.202    0.185
@@ -1508,7 +1993,6 @@ sim09_ex_scenarios <- function(){
   # Table: n_sim 10000 n 2500
   # 
   # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
-  # -------  -------  -------  -------  -------
   # d1        -0.113   -0.116    0.131    0.129
   # d2        -1.036   -1.006    0.265    0.249
   # d3        -0.002   -0.002    0.178    0.175
@@ -1564,7 +2048,6 @@ sim09_ex_scenarios <- function(){
   # Table: n_sim 10000 n 2500
   # 
   # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
-  # -------  -------  -------  -------  -------
   # d1         0.240    0.201    0.136    0.131
   # d2         0.004    0.004    0.264    0.249
   # d3         1.036    1.005    0.235    0.196
@@ -1587,7 +2070,6 @@ sim09_ex_scenarios <- function(){
   # Table: n_sim 10000 n 2500
   # 
   # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
-  # -------  -------  -------  -------  -------
   # d1         0.007   -0.001    0.139    0.135
   # d2         0.002    0.003    0.301    0.262
   # d3        -0.005   -0.006    0.190    0.183
@@ -1642,7 +2124,6 @@ sim09_ex_scenarios <- function(){
   # Table: n_sim 10000 n 2500
   # 
   # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
-  # -------  -------  -------  -------  -------
   # d1         0.154    0.111    0.135    0.129
   # d2        -0.778   -0.756    0.262    0.249
   # d3         1.034    1.005    0.230    0.195
@@ -1662,7 +2143,7 @@ sim09_ex_scenarios <- function(){
 # trial and bar the inclusion of things like site, joint, prognostic factors
 # etc.
 # just uses a linear (not logistic) model for convenience
-sim09_partial_nest_01 <- function(){
+sim09_ex_partial_nest_01 <- function(){
   
   library(data.table)
   set.seed(1)
@@ -1849,6 +2330,16 @@ sim09_sim_loop <- function(){
   # temp
   l_dom_state = sim09_domain_state_open()
   
+  l_spec$reg_effect <- sim09_build_reg_effect(
+    reg_opts = l_spec$reg_opts, 
+    d1_trt_regs = l_spec$d1_trt_regs,
+    d2_wk6_regs = l_spec$d2_wk12_regs,
+    d3_wk12_regs = l_spec$d3_wk12_regs,
+    d1_delta = 1, 
+    d2_wk6_delta = 0, 
+    d3_wk12_delta = 0
+  )
+  
   
   RNGkind("L'Ecuyer-CMRG"); set.seed(2)
   r <- pbapply::pblapply(
@@ -1884,7 +2375,7 @@ sim09_sim_loop <- function(){
   Sys.sleep(2)
   
   # parameter estimates averaged over the sims (expectations of posterior means)
-  d_est <- sim09_smry_par_est(r, l_spec)
+  d_est <- sim09_smry_rd(r, l_spec)
   # kableExtra::kbl(
   #   dcast(d_est, par ~ i_anlys, value.var = "mu"),
   #   digits = 3, format = "simple"
