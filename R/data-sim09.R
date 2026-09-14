@@ -734,7 +734,11 @@ sim09_batch_01 <- function(
 
 sim09_report_sim_res <- function(){
   
-  l <- qs2::qs_read("data/sim09/sim09-20260914-163424.qs2")
+  library(data.table)
+  library(qs2)
+  library(kableExtra)
+  
+  l <- qs2::qs_read("data/sim09/sim09-20260914-164851.qs2")
   
   kableExtra::kbl(
     dcast(l$d_est, par ~ i_anlys, value.var = "mu"),
