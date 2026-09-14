@@ -114,7 +114,12 @@ sim09_run_trial <- function(
   
   # accrued data
   d_cum_dat   <- data.table()
-  state_log <- vector("list", length(l_spec$n_batch))
+  
+  # probably not necessary, we can put everything in single result obj
+  # l_state_log <- vector("list", length(l_spec$n_batch))
+  
+  l_res <- vector("list", length(l_spec$n_batch))
+  l_dec <- NULL
   
   i <- 1
   for (i in seq_along(l_spec$n_batch)) {
@@ -132,27 +137,154 @@ sim09_run_trial <- function(
     d_batch_dat[, batch := i]
     d_cum_dat <- rbind(d_cum_dat, d_batch_dat)
     
-    # state that generated batch i
-    state_log[[i]] <- l_dom_state         
-    
+    # everything contained in l_res now
+    # state that generated batch i (starts from original/opening state setup)
+    # l_state_log[[i]] <- l_dom_state         
     
     # updated for batch i+1
-    
-    
-    l_dom_state   <- fn_decision(
+    l_res[[i]]   <- fn_decision(
       d_cum_dat, 
       l_dom_state, 
       i,
       l_spec, 
+      l_dec,
       fn_data,
       fn_stanfit
-      )   
+      )  
+    
+    l_dom_state <- copy(l_res[[i]]$l_dom_state_new)
+    # update history of decisions so we don't flip flop
+    l_dec <- copy(l_res[[i]]$l_dec_new)
+    
+    # if all domains have been resolved in terms of decided either superiority, 
+    # non inferiority or futility, then we would exit loop and return results
+    # to this point under the assumption that all domains would be closed to 
+    # future enrolment.
+    
+    # one issue is the potential for decisions made in one analysis to reverse
+    # in a subsequent analysis. 
+    # we don't want to flip flop turning domains on and off so we want to 
+    # prevent this reversal by overriding future decisions once a domain 
+    # decision has been made. for example, if we decide that d1 shows superiority
+    # in the first interim then we retain that decision for all future enrolments
+    # irrespective of whether the analysis suggests that we should change our
+    # mind or not. 
+    
+    # break once done
+    d_dec <- sim09_extract_dec_indicators(l_res[[i]]$l_dec_new)
+    d_resolved <- d_dec[, .(resolved = any(dec)), by = domain]
+    if (sum(d_resolved$resolved) == nrow(d_resolved)) {
+      message("All domains resolved")
+      break
+    }
     
   }
   
-  list(data = d_cum_dat, state_log = state_log, final_state = l_dom_state)
+  list(
+    data = d_cum_dat,
+    # includes the domain state entering and after each analysis
+    l_res = l_res
+    )
   
   
+}
+
+# Once a rule (sup/ni/fut) for a domain flips TRUE, it stays TRUE for every
+# subsequent interim regardless of what a later analysis concludes. 
+# NA  never overrides a locked TRUE, and never itself counts as decided.
+sim09_lock_dec <- function(l_dec_prev, l_dec_new) {
+  if (is.null(l_dec_prev)) return(l_dec_new)
+  
+  l_locked <- l_dec_new
+  for (dm in names(l_dec_new)) {
+    rules <- names(l_dec_new[[dm]])
+    rules <- rules[!grepl("_prob$", rules)]
+    for (rl in rules) {
+      l_locked[[dm]][[rl]] <- isTRUE(l_dec_prev[[dm]][[rl]]) || isTRUE(l_dec_new[[dm]][[rl]])
+    }
+  }
+  l_locked
+}
+
+sim09_d1_alloc <- function(l_dec) {
+  if (isTRUE(l_dec$d1$sup)) return(c(dair = 0.0, r1 = 1/3, r2 = 2/3))   # revision superior
+  if (isTRUE(l_dec$d1$fut)) return(c(dair = 1.0, r1 = 0.0, r2 = 0.0))   # revision futile
+  sim09_domain_state_open()$d1
+}
+sim09_d2_alloc <- function(l_dec) {
+  if (isTRUE(l_dec$d2$ni))  return(c(nad2 = 0.3, wk12 = 0.0, wk6 = 0.7))  # 6wk non-inferior
+  if (isTRUE(l_dec$d2$fut)) return(c(nad2 = 0.3, wk12 = 0.7, wk6 = 0.0))  # 6wk futile
+  sim09_domain_state_open()$d2
+}
+sim09_d3_alloc <- function(l_dec) {
+  if (isTRUE(l_dec$d3$sup)) return(c(nad3 = 0.3, wk12 = 0.7, none = 0.0)) # wk12 superior
+  if (isTRUE(l_dec$d3$fut)) return(c(nad3 = 0.3, wk12 = 0.0, none = 0.7)) # wk12 futile
+  sim09_domain_state_open()$d3
+}
+sim09_d4_alloc <- function(l_dec) {
+  if (isTRUE(l_dec$d4$sup)) return(c(nad4 = 0.3, norif = 0.0, rif = 0.7)) # rif superior
+  if (isTRUE(l_dec$d4$fut)) return(c(nad4 = 0.3, norif = 0.7, rif = 0.0)) # rif futile
+  sim09_domain_state_open()$d4
+}
+
+sim09_update_dom_state <- function(l_dom_state, l_dec) {
+  l_dom_state$d1 <- sim09_d1_alloc(l_dec)
+  l_dom_state$d2 <- sim09_d2_alloc(l_dec)
+  l_dom_state$d3 <- sim09_d3_alloc(l_dec)
+  l_dom_state$d4 <- sim09_d4_alloc(l_dec)
+  l_dom_state
+}
+
+# analysis and decision processing ---------
+sim09_decision_fn_01 <- function(
+    d_cum_dat, 
+    l_dom_state, 
+    batch,
+    l_spec,
+    l_dec, 
+    fn_data = sim09_stan_data_01,
+    fn_stanfit = sim09_stan_fit_01
+){
+  
+  
+  l_fit <- fn_stanfit(
+    d_cum_dat, fn_data, l_spec
+  )
+  
+  l_dec_new <- sim09_eval_all_dec(l_fit$d_rd, l_spec)
+  # prevent decisions from flip-flop 
+  l_dec_new <- sim09_lock_dec(l_dec, l_dec_new)          
+  
+  # update new state (accounts for locks)
+  l_dom_state_new <- sim09_update_dom_state(l_dom_state, l_dec_new)  
+  
+  
+  
+  l_res <- list(
+    # retain previous state so that we can just return a set of res objs with
+    # the original state included
+    l_dom_state_old = l_dom_state,
+    # and the new state
+    l_dom_state_new = l_dom_state_new,
+    
+    # posterior summary
+    l_smry = list(
+      d_lor_smry = l_fit$d_lor_smry,
+      d_rd_smry = l_fit$d_rd_smry
+    ),
+    # decision based on rules for each domain
+    l_dec_new = l_dec_new,
+    
+    retn_post = l_spec$return_posterior
+  )
+  
+  if(l_spec$return_posterior){
+    l_res[["d_lor"]] <- l_fit$d_lor
+    l_res[["d_rd"]] <- l_fit$d_rd
+  }
+  
+  # return results which may include full posterior if configured to do so
+  l_res 
 }
 
 
@@ -181,6 +313,188 @@ sim09_stan_data_01 <- function(d_cum_dat, l_spec){
   ld
 }
 
+# Utils standardised prob ----------
+sim09_std_prob <- function(v_b0, m_reg, m_d4, cov_grid) {
+  stopifnot(all(cov_grid$reg %in% colnames(m_reg)))
+  stopifnot(all(cov_grid$d4  %in% colnames(m_d4)))
+  n_draws <- length(v_b0)
+  if (any(is.na(cov_grid$w))) return(rep(NA_real_, n_draws))
+  p_acc <- numeric(n_draws)
+  ii <- 1
+  for (ii in seq_len(nrow(cov_grid))) {
+    eta <- v_b0 + m_reg[, cov_grid$reg[ii]] + m_d4[, cov_grid$d4[ii]]
+    p_acc <- p_acc + cov_grid$w[ii] * plogis(eta)
+  }
+  p_acc
+}
+
+# Utils regimen weights ----------
+# observed-proportion weights for a set of regimens; NA (not 0) if none of
+# them have been observed yet, so a domain contrast with no supporting data
+# comes back as NA rather than a silently as zero
+sim09_reg_wgt <- function(regs, d_cum_dat) {
+  tb <- d_cum_dat[reg %in% regs, .N, keyby = reg]
+  # explicitly recognise zero contribs as no informaiton
+  if (sum(tb$N) == 0) return(setNames(rep(NA_real_, length(regs)), regs))
+  w <- setNames(rep(0, length(regs)), regs)
+  w[as.character(tb$reg)] <- tb$N / sum(tb$N)
+  w[regs]
+}
+
+sim09_compute_lor <- function(
+    d_cum_dat, l_spec, f_1
+    ) {
+  
+  # domain-level weighted contrasts, from posterior draws
+  # Same weighting logic as sim09_ex_sim_2 (observed proportions across each
+  # domain's contributing regimens), but applied to the full posterior of
+  # b_reg/b_d4 rather than to a single point estimate
+  
+  # column j of b_reg <-> reg_lvls[j]
+  reg_lvls <- levels(d_cum_dat$reg)   
+  # column j of b_d4  <-> d4_lvls[j]
+  d4_lvls  <- levels(d_cum_dat$d4)    
+  
+  m_reg <- as.matrix(f_1$draws(variables = "b_reg", format = "matrix"))
+  colnames(m_reg) <- reg_lvls
+  m_d4  <- as.matrix(f_1$draws(variables = "b_d4",  format = "matrix"))
+  colnames(m_d4) <- d4_lvls
+  
+  w_d1 <- sim09_reg_wgt(l_spec$d1_trt_regs, d_cum_dat)
+  post_d1 <- as.numeric(m_reg[, l_spec$d1_trt_regs, drop = FALSE] %*% w_d1)
+  
+  w_d2_12 <- sim09_reg_wgt(l_spec$d2_wk12_regs, d_cum_dat)
+  w_d2_6  <- sim09_reg_wgt(l_spec$d2_wk6_regs, d_cum_dat)
+  post_d2 <- as.numeric(
+    m_reg[, l_spec$d2_wk6_regs,  drop = FALSE] %*% w_d2_6 -
+      m_reg[, l_spec$d2_wk12_regs, drop = FALSE] %*% w_d2_12
+  )
+  
+  w_d3_none <- sim09_reg_wgt(l_spec$d3_none_regs, d_cum_dat)
+  w_d3_12   <- sim09_reg_wgt(l_spec$d3_wk12_regs, d_cum_dat)
+  post_d3 <- as.numeric(
+    m_reg[, l_spec$d3_wk12_regs, drop = FALSE] %*% w_d3_12 -
+      m_reg[, l_spec$d3_none_regs, drop = FALSE] %*% w_d3_none
+  )
+  
+  # d4 is unweighted - it's already a direct contrast between two b_d4 levels
+  post_d4 <- as.numeric(m_d4[, "rif"] - m_d4[, "norif"])
+  
+  d_lor <- data.table(
+    d1 = post_d1, d2 = post_d2, d3 = post_d3, d4 = post_d4
+  )
+  
+  # d_fig <- melt(d_lor, measure.vars = names(d_lor))
+  # ggplot(d_fig, aes(x = value)) +
+  #   geom_density() + facet_wrap(~variable)
+  
+  d_lor
+}
+
+
+# d2/d3/d4 are direct. For the ACTUAL patients in the applicable population
+# (r1 patients for d2, r2 patients for d3, everyone for d4), predict 
+# outcome prob under each of the trt levels, holding  everything else 
+# (their own silo, their own d4 for d2/d3; their own reg for
+# d4) fixed at its observed value, then average the difference.
+#
+# d1 tricky - a DAIR patient has no observed r1/r2 (or downstream
+# d2/d3) counterfactual, because they never entered that pathway.
+# Therefore, treat "revision" as a probability-weighted
+# mixture over the l_r1_*/l_r2_* regimens, with weights given by the
+# OBSERVED proportions of actual revision patients across those cells (i.e.
+# the same w_d1 already used for the log-odds jnt_d1 contrast.
+# Mixture is applied uniformly to EVERY l-silo patient (not just the
+# ones who actually got DAIR), so "revision" and "dair" are both counter-
+# factual quantities defined the same way for the whole standardisation
+# population.
+sim09_comp_rd <- function(
+    d_cum_dat, l_spec, f_1
+    ) {
+  
+  v_b0  <- as.numeric(f_1$draws(variables = "b_0", format = "matrix"))
+  
+  reg_lvls <- levels(d_cum_dat$reg)
+  d4_lvls  <- levels(d_cum_dat$d4)
+  
+  m_reg <- as.matrix(f_1$draws(variables = "b_reg", format = "matrix"))
+  colnames(m_reg) <- reg_lvls
+  m_d4  <- as.matrix(f_1$draws(variables = "b_d4",  format = "matrix"))
+  colnames(m_d4) <- d4_lvls
+  
+  # ---- d1: revision (mixture over r1/r2 sub-regimens) vs dair, l silo -----
+  # same mixture weights as jnt_d1
+  w_d1 <- sim09_reg_wgt(l_spec$d1_trt_regs, d_cum_dat)   
+  
+  # in practice i think this would need to be across the whole covariate mix, site, 
+  # prognostics etc.
+  
+  d_pop_l <- d_cum_dat[silo == "l", .N, keyby = d4]
+  d_pop_l[, w := N / sum(N)]
+  
+  grid_dair <- data.table(reg = "l_dair_nad2_nad3", d4 = as.character(d_pop_l$d4), w = d_pop_l$w)
+  
+  # contributions across pop
+  grid_rev <- CJ(reg = l_spec$d1_trt_regs, d4 = as.character(d_pop_l$d4))
+  # weight associated with each regimen
+  grid_rev <- merge(grid_rev, data.table(reg = l_spec$d1_trt_regs, w_treat = w_d1), by = "reg")
+  # weights acros d4
+  grid_rev <- merge(grid_rev, data.table(d4 = as.character(d_pop_l$d4), w_covar = d_pop_l$w), by = "d4")
+  # combined weight as product
+  grid_rev[, w := w_treat * w_covar]
+  
+  p_dair <- sim09_std_prob(v_b0, m_reg, m_d4, cov_grid = grid_dair)
+  p_rev  <- sim09_std_prob(v_b0, m_reg, m_d4, grid_rev)
+  rd_d1  <- as.numeric(p_rev - p_dair)
+  
+  # ---- d2: wk6 vs wk12, weigths among actual r1 patients (all silo) ---------------
+  d_pop_r1 <- d_cum_dat[d1 == "r1", .N, keyby = .(silo, d4)]
+  d_pop_r1[, w := N / sum(N)]
+  d_pop_r1[, reg_wk12 := paste0(silo, "_r1_wk12_nad3")]
+  d_pop_r1[, reg_wk6  := paste0(silo, "_r1_wk6_nad3")]
+  
+  grid_wk12 <- data.table(reg = d_pop_r1$reg_wk12, d4 = as.character(d_pop_r1$d4), w = d_pop_r1$w)
+  grid_wk6  <- data.table(reg = d_pop_r1$reg_wk6,  d4 = as.character(d_pop_r1$d4), w = d_pop_r1$w)
+  
+  p_wk12 <- sim09_std_prob(v_b0, m_reg, m_d4, grid_wk12)
+  p_wk6  <- sim09_std_prob(v_b0, m_reg, m_d4, grid_wk6)
+  rd_d2  <- as.numeric(p_wk6 - p_wk12)
+  
+  # ---- d3: wk12 vs none, as above, among actual r2 patients (any silo) --------------
+  d_pop_r2 <- d_cum_dat[d1 == "r2", .N, keyby = .(silo, d4)]
+  d_pop_r2[, w := N / sum(N)]
+  d_pop_r2[, reg_wk12 := paste0(silo, "_r2_nad2_wk12")]
+  d_pop_r2[, reg_none := paste0(silo, "_r2_nad2_none")]
+  
+  grid_d3_wk12 <- data.table(reg = d_pop_r2$reg_wk12, d4 = as.character(d_pop_r2$d4), w = d_pop_r2$w)
+  grid_d3_none <- data.table(reg = d_pop_r2$reg_none, d4 = as.character(d_pop_r2$d4), w = d_pop_r2$w)
+  
+  p_d3_wk12 <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d3_wk12)
+  p_d3_none <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d3_none)
+  rd_d3     <- as.numeric(p_d3_wk12 - p_d3_none)
+  
+  # ---- d4: rif vs norif, among everyone (any reg) -------------------------
+  d_pop_all <- d_cum_dat[, .N, keyby = reg]
+  d_pop_all[, w := N / sum(N)]
+  
+  grid_rif   <- data.table(reg = as.character(d_pop_all$reg), d4 = "rif",   w = d_pop_all$w)
+  grid_norif <- data.table(reg = as.character(d_pop_all$reg), d4 = "norif", w = d_pop_all$w)
+  
+  p_rif   <- sim09_std_prob(v_b0, m_reg, m_d4, grid_rif)
+  p_norif <- sim09_std_prob(v_b0, m_reg, m_d4, grid_norif)
+  rd_d4   <- as.numeric(p_rif - p_norif)
+  
+  d_rd <- data.table(
+    d1 = rd_d1, 
+    d2 = rd_d2, 
+    d3 = rd_d3, 
+    d4 = rd_d4
+  )
+  d_rd
+  
+}
+
+
 sim09_stan_fit_01 <- function(
     d_cum_dat,
     fn_data = sim09_stan_data_01, 
@@ -205,97 +519,93 @@ sim09_stan_fit_01 <- function(
     )
   # )
   
-  # transform to get parameters of interest
-  d_b_0 <- data.table(f_1$draws(variables = c("b_0"),  format = "matrix"))
-  d_reg <- data.table(f_1$draws(variables = c("b_reg"),  format = "matrix"))
-  d_d4 <- data.table(f_1$draws(variables = c("b_d4"),  format = "matrix"))
   
-  d_reg_l <- melt(d_reg, measure.vars = names(d_reg))
-  d_reg_l[, ix_reg := gsub("b_reg[", "", variable, fixed = T)]
-  d_reg_l[, ix_reg := as.integer(gsub("]", "", ix_reg, fixed = T))]
-  d_reg_l[, reg := l_spec$reg_opts[ix_reg]]
+  d_lor <- sim09_compute_lor(d_cum_dat, l_spec, f_1)
+  d_rd <- sim09_comp_rd(d_cum_dat, l_spec, f_1)
   
   
-  # domain-level weighted contrasts, from posterior draws
-  # Same weighting logic as sim09_ex_sim_2 (observed proportions across each
-  # domain's contributing regimens), but applied to the full posterior of
-  # b_reg/b_d4 rather than to a single point estimate
-  
-  # column j of b_reg <-> reg_lvls[j]
-  reg_lvls <- levels(d_cum_dat$reg)   
-  # column j of b_d4  <-> d4_lvls[j]
-  d4_lvls  <- levels(d_cum_dat$d4)    
-  
-  m_reg <- as.matrix(f_1$draws(variables = "b_reg", format = "matrix"))
-  colnames(m_reg) <- reg_lvls
-  m_d4  <- as.matrix(f_1$draws(variables = "b_d4",  format = "matrix"))
-  colnames(m_d4) <- d4_lvls
-  
-  # observed-proportion weights for a set of regimens; NA (not 0) if none of
-  # them have been observed yet, so a domain contrast with no supporting data
-  # comes back as NA rather than a silently as zero
-  reg_wgt <- function(regs) {
-    tb <- d_cum_dat[reg %in% regs, .N, keyby = reg]
-    # explicitly recognise zero contribs as no informaiton
-    if (sum(tb$N) == 0) return(setNames(rep(NA_real_, length(regs)), regs))
-    w <- setNames(rep(0, length(regs)), regs)
-    w[as.character(tb$reg)] <- tb$N / sum(tb$N)
-    w[regs]
+  par_smry <- function(dat){
+    data.table(
+      par = names(dat),
+      mu = apply(dat, 2, mean),
+      q_025 = apply(dat, 2, function(z){quantile(z, prob = 0.025)}),
+      q_975 = apply(dat, 2, function(z){quantile(z, prob = 0.025)})
+    )
   }
   
-  w_d1 <- reg_wgt(l_spec$d1_trt_regs)
-  post_d1 <- as.numeric(m_reg[, l_spec$d1_trt_regs, drop = FALSE] %*% w_d1)
+  d_lor_smry <- par_smry(d_lor)
+  d_rd_smry <- par_smry(d_rd)
   
-  w_d2_12 <- reg_wgt(l_spec$d2_wk12_regs)
-  w_d2_6  <- reg_wgt(l_spec$d2_wk6_regs)
-  post_d2 <- as.numeric(
-    m_reg[, l_spec$d2_wk6_regs,  drop = FALSE] %*% w_d2_6 -
-      m_reg[, l_spec$d2_wk12_regs, drop = FALSE] %*% w_d2_12
-  )
   
-  w_d3_none <- reg_wgt(l_spec$d3_none_regs)
-  w_d3_12   <- reg_wgt(l_spec$d3_wk12_regs)
-  post_d3 <- as.numeric(
-    m_reg[, l_spec$d3_wk12_regs, drop = FALSE] %*% w_d3_12 -
-      m_reg[, l_spec$d3_none_regs, drop = FALSE] %*% w_d3_none
-  )
   
-  # d4 is unweighted - it's already a direct contrast between two b_d4 levels
-  post_d4 <- as.numeric(m_d4[, "rif"] - m_d4[, "norif"])
-  
-  d_post <- data.table(
-    d1 = post_d1, d2 = post_d2, d3 = post_d3, d4 = post_d4
-  )
+  # d_fig <- melt(d_rd, measure.vars = names(d_rd))
+  # ggplot(d_fig, aes(x = value)) + geom_density() + facet_wrap(~variable)
   
   list(
     f_1 = f_1,
+    d_lor_smry = d_lor_smry,
+    d_rd_smry = d_rd_smry,
     # one row per posterior draw, one column per domain contrast
-    post = d_post   
+    d_lor = d_lor,
+    d_rd = d_rd
   )
-  
-  
   
 }
 
-sim09_decision_fn_01 <- function(
-    d_cum_dat, 
-    l_dom_state, 
-    batch,
-    l_spec,
-    fn_data = sim09_stan_data_01,
-    fn_stanfit = sim09_stan_fit_01
-    ){
+# More or less generic superiority/non-inferiority + futility decision rule, 
+# applied posterior samples for domain contrast theta (on whatever scale
+# those draws are - log-odds or risk difference, doesn't matter to this
+# function). 
+# "sup" and "ni" are mechanically identical - Pr(theta > delta) >
+# thresh => success - the distinction is purely in how delta/thresh are
+# chosen (e.g. delta = 0 for superiority, delta = -0.05 for a non-inferiority
+# margin on a risk-difference scale). 
+# Futility is always the mirror check:
+# Pr(theta > delta_fut) < thresh_fut => futile.
+#
+# rule is a list that may contain $sup and/or $ni, and/or $fut, each of the
+# form list(delta = ..., thresh = ...). Domains only need to supply whichever
+# of these apply to them (e.g. d2 supplies ni + fut; d1/d3/d4 supply sup + fut).
+sim09_eval_rule <- function(post_draws, rule) {
   
+  out <- list()
   
-  l_fit <- fn_stanfit(
-    d_cum_dat, fn_data, l_spec
-  )
+  if (!is.null(rule$sup)) {
+    p <- mean(post_draws > rule$sup$delta, na.rm = TRUE)
+    out$sup_prob <- p
+    out$sup <- if (all(is.na(post_draws))) NA else p > rule$sup$thresh
+  }
   
-  # tbd later various stuff to determine effectiveness, non-inferiority etc.
+  if (!is.null(rule$ni)) {
+    p <- mean(post_draws > rule$ni$delta, na.rm = TRUE)
+    out$ni_prob <- p
+    out$ni <- if (all(is.na(post_draws))) NA else p > rule$ni$thresh
+  }
   
-  # just return boiler plate until we get the fitted parameters sorted.
-  l_dom_state 
+  if (!is.null(rule$fut)) {
+    p <- mean(post_draws > rule$fut$delta, na.rm = TRUE)
+    out$fut_prob <- p
+    out$fut <- if (all(is.na(post_draws))) NA else p < rule$fut$thresh
+  }
+  
+  out
 }
+
+
+# apply sim09_eval_rule across all four domains at once, given a data.table
+# of risk-difference (or log-odds) posterior draws with columns d1, d2, d3, d4
+sim09_eval_all_dec <- function(d_post, l_spec) {
+  list(
+    d1 = sim09_eval_rule(d_post$d1, l_spec$dec$d1),
+    d2 = sim09_eval_rule(d_post$d2, l_spec$dec$d2),
+    d3 = sim09_eval_rule(d_post$d3, l_spec$dec$d3),
+    d4 = sim09_eval_rule(d_post$d4, l_spec$dec$d4)
+  )
+}
+
+
+
+
 
 sim09_decision_fn_dummy <- function(
     d_cum_dat, 
@@ -313,7 +623,7 @@ sim09_decision_fn_dummy <- function(
 }
 
 
-
+# MAIN SIM LOOP -------------
 sim09_sim_loop <- function(){
   
   log_info(paste0(match.call()[[1]]))
@@ -336,9 +646,10 @@ sim09_sim_loop <- function(){
   # temp
   l_dom_state = sim09_domain_state_open()
   
-  RNGkind("L'Ecuyer-CMRG"); set.seed(1)
-  r <- parallel::mclapply(
-    X=1:l_spec$n_sim, mc.cores = l_spec$mc_cores, FUN=function(ix) {
+  RNGkind("L'Ecuyer-CMRG"); set.seed(2)
+ 
+  r <- pbapply::pblapply(
+    X=1:l_spec$n_sim, cl = l_spec$mc_cores, FUN=function(ix) {
       
       log_info("Simulation ", ix);
       
@@ -350,7 +661,6 @@ sim09_sim_loop <- function(){
       ll <- tryCatch({
         sim09_run_trial(
           l_spec,
-          # temp
           l_dom_state,
           sim09_decision_fn_01
         )
@@ -368,6 +678,23 @@ sim09_sim_loop <- function(){
   
   
   
+  log_info("Length of result set ", length(r))
+  log_info("Sleep for 5 before processing")
+  Sys.sleep(2)
+  
+  # parameter estimates averaged over the sims (expectations of posterior means)
+  d_est <- sim09_smry_par_est(r, l_spec)
+  kableExtra::kbl(
+    dcast(d_est, par ~ i_anlys, value.var = "mu"),
+    digits = 3, format = "simple"
+  )
+  
+  # cumulative probability of each decision within each domain
+  d_pr_dec <- sim09_smry_dec_pr(r, l_spec)
+  kableExtra::kbl(
+    dcast(d_pr_dec, domain + rule ~ i_anlys, value.var = "mu"),
+    digits = 3, format = "simple"
+  )
   
 }
 
@@ -387,7 +714,7 @@ if(!interactive()){
 
 
 
-
+# Data generation ------------
 # Same allocation/outcome structure as sim09_cohort_01, but d2/d3/d4 are now
 # drawn directly from domain_state (a single 3-way sample() per domain,
 # rather than a two-step enter/split). d1 is unchanged for now - see note
@@ -482,6 +809,106 @@ sim09_batch_01 <- function(
   d[, y := rbinom(.N, 1, p)]
   
   d[]
+}
+
+
+# Utils --------
+
+
+
+
+sim09_extract_dec_indicators <- function(l_dec){
+  
+  doms <- names(l_dec)
+  
+  d_out <- rbindlist(lapply(seq_along(l_dec), function(ii){
+    
+    z <- l_dec[[ii]]
+    
+    d_tmp <- data.table(
+      domain = doms[ii],
+      rule = names(z)[!(names(z) %like% "prob")]
+    )
+    
+    d_tmp[, dec := unlist(z[rule])]
+    d_tmp
+  }))
+  
+  d_out
+  
+}
+
+
+sim09_smry_dec_pr <- function(r, l_spec){
+  
+  d_sims <- rbindlist(lapply(r, function(rr){
+    
+    rbindlist(lapply(rr$l_res, function(z){
+      sim09_extract_dec_indicators(z$l_dec)
+    }), idcol = "i_anlys")
+    
+  }), idcol = "i_sim")
+  d_sims <- d_sims[order(i_sim, domain, rule, i_anlys)]
+  
+  d_grid <- CJ(
+    i_sim = 1:l_spec$n_sim,
+    i_anlys = seq_along(l_spec$n_batch),
+    domain = paste0("d", 1:4)
+  )
+  d_grid <- base::merge(unique(d_sims[, .(domain, rule)]), d_grid, by = "domain", all = T, allow.cartesian=TRUE)
+  
+  d_sims <- base::merge(d_grid, d_sims, by = c("i_sim", "i_anlys", "domain", "rule"), all.x = T)
+  
+  d_sims[, c_dec := as.integer(cumsum(dec)>=1), keyby = .(i_sim, domain, rule)]
+  d_sims[, c_dec := nafill(c_dec, type = "locf"), keyby = .(i_sim, domain, rule)]
+  
+  d_out <- d_sims[, .(
+    mu = mean(c_dec)
+  ), keyby = .(i_anlys, domain, rule)]
+   
+  # kableExtra::kbl(
+  #   dcast(d_out, domain + rule ~ i_anlys, value.var = "mu"),
+  #   digits = 3, format = "simple"
+  # )
+
+  d_out
+  
+}
+
+
+sim09_smry_par_est <- function(r, l_spec){
+  
+  d_sims <- rbindlist(lapply(r, function(rr){
+    
+    rbindlist(lapply(rr$l_res, function(z){
+      z$l_smry$d_rd_smry
+    }), idcol = "i_anlys")
+    
+  }), idcol = "i_sim")
+  
+  d_grid <- CJ(
+    i_sim = 1:l_spec$n_sim,
+    i_anlys = seq_along(l_spec$n_batch),
+    par = paste0("d", 1:4)
+  )
+  
+  d_sims <- base::merge(d_grid, d_sims, by = c("i_sim", "i_anlys", "par"), all.x = T)
+  
+  d_sims[, mu := nafill(mu, type = "locf"), keyby = .(i_sim, par)]
+  
+  d_out <- d_sims[, .(
+    mu = mean(mu), 
+    q_025 = quantile(mu, prob = 0.025),
+    q_975 = quantile(mu, prob = 0.975)
+  ), keyby = .(i_anlys, par)]
+  
+  kableExtra::kbl(
+    dcast(d_out, par ~ i_anlys, value.var = "mu"),
+    digits = 3, format = "simple"
+  )
+  
+  d_out
+  
 }
 
 
