@@ -1,6 +1,6 @@
 default:
   desc: "RD = 0 in all domains"
-  n_sim: 10
+  n_sim: 200
   mc_cores: 40
   mc_warmup: 1000
   mc_samp: 1000
@@ -41,10 +41,10 @@ default:
     enrd1_r1_nad2_nad3: 0.0
     cnrd1_r1_nad2_nad3: 0.0
     # d3 wk12
-    l_r2_nad2_wk12: 1.0
-    lnrd1_r2_nad2_wk12: 1.0
-    enrd1_r2_nad2_wk12: 1.0
-    cnrd1_r2_nad2_wk12: 1.0
+    l_r2_nad2_wk12: 0.0
+    lnrd1_r2_nad2_wk12: 0.0
+    enrd1_r2_nad2_wk12: 0.0
+    cnrd1_r2_nad2_wk12: 0.0
     # d3 none
     l_r2_nad2_none: 0.0
     lnrd1_r2_nad2_none: 0.0
