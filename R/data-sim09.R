@@ -738,14 +738,47 @@ sim09_stan_data_01 <- function(d_cum_dat, l_spec){
 
 # Utils --------
 
+sim09_report_sim_res <- function(){
+  
+  library(data.table)
+  library(qs2)
+  library(kableExtra)
+  
+  l <- qs2::qs_read("data/sim09/sim09-20260914-210119.qs2")
+  
+  l_n <- sim09_smry_dec_n(r = l$r, l_spec = l$l_spec)
+  d_pr_dec <- sim09_smry_pr_dec(l$r, l$l_spec)
+  l_pars <- sim09_smry_effects(l$r, l$l_spec)
+  
+  kableExtra::kbl(
+    l_n$summary,
+    digits = 3, format = "simple"
+  )
+  
+  kableExtra::kbl(
+    dcast(d_pr_dec, domain + rule ~ i_anlys, value.var = "mu"),
+    digits = 3, format = "simple"
+  )
+  
+  kableExtra::kbl(
+    l_pars$d_lor,
+    digits = 3, format = "simple"
+  )
+  
+  kableExtra::kbl(
+    l_pars$d_rd,
+    digits = 3, format = "simple"
+  )
+  
+  
+  
+}
+
 # True domain effects implied by the simulation DGP
-#
-# Returns the population-standardised:
+# population-standardised:
 #   - log odds ratios
 #   - risk differences
-#
 # These are fixed for a given l_spec and do not depend on a simulated dataset.
-#
 sim09_true_effects <- function(
     l_spec,
     l_dom_state = sim09_domain_state_open()
@@ -1072,26 +1105,7 @@ sim09_true_regimen_risk <- function(
   d_out
 }
 
-sim09_report_sim_res <- function(){
-  
-  library(data.table)
-  library(qs2)
-  library(kableExtra)
-  
-  l <- qs2::qs_read("data/sim09/sim09-20260914-164851.qs2")
-  
-  kableExtra::kbl(
-    dcast(l$d_est, par ~ i_anlys, value.var = "mu"),
-    digits = 3, format = "simple"
-  )
-  
-  # cumulative probability of each decision within each domain
-  kableExtra::kbl(
-    dcast(l$d_pr_dec, domain + rule ~ i_anlys, value.var = "mu"),
-    digits = 3, format = "simple"
-  )
-  
-}
+
 
 
 sim09_extract_dec_indicators <- function(l_dec){
@@ -1120,6 +1134,7 @@ sim09_smry_dec_n <- function(
     r, l_spec
     ) {
   
+  i_sim <- 1
   d_out <- rbindlist(
     lapply(seq_along(r), function(i_sim) {
       rr <- r[[i_sim]]
@@ -1141,6 +1156,7 @@ sim09_smry_dec_n <- function(
           })
         )
     }), idcol = "i_sim")
+  d_out[, n := as.double(n)]
   
   
   # First decision only
@@ -1170,7 +1186,7 @@ sim09_smry_dec_n <- function(
 }
 
 
-sim09_smry_dec_pr <- function(r, l_spec){
+sim09_smry_pr_dec <- function(r, l_spec){
   
   d_sims <- rbindlist(lapply(r, function(rr){
     
@@ -1291,12 +1307,13 @@ sim09_smry_effects <- function(
     mean_est = mean(mu, na.rm = TRUE),
     bias = mean(mu - truth, na.rm = TRUE),
     rmse = sqrt(mean((mu - truth)^2, na.rm = TRUE)),
+    # proportion of times truth within interval
     coverage = mean(
       q_025 <= truth & q_975 >= truth,
       na.rm = TRUE
     )
   ), keyby = .(i_anlys, par)]
-  
+  setkey(d_rd_out, par, i_anlys)
   
   d_lor_out <- d_lor[, .(
     truth = data.table::first(truth),
@@ -1308,21 +1325,11 @@ sim09_smry_effects <- function(
       na.rm = TRUE
     )
   ), keyby = .(i_anlys, par)]
-  
-  # kableExtra::kbl(
-  #   d_rd_out,
-  #   digits = 3, format = "simple"
-  # )
-  # 
-  # kableExtra::kbl(
-  #   d_lor_out,
-  #   digits = 3, format = "simple"
-  # )
-  
+  setkey(d_lor_out, par, i_anlys)
   
   list(
-    rd = d_rd_out,
-    lor = d_lor_out
+    d_rd = d_rd_out,
+    d_lor = d_lor_out
   )
 }
 
@@ -2375,14 +2382,14 @@ sim09_sim_loop <- function(){
   Sys.sleep(2)
   
   # parameter estimates averaged over the sims (expectations of posterior means)
-  d_est <- sim09_smry_rd(r, l_spec)
+  # d_est <- sim09_smry_rd(r, l_spec)
   # kableExtra::kbl(
   #   dcast(d_est, par ~ i_anlys, value.var = "mu"),
   #   digits = 3, format = "simple"
   # )
   
   # cumulative probability of each decision within each domain
-  d_pr_dec <- sim09_smry_dec_pr(r, l_spec)
+  # d_pr_dec <- sim09_smry_pr_dec(r, l_spec)
   # kableExtra::kbl(
   #   dcast(d_pr_dec, domain + rule ~ i_anlys, value.var = "mu"),
   #   digits = 3, format = "simple"
@@ -2392,7 +2399,11 @@ sim09_sim_loop <- function(){
   fname <- paste0("sim09-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs2")
   log_info("sim09_sim_loop: saving to file", fname)
   qs2::qs_save(
-    list(d_est = d_est, d_pr_dec = d_pr_dec, r = r),
+    list(
+      r = r,
+      l_spec = l_spec, 
+      l_dom_state0 = sim09_domain_state_open()
+      ),
     file = here::here("data", "sim09", fname)
   )
   
