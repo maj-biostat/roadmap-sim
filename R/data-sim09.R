@@ -8,6 +8,7 @@ library(kableExtra)
 library(here)
 library(logger)
 library(cmdstanr)
+library(qs2)
 
 
 f_log <-  here::here("logs", "log.txt")
@@ -111,7 +112,7 @@ sim09_run_trial <- function(
     fn_stanfit = sim09_stan_fit_01
 ){
   
-  
+  log_info("sim09_run_trial: starting trial ", l_spec$ix_sim)
   # accrued data
   d_cum_dat   <- data.table()
   
@@ -174,11 +175,14 @@ sim09_run_trial <- function(
     d_dec <- sim09_extract_dec_indicators(l_res[[i]]$l_dec_new)
     d_resolved <- d_dec[, .(resolved = any(dec)), by = domain]
     if (sum(d_resolved$resolved) == nrow(d_resolved)) {
-      message("All domains resolved")
+      log_info("sim09_run_trial: All domains resolved")
       break
     }
     
   }
+  
+  
+  log_info("sim09_run_trial: finished trial ", l_spec$ix_sim)
   
   list(
     data = d_cum_dat,
@@ -623,94 +627,8 @@ sim09_decision_fn_dummy <- function(
 }
 
 
-# MAIN SIM LOOP -------------
-sim09_sim_loop <- function(){
-  
-  log_info(paste0(match.call()[[1]]))
-  
-  default_cfg <- F
-  if(!default_cfg){
-    # load sim specification
-    f_spec <- here::here("./etc", args[2])
-    l_spec <- config::get(file = f_spec)
-    stopifnot("Config is null" = !is.null(l_spec))
-    l_spec <- sim09_update_cfg(l_spec)
-  } else {
-    l_spec <- sim09_default_cfg()
-  }
-  
-  # str(l_spec)
-  l_spec$return_posterior = F  ; e = NULL; ix <- 1
-  log_info("Starting simulation")
-  
-  # temp
-  l_dom_state = sim09_domain_state_open()
-  
-  RNGkind("L'Ecuyer-CMRG"); set.seed(2)
- 
-  r <- pbapply::pblapply(
-    X=1:l_spec$n_sim, cl = l_spec$mc_cores, FUN=function(ix) {
-      
-      log_info("Simulation ", ix);
-      
-      l_spec$ix_sim <- ix
-      
-      if(ix %in% l_spec$ex_trial_ix){ l_spec$return_posterior = T  
-      } else { l_spec$return_posterior = F }
-      
-      ll <- tryCatch({
-        sim09_run_trial(
-          l_spec,
-          l_dom_state,
-          sim09_decision_fn_01
-        )
-      },
-      error=function(e) {
-        log_info("ERROR in MCLAPPLY LOOP (see terminal output):")
-        message(" ERROR in MCLAPPLY LOOP " , e);
-        log_info("Traceback (see terminal output):")
-        message(traceback())
-        stop(paste0("Stopping with error ", e))
-      })
-      
-      ll
-    })
-  
-  
-  
-  log_info("Length of result set ", length(r))
-  log_info("Sleep for 5 before processing")
-  Sys.sleep(2)
-  
-  # parameter estimates averaged over the sims (expectations of posterior means)
-  d_est <- sim09_smry_par_est(r, l_spec)
-  kableExtra::kbl(
-    dcast(d_est, par ~ i_anlys, value.var = "mu"),
-    digits = 3, format = "simple"
-  )
-  
-  # cumulative probability of each decision within each domain
-  d_pr_dec <- sim09_smry_dec_pr(r, l_spec)
-  kableExtra::kbl(
-    dcast(d_pr_dec, domain + rule ~ i_anlys, value.var = "mu"),
-    digits = 3, format = "simple"
-  )
-  
-}
 
-# sim09_run_none <- function(){
-#   log_info("sim09_run_none: Nothing doing here bud.")
-# }
-# 
-# sim09_main <- function(){
-#   funcname <- paste0(args[1], "()")
-#   log_info("Main, invoking ", funcname)
-#   eval(parse(text=funcname))
-# }
 
-if(!interactive()){
-  sim09_sim_loop()
-}
 
 
 
@@ -814,7 +732,22 @@ sim09_batch_01 <- function(
 
 # Utils --------
 
-
+sim09_report_sim_res <- function(){
+  
+  l <- qs2::qs_read("data/sim09/sim09-20260914-163424.qs2")
+  
+  kableExtra::kbl(
+    dcast(l$d_est, par ~ i_anlys, value.var = "mu"),
+    digits = 3, format = "simple"
+  )
+  
+  # cumulative probability of each decision within each domain
+  kableExtra::kbl(
+    dcast(l$d_pr_dec, domain + rule ~ i_anlys, value.var = "mu"),
+    digits = 3, format = "simple"
+  )
+  
+}
 
 
 sim09_extract_dec_indicators <- function(l_dec){
@@ -1886,3 +1819,100 @@ sim09_partial_nest_01 <- function(){
   
 }
 
+
+
+
+# MAIN SIM LOOP -------------
+sim09_sim_loop <- function(){
+  
+  log_info(paste0(match.call()[[1]]))
+  
+  default_cfg <- F
+  if(!default_cfg){
+    # load sim specification
+    f_spec <- here::here("./etc", args[2])
+    l_spec <- config::get(file = f_spec)
+    stopifnot("Config is null" = !is.null(l_spec))
+    l_spec <- sim09_update_cfg(l_spec)
+  } else {
+    l_spec <- sim09_default_cfg()
+  }
+  
+  # str(l_spec)
+  l_spec$return_posterior = F  ; e = NULL; ix <- 1
+  log_info("Starting simulation")
+  
+  # temp
+  l_dom_state = sim09_domain_state_open()
+  
+  
+  RNGkind("L'Ecuyer-CMRG"); set.seed(2)
+  r <- pbapply::pblapply(
+    X=1:l_spec$n_sim, cl = l_spec$mc_cores, FUN=function(ix) {
+      
+      log_info("Simulation ", ix);
+      
+      l_spec$ix_sim <- ix
+      
+      if(ix %in% l_spec$ex_trial_ix){ l_spec$return_posterior = T  
+      } else { l_spec$return_posterior = F }
+      
+      ll <- tryCatch({
+        sim09_run_trial(
+          l_spec,
+          l_dom_state,
+          sim09_decision_fn_01
+        )
+      },
+      error=function(e) {
+        log_info("ERROR in MCLAPPLY LOOP (see terminal output):")
+        message(" ERROR in MCLAPPLY LOOP " , e);
+        log_info("Traceback (see terminal output):")
+        message(traceback())
+        stop(paste0("Stopping with error ", e))
+      })
+      
+      ll
+    })
+  
+  log_info("Length of result set ", length(r))
+  log_info("Sleep for 2 secs before processing")
+  Sys.sleep(2)
+  
+  # parameter estimates averaged over the sims (expectations of posterior means)
+  d_est <- sim09_smry_par_est(r, l_spec)
+  # kableExtra::kbl(
+  #   dcast(d_est, par ~ i_anlys, value.var = "mu"),
+  #   digits = 3, format = "simple"
+  # )
+  
+  # cumulative probability of each decision within each domain
+  d_pr_dec <- sim09_smry_dec_pr(r, l_spec)
+  # kableExtra::kbl(
+  #   dcast(d_pr_dec, domain + rule ~ i_anlys, value.var = "mu"),
+  #   digits = 3, format = "simple"
+  # )
+  
+  
+  fname <- paste0("sim09-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs2")
+  log_info("sim09_sim_loop: saving to file", fname)
+  qs2::qs_save(
+    list(d_est = d_est, d_pr_dec = d_pr_dec, r = r),
+    file = here::here("data", "sim09", fname)
+  )
+  
+}
+
+sim09_run_none <- function(){
+  log_info("sim09_run_none: Nothing doing here bud.")
+}
+
+sim09_main <- function(){
+  funcname <- paste0(args[1], "()")
+  log_info("Main, invoking ", funcname)
+  eval(parse(text=funcname))
+}
+
+if(!interactive()){
+  sim09_main()
+}
