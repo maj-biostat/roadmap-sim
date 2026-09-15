@@ -266,6 +266,7 @@ sim09_decision_fn_dummy <- function(
 }
 
 sim09_d1_alloc <- function(l_dec) {
+  # safe to use isTRUE since sup is a single value
   if (isTRUE(l_dec$d1$sup)) return(c(dair = 0.0, r1 = 1/3, r2 = 2/3))   # revision superior
   if (isTRUE(l_dec$d1$fut)) return(c(dair = 1.0, r1 = 0.0, r2 = 0.0))   # revision futile
   sim09_domain_state_open()$d1
@@ -369,7 +370,9 @@ sim09_eval_all_dec <- function(d_post, l_spec) {
 
 
 # Computing treatment contrasts ----------
-sim09_std_prob <- function(v_b0, m_reg, m_d4, cov_grid) {
+sim09_std_prob <- function(
+    v_b0, m_reg, m_d4, cov_grid
+    ) {
   stopifnot(all(cov_grid$reg %in% colnames(m_reg)))
   stopifnot(all(cov_grid$d4  %in% colnames(m_d4)))
   n_draws <- length(v_b0)
@@ -386,7 +389,9 @@ sim09_std_prob <- function(v_b0, m_reg, m_d4, cov_grid) {
 # observed-proportion weights for a set of regimens; NA (not 0) if none of
 # them have been observed yet, so a domain contrast with no supporting data
 # comes back as NA rather than a silently as zero
-sim09_reg_wgt <- function(regs, d_cum_dat) {
+sim09_reg_wgt <- function(
+    regs, d_cum_dat
+    ) {
   tb <- d_cum_dat[reg %in% regs, .N, keyby = reg]
   # explicitly recognise zero contribs as no informaiton
   if (sum(tb$N) == 0) return(setNames(rep(NA_real_, length(regs)), regs))
@@ -395,6 +400,7 @@ sim09_reg_wgt <- function(regs, d_cum_dat) {
   w[regs]
 }
 
+# Tentatively refer to as weighted conditional/model-scale log OR
 sim09_compute_lor <- function(
     d_cum_dat, l_spec, f_1
     ) {
@@ -446,6 +452,131 @@ sim09_compute_lor <- function(
 }
 
 
+
+# Tentatively refer to as standardised marginal log or
+sim09_compute_lor_std <- function(
+    d_cum_dat, l_spec, f_1
+) {
+  
+  v_b0 <- as.numeric(f_1$draws(variables = "b_0", format = "matrix"))
+  
+  reg_lvls <- levels(d_cum_dat$reg)
+  d4_lvls  <- levels(d_cum_dat$d4)
+  
+  m_reg <- as.matrix(f_1$draws(variables = "b_reg", format = "matrix"))
+  colnames(m_reg) <- reg_lvls
+  
+  m_d4 <- as.matrix(f_1$draws(variables = "b_d4", format = "matrix"))
+  colnames(m_d4) <- d4_lvls
+  
+  
+  # d1: revision vs DAIR
+  # population is late-silo patients, standardised to their observed d4 distribution.
+  # In contrast to the above compute_lor, revision represented by the observed 
+  # distribution oover complete regimens and d4
+  w_d1_trt <- sim09_reg_wgt(l_spec$d1_trt_regs, d_cum_dat )
+  # mirrors the marginal rd approach
+  d_pop_l <- d_cum_dat[ silo == "l", .N, keyby = d4 ]
+  d_pop_l[, w := N / sum(N)]
+  
+  # DAIR
+  grid_d1_dair <- data.table(
+    reg = "l_dair_nad2_nad3", d4 = as.character(d_pop_l$d4), w = d_pop_l$w
+  )
+  # Revision
+  grid_d1_rev <- CJ(
+    reg = l_spec$d1_trt_regs, d4 = as.character(d_pop_l$d4)
+  )
+  
+  grid_d1_rev <- base::merge(
+    grid_d1_rev,
+    data.table(
+      reg = l_spec$d1_trt_regs,
+      w_trt = w_d1_trt
+    ),
+    by = "reg"
+  )
+  # now add in d4
+  grid_d1_rev <- base::merge(
+    grid_d1_rev,
+    data.table(
+      d4 = as.character(d_pop_l$d4),
+      w_d4 = d_pop_l$w
+    ),
+    by = "d4"
+  )
+  # to get the final weights
+  grid_d1_rev[, w := w_trt * w_d4]
+  
+  p_d1_dair <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d1_dair)
+  p_d1_rev <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d1_rev)
+  # marginal or
+  post_lor_d1 <- qlogis(p_d1_rev) - qlogis(p_d1_dair)
+  
+  
+  # d2: 6 weeks vs 12 weeks
+  # population: observed r1 patients, standardised jointly over silo and d4.
+  # The SAME target weights are used for wk6 and wk12.
+  d_pop_r1 <- d_cum_dat[ d1 == "r1", .N, keyby = .(silo, d4) ]
+  d_pop_r1[, w := N / sum(N)]
+  d_pop_r1[, reg_wk12 := paste0(silo, "_r1_wk12_nad3") ]
+  d_pop_r1[, reg_wk6 := paste0(silo, "_r1_wk6_nad3") ]
+  
+  grid_d2_wk12 <- data.table(
+    reg = d_pop_r1$reg_wk12, d4 = as.character(d_pop_r1$d4), w = d_pop_r1$w
+  )
+  grid_d2_wk6 <- data.table(
+    reg = d_pop_r1$reg_wk6, d4 = as.character(d_pop_r1$d4), w = d_pop_r1$w
+  )
+  
+  p_d2_wk12 <- sim09_std_prob( v_b0, m_reg, m_d4, grid_d2_wk12 )
+  p_d2_wk6 <- sim09_std_prob( v_b0, m_reg, m_d4, grid_d2_wk6 )
+  post_lor_d2 <- qlogis(p_d2_wk6) - qlogis(p_d2_wk12)
+  
+  # d3: 12 weeks vs none
+  # population: observed r2 patients, standardised jointly over silo and d4.
+  
+  d_pop_r2 <- d_cum_dat[ d1 == "r2", .N, keyby = .(silo, d4) ]
+  d_pop_r2[, w := N / sum(N)]
+  d_pop_r2[, reg_wk12 := paste0(silo, "_r2_nad2_wk12") ]
+  d_pop_r2[, reg_none := paste0(silo, "_r2_nad2_none") ]
+  
+  grid_d3_wk12 <- data.table(
+    reg = d_pop_r2$reg_wk12, d4 = as.character(d_pop_r2$d4), w = d_pop_r2$w
+  )
+  grid_d3_none <- data.table(
+    reg = d_pop_r2$reg_none, d4 = as.character(d_pop_r2$d4), w = d_pop_r2$w
+  )
+  p_d3_wk12 <- sim09_std_prob( v_b0, m_reg, m_d4, grid_d3_wk12 )
+  p_d3_none <- sim09_std_prob( v_b0, m_reg, m_d4, grid_d3_none )
+  post_lor_d3 <- qlogis(p_d3_wk12) - qlogis(p_d3_none)
+  
+  
+  # d4: rif vs norif
+  # population: all observed patients, standardised to their observed regimen
+  
+  d_pop_all <- d_cum_dat[ , .N, keyby = reg ]
+  d_pop_all[, w := N / sum(N)]
+  
+  grid_d4_rif <- data.table(
+    reg = as.character(d_pop_all$reg), d4 = "rif", w = d_pop_all$w
+  )
+  grid_d4_norif <- data.table(
+    reg = as.character(d_pop_all$reg), d4 = "norif", w = d_pop_all$w
+  )
+  p_d4_rif <- sim09_std_prob( v_b0, m_reg, m_d4, grid_d4_rif )
+  p_d4_norif <- sim09_std_prob( v_b0, m_reg, m_d4, grid_d4_norif)
+  post_lor_d4 <- qlogis(p_d4_rif) - qlogis(p_d4_norif)
+  
+  data.table(
+    d1 = as.numeric(post_lor_d1),
+    d2 = as.numeric(post_lor_d2),
+    d3 = as.numeric(post_lor_d3),
+    d4 = as.numeric(post_lor_d4)
+  )
+}
+
+
 # d2/d3/d4 are direct. For the ACTUAL patients in the applicable population
 # (r1 patients for d2, r2 patients for d3, everyone for d4), predict 
 # outcome prob under each of the trt levels, holding  everything else 
@@ -476,7 +607,7 @@ sim09_comp_rd <- function(
   m_d4  <- as.matrix(f_1$draws(variables = "b_d4",  format = "matrix"))
   colnames(m_d4) <- d4_lvls
   
-  # ---- d1: revision (mixture over r1/r2 sub-regimens) vs dair, l silo -----
+  # d1: revision (mixture over r1/r2 sub-regimens) vs dair, l silo
   # same mixture weights as jnt_d1
   w_d1 <- sim09_reg_wgt(l_spec$d1_trt_regs, d_cum_dat)   
   
@@ -501,7 +632,7 @@ sim09_comp_rd <- function(
   p_rev  <- sim09_std_prob(v_b0, m_reg, m_d4, grid_rev)
   rd_d1  <- as.numeric(p_rev - p_dair)
   
-  # ---- d2: wk6 vs wk12, weigths among actual r1 patients (all silo) ---------------
+  # d2: wk6 vs wk12, weigths among actual r1 patients (all silo)
   d_pop_r1 <- d_cum_dat[d1 == "r1", .N, keyby = .(silo, d4)]
   d_pop_r1[, w := N / sum(N)]
   d_pop_r1[, reg_wk12 := paste0(silo, "_r1_wk12_nad3")]
@@ -514,7 +645,7 @@ sim09_comp_rd <- function(
   p_wk6  <- sim09_std_prob(v_b0, m_reg, m_d4, grid_wk6)
   rd_d2  <- as.numeric(p_wk6 - p_wk12)
   
-  # ---- d3: wk12 vs none, as above, among actual r2 patients (any silo) --------------
+  # d3: wk12 vs none, as above, among actual r2 patients (any silo)
   d_pop_r2 <- d_cum_dat[d1 == "r2", .N, keyby = .(silo, d4)]
   d_pop_r2[, w := N / sum(N)]
   d_pop_r2[, reg_wk12 := paste0(silo, "_r2_nad2_wk12")]
@@ -527,7 +658,7 @@ sim09_comp_rd <- function(
   p_d3_none <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d3_none)
   rd_d3     <- as.numeric(p_d3_wk12 - p_d3_none)
   
-  # ---- d4: rif vs norif, among everyone (any reg) -------------------------
+  # d4: rif vs norif, among everyone (any reg)
   d_pop_all <- d_cum_dat[, .N, keyby = reg]
   d_pop_all[, w := N / sum(N)]
   
@@ -575,6 +706,7 @@ sim09_stan_fit_01 <- function(
   
   
   d_lor <- sim09_compute_lor(d_cum_dat, l_spec, f_1)
+  d_lor_std <- sim09_compute_lor_std(d_cum_dat, l_spec, f_1)
   d_rd <- sim09_comp_rd(d_cum_dat, l_spec, f_1)
   
   
@@ -588,9 +720,8 @@ sim09_stan_fit_01 <- function(
   }
   
   d_lor_smry <- par_smry(d_lor)
+  d_lor_std_smry <- par_smry(d_lor_std)
   d_rd_smry <- par_smry(d_rd)
-  
-  
   
   # d_fig <- melt(d_rd, measure.vars = names(d_rd))
   # ggplot(d_fig, aes(x = value)) + geom_density() + facet_wrap(~variable)
@@ -598,6 +729,7 @@ sim09_stan_fit_01 <- function(
   list(
     f_1 = f_1,
     d_lor_smry = d_lor_smry,
+    d_lor_std_smry = d_lor_std_smry,  
     d_rd_smry = d_rd_smry,
     # one row per posterior draw, one column per domain contrast
     d_lor = d_lor,
@@ -746,7 +878,14 @@ sim09_report_sim_res <- function(){
   
   l <- qs2::qs_read("data/sim09/sim09-20260914-210119.qs2")
   
-  l_n <- sim09_smry_dec_n(r = l$r, l_spec = l$l_spec)
+  r = l$r
+  l_spec = l$l_spec
+  l_info <- sim09_smry_dec_info(r = l$r, l_spec = l$l_spec)
+  
+  l_info$d_smry
+  l_info$d_arms
+  # l_info$d_inform_tot
+  
   d_pr_dec <- sim09_smry_pr_dec(l$r, l$l_spec)
   l_pars <- sim09_smry_effects(l$r, l$l_spec)
   
@@ -777,7 +916,7 @@ sim09_report_sim_res <- function(){
 # Truth is the design-population standardised estimand.
 # The fitted estimand uses realised population weights, so finite-sample
 # differences between truth and analysis target are possible/likely.
-sim09_true_effects_design_pop <- function(
+sim09_true_effects_des_pop <- function(
     l_spec,
     l_dom_state = sim09_domain_state_open()
     ) {
@@ -1127,63 +1266,6 @@ sim09_extract_dec_indicators <- function(l_dec){
   
 }
 
-
-sim09_smry_dec_n <- function(
-    r, l_spec
-    ) {
-  
-  i_sim <- 1
-  d_out <- rbindlist(
-    lapply(seq_along(r), function(i_sim) {
-      rr <- r[[i_sim]]
-      rbindlist(
-        lapply(seq_along(rr$l_res), function(i_anlys) {
-          z <- rr$l_res[[i_anlys]]
-          if(is.null(z)) { return(NULL) }
-          d_dec <- sim09_extract_dec_indicators(
-            z$l_dec_new
-          )
-          d_dec <- d_dec[dec == TRUE]
-          if (nrow(d_dec) == 0) { return(NULL) }
-          
-          data.table(
-            domain = unique(d_dec$domain),
-            i_anlys = i_anlys,
-            n = sum(l_spec$n_batch[seq_len(i_anlys)])
-          ) 
-          })
-        )
-    }), idcol = "i_sim")
-  d_out[, n := as.double(n)]
-  
-  
-  # First decision only
-  setorder(d_out, i_sim, domain, i_anlys)
-  
-  d_first <- d_out[, .SD[1], by = .(i_sim, domain)]
-  
-  d_smry <- d_first[
-    ,
-    .(
-      n_decided = .N,
-      pr_decided = .N / l_spec$n_sim,
-      mean_n = mean(n),
-      sd_n = sd(n),
-      median_n = median(n),
-      q_025_n = quantile(n, 0.025),
-      q_975_n = quantile(n, 0.975)
-    ),
-    by = domain
-  ]
-  
-  
-  list(
-    by_sim = d_first,
-    summary = d_smry
-  )
-}
-
-
 sim09_smry_pr_dec <- function(r, l_spec){
   
   d_sims <- rbindlist(lapply(r, function(rr){
@@ -1204,18 +1286,22 @@ sim09_smry_pr_dec <- function(r, l_spec){
   
   d_sims <- base::merge(d_grid, d_sims, by = c("i_sim", "i_anlys", "domain", "rule"), all.x = T)
   
-  d_sims[, c_dec := as.integer(cumsum(dec)>=1), keyby = .(i_sim, domain, rule)]
-  d_sims[, c_dec := nafill(c_dec, type = "locf"), keyby = .(i_sim, domain, rule)]
+  d_sims[dec == TRUE, dec01 := TRUE]
+  d_sims[dec != TRUE, dec01 := FALSE]
+  
+  d_sims[, c_dec := as.integer(cumsum(dec01)>=1), keyby = .(i_sim, domain, rule)]
+  # dealt with above before I do the cumsum...
+  # d_sims[, c_dec := nafill(c_dec, type = "locf"), keyby = .(i_sim, domain, rule)]
   
   d_out <- d_sims[, .(
     mu = mean(c_dec)
   ), keyby = .(i_anlys, domain, rule)]
-   
+  
   # kableExtra::kbl(
   #   dcast(d_out, domain + rule ~ i_anlys, value.var = "mu"),
   #   digits = 3, format = "simple"
   # )
-
+  
   d_out
   
 }
@@ -1223,9 +1309,9 @@ sim09_smry_pr_dec <- function(r, l_spec){
 sim09_smry_effects <- function(
     r, l_spec,
     l_dom_state = sim09_domain_state_open()
-    ) {
+) {
   
-  d_true <- sim09_true_effects_design_pop(
+  d_true <- sim09_true_effects_des_pop(
     l_spec = l_spec,
     l_dom_state = l_dom_state
   )
@@ -1330,6 +1416,189 @@ sim09_smry_effects <- function(
     d_lor = d_lor_out
   )
 }
+
+
+sim09_smry_dec_info <- function(r, l_spec) {
+  
+  d_first <- sim09_first_dec(r)
+  
+  if (nrow(d_first) == 0) {
+    return(list(
+      by_sim = data.table(),
+      summary = data.table(),
+      arms = data.table()
+    ))
+  }
+  
+  # for each first decision (by domain), obtain the number of pts in the cohort
+  # that informed the decision
+  # so, for example, suppose that in the first sim at the first analysis d1 
+  # indicated rev was superior in the d_first decision list. the output wold 
+  # then have a row for the number in the dair, r1 and r2 late silo group at 
+  # the time of the first analysis
+  d_out <- rbindlist(
+    lapply(seq_len(nrow(d_first)), function(i) {
+      i_sim   <- d_first$i_sim[i]
+      domain  <- d_first$domain[i]
+      i_anlys <- d_first$i_anlys[i]
+      rule    <- d_first$rule[i]
+      rr <- r[[i_sim]]
+      d_cum <- rr$data[batch <= i_anlys]
+      z <- sim09_domain_n(d_cum, domain)
+      z[, `:=`(
+        i_sim = i_sim,
+        i_anlys = i_anlys,
+        rule = rule,
+        n_enrolled = nrow(d_cum)
+      )]
+      z
+    })
+  )
+  
+  # Number informing each contrast - ie totals
+  d_inform <- d_out[, .(
+    n_enrolled = as.double(first(n_enrolled)),
+    n_inform = as.double(sum(n[inform]))
+    ), by = .(i_sim, domain, i_anlys, rule)
+  ]
+  d_inform[, inform_prop := n_inform / n_enrolled]
+  
+  d_summary <- d_inform[
+    ,
+    .(
+      n_decided = .N,
+      pr_decided = .N / l_spec$n_sim,
+      
+      mean_n_enrolled = mean(n_enrolled),
+      q025_n_enrolled = quantile(n_enrolled, 0.025),
+      q975_n_enrolled = quantile(n_enrolled, 0.975),
+      
+      mean_n_inform = mean(n_inform),
+      q025_n_inform = quantile(n_inform, 0.025),
+      q975_n_inform = quantile(n_inform, 0.975),
+      
+      mean_inform_prop = mean(inform_prop)
+    ),
+    by = domain
+  ]
+  
+  # Mean arm sizes among simulations in which the decision occurred
+  d_arm_summary <- d_out[
+    ,
+    .(
+      mean_n = mean(n),
+      sd_n = sd(n),
+      q025_n = quantile(n, 0.025),
+      q975_n = quantile(n, 0.975)
+    ),
+    by = .(domain, arm, inform)
+  ]
+  
+  list(
+    # for each decision
+    d_inform_tot = d_inform,
+    # averages by arm informing each decision
+    d_arms = d_arm_summary,
+    # average totals informing each decision
+    d_smry = d_summary
+  )
+}
+
+sim09_first_dec <- function(r) {
+  
+  d_out <- rbindlist(
+    lapply(seq_along(r), function(i_sim) {
+      rr <- r[[i_sim]]
+      rbindlist(
+        lapply(seq_along(rr$l_res), function(i_anlys) {
+          z <- rr$l_res[[i_anlys]]
+          if (is.null(z)) return(NULL)
+          d_dec <- sim09_extract_dec_indicators(z$l_dec_new)
+          # isTRUE() function is not vectorized and should never be used 
+          # directly inside data.table rows or columns for subsetting or 
+          # creating variables
+          d_dec <- d_dec[dec == TRUE]
+          if (nrow(d_dec) == 0) return(NULL)
+          d_dec[, `:=`(i_sim = i_sim, i_anlys = i_anlys )]
+          d_dec
+        })
+      )
+    })
+  )
+  
+  if (nrow(d_out) == 0) {
+    return(data.table())
+  }
+  
+  # Because decisions are locked, the first TRUE for a domain is
+  # the interim at which that domain was actually decided.
+  setorder(d_out, i_sim, domain, i_anlys)
+  
+  d_out[, first_dec := seq_len(.N), by = .(i_sim, domain)]
+  
+  d_out[first_dec == 1, .(i_sim, domain, i_anlys, rule)]
+  
+}
+
+sim09_domain_n <- function(d, domain) {
+  
+  if (domain == "d1") {
+    z <- d[silo == "l",
+           .(arm = c("dair", "r1", "r2"),
+             n = c(
+               sum(d1 == "dair"),
+               sum(d1 == "r1"),
+               sum(d1 == "r2")
+             ))]
+    
+  } else if (domain == "d2") {
+    z <- d[d1 == "r1",
+           .(arm = c("wk12", "wk6", "nad2"),
+             n = c(
+               sum(d2 == "wk12"),
+               sum(d2 == "wk6"),
+               sum(d2 == "nad2")
+             ))]
+    
+  } else if (domain == "d3") {
+    z <- d[d1 == "r2",
+           .(arm = c("wk12", "none", "nad3"),
+             n = c(
+               sum(d3 == "wk12"),
+               sum(d3 == "none"),
+               sum(d3 == "nad3")
+             ))]
+    
+  } else if (domain == "d4") {
+    z <- d[
+      ,
+      .(arm = c("rif", "norif", "nad4"),
+        n = c(
+          sum(d4 == "rif"),
+          sum(d4 == "norif"),
+          sum(d4 == "nad4")
+        ))
+    ]
+    
+  } else {
+    stop("Unknown domain")
+  }
+  
+  z[, domain := domain]
+  
+  # Define which arms inform the treatment contrast
+  z[, inform := fcase(
+    domain == "d1", arm %in% c("dair", "r1", "r2"),
+    domain == "d2", arm %in% c("wk12", "wk6"),
+    domain == "d3", arm %in% c("wk12", "none"),
+    domain == "d4", arm %in% c("rif", "norif"),
+    default = FALSE
+  )]
+  
+  z[]
+}
+
+
 
 
 
@@ -2379,13 +2648,14 @@ sim09_sim_loop <- function(){
   l_spec$reg_effect <- sim09_build_reg_effect(
     reg_opts = l_spec$reg_opts, 
     d1_trt_regs = l_spec$d1_trt_regs,
-    d2_wk6_regs = l_spec$d2_wk12_regs,
+    d2_wk6_regs = l_spec$d2_wk6_regs,
     d3_wk12_regs = l_spec$d3_wk12_regs,
     d1_delta = 1, 
     d2_wk6_delta = 0, 
     d3_wk12_delta = 0
   )
-  
+  # sanity - all contribs should be 1
+  # l_spec$reg_effect[sim09_get_silo_contrib(l_spec$reg_opts, "l_")]
   
   RNGkind("L'Ecuyer-CMRG"); set.seed(2)
   r <- pbapply::pblapply(
