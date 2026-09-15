@@ -24,7 +24,8 @@ transformed data{
 }
 parameters{
   real b_0;
-  vector[K_reg] z_reg;
+  real mu_reg;
+  vector[K_reg-1] z_reg;
   real<lower=0> sig_reg;
   vector[K_d4-1] b_d4_raw;
 }
@@ -34,13 +35,15 @@ transformed parameters{
   
   b_d4[1] = 0.0;
   
-  b_reg = z_reg * sig_reg;
+  b_reg[1] = 0.0;
+  b_reg[2:K_reg] = mu_reg + z_reg * sig_reg;
   b_d4[2:K_d4] = b_d4_raw;
   
 } 
 model{
   target += logistic_lpdf(b_0 | pri_b_0[1], pri_b_0[2]);
   
+  target += normal_lpdf(mu_reg | 0, 3);
   target += normal_lpdf(z_reg | 0, 1);
   target += exponential_lpdf(sig_reg | 1);
   
