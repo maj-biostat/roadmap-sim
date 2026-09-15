@@ -32,69 +32,17 @@ if (length(args)<1) {
   log_info("Scenario config ", args[2])
 }
 
-s_mod <- "
-data{ 
-  
-  int N;
-  
-  array[N] int y;
-  array[N] int n;
-  
-  int K_reg;
-  int K_d4;
-  
-  array[N] int reg;
-  array[N] int d4;
-  
-  // priors
-  vector[2] pri_b_0;
-  vector[2] pri_b_reg;
-  vector[2] pri_b_d4;
-  
-  int prior_only;
-}
-transformed data{
-  
-}
-parameters{
-  real b_0;
-  vector[K_reg-1] b_reg_raw;
-  vector[K_d4-1] b_d4_raw;
-}
-transformed parameters{
-  vector[K_reg] b_reg;
-  vector[K_d4] b_d4;
-  
-  vector[N] eta;
-  
-  b_reg[1] = 0.0;
-  b_d4[1] = 0.0;
-  
-  b_reg[2:K_reg] = b_reg_raw;
-  b_d4[2:K_d4] = b_d4_raw;
-  
-} 
-model{
-  target += logistic_lpdf(b_0 | pri_b_0[1], pri_b_0[2]);
-  target += normal_lpdf(b_reg_raw | pri_b_reg[1], pri_b_reg[2]);
-  target += normal_lpdf(b_d4_raw | pri_b_d4[1], pri_b_d4[2]);
-  
-  if(!prior_only){
-    target += binomial_logit_lpmf(y | n, b_0 + b_reg[reg] + b_d4[d4]);  
-  }
 
-}
-generated quantities{
-  
-}
-"
 
-if(!interactive()){
-  m_1 <- cmdstanr::cmdstan_model(cmdstanr::write_stan_file(s_mod))
-} else {
-  # based on locally stored file - for future use
-  m_1 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09.stan"))
-}
+# if(!interactive()){
+#   m_1 <- cmdstanr::cmdstan_model(cmdstanr::write_stan_file(s_mod))
+# } else {
+#   # based on locally stored file - for future use
+#   m_1 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09.stan"))
+# }
+
+m_1 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09-a.stan"))
+m_2 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09-b.stan"))
 
 
 sim09_run_trial <- function(
@@ -734,14 +682,27 @@ sim09_stan_fit_01 <- function(
     "-intrm-", max(d_cum_dat$batch))
   
   # snk <- capture.output(
-  f_1 <- m_1$sample(
-    ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
-    parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
-    refresh = 0, show_exceptions = F,
-    max_treedepth = 11,
-    output_dir = l_spec$mc_out_dir,
-    output_basename = foutname
-  )
+  if(l_spec$mc_model == "indep"){
+    f_1 <- m_1$sample(
+      ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
+      parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
+      refresh = 0, show_exceptions = F,
+      max_treedepth = 11,
+      output_dir = l_spec$mc_out_dir,
+      output_basename = foutname
+    )
+  } else if (l_spec$mc_model == "hier"){
+    f_1 <- m_2$sample(
+      ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
+      parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
+      refresh = 0, show_exceptions = T,
+      max_treedepth = 11,
+      output_dir = l_spec$mc_out_dir,
+      output_basename = foutname
+    )
+  }
+  
+  
   # )
   
   # g-comp (standardisation) note ----------
@@ -926,7 +887,7 @@ sim09_report_sim_res <- function(){
   library(qs2)
   library(kableExtra)
   
-  l <- qs2::qs_read("data/sim09/sim09-20260915-141558-sc02.qs2")
+  l <- qs2::qs_read("data/sim09/sim09-20260915-175048.qs2")
   
   r = l$r
   l_spec = l$l_spec
@@ -2898,7 +2859,8 @@ sim09_sim_loop <- function(){
   log_info("Sleep for 2 secs before processing")
   Sys.sleep(2)
   
-  fname <- paste0("sim09-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs2")
+  scen <- substr(basename(f_spec), 11, 14)
+  fname <- paste0("sim09-", scen, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs2")
   log_info("sim09_sim_loop: saving to file", fname)
   qs2::qs_save(
     list(

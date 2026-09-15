@@ -5,6 +5,8 @@ default:
   mc_warmup: 1000
   mc_samp: 1000
   mc_chain: 1
+  # hier or indep
+  mc_model: hier 
   # example trials
   nex: 3
   n_batch: [500, 500, 500, 500, 500]

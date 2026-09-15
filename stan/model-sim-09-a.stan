@@ -15,8 +15,9 @@ data{
   
   // priors
   vector[2] pri_b_0;
-  vector[2] pri_b_reg; // student t
-  vector[2] pri_b_d4;
+  // student t
+  vector[3] pri_b_reg; 
+  vector[3] pri_b_d4;
   
   int prior_only;
 }
