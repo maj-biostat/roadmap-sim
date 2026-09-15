@@ -231,6 +231,7 @@ sim09_decision_fn_01 <- function(
     # posterior summary
     l_smry = list(
       d_lor_smry = l_fit$d_lor_smry,
+      d_lor_std_smry = l_fit$d_lor_std_smry,
       d_rd_smry = l_fit$d_rd_smry
     ),
     # decision based on rules for each domain
@@ -241,6 +242,7 @@ sim09_decision_fn_01 <- function(
   
   if(l_spec$return_posterior){
     l_res[["d_lor"]] <- l_fit$d_lor
+    l_res[["d_lor_std"]] <- l_fit$d_lor_std
     l_res[["d_rd"]] <- l_fit$d_rd
   }
   
@@ -780,6 +782,7 @@ sim09_stan_fit_01 <- function(
     d_rd_smry = d_rd_smry,
     # one row per posterior draw, one column per domain contrast
     d_lor = d_lor,
+    d_lor_std = d_lor_std, 
     d_rd = d_rd
   )
   
@@ -923,21 +926,76 @@ sim09_report_sim_res <- function(){
   library(qs2)
   library(kableExtra)
   
-  l <- qs2::qs_read("data/sim09/sim09-20260914-210119.qs2")
+  l <- qs2::qs_read("data/sim09/sim09-20260915-141558-sc02.qs2")
   
   r = l$r
   l_spec = l$l_spec
-  l_info <- sim09_smry_dec_info(r = l$r, l_spec = l$l_spec)
   
-  l_info$d_smry
-  l_info$d_arms
-  # l_info$d_inform_tot
+  l_oc <- list(
+    dec_pr = sim09_smry_pr_dec(r, l_spec),
+    
+    # maybe no longer necessary...
+    l_dec_n = sim09_smry_dec_n(r, l_spec),
+    
+    # partially duplicates sim09_smry_dec_n
+    l_dec_info = sim09_smry_dec_info(r, l_spec),
+    
+    l_effects = sim09_smry_effects(r, l_spec)
+    
+  )
   
-  d_pr_dec <- sim09_smry_pr_dec(l$r, l$l_spec)
-  l_pars <- sim09_smry_effects(l$r, l$l_spec)
   
+  kableExtra::kbl(
+    dcast(l_oc$dec_pr, domain + rule ~ i_anlys, value.var = "mu"),
+    digits = 3, format = "simple", 
+    caption = paste("Scenario ",
+      l_spec$desc, "\nPr decision by domain and interim")
+  )
+  # sanity
+  # l_oc$dec_pr[i_anlys == 5, .(pr_dec = sum(mu)), keyby = domain]
   
+  kableExtra::kbl(
+    l_oc$l_dec_n$d_smry,
+    digits = 3, format = "simple", 
+    caption = paste("Scenario ",
+        l_spec$desc, "\nEnrolment at time of decision")
+  )
   
+  kableExtra::kbl(
+    l_oc$l_dec_info$d_smry,
+    digits = c(0, 0, 3, 1, 0, 0, 1, 1, 1, 3), 
+    format = "simple", 
+    caption = paste("Scenario ",
+        l_spec$desc, "\nEnrolment and sample size informing decisions")
+  )
+  
+  kableExtra::kbl(
+    l_oc$l_dec_info$d_arms,
+    digits = 1, format = "simple", 
+    caption = paste("Scenario ",
+        l_spec$desc, "\nSample size informing decisions by arm")
+  )
+  
+  kableExtra::kbl(
+    l_oc$l_effects$d_lor,
+    digits = 3, format = "simple", 
+    caption = paste("Scenario ",
+        l_spec$desc, "\nWeighted conditional/model-scale log OR")
+  )
+  
+  kableExtra::kbl(
+    l_oc$l_effects$d_lor_std,
+    digits = 3, format = "simple", 
+    caption = paste("Scenario ",
+        l_spec$desc, "\nStandardised marginal log OR")
+  )
+  
+  kableExtra::kbl(
+    l_oc$l_effects$d_rd,
+    digits = 3, format = "simple", 
+    caption = paste("Scenario ",
+        l_spec$desc, "\nStandardised marginal RD")
+  )
   
   
 }
@@ -1297,14 +1355,20 @@ sim09_extract_dec_indicators <- function(l_dec){
 
 sim09_smry_pr_dec <- function(r, l_spec){
   
-  d_sims <- rbindlist(lapply(r, function(rr){
-    
-    rbindlist(lapply(rr$l_res, function(z){
-      sim09_extract_dec_indicators(z$l_dec)
-    }), idcol = "i_anlys")
-    
-  }), idcol = "i_sim")
-  d_sims <- d_sims[order(i_sim, domain, rule, i_anlys)]
+  
+  d_first <- sim09_first_dec(r)
+  d_first[, dec := TRUE]
+  
+  # incorrect coz will pick up duplicate decisions, i.e. cumulative probs
+  # might be > 1 over decisions for a given domain
+  # d_sims <- rbindlist(lapply(r, function(rr){
+  #   
+  #   rbindlist(lapply(rr$l_res, function(z){
+  #     sim09_extract_dec_indicators(z$l_dec)
+  #   }), idcol = "i_anlys")
+  #   
+  # }), idcol = "i_sim")
+  # d_sims <- d_sims[order(i_sim, domain, rule, i_anlys)]
   
   d_grid <- CJ(
     i_sim = 1:l_spec$n_sim,
@@ -1312,34 +1376,92 @@ sim09_smry_pr_dec <- function(r, l_spec){
     domain = paste0("d", 1:4)
   )
   d_grid <- base::merge(
-    unique(d_sims[, .(domain, rule)]), 
+    data.table(domain = c("d1", "d1", "d2", "d2", "d3", "d3", "d4", "d4"),
+               rule = c("sup", "fut", "ni", "fut", "sup", "fut", "sup", "fut")),
     d_grid, by = "domain", all = T, allow.cartesian=TRUE)
   
   d_sims <- base::merge(
     d_grid, 
-    d_sims, by = c("i_sim", "i_anlys", "domain", "rule"), all.x = T)
+    d_first, by = c("i_sim", "i_anlys", "domain", "rule"), all.x = T)
   
   # protect against NA
   setorder(d_sims, i_sim, domain, rule, i_anlys)
-  d_sims[dec == TRUE,  dec01 := TRUE]
-  d_sims[dec == FALSE, dec01 := FALSE]
+  d_sims[dec == TRUE,  dec01 := 1]
+  d_sims[dec == FALSE, dec01 := 0]
   d_sims[, dec01 := nafill(dec01, type = "locf"), by = .(i_sim, domain, rule)]
-  d_sims[is.na(dec01), dec01 := FALSE]   # leading NAs, before any info existed
-  d_sims[, c_dec := as.integer(cumsum(dec01) >= 1), keyby = .(i_sim, domain, rule)]
+  # leading NAs, before any info existed
+  d_sims[is.na(dec01), dec01 := 0]   
   
+  # d_tmp_fut <- d_sims[domain == "d1" & rule == "fut"]
+  # d_tmp_sup <- d_sims[domain == "d1" & rule == "sup"]
+  # 
+  # d_tmp <- merge(
+  #   d_tmp_fut[, .(i_sim, i_anlys, domain, rule, dec01_fut = dec01)],
+  #   d_tmp_sup[, .(i_sim, i_anlys, domain, rule, dec01_sup = dec01)],
+  #   by = c("i_sim", "i_anlys", "domain"), all.x = T
+  # )
+  # d_tmp[dec01_fut == 1 & dec01_sup == 1]
   
   d_out <- d_sims[, .(
-    mu = mean(c_dec)
+    mu = mean(dec01)
   ), keyby = .(i_anlys, domain, rule)]
   
-  # kableExtra::kbl(
-  #   dcast(d_out, domain + rule ~ i_anlys, value.var = "mu"),
-  #   digits = 3, format = "simple"
-  # )
+  
   
   d_out
   
 }
+
+
+sim09_smry_dec_n <- function(r, l_spec) {
+  
+  d_out <- rbindlist(
+    lapply(seq_along(r), function(i_sim) {
+      rr <- r[[i_sim]]
+      rbindlist(
+        lapply(seq_along(rr$l_res), function(i_anlys) {
+          z <- rr$l_res[[i_anlys]]
+          if(is.null(z)) return(NULL)
+          d_dec <- sim09_extract_dec_indicators(z$l_dec_new)
+          d_dec <- d_dec[dec == TRUE]
+          if (nrow(d_dec) == 0) {return(NULL)}
+          data.table(
+            domain = unique(d_dec$domain),
+            i_anlys = i_anlys,
+            n = sum(l_spec$n_batch[seq_len(i_anlys)])
+          )
+        })
+      )
+    }), idcol = "i_sim"
+  )
+  d_out[, n := as.double(n)]
+  
+  
+  # First decision only
+  setorder(d_out, i_sim, domain, i_anlys)
+  
+  d_first <- d_out[, .SD[1], by = .(i_sim, domain)]
+  
+  
+  # Summary
+  d_smry <- d_first[
+    ,
+    .(
+      n_dec = .N,
+      pr_dec = .N / l_spec$n_sim,
+      mu_n = mean(n),
+      q_025_n = quantile(n, 0.025),
+      q_975_n = quantile(n, 0.975)
+    ),
+    by = domain
+  ]
+  
+  list(
+    d_first = d_first,
+    d_smry = d_smry
+  )
+}
+
 
 sim09_smry_effects <- function(
     r, l_spec,
@@ -1550,18 +1672,18 @@ sim09_smry_dec_info <- function(r, l_spec) {
   d_summary <- d_inform[
     ,
     .(
-      n_decided = .N,
-      pr_decided = .N / l_spec$n_sim,
+      n_dec = .N,
+      pr_dec = .N / l_spec$n_sim,
       
-      mean_n_enrolled = mean(n_enrolled),
-      q025_n_enrolled = quantile(n_enrolled, 0.025),
-      q975_n_enrolled = quantile(n_enrolled, 0.975),
+      mu_n_enrl = mean(n_enrolled),
+      q025_n_enrl = quantile(n_enrolled, 0.025),
+      q975_n_enrl = quantile(n_enrolled, 0.975),
       
-      mean_n_inform = mean(n_inform),
-      q025_n_inform = quantile(n_inform, 0.025),
-      q975_n_inform = quantile(n_inform, 0.975),
+      mu_n_info = mean(n_inform),
+      q025_n_info = quantile(n_inform, 0.025),
+      q975_n_info = quantile(n_inform, 0.975),
       
-      mean_inform_prop = mean(inform_prop)
+      prop_info = mean(inform_prop)
     ),
     by = domain
   ]
@@ -1570,7 +1692,7 @@ sim09_smry_dec_info <- function(r, l_spec) {
   d_arm_summary <- d_out[
     ,
     .(
-      mean_n = mean(n),
+      mu_n = mean(n),
       sd_n = sd(n),
       q025_n = quantile(n, 0.025),
       q975_n = quantile(n, 0.975)
@@ -1897,6 +2019,8 @@ sim09_default_cfg <- function(){
   }
   
   l_spec$n_sim <- 10
+  
+  l_spec$seed <- 1
   
   l_spec$p_silo <- c(l = 0.4, lnrd1 = 0.1, enrd1 = 0.3, cnrd1 = 0.2)
   l_spec$p_surg_lnrd1 <- c(dair = 0.5, r1 = 0.2, r2 = 0.3)
@@ -2729,19 +2853,19 @@ sim09_sim_loop <- function(){
   # temp
   l_dom_state = sim09_domain_state_open()
   
-  l_spec$reg_effect <- sim09_build_reg_effect(
-    reg_opts = l_spec$reg_opts, 
-    d1_trt_regs = l_spec$d1_trt_regs,
-    d2_wk6_regs = l_spec$d2_wk6_regs,
-    d3_wk12_regs = l_spec$d3_wk12_regs,
-    d1_delta = 1, 
-    d2_wk6_delta = 0, 
-    d3_wk12_delta = 0
-  )
+  # l_spec$reg_effect <- sim09_build_reg_effect(
+  #   reg_opts = l_spec$reg_opts, 
+  #   d1_trt_regs = l_spec$d1_trt_regs,
+  #   d2_wk6_regs = l_spec$d2_wk6_regs,
+  #   d3_wk12_regs = l_spec$d3_wk12_regs,
+  #   d1_delta = 0, 
+  #   d2_wk6_delta = 0, 
+  #   d3_wk12_delta = 0
+  # )
   # sanity - all contribs should be 1
   # l_spec$reg_effect[sim09_get_silo_contrib(l_spec$reg_opts, "l_")]
   
-  RNGkind("L'Ecuyer-CMRG"); set.seed(2)
+  RNGkind("L'Ecuyer-CMRG"); set.seed(l_spec$seed)
   r <- pbapply::pblapply(
     X=1:l_spec$n_sim, cl = l_spec$mc_cores, FUN=function(ix) {
       
@@ -2773,21 +2897,6 @@ sim09_sim_loop <- function(){
   log_info("Length of result set ", length(r))
   log_info("Sleep for 2 secs before processing")
   Sys.sleep(2)
-  
-  # parameter estimates averaged over the sims (expectations of posterior means)
-  # d_est <- sim09_smry_rd(r, l_spec)
-  # kableExtra::kbl(
-  #   dcast(d_est, par ~ i_anlys, value.var = "mu"),
-  #   digits = 3, format = "simple"
-  # )
-  
-  # cumulative probability of each decision within each domain
-  # d_pr_dec <- sim09_smry_pr_dec(r, l_spec)
-  # kableExtra::kbl(
-  #   dcast(d_pr_dec, domain + rule ~ i_anlys, value.var = "mu"),
-  #   digits = 3, format = "simple"
-  # )
-  
   
   fname <- paste0("sim09-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs2")
   log_info("sim09_sim_loop: saving to file", fname)

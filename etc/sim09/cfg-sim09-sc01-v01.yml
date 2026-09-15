@@ -1,7 +1,7 @@
 default:
-  desc: "RD = 0 in all domains"
-  n_sim: 200
-  mc_cores: 40
+  desc: "All domains log OR zero"
+  n_sim: 1000
+  mc_cores: 50
   mc_warmup: 1000
   mc_samp: 1000
   mc_chain: 1
@@ -9,6 +9,7 @@ default:
   nex: 3
   n_batch: [500, 500, 500, 500, 500]
   
+  seed: 98342
   
   p_silo: {l: 0.40, lnrd1: 0.10, enrd1: 0.30, cnrd1: 0.20}
     
@@ -98,8 +99,8 @@ default:
 
   # hyperparams
   pri_b_0: [0, 1]
-  pri_b_reg: [0, 1]
-  pri_b_d4: [0, 1]
+  pri_b_reg: [7, 0, 0.5]
+  pri_b_d4: [7, 0, 1.0]
   prior_only: 0
   
   
