@@ -479,6 +479,8 @@ sim09_compute_lor_std <- function(
   d_pop_l <- d_cum_dat[ silo == "l", .N, keyby = d4 ]
   d_pop_l[, w := N / sum(N)]
   
+  # tbd should probably pull some of this code out into a function that can be 
+  # called from compute_rd and this function....
   # DAIR
   grid_d1_dair <- data.table(
     reg = "l_dair_nad2_nad3", d4 = as.character(d_pop_l$d4), w = d_pop_l$w
@@ -576,7 +578,34 @@ sim09_compute_lor_std <- function(
   )
 }
 
+# prototype - bootstap version tbc...
+sim09_reg_wgt_boot <- function(
+    regs, d_cum_dat, n_draws
+    ) {
+  tb <- d_cum_dat[reg %in% regs, .N, keyby = reg]
+  n_full <- setNames(rep(0, length(regs)), regs)
+  n_full[as.character(tb$reg)] <- tb$N
+  if (sum(n_full) == 0) {
+    return(matrix(NA_real_, n_draws, length(regs), dimnames = list(NULL, regs)))
+  }
+  g <- sapply(
+    n_full, function(a) {
+      if (a == 0) {
+        rep(0, n_draws) 
+      } else { 
+          rgamma(n_draws, shape = a, rate = 1) 
+        }
+      })
+  # each row ~ Dirichlet(n_full), one row per posterior draw
+  g / rowSums(g)   
+}
 
+# Producing an RD aligned with a population/regimen mix per what is observed 
+# in the sample. 
+# In contrast the bayesian bootstrap would try to reflect the extra uncertainty
+# about whether the observed mix of regimens is a reliable estimate of the 
+# population mix.
+#
 # d2/d3/d4 are direct. For the ACTUAL patients in the applicable population
 # (r1 patients for d2, r2 patients for d3, everyone for d4), predict 
 # outcome prob under each of the trt levels, holding  everything else 
@@ -617,14 +646,17 @@ sim09_comp_rd <- function(
   d_pop_l <- d_cum_dat[silo == "l", .N, keyby = d4]
   d_pop_l[, w := N / sum(N)]
   
-  grid_dair <- data.table(reg = "l_dair_nad2_nad3", d4 = as.character(d_pop_l$d4), w = d_pop_l$w)
+  grid_dair <- data.table(
+    reg = "l_dair_nad2_nad3", d4 = as.character(d_pop_l$d4), w = d_pop_l$w)
   
   # contributions across pop
   grid_rev <- CJ(reg = l_spec$d1_trt_regs, d4 = as.character(d_pop_l$d4))
   # weight associated with each regimen
-  grid_rev <- merge(grid_rev, data.table(reg = l_spec$d1_trt_regs, w_treat = w_d1), by = "reg")
+  grid_rev <- base::merge(
+    grid_rev, data.table(reg = l_spec$d1_trt_regs, w_treat = w_d1), by = "reg")
   # weights acros d4
-  grid_rev <- merge(grid_rev, data.table(d4 = as.character(d_pop_l$d4), w_covar = d_pop_l$w), by = "d4")
+  grid_rev <- base::merge(
+    grid_rev, data.table(d4 = as.character(d_pop_l$d4), w_covar = d_pop_l$w), by = "d4")
   # combined weight as product
   grid_rev[, w := w_treat * w_covar]
   
@@ -638,8 +670,10 @@ sim09_comp_rd <- function(
   d_pop_r1[, reg_wk12 := paste0(silo, "_r1_wk12_nad3")]
   d_pop_r1[, reg_wk6  := paste0(silo, "_r1_wk6_nad3")]
   
-  grid_wk12 <- data.table(reg = d_pop_r1$reg_wk12, d4 = as.character(d_pop_r1$d4), w = d_pop_r1$w)
-  grid_wk6  <- data.table(reg = d_pop_r1$reg_wk6,  d4 = as.character(d_pop_r1$d4), w = d_pop_r1$w)
+  grid_wk12 <- data.table(
+    reg = d_pop_r1$reg_wk12, d4 = as.character(d_pop_r1$d4), w = d_pop_r1$w)
+  grid_wk6  <- data.table(
+    reg = d_pop_r1$reg_wk6,  d4 = as.character(d_pop_r1$d4), w = d_pop_r1$w)
   
   p_wk12 <- sim09_std_prob(v_b0, m_reg, m_d4, grid_wk12)
   p_wk6  <- sim09_std_prob(v_b0, m_reg, m_d4, grid_wk6)
@@ -651,8 +685,10 @@ sim09_comp_rd <- function(
   d_pop_r2[, reg_wk12 := paste0(silo, "_r2_nad2_wk12")]
   d_pop_r2[, reg_none := paste0(silo, "_r2_nad2_none")]
   
-  grid_d3_wk12 <- data.table(reg = d_pop_r2$reg_wk12, d4 = as.character(d_pop_r2$d4), w = d_pop_r2$w)
-  grid_d3_none <- data.table(reg = d_pop_r2$reg_none, d4 = as.character(d_pop_r2$d4), w = d_pop_r2$w)
+  grid_d3_wk12 <- data.table(
+    reg = d_pop_r2$reg_wk12, d4 = as.character(d_pop_r2$d4), w = d_pop_r2$w)
+  grid_d3_none <- data.table(
+    reg = d_pop_r2$reg_none, d4 = as.character(d_pop_r2$d4), w = d_pop_r2$w)
   
   p_d3_wk12 <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d3_wk12)
   p_d3_none <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d3_none)
@@ -662,8 +698,10 @@ sim09_comp_rd <- function(
   d_pop_all <- d_cum_dat[, .N, keyby = reg]
   d_pop_all[, w := N / sum(N)]
   
-  grid_rif   <- data.table(reg = as.character(d_pop_all$reg), d4 = "rif",   w = d_pop_all$w)
-  grid_norif <- data.table(reg = as.character(d_pop_all$reg), d4 = "norif", w = d_pop_all$w)
+  grid_rif   <- data.table(
+    reg = as.character(d_pop_all$reg), d4 = "rif",   w = d_pop_all$w)
+  grid_norif <- data.table(
+    reg = as.character(d_pop_all$reg), d4 = "norif", w = d_pop_all$w)
   
   p_rif   <- sim09_std_prob(v_b0, m_reg, m_d4, grid_rif)
   p_norif <- sim09_std_prob(v_b0, m_reg, m_d4, grid_norif)
@@ -694,17 +732,25 @@ sim09_stan_fit_01 <- function(
     "-intrm-", max(d_cum_dat$batch))
   
   # snk <- capture.output(
-    f_1 <- m_1$sample(
-      ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
-      parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
-      refresh = 0, show_exceptions = F,
-      max_treedepth = 11,
-      output_dir = l_spec$mc_out_dir,
-      output_basename = foutname
-    )
+  f_1 <- m_1$sample(
+    ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
+    parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
+    refresh = 0, show_exceptions = F,
+    max_treedepth = 11,
+    output_dir = l_spec$mc_out_dir,
+    output_basename = foutname
+  )
   # )
   
-  
+  # g-comp (standardisation) note ----------
+  # In the following g-computation is used to standardise the model based 
+  # parameters over a pre-specified target distribution of regimen 
+  # characteristics. It is important to note that we are treating the target
+  # distribution as fixed and so the posterior uncertainty is reflecting the 
+  # uncertainty in the model parameters but not the uncertainty in the 
+  # estimation of the target distribution as would be offered via a 
+  # bayesian bootstrap. The approach adopted aligns with the common reporting
+  # perspective for clinical trials.
   d_lor <- sim09_compute_lor(d_cum_dat, l_spec, f_1)
   d_lor_std <- sim09_compute_lor_std(d_cum_dat, l_spec, f_1)
   d_rd <- sim09_comp_rd(d_cum_dat, l_spec, f_1)
@@ -729,6 +775,7 @@ sim09_stan_fit_01 <- function(
   list(
     f_1 = f_1,
     d_lor_smry = d_lor_smry,
+    # this is the one we should use I thikn....
     d_lor_std_smry = d_lor_std_smry,  
     d_rd_smry = d_rd_smry,
     # one row per posterior draw, one column per domain contrast
@@ -889,25 +936,7 @@ sim09_report_sim_res <- function(){
   d_pr_dec <- sim09_smry_pr_dec(l$r, l$l_spec)
   l_pars <- sim09_smry_effects(l$r, l$l_spec)
   
-  kableExtra::kbl(
-    l_n$summary,
-    digits = 3, format = "simple"
-  )
   
-  kableExtra::kbl(
-    dcast(d_pr_dec, domain + rule ~ i_anlys, value.var = "mu"),
-    digits = 3, format = "simple"
-  )
-  
-  kableExtra::kbl(
-    l_pars$d_lor,
-    digits = 3, format = "simple"
-  )
-  
-  kableExtra::kbl(
-    l_pars$d_rd,
-    digits = 3, format = "simple"
-  )
   
   
   
@@ -1282,16 +1311,22 @@ sim09_smry_pr_dec <- function(r, l_spec){
     i_anlys = seq_along(l_spec$n_batch),
     domain = paste0("d", 1:4)
   )
-  d_grid <- base::merge(unique(d_sims[, .(domain, rule)]), d_grid, by = "domain", all = T, allow.cartesian=TRUE)
+  d_grid <- base::merge(
+    unique(d_sims[, .(domain, rule)]), 
+    d_grid, by = "domain", all = T, allow.cartesian=TRUE)
   
-  d_sims <- base::merge(d_grid, d_sims, by = c("i_sim", "i_anlys", "domain", "rule"), all.x = T)
+  d_sims <- base::merge(
+    d_grid, 
+    d_sims, by = c("i_sim", "i_anlys", "domain", "rule"), all.x = T)
   
-  d_sims[dec == TRUE, dec01 := TRUE]
-  d_sims[dec != TRUE, dec01 := FALSE]
+  # protect against NA
+  setorder(d_sims, i_sim, domain, rule, i_anlys)
+  d_sims[dec == TRUE,  dec01 := TRUE]
+  d_sims[dec == FALSE, dec01 := FALSE]
+  d_sims[, dec01 := nafill(dec01, type = "locf"), by = .(i_sim, domain, rule)]
+  d_sims[is.na(dec01), dec01 := FALSE]   # leading NAs, before any info existed
+  d_sims[, c_dec := as.integer(cumsum(dec01) >= 1), keyby = .(i_sim, domain, rule)]
   
-  d_sims[, c_dec := as.integer(cumsum(dec01)>=1), keyby = .(i_sim, domain, rule)]
-  # dealt with above before I do the cumsum...
-  # d_sims[, c_dec := nafill(c_dec, type = "locf"), keyby = .(i_sim, domain, rule)]
   
   d_out <- d_sims[, .(
     mu = mean(c_dec)
@@ -1470,9 +1505,12 @@ sim09_smry_dec_info <- function(r, l_spec) {
   
   if (nrow(d_first) == 0) {
     return(list(
-      by_sim = data.table(),
-      summary = data.table(),
-      arms = data.table()
+      # for each decision
+      d_inform_tot = data.table(),
+      # averages by arm informing each decision
+      d_arms = data.table(),
+      # average totals informing each decision
+      d_smry = data.table()
     ))
   }
   
@@ -2204,7 +2242,7 @@ sim09_ex_sim_2 <- function(
 }
 
 # Ex g-comp test ------
-sim09_ex_sim_2 <- function(
+sim09_ex_gcomp_stan_demo <- function(
 ){
   m_2 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09-gcomp.stan"))
   
