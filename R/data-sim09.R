@@ -1316,20 +1316,30 @@ sim09_smry_effects <- function(
     l_dom_state = l_dom_state
   )
   
-  d_rd <- rbindlist(
-    lapply(r, function(rr) {
-      rbindlist(
-        lapply(rr$l_res, function(z) {
-          d <- copy(z$l_smry$d_rd_smry)
-          d
-        }), idcol = "i_anlys" )
-    }), idcol = "i_sim")
   
   d_lor <- rbindlist(
     lapply(r, function(rr) {
       rbindlist(
         lapply(rr$l_res, function(z) {
           d <- copy(z$l_smry$d_lor_smry)
+          d
+        }), idcol = "i_anlys" )
+    }), idcol = "i_sim")
+  
+  d_lor_std <- rbindlist(
+    lapply(r, function(rr) {
+      rbindlist(
+        lapply(rr$l_res, function(z) {
+          d <- copy(z$l_smry$d_lor_std_smry)
+          d
+        }), idcol = "i_anlys" )
+    }), idcol = "i_sim")
+  
+  d_rd <- rbindlist(
+    lapply(r, function(rr) {
+      rbindlist(
+        lapply(rr$l_res, function(z) {
+          d <- copy(z$l_smry$d_rd_smry)
           d
         }), idcol = "i_anlys" )
     }), idcol = "i_sim")
@@ -1342,12 +1352,6 @@ sim09_smry_effects <- function(
     par = paste0("d", 1:4)
   )
   
-  d_rd <- base::merge(
-    d_grid,
-    d_rd,
-    by = c("i_sim", "i_anlys", "par"),
-    all.x = TRUE
-  )
   
   d_lor <- base::merge(
     d_grid,
@@ -1356,27 +1360,42 @@ sim09_smry_effects <- function(
     all.x = TRUE
   )
   
-  setorder(d_rd, i_sim, par, i_anlys)
-  setorder(d_lor, i_sim, par, i_anlys)
+  d_lor_std <- base::merge(
+    d_grid,
+    d_lor_std,
+    by = c("i_sim", "i_anlys", "par"),
+    all.x = TRUE
+  )
   
-  d_rd[, c("mu", "q_025", "q_975") :=
-         lapply(.SD, nafill, type = "locf"),
-       by = .(i_sim, par),
-       .SDcols = c("mu", "q_025", "q_975")]
+  d_rd <- base::merge(
+    d_grid,
+    d_rd,
+    by = c("i_sim", "i_anlys", "par"),
+    all.x = TRUE
+  )
+  
+  setorder(d_lor, i_sim, par, i_anlys)
+  setorder(d_lor_std, i_sim, par, i_anlys)
+  setorder(d_rd, i_sim, par, i_anlys)
+  
   
   d_lor[, c("mu", "q_025", "q_975") :=
           lapply(.SD, nafill, type = "locf"),
         by = .(i_sim, par),
         .SDcols = c("mu", "q_025", "q_975")]
   
+  d_lor_std[, c("mu", "q_025", "q_975") :=
+          lapply(.SD, nafill, type = "locf"),
+        by = .(i_sim, par),
+        .SDcols = c("mu", "q_025", "q_975")]
+  
+  d_rd[, c("mu", "q_025", "q_975") :=
+         lapply(.SD, nafill, type = "locf"),
+       by = .(i_sim, par),
+       .SDcols = c("mu", "q_025", "q_975")]
+  
   
   # Add true vals
-  d_rd <- base::merge(
-    d_rd,
-    d_true[, .(par = domain, truth = rd)],
-    by = "par",
-    all.x = TRUE
-  )
   
   d_lor <- base::merge(
     d_lor,
@@ -1385,6 +1404,44 @@ sim09_smry_effects <- function(
     all.x = TRUE
   )
   
+  d_lor_std <- base::merge(
+    d_lor_std,
+    # note am using the same lor reference for now
+    d_true[, .(par = domain, truth = lor)],
+    by = "par",
+    all.x = TRUE
+  )
+  
+  d_rd <- base::merge(
+    d_rd,
+    d_true[, .(par = domain, truth = rd)],
+    by = "par",
+    all.x = TRUE
+  )
+  
+  d_lor_out <- d_lor[, .(
+    truth = data.table::first(truth),
+    mean_est = mean(mu, na.rm = TRUE),
+    bias = mean(mu - truth, na.rm = TRUE),
+    rmse = sqrt(mean((mu - truth)^2, na.rm = TRUE)),
+    coverage = mean(
+      q_025 <= truth & q_975 >= truth,
+      na.rm = TRUE
+    )
+  ), keyby = .(i_anlys, par)]
+  setkey(d_lor_out, par, i_anlys)
+  
+  d_lor_std_out <- d_lor_std[, .(
+    truth = data.table::first(truth),
+    mean_est = mean(mu, na.rm = TRUE),
+    bias = mean(mu - truth, na.rm = TRUE),
+    rmse = sqrt(mean((mu - truth)^2, na.rm = TRUE)),
+    coverage = mean(
+      q_025 <= truth & q_975 >= truth,
+      na.rm = TRUE
+    )
+  ), keyby = .(i_anlys, par)]
+  setkey(d_lor_std_out, par, i_anlys)
   
   d_rd_out <- d_rd[, .(
     truth = data.table::first(truth),
@@ -1399,21 +1456,10 @@ sim09_smry_effects <- function(
   ), keyby = .(i_anlys, par)]
   setkey(d_rd_out, par, i_anlys)
   
-  d_lor_out <- d_lor[, .(
-    truth = data.table::first(truth),
-    mean_est = mean(mu, na.rm = TRUE),
-    bias = mean(mu - truth, na.rm = TRUE),
-    rmse = sqrt(mean((mu - truth)^2, na.rm = TRUE)),
-    coverage = mean(
-      q_025 <= truth & q_975 >= truth,
-      na.rm = TRUE
-    )
-  ), keyby = .(i_anlys, par)]
-  setkey(d_lor_out, par, i_anlys)
-  
   list(
-    d_rd = d_rd_out,
-    d_lor = d_lor_out
+    d_lor = d_lor_out,
+    d_lor_std = d_lor_std_out,
+    d_rd = d_rd_out
   )
 }
 
