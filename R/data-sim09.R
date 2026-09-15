@@ -774,12 +774,10 @@ sim09_report_sim_res <- function(){
   
 }
 
-# True domain effects implied by the simulation DGP
-# population-standardised:
-#   - log odds ratios
-#   - risk differences
-# These are fixed for a given l_spec and do not depend on a simulated dataset.
-sim09_true_effects <- function(
+# Truth is the design-population standardised estimand.
+# The fitted estimand uses realised population weights, so finite-sample
+# differences between truth and analysis target are possible/likely.
+sim09_true_effects_design_pop <- function(
     l_spec,
     l_dom_state = sim09_domain_state_open()
     ) {
@@ -1227,7 +1225,7 @@ sim09_smry_effects <- function(
     l_dom_state = sim09_domain_state_open()
     ) {
   
-  d_true <- sim09_true_effects(
+  d_true <- sim09_true_effects_design_pop(
     l_spec = l_spec,
     l_dom_state = l_dom_state
   )
@@ -1890,8 +1888,49 @@ sim09_ex_sim_2 <- function(
   
 }
 
-
-
+# Ex g-comp test ------
+sim09_ex_sim_2 <- function(
+){
+  m_2 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09-gcomp.stan"))
+  
+  d <- data.table(id = 1:1000)
+  d[, trt := rbinom(.N, 1, 0.5) + 1]
+  d[, cov1 := sample(1:4, size = .N, replace = T)]
+  d[, cov2 := sample(1:2, size = .N, replace = T)]
+  b_trt = c(0, 1)
+  b_cov1 = c(0, 0.5, 0.2, 0.1)
+  b_cov2 = c(0, -0.1)
+  d[, eta := qlogis(0.4) + b_trt[trt] + b_cov1[cov1] + b_cov2[cov2]]
+  d[, y := rbinom(.N, 1, plogis(eta))]
+  
+  # d[, .(y = sum(y), n = .N), by = .(trt, cov1, cov2)]
+  
+  ld <- list(
+    N = nrow(d), y = d$y, 
+    K_trt = length(unique(d$trt)),
+    K_cov1 = length(unique(d$cov1 )),
+    K_cov2 = length(unique(d$cov2)),
+    trt = d$trt, cov1 = d$cov1, cov2 = d$cov2,
+    pri_b_0 = c(0, 1),
+    pri_b_trt = c(0, 1), pri_b_cov1 = c(0, 1), pri_b_cov2 = c(0, 1)
+  )
+  
+  f_2 <- m_2$sample(
+    ld, iter_warmup = 1000, iter_sampling = 1000,
+    parallel_chains = 1, chains = 1,
+    refresh = 0, show_exceptions = T
+  )
+  f_2$summary(variables = c(
+    "b_0", "b_trt", "b_cov1", "b_cov2"
+  ))
+  f_2$summary(variables = c(
+    "theta_1", "mu_1", "theta_2", "mu_2"
+  ))
+  
+  
+  
+  
+}
 
 
 # Model fit scenarios ----
@@ -1928,7 +1967,7 @@ sim09_ex_scenarios <- function(){
   l_spec$reg_effect <- sim09_build_reg_effect(
     reg_opts = l_spec$reg_opts, 
     d1_trt_regs = l_spec$d1_trt_regs,
-    d2_wk6_regs = l_spec$d2_wk12_regs,
+    d2_wk6_regs = l_spec$d2_wk6_regs,
     d3_wk12_regs = l_spec$d3_wk12_regs,
     d1_delta = 1, 
     d2_wk6_delta = 0, 
