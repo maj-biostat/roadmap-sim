@@ -1,0 +1,109 @@
+default:
+  desc: "d2 l-OR = -0.1"
+  n_sim: 1000
+  mc_cores: 50
+  mc_warmup: 1000
+  mc_samp: 1000
+  mc_chain: 1
+  # hier or indep
+  mc_model: hier 
+  # example trials
+  nex: 3
+  n_batch: [500, 500, 500, 500, 500]
+  
+  seed: 124
+  
+  p_silo: {l: 0.40, lnrd1: 0.10, enrd1: 0.30, cnrd1: 0.20}
+    
+  # proportion of each surgery type within non-rand d1
+  p_surg_lnrd1: {dair: 0.50, r1: 0.20, r2: 0.30}
+  p_surg_enrd1: {dair: 0.70, r1: 0.15, r2: 0.15}
+  p_surg_cnrd1: {dair: 0.20, r1: 0.20, r2: 0.60}
+  
+  response_p_ref: 0.6
+  
+  # first index will always be fixed at zero irrespective of what is put
+  reg_effect: 
+    l_dair_nad2_nad3: 0.0
+    lnrd1_dair_nad2_nad3: 0.0
+    enrd1_dair_nad2_nad3: 0.0
+    cnrd1_dair_nad2_nad3: 0.0
+    # d2 wk12
+    l_r1_wk12_nad3: 0.0
+    lnrd1_r1_wk12_nad3: 0.0
+    enrd1_r1_wk12_nad3: 0.0
+    cnrd1_r1_wk12_nad3: 0.0
+    # d2 wk6
+    l_r1_wk6_nad3: -0.1
+    lnrd1_r1_wk6_nad3: -0.1
+    enrd1_r1_wk6_nad3: -0.1
+    cnrd1_r1_wk6_nad3: -0.1
+    # d2 non rand
+    l_r1_nad2_nad3: 0.0
+    lnrd1_r1_nad2_nad3: 0.0
+    enrd1_r1_nad2_nad3: 0.0
+    cnrd1_r1_nad2_nad3: 0.0
+    # d3 wk12
+    l_r2_nad2_wk12: 0.0
+    lnrd1_r2_nad2_wk12: 0.0
+    enrd1_r2_nad2_wk12: 0.0
+    cnrd1_r2_nad2_wk12: 0.0
+    # d3 none
+    l_r2_nad2_none: 0.0
+    lnrd1_r2_nad2_none: 0.0
+    enrd1_r2_nad2_none: 0.0
+    cnrd1_r2_nad2_none: 0.0
+    # r2 non rand
+    l_r2_nad2_nad3: 0.0
+    lnrd1_r2_nad2_nad3: 0.0
+    enrd1_r2_nad2_nad3: 0.0
+    cnrd1_r2_nad2_nad3: 0.0
+  
+  d4_effect: {nad4: 0.0, norif: 0, rif: 0}
+  
+  
+  # decision rules, hurdles and threshold probs
+  dec:
+    #  Pr(theta > delta)  > thresh => Superiority
+    # theta = pr_succsess_rev - pr_succsess_dair
+    #  Pr(theta > delta) < thresh => Futility, ie futile if the Pr < 0.3 is > 0.05
+    d1:
+      sup: 
+        delta: 0.0
+        thresh: 0.95
+      fut:  
+        delta: 0.05 
+        thresh: 0.3
+    d2:
+      # Pr(theta > delta)  > thresh => Non-inferior
+      ni:  
+        delta: -0.05
+        thresh: 0.95
+      # Pr(theta > delta) < thresh => Futility, ie futile wrt ni if the Pr < 0.3 is > 0.05
+      fut:  
+        delta: 0.0 
+        thresh: 0.1
+    d3:
+      sup:  
+        delta: 0.0
+        thresh: 0.95
+      fut:  
+        delta: 0.05 
+        thresh: 0.3
+    d4:
+      sup:  
+        delta: 0.0
+        thresh: 0.99
+      fut:  
+        delta: 0.05 
+        thresh: 0.3
+  
+
+  # hyperparams
+  pri_b_0: [0, 1]
+  pri_b_reg: [7, 0, 0.5]
+  pri_b_d4: [7, 0, 1.0]
+  prior_only: 0
+  
+  
+  
