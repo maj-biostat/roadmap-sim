@@ -2771,7 +2771,7 @@ sim09_ex_scenarios <- function(){
   set.seed(1)
   default_cfg <- T
   if(!default_cfg){
-    f_cfgsc <- file.path("./etc/sim09/cfg-sim09-sc01-v01.yml")
+    f_cfgsc <- file.path("./etc/sim09/cfg-sim09-sc01-v06.yml")
     l_spec <- config::get(file = f_cfgsc)
     l_spec <- sim09_update_cfg(l_spec)
   } else {
@@ -2781,7 +2781,7 @@ sim09_ex_scenarios <- function(){
   l_spec$n_batch <- c(2500)
   l_spec$is <- 1
   l_spec$ie <- sum(l_spec$n_batch)
-  l_spec$n_sim <- 10000
+  l_spec$n_sim <- 5000
   
   # starting state for domains
   l_dom_state = sim09_domain_state_open()
@@ -2807,15 +2807,15 @@ sim09_ex_scenarios <- function(){
     d_tbl, digits = 3, format = "simple", 
     caption = paste0(
       "n_sim ", l_spec$n_sim, " n ", sum(l_spec$n_batch)))
-  # Table: n_sim 10000 n 2500
+  # Example output:
+  # Table: n_sim 5000 n 2500
   # 
   # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
-  # d1         1.025    1.003    0.148    0.145
-  # d2         0.000   -0.001    0.298    0.263
-  # d3         0.000    0.000    0.202    0.185
-  # d4         0.001    0.001    0.103    0.099
-  
-  
+  # -------  -------  -------  -------  -------
+  #   d1         1.037    1.016    0.133    0.133
+  # d2         0.028    0.007    0.309    0.283
+  # d3        -0.008   -0.007    0.217    0.205
+  # d4        -0.006   -0.008    0.121    0.118
   
   # Scenario - negative effect associ with d2 wk6 pollutes d1 ------------
   # just an effect in d2
@@ -2865,13 +2865,14 @@ sim09_ex_scenarios <- function(){
     d_tbl, digits = 3, format = "simple", 
     caption = paste0(
       "n_sim ", l_spec$n_sim, " n ", sum(l_spec$n_batch)))
-  # Table: n_sim 10000 n 2500
+  # Table: n_sim 5000 n 2500
   # 
   # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
-  # d1        -0.113   -0.116    0.131    0.129
-  # d2        -1.036   -1.006    0.265    0.249
-  # d3        -0.002   -0.002    0.178    0.175
-  # d4         0.002    0.001    0.100    0.098
+  # -------  -------  -------  -------  -------
+  #   d1        -0.114   -0.117    0.129    0.128
+  # d2        -1.029   -1.001    0.258    0.250
+  # d3        -0.020   -0.020    0.198    0.197
+  # d4        -0.007   -0.007    0.101    0.099
   
   # Scenario - positive effect associ with 12wk pollutes d1 ------------
   # just an effect in d3 
@@ -2921,13 +2922,14 @@ sim09_ex_scenarios <- function(){
     d_tbl, digits = 3, format = "simple", 
     caption = paste0(
       "n_sim ", l_spec$n_sim, " n ", sum(l_spec$n_batch)))
-  # Table: n_sim 10000 n 2500
+  # Table: n_sim 5000 n 2500
   # 
   # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
-  # d1         0.240    0.201    0.136    0.131
-  # d2         0.004    0.004    0.264    0.249
-  # d3         1.036    1.005    0.235    0.196
-  # d4        -0.002   -0.002    0.101    0.099
+  # -------  -------  -------  -------  -------
+  #   d1         0.251    0.212    0.144    0.143
+  # d2        -0.030   -0.030    0.266    0.262
+  # d3         1.047    1.025    0.212    0.207
+  # d4        -0.004   -0.003    0.114    0.109
   
   # Scenario - positive effect associ with rif ------------
   # just an effect in d3 
@@ -2944,13 +2946,14 @@ sim09_ex_scenarios <- function(){
     d_tbl, digits = 3, format = "simple", 
     caption = paste0(
       "n_sim ", l_spec$n_sim, " n ", sum(l_spec$n_batch)))
-  # Table: n_sim 10000 n 2500
+  # Table: n_sim 5000 n 2500
   # 
   # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
-  # d1         0.007   -0.001    0.139    0.135
-  # d2         0.002    0.003    0.301    0.262
-  # d3        -0.005   -0.006    0.190    0.183
-  # d4         1.014    1.004    0.110    0.108
+  # -------  -------  -------  -------  -------
+  #   d1         0.011    0.004    0.134    0.134
+  # d2        -0.016   -0.008    0.279    0.270
+  # d3         0.000    0.004    0.214    0.206
+  # d4         1.019    1.008    0.143    0.142
   
   
   # Scenario - opposite effects in d2/d3 ------------
@@ -2999,14 +3002,15 @@ sim09_ex_scenarios <- function(){
     d_tbl, digits = 3, format = "simple", 
     caption = paste0(
       "n_sim ", l_spec$n_sim, " n ", sum(l_spec$n_batch)))
-  # Table: n_sim 10000 n 2500
+
+  # Table: n_sim 5000 n 2500
   # 
   # domain    mu_jnt   mu_uni   sd_jnt   sd_uni
-  # d1         0.154    0.111    0.135    0.129
-  # d2        -0.778   -0.756    0.262    0.249
-  # d3         1.034    1.005    0.230    0.195
-  # d4         0.000    0.000    0.100    0.097
-  
+  # -------  -------  -------  -------  -------
+  #   d1         0.162    0.118    0.143    0.140
+  # d2        -0.762   -0.740    0.236    0.228
+  # d3         1.047    1.025    0.212    0.207
+  # d4        -0.009   -0.008    0.104    0.099
   
   
 }
@@ -3137,6 +3141,7 @@ sim09_ex_partial_nest_01 <- function(){
   # d4norif                 -0.12456    0.12772  -0.975   0.3302  
   # d4rif                   -0.13230    0.12772  -1.036   0.3011  
   
+  # ok, so assuming we actually ran a logistic reg....
   # d1:
   # contrast between:
   # log odds response dair:

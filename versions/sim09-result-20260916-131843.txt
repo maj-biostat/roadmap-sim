@@ -1,0 +1,1572 @@
+Configuration sim09-v01-20260916-105400.qs2
+Scenario All domains log OR zero
+
+
+Table: Scenario  All domains log OR zero 
+Domain 1 distribution
+
+silo      pr   dair      r1      r2
+------  ----  -----  ------  ------
+l        0.4    0.5   0.167   0.333
+lnrd1    0.1    0.5   0.200   0.300
+enrd1    0.3    0.7   0.150   0.150
+cnrd1    0.2    0.2   0.200   0.600
+
+
+Table: Scenario  All domains log OR zero 
+Linear predictor by regimen
+
+reg                    d4         b_0   b_reg   b_d4     eta     p
+---------------------  ------  ------  ------  -----  ------  ----
+l_dair_nad2_nad3       nad4     0.405       0      0   0.405   0.6
+l_dair_nad2_nad3       norif    0.405       0      0   0.405   0.6
+l_dair_nad2_nad3       rif      0.405       0      0   0.405   0.6
+lnrd1_dair_nad2_nad3   nad4     0.405       0      0   0.405   0.6
+lnrd1_dair_nad2_nad3   norif    0.405       0      0   0.405   0.6
+lnrd1_dair_nad2_nad3   rif      0.405       0      0   0.405   0.6
+enrd1_dair_nad2_nad3   nad4     0.405       0      0   0.405   0.6
+enrd1_dair_nad2_nad3   norif    0.405       0      0   0.405   0.6
+enrd1_dair_nad2_nad3   rif      0.405       0      0   0.405   0.6
+cnrd1_dair_nad2_nad3   nad4     0.405       0      0   0.405   0.6
+cnrd1_dair_nad2_nad3   norif    0.405       0      0   0.405   0.6
+cnrd1_dair_nad2_nad3   rif      0.405       0      0   0.405   0.6
+l_r1_wk12_nad3         nad4     0.405       0      0   0.405   0.6
+l_r1_wk12_nad3         norif    0.405       0      0   0.405   0.6
+l_r1_wk12_nad3         rif      0.405       0      0   0.405   0.6
+lnrd1_r1_wk12_nad3     nad4     0.405       0      0   0.405   0.6
+lnrd1_r1_wk12_nad3     norif    0.405       0      0   0.405   0.6
+lnrd1_r1_wk12_nad3     rif      0.405       0      0   0.405   0.6
+enrd1_r1_wk12_nad3     nad4     0.405       0      0   0.405   0.6
+enrd1_r1_wk12_nad3     norif    0.405       0      0   0.405   0.6
+enrd1_r1_wk12_nad3     rif      0.405       0      0   0.405   0.6
+cnrd1_r1_wk12_nad3     nad4     0.405       0      0   0.405   0.6
+cnrd1_r1_wk12_nad3     norif    0.405       0      0   0.405   0.6
+cnrd1_r1_wk12_nad3     rif      0.405       0      0   0.405   0.6
+l_r1_wk6_nad3          nad4     0.405       0      0   0.405   0.6
+l_r1_wk6_nad3          norif    0.405       0      0   0.405   0.6
+l_r1_wk6_nad3          rif      0.405       0      0   0.405   0.6
+lnrd1_r1_wk6_nad3      nad4     0.405       0      0   0.405   0.6
+lnrd1_r1_wk6_nad3      norif    0.405       0      0   0.405   0.6
+lnrd1_r1_wk6_nad3      rif      0.405       0      0   0.405   0.6
+enrd1_r1_wk6_nad3      nad4     0.405       0      0   0.405   0.6
+enrd1_r1_wk6_nad3      norif    0.405       0      0   0.405   0.6
+enrd1_r1_wk6_nad3      rif      0.405       0      0   0.405   0.6
+cnrd1_r1_wk6_nad3      nad4     0.405       0      0   0.405   0.6
+cnrd1_r1_wk6_nad3      norif    0.405       0      0   0.405   0.6
+cnrd1_r1_wk6_nad3      rif      0.405       0      0   0.405   0.6
+l_r1_nad2_nad3         nad4     0.405       0      0   0.405   0.6
+l_r1_nad2_nad3         norif    0.405       0      0   0.405   0.6
+l_r1_nad2_nad3         rif      0.405       0      0   0.405   0.6
+lnrd1_r1_nad2_nad3     nad4     0.405       0      0   0.405   0.6
+lnrd1_r1_nad2_nad3     norif    0.405       0      0   0.405   0.6
+lnrd1_r1_nad2_nad3     rif      0.405       0      0   0.405   0.6
+enrd1_r1_nad2_nad3     nad4     0.405       0      0   0.405   0.6
+enrd1_r1_nad2_nad3     norif    0.405       0      0   0.405   0.6
+enrd1_r1_nad2_nad3     rif      0.405       0      0   0.405   0.6
+cnrd1_r1_nad2_nad3     nad4     0.405       0      0   0.405   0.6
+cnrd1_r1_nad2_nad3     norif    0.405       0      0   0.405   0.6
+cnrd1_r1_nad2_nad3     rif      0.405       0      0   0.405   0.6
+l_r2_nad2_wk12         nad4     0.405       0      0   0.405   0.6
+l_r2_nad2_wk12         norif    0.405       0      0   0.405   0.6
+l_r2_nad2_wk12         rif      0.405       0      0   0.405   0.6
+lnrd1_r2_nad2_wk12     nad4     0.405       0      0   0.405   0.6
+lnrd1_r2_nad2_wk12     norif    0.405       0      0   0.405   0.6
+lnrd1_r2_nad2_wk12     rif      0.405       0      0   0.405   0.6
+enrd1_r2_nad2_wk12     nad4     0.405       0      0   0.405   0.6
+enrd1_r2_nad2_wk12     norif    0.405       0      0   0.405   0.6
+enrd1_r2_nad2_wk12     rif      0.405       0      0   0.405   0.6
+cnrd1_r2_nad2_wk12     nad4     0.405       0      0   0.405   0.6
+cnrd1_r2_nad2_wk12     norif    0.405       0      0   0.405   0.6
+cnrd1_r2_nad2_wk12     rif      0.405       0      0   0.405   0.6
+l_r2_nad2_none         nad4     0.405       0      0   0.405   0.6
+l_r2_nad2_none         norif    0.405       0      0   0.405   0.6
+l_r2_nad2_none         rif      0.405       0      0   0.405   0.6
+lnrd1_r2_nad2_none     nad4     0.405       0      0   0.405   0.6
+lnrd1_r2_nad2_none     norif    0.405       0      0   0.405   0.6
+lnrd1_r2_nad2_none     rif      0.405       0      0   0.405   0.6
+enrd1_r2_nad2_none     nad4     0.405       0      0   0.405   0.6
+enrd1_r2_nad2_none     norif    0.405       0      0   0.405   0.6
+enrd1_r2_nad2_none     rif      0.405       0      0   0.405   0.6
+cnrd1_r2_nad2_none     nad4     0.405       0      0   0.405   0.6
+cnrd1_r2_nad2_none     norif    0.405       0      0   0.405   0.6
+cnrd1_r2_nad2_none     rif      0.405       0      0   0.405   0.6
+l_r2_nad2_nad3         nad4     0.405       0      0   0.405   0.6
+l_r2_nad2_nad3         norif    0.405       0      0   0.405   0.6
+l_r2_nad2_nad3         rif      0.405       0      0   0.405   0.6
+lnrd1_r2_nad2_nad3     nad4     0.405       0      0   0.405   0.6
+lnrd1_r2_nad2_nad3     norif    0.405       0      0   0.405   0.6
+lnrd1_r2_nad2_nad3     rif      0.405       0      0   0.405   0.6
+enrd1_r2_nad2_nad3     nad4     0.405       0      0   0.405   0.6
+enrd1_r2_nad2_nad3     norif    0.405       0      0   0.405   0.6
+enrd1_r2_nad2_nad3     rif      0.405       0      0   0.405   0.6
+cnrd1_r2_nad2_nad3     nad4     0.405       0      0   0.405   0.6
+cnrd1_r2_nad2_nad3     norif    0.405       0      0   0.405   0.6
+cnrd1_r2_nad2_nad3     rif      0.405       0      0   0.405   0.6
+
+
+Table: Scenario  All domains log OR zero 
+Rule settings
+
+domain   rule    delta   thresh
+-------  -----  ------  -------
+d1       sup      0.00    0.975
+d1       fut      0.05    0.300
+d2       ni      -0.05    0.975
+d2       fut      0.00    0.100
+d3       sup      0.00    0.975
+d3       fut      0.05    0.300
+d4       sup      0.00    0.990
+d4       fut      0.05    0.300
+
+
+Table: Scenario  All domains log OR zero 
+Pr decision by domain and interim
+
+domain   rule        1       2       3       4       5
+-------  -----  ------  ------  ------  ------  ------
+d1       fut     0.581   0.751   0.839   0.881   0.911
+d1       sup     0.028   0.042   0.053   0.060   0.067
+d2       fut     0.121   0.168   0.202   0.229   0.242
+d2       ni      0.070   0.112   0.151   0.190   0.227
+d3       fut     0.517   0.666   0.741   0.786   0.825
+d3       sup     0.024   0.040   0.045   0.054   0.061
+d4       fut     0.652   0.828   0.912   0.949   0.963
+d4       sup     0.015   0.018   0.020   0.026   0.027
+
+
+Table: Scenario  All domains log OR zero 
+Enrolment at time of decision
+
+domain    n_dec   pr_dec       mu_n   q_025_n   q_975_n
+-------  ------  -------  ---------  --------  --------
+d1          978    0.978    846.115       500      2500
+d2          469    0.469   1174.840       500      2500
+d3          886    0.886    878.668       500      2500
+d4          990    0.990    772.727       500      2000
+
+
+Table: Scenario  All domains log OR zero 
+Enrolment and sample size informing decisions
+
+domain    n_dec   pr_dec   mu_n_enrl   q025_n_enrl   q975_n_enrl   mu_n_info   q025_n_info   q975_n_info   prop_info
+-------  ------  -------  ----------  ------------  ------------  ----------  ------------  ------------  ----------
+d1          978    0.978       846.1           500          2500       338.2         181.0         991.6       0.400
+d2          469    0.469      1174.8           500          2500       122.2          48.0         291.6       0.109
+d3          886    0.886       878.7           500          2500       178.8          98.1         444.4       0.216
+d4          990    0.990       772.7           500          2000       541.2         331.0        1416.6       0.700
+
+
+Table: Scenario  All domains log OR zero 
+Sample size informing decisions by arm
+
+domain   arm     inform     mu_n    sd_n   q025_n   q975_n
+-------  ------  -------  ------  ------  -------  -------
+d1       dair    TRUE      169.1   108.1     84.4    485.6
+d1       r1      TRUE       56.4    36.9     24.0    161.6
+d1       r2      TRUE      112.7    73.2     53.0    325.0
+d2       wk12    TRUE       61.1    35.1     21.0    143.9
+d2       wk6     TRUE       61.1    35.3     22.0    144.3
+d2       nad2    FALSE      53.0    30.4     19.0    132.0
+d3       wk12    TRUE       89.1    50.1     46.0    217.0
+d3       none    TRUE       89.8    50.9     46.0    220.8
+d3       nad3    FALSE      76.8    43.4     38.1    196.0
+d4       rif     TRUE      270.6   163.6    157.0    722.8
+d4       norif   TRUE      270.7   163.2    156.0    710.3
+d4       nad4    FALSE     231.5   139.8    131.0    608.4
+
+
+Table: Scenario  All domains log OR zero 
+Weighted conditional/model-scale log OR
+
+ i_anlys  par    truth   mean_est     bias    rmse   coverage
+--------  ----  ------  ---------  -------  ------  ---------
+       1  d1         0      0.031    0.031   0.289      0.947
+       2  d1         0     -0.002   -0.002   0.226      0.948
+       3  d1         0     -0.015   -0.015   0.206      0.948
+       4  d1         0     -0.023   -0.023   0.197      0.948
+       5  d1         0     -0.024   -0.024   0.193      0.942
+       1  d2         0     -0.006   -0.006   0.615      0.931
+       2  d2         0     -0.014   -0.014   0.503      0.927
+       3  d2         0     -0.020   -0.020   0.480      0.922
+       4  d2         0     -0.018   -0.018   0.474      0.924
+       5  d2         0     -0.015   -0.015   0.472      0.918
+       1  d3         0      0.004    0.004   0.419      0.944
+       2  d3         0     -0.010   -0.010   0.321      0.941
+       3  d3         0     -0.021   -0.021   0.291      0.945
+       4  d3         0     -0.025   -0.025   0.281      0.938
+       5  d3         0     -0.030   -0.030   0.278      0.933
+       1  d4         0      0.008    0.008   0.239      0.932
+       2  d4         0      0.003    0.003   0.177      0.946
+       3  d4         0     -0.004   -0.004   0.159      0.953
+       4  d4         0     -0.007   -0.007   0.152      0.954
+       5  d4         0     -0.009   -0.009   0.149      0.961
+
+
+Table: Scenario  All domains log OR zero 
+Standardised marginal log OR
+
+ i_anlys  par    truth   mean_est     bias    rmse   coverage
+--------  ----  ------  ---------  -------  ------  ---------
+       1  d1         0      0.008    0.008   0.275      0.951
+       2  d1         0     -0.015   -0.015   0.222      0.945
+       3  d1         0     -0.026   -0.026   0.204      0.948
+       4  d1         0     -0.033   -0.033   0.196      0.946
+       5  d1         0     -0.034   -0.034   0.191      0.943
+       1  d2         0     -0.008   -0.008   0.576      0.933
+       2  d2         0     -0.014   -0.014   0.481      0.934
+       3  d2         0     -0.020   -0.020   0.464      0.927
+       4  d2         0     -0.017   -0.017   0.457      0.929
+       5  d2         0     -0.014   -0.014   0.456      0.925
+       1  d3         0      0.005    0.005   0.403      0.941
+       2  d3         0     -0.003   -0.003   0.309      0.939
+       3  d3         0     -0.013   -0.013   0.283      0.947
+       4  d3         0     -0.017   -0.017   0.274      0.940
+       5  d3         0     -0.022   -0.022   0.272      0.938
+       1  d4         0      0.008    0.008   0.226      0.932
+       2  d4         0      0.003    0.003   0.172      0.946
+       3  d4         0     -0.004   -0.004   0.155      0.953
+       4  d4         0     -0.007   -0.007   0.149      0.954
+       5  d4         0     -0.008   -0.008   0.146      0.961
+
+
+Table: Scenario  All domains log OR zero 
+Standardised marginal RD
+
+ i_anlys  par    truth   mean_est     bias    rmse   coverage
+--------  ----  ------  ---------  -------  ------  ---------
+       1  d1         0      0.002    0.002   0.065      0.951
+       2  d1         0     -0.004   -0.004   0.053      0.945
+       3  d1         0     -0.007   -0.007   0.049      0.948
+       4  d1         0     -0.009   -0.009   0.047      0.946
+       5  d1         0     -0.009   -0.009   0.046      0.943
+       1  d2         0     -0.001   -0.001   0.128      0.933
+       2  d2         0     -0.003   -0.003   0.110      0.934
+       3  d2         0     -0.004   -0.004   0.107      0.927
+       4  d2         0     -0.004   -0.004   0.105      0.929
+       5  d2         0     -0.003   -0.003   0.105      0.925
+       1  d3         0      0.001    0.001   0.093      0.941
+       2  d3         0     -0.001   -0.001   0.073      0.939
+       3  d3         0     -0.004   -0.004   0.068      0.947
+       4  d3         0     -0.005   -0.005   0.066      0.940
+       5  d3         0     -0.006   -0.006   0.065      0.938
+       1  d4         0      0.002    0.002   0.054      0.932
+       2  d4         0      0.000    0.000   0.041      0.946
+       3  d4         0     -0.001   -0.001   0.037      0.953
+       4  d4         0     -0.002   -0.002   0.036      0.954
+       5  d4         0     -0.002   -0.002   0.035      0.961
+
+
+Model code hasn't been stored, but used: indep2
+
+
+End of results for file
+Configuration sim09-v02-20260916-105643.qs2
+Scenario d1 l-OR = 1
+
+
+Table: Scenario  d1 l-OR = 1 
+Domain 1 distribution
+
+silo      pr   dair      r1      r2
+------  ----  -----  ------  ------
+l        0.4    0.5   0.167   0.333
+lnrd1    0.1    0.5   0.200   0.300
+enrd1    0.3    0.7   0.150   0.150
+cnrd1    0.2    0.2   0.200   0.600
+
+
+Table: Scenario  d1 l-OR = 1 
+Linear predictor by regimen
+
+reg                    d4         b_0   b_reg   b_d4     eta       p
+---------------------  ------  ------  ------  -----  ------  ------
+l_dair_nad2_nad3       nad4     0.405       0      0   0.405   0.600
+l_dair_nad2_nad3       norif    0.405       0      0   0.405   0.600
+l_dair_nad2_nad3       rif      0.405       0      0   0.405   0.600
+lnrd1_dair_nad2_nad3   nad4     0.405       0      0   0.405   0.600
+lnrd1_dair_nad2_nad3   norif    0.405       0      0   0.405   0.600
+lnrd1_dair_nad2_nad3   rif      0.405       0      0   0.405   0.600
+enrd1_dair_nad2_nad3   nad4     0.405       0      0   0.405   0.600
+enrd1_dair_nad2_nad3   norif    0.405       0      0   0.405   0.600
+enrd1_dair_nad2_nad3   rif      0.405       0      0   0.405   0.600
+cnrd1_dair_nad2_nad3   nad4     0.405       0      0   0.405   0.600
+cnrd1_dair_nad2_nad3   norif    0.405       0      0   0.405   0.600
+cnrd1_dair_nad2_nad3   rif      0.405       0      0   0.405   0.600
+l_r1_wk12_nad3         nad4     0.405       1      0   1.405   0.803
+l_r1_wk12_nad3         norif    0.405       1      0   1.405   0.803
+l_r1_wk12_nad3         rif      0.405       1      0   1.405   0.803
+lnrd1_r1_wk12_nad3     nad4     0.405       0      0   0.405   0.600
+lnrd1_r1_wk12_nad3     norif    0.405       0      0   0.405   0.600
+lnrd1_r1_wk12_nad3     rif      0.405       0      0   0.405   0.600
+enrd1_r1_wk12_nad3     nad4     0.405       0      0   0.405   0.600
+enrd1_r1_wk12_nad3     norif    0.405       0      0   0.405   0.600
+enrd1_r1_wk12_nad3     rif      0.405       0      0   0.405   0.600
+cnrd1_r1_wk12_nad3     nad4     0.405       0      0   0.405   0.600
+cnrd1_r1_wk12_nad3     norif    0.405       0      0   0.405   0.600
+cnrd1_r1_wk12_nad3     rif      0.405       0      0   0.405   0.600
+l_r1_wk6_nad3          nad4     0.405       1      0   1.405   0.803
+l_r1_wk6_nad3          norif    0.405       1      0   1.405   0.803
+l_r1_wk6_nad3          rif      0.405       1      0   1.405   0.803
+lnrd1_r1_wk6_nad3      nad4     0.405       0      0   0.405   0.600
+lnrd1_r1_wk6_nad3      norif    0.405       0      0   0.405   0.600
+lnrd1_r1_wk6_nad3      rif      0.405       0      0   0.405   0.600
+enrd1_r1_wk6_nad3      nad4     0.405       0      0   0.405   0.600
+enrd1_r1_wk6_nad3      norif    0.405       0      0   0.405   0.600
+enrd1_r1_wk6_nad3      rif      0.405       0      0   0.405   0.600
+cnrd1_r1_wk6_nad3      nad4     0.405       0      0   0.405   0.600
+cnrd1_r1_wk6_nad3      norif    0.405       0      0   0.405   0.600
+cnrd1_r1_wk6_nad3      rif      0.405       0      0   0.405   0.600
+l_r1_nad2_nad3         nad4     0.405       1      0   1.405   0.803
+l_r1_nad2_nad3         norif    0.405       1      0   1.405   0.803
+l_r1_nad2_nad3         rif      0.405       1      0   1.405   0.803
+lnrd1_r1_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+lnrd1_r1_nad2_nad3     norif    0.405       0      0   0.405   0.600
+lnrd1_r1_nad2_nad3     rif      0.405       0      0   0.405   0.600
+enrd1_r1_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+enrd1_r1_nad2_nad3     norif    0.405       0      0   0.405   0.600
+enrd1_r1_nad2_nad3     rif      0.405       0      0   0.405   0.600
+cnrd1_r1_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+cnrd1_r1_nad2_nad3     norif    0.405       0      0   0.405   0.600
+cnrd1_r1_nad2_nad3     rif      0.405       0      0   0.405   0.600
+l_r2_nad2_wk12         nad4     0.405       1      0   1.405   0.803
+l_r2_nad2_wk12         norif    0.405       1      0   1.405   0.803
+l_r2_nad2_wk12         rif      0.405       1      0   1.405   0.803
+lnrd1_r2_nad2_wk12     nad4     0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_wk12     norif    0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_wk12     rif      0.405       0      0   0.405   0.600
+enrd1_r2_nad2_wk12     nad4     0.405       0      0   0.405   0.600
+enrd1_r2_nad2_wk12     norif    0.405       0      0   0.405   0.600
+enrd1_r2_nad2_wk12     rif      0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_wk12     nad4     0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_wk12     norif    0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_wk12     rif      0.405       0      0   0.405   0.600
+l_r2_nad2_none         nad4     0.405       1      0   1.405   0.803
+l_r2_nad2_none         norif    0.405       1      0   1.405   0.803
+l_r2_nad2_none         rif      0.405       1      0   1.405   0.803
+lnrd1_r2_nad2_none     nad4     0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_none     norif    0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_none     rif      0.405       0      0   0.405   0.600
+enrd1_r2_nad2_none     nad4     0.405       0      0   0.405   0.600
+enrd1_r2_nad2_none     norif    0.405       0      0   0.405   0.600
+enrd1_r2_nad2_none     rif      0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_none     nad4     0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_none     norif    0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_none     rif      0.405       0      0   0.405   0.600
+l_r2_nad2_nad3         nad4     0.405       1      0   1.405   0.803
+l_r2_nad2_nad3         norif    0.405       1      0   1.405   0.803
+l_r2_nad2_nad3         rif      0.405       1      0   1.405   0.803
+lnrd1_r2_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_nad3     norif    0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_nad3     rif      0.405       0      0   0.405   0.600
+enrd1_r2_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+enrd1_r2_nad2_nad3     norif    0.405       0      0   0.405   0.600
+enrd1_r2_nad2_nad3     rif      0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_nad3     norif    0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_nad3     rif      0.405       0      0   0.405   0.600
+
+
+Table: Scenario  d1 l-OR = 1 
+Rule settings
+
+domain   rule    delta   thresh
+-------  -----  ------  -------
+d1       sup      0.00    0.975
+d1       fut      0.05    0.300
+d2       ni      -0.05    0.975
+d2       fut      0.00    0.100
+d3       sup      0.00    0.975
+d3       fut      0.05    0.300
+d4       sup      0.00    0.990
+d4       fut      0.05    0.300
+
+
+Table: Scenario  d1 l-OR = 1 
+Pr decision by domain and interim
+
+domain   rule        1       2       3       4       5
+-------  -----  ------  ------  ------  ------  ------
+d1       fut     0.001   0.001   0.001   0.001   0.001
+d1       sup     0.925   0.998   0.999   0.999   0.999
+d2       fut     0.120   0.165   0.191   0.220   0.233
+d2       ni      0.071   0.128   0.189   0.242   0.294
+d3       fut     0.554   0.737   0.821   0.879   0.894
+d3       sup     0.027   0.040   0.056   0.063   0.068
+d4       fut     0.666   0.849   0.918   0.948   0.957
+d4       sup     0.010   0.017   0.025   0.032   0.035
+
+
+Table: Scenario  d1 l-OR = 1 
+Enrolment at time of decision
+
+domain    n_dec   pr_dec       mu_n   q_025_n   q_975_n
+-------  ------  -------  ---------  --------  --------
+d1         1000    1.000    537.500       500      1000
+d2          527    0.527   1241.935       500      2500
+d3          962    0.962    848.753       500      2000
+d4          992    0.992    753.528       500      2000
+
+
+Table: Scenario  d1 l-OR = 1 
+Enrolment and sample size informing decisions
+
+domain    n_dec   pr_dec   mu_n_enrl   q025_n_enrl   q975_n_enrl   mu_n_info   q025_n_info   q975_n_info   prop_info
+-------  ------  -------  ----------  ------------  ------------  ----------  ------------  ------------  ----------
+d1         1000    1.000       537.5           500          1000       215.1           181         407.0       0.400
+d2          527    0.527      1241.9           500          2500       183.4            50         407.7       0.140
+d3          962    0.962       848.8           500          2000       226.3            97         644.0       0.251
+d4          992    0.992       753.5           500          2000       527.5           332        1406.9       0.700
+
+
+Table: Scenario  d1 l-OR = 1 
+Sample size informing decisions by arm
+
+domain   arm     inform     mu_n    sd_n   q025_n   q975_n
+-------  ------  -------  ------  ------  -------  -------
+d1       dair    TRUE      108.0    28.0     84.0    206.0
+d1       r1      TRUE       35.6    10.3     24.0     70.0
+d1       r2      TRUE       71.4    19.3     52.0    136.0
+d2       wk12    TRUE       91.9    60.2     23.1    207.0
+d2       wk6     TRUE       91.4    60.1     22.0    208.0
+d2       nad2    FALSE      78.0    51.4     18.0    177.6
+d3       wk12    TRUE      113.2    84.0     45.0    326.9
+d3       none    TRUE      113.1    84.5     43.0    323.0
+d3       nad3    FALSE      96.9    71.6     37.0    278.9
+d4       rif     TRUE      264.2   155.0    155.0    700.2
+d4       norif   TRUE      263.3   154.0    154.8    705.5
+d4       nad4    FALSE     226.1   132.8    131.0    612.0
+
+
+Table: Scenario  d1 l-OR = 1 
+Weighted conditional/model-scale log OR
+
+ i_anlys  par    truth   mean_est     bias    rmse   coverage
+--------  ----  ------  ---------  -------  ------  ---------
+       1  d1         1      1.067    0.067   0.315      0.963
+       2  d1         1      1.019    0.019   0.222      0.967
+       3  d1         1      1.012    0.012   0.208      0.968
+       4  d1         1      1.009    0.009   0.203      0.962
+       5  d1         1      1.008    0.008   0.201      0.965
+       1  d2         0     -0.032   -0.032   0.668      0.933
+       2  d2         0     -0.019   -0.019   0.523      0.916
+       3  d2         0     -0.017   -0.017   0.501      0.904
+       4  d2         0     -0.016   -0.016   0.499      0.897
+       5  d2         0     -0.014   -0.014   0.499      0.889
+       1  d3         0     -0.021   -0.021   0.458      0.932
+       2  d3         0     -0.087   -0.087   0.376      0.901
+       3  d3         0     -0.111   -0.111   0.362      0.886
+       4  d3         0     -0.125   -0.125   0.355      0.887
+       5  d3         0     -0.127   -0.127   0.351      0.882
+       1  d4         0      0.015    0.015   0.244      0.941
+       2  d4         0      0.006    0.006   0.182      0.947
+       3  d4         0     -0.002   -0.002   0.170      0.947
+       4  d4         0     -0.006   -0.006   0.162      0.952
+       5  d4         0     -0.007   -0.007   0.159      0.946
+
+
+Table: Scenario  d1 l-OR = 1 
+Standardised marginal log OR
+
+ i_anlys  par    truth   mean_est     bias    rmse   coverage
+--------  ----  ------  ---------  -------  ------  ---------
+       1  d1         1      0.972   -0.028   0.291      0.968
+       2  d1         1      0.976   -0.024   0.217      0.971
+       3  d1         1      0.980   -0.020   0.205      0.965
+       4  d1         1      0.982   -0.018   0.201      0.962
+       5  d1         1      0.982   -0.018   0.199      0.964
+       1  d2         0     -0.025   -0.025   0.589      0.941
+       2  d2         0     -0.015   -0.015   0.461      0.925
+       3  d2         0     -0.013   -0.013   0.442      0.924
+       4  d2         0     -0.010   -0.010   0.441      0.920
+       5  d2         0     -0.010   -0.010   0.443      0.916
+       1  d3         0     -0.027   -0.027   0.415      0.943
+       2  d3         0     -0.033   -0.033   0.308      0.944
+       3  d3         0     -0.042   -0.042   0.289      0.931
+       4  d3         0     -0.051   -0.051   0.277      0.936
+       5  d3         0     -0.051   -0.051   0.273      0.929
+       1  d4         0      0.013    0.013   0.225      0.941
+       2  d4         0      0.006    0.006   0.170      0.947
+       3  d4         0     -0.002   -0.002   0.159      0.947
+       4  d4         0     -0.005   -0.005   0.152      0.952
+       5  d4         0     -0.007   -0.007   0.150      0.946
+
+
+Table: Scenario  d1 l-OR = 1 
+Standardised marginal RD
+
+ i_anlys  par    truth   mean_est     bias    rmse   coverage
+--------  ----  ------  ---------  -------  ------  ---------
+       1  d1     0.203      0.193   -0.010   0.055      0.959
+       2  d1     0.203      0.197   -0.006   0.045      0.965
+       3  d1     0.203      0.198   -0.005   0.044      0.966
+       4  d1     0.203      0.199   -0.004   0.043      0.963
+       5  d1     0.203      0.199   -0.004   0.043      0.963
+       1  d2     0.000     -0.004   -0.004   0.116      0.941
+       2  d2     0.000     -0.003   -0.003   0.094      0.925
+       3  d2     0.000     -0.002   -0.002   0.090      0.924
+       4  d2     0.000     -0.002   -0.002   0.090      0.920
+       5  d2     0.000     -0.002   -0.002   0.090      0.916
+       1  d3     0.000     -0.005   -0.005   0.086      0.943
+       2  d3     0.000     -0.008   -0.008   0.065      0.944
+       3  d3     0.000     -0.011   -0.011   0.062      0.931
+       4  d3     0.000     -0.013   -0.013   0.059      0.936
+       5  d3     0.000     -0.013   -0.013   0.058      0.929
+       1  d4     0.000      0.003    0.003   0.051      0.941
+       2  d4     0.000      0.001    0.001   0.038      0.947
+       3  d4     0.000     -0.001   -0.001   0.036      0.947
+       4  d4     0.000     -0.002   -0.002   0.034      0.952
+       5  d4     0.000     -0.002   -0.002   0.034      0.946
+
+
+Model code hasn't been stored, but used: indep2
+
+
+End of results for file
+Configuration sim09-v03-20260916-105915.qs2
+Scenario d2 l-OR = -0.1
+
+
+Table: Scenario  d2 l-OR = -0.1 
+Domain 1 distribution
+
+silo      pr   dair      r1      r2
+------  ----  -----  ------  ------
+l        0.4    0.5   0.167   0.333
+lnrd1    0.1    0.5   0.200   0.300
+enrd1    0.3    0.7   0.150   0.150
+cnrd1    0.2    0.2   0.200   0.600
+
+
+Table: Scenario  d2 l-OR = -0.1 
+Linear predictor by regimen
+
+reg                    d4         b_0   b_reg   b_d4     eta       p
+---------------------  ------  ------  ------  -----  ------  ------
+l_dair_nad2_nad3       nad4     0.405     0.0      0   0.405   0.600
+l_dair_nad2_nad3       norif    0.405     0.0      0   0.405   0.600
+l_dair_nad2_nad3       rif      0.405     0.0      0   0.405   0.600
+lnrd1_dair_nad2_nad3   nad4     0.405     0.0      0   0.405   0.600
+lnrd1_dair_nad2_nad3   norif    0.405     0.0      0   0.405   0.600
+lnrd1_dair_nad2_nad3   rif      0.405     0.0      0   0.405   0.600
+enrd1_dair_nad2_nad3   nad4     0.405     0.0      0   0.405   0.600
+enrd1_dair_nad2_nad3   norif    0.405     0.0      0   0.405   0.600
+enrd1_dair_nad2_nad3   rif      0.405     0.0      0   0.405   0.600
+cnrd1_dair_nad2_nad3   nad4     0.405     0.0      0   0.405   0.600
+cnrd1_dair_nad2_nad3   norif    0.405     0.0      0   0.405   0.600
+cnrd1_dair_nad2_nad3   rif      0.405     0.0      0   0.405   0.600
+l_r1_wk12_nad3         nad4     0.405     0.0      0   0.405   0.600
+l_r1_wk12_nad3         norif    0.405     0.0      0   0.405   0.600
+l_r1_wk12_nad3         rif      0.405     0.0      0   0.405   0.600
+lnrd1_r1_wk12_nad3     nad4     0.405     0.0      0   0.405   0.600
+lnrd1_r1_wk12_nad3     norif    0.405     0.0      0   0.405   0.600
+lnrd1_r1_wk12_nad3     rif      0.405     0.0      0   0.405   0.600
+enrd1_r1_wk12_nad3     nad4     0.405     0.0      0   0.405   0.600
+enrd1_r1_wk12_nad3     norif    0.405     0.0      0   0.405   0.600
+enrd1_r1_wk12_nad3     rif      0.405     0.0      0   0.405   0.600
+cnrd1_r1_wk12_nad3     nad4     0.405     0.0      0   0.405   0.600
+cnrd1_r1_wk12_nad3     norif    0.405     0.0      0   0.405   0.600
+cnrd1_r1_wk12_nad3     rif      0.405     0.0      0   0.405   0.600
+l_r1_wk6_nad3          nad4     0.405    -0.1      0   0.305   0.576
+l_r1_wk6_nad3          norif    0.405    -0.1      0   0.305   0.576
+l_r1_wk6_nad3          rif      0.405    -0.1      0   0.305   0.576
+lnrd1_r1_wk6_nad3      nad4     0.405    -0.1      0   0.305   0.576
+lnrd1_r1_wk6_nad3      norif    0.405    -0.1      0   0.305   0.576
+lnrd1_r1_wk6_nad3      rif      0.405    -0.1      0   0.305   0.576
+enrd1_r1_wk6_nad3      nad4     0.405    -0.1      0   0.305   0.576
+enrd1_r1_wk6_nad3      norif    0.405    -0.1      0   0.305   0.576
+enrd1_r1_wk6_nad3      rif      0.405    -0.1      0   0.305   0.576
+cnrd1_r1_wk6_nad3      nad4     0.405    -0.1      0   0.305   0.576
+cnrd1_r1_wk6_nad3      norif    0.405    -0.1      0   0.305   0.576
+cnrd1_r1_wk6_nad3      rif      0.405    -0.1      0   0.305   0.576
+l_r1_nad2_nad3         nad4     0.405     0.0      0   0.405   0.600
+l_r1_nad2_nad3         norif    0.405     0.0      0   0.405   0.600
+l_r1_nad2_nad3         rif      0.405     0.0      0   0.405   0.600
+lnrd1_r1_nad2_nad3     nad4     0.405     0.0      0   0.405   0.600
+lnrd1_r1_nad2_nad3     norif    0.405     0.0      0   0.405   0.600
+lnrd1_r1_nad2_nad3     rif      0.405     0.0      0   0.405   0.600
+enrd1_r1_nad2_nad3     nad4     0.405     0.0      0   0.405   0.600
+enrd1_r1_nad2_nad3     norif    0.405     0.0      0   0.405   0.600
+enrd1_r1_nad2_nad3     rif      0.405     0.0      0   0.405   0.600
+cnrd1_r1_nad2_nad3     nad4     0.405     0.0      0   0.405   0.600
+cnrd1_r1_nad2_nad3     norif    0.405     0.0      0   0.405   0.600
+cnrd1_r1_nad2_nad3     rif      0.405     0.0      0   0.405   0.600
+l_r2_nad2_wk12         nad4     0.405     0.0      0   0.405   0.600
+l_r2_nad2_wk12         norif    0.405     0.0      0   0.405   0.600
+l_r2_nad2_wk12         rif      0.405     0.0      0   0.405   0.600
+lnrd1_r2_nad2_wk12     nad4     0.405     0.0      0   0.405   0.600
+lnrd1_r2_nad2_wk12     norif    0.405     0.0      0   0.405   0.600
+lnrd1_r2_nad2_wk12     rif      0.405     0.0      0   0.405   0.600
+enrd1_r2_nad2_wk12     nad4     0.405     0.0      0   0.405   0.600
+enrd1_r2_nad2_wk12     norif    0.405     0.0      0   0.405   0.600
+enrd1_r2_nad2_wk12     rif      0.405     0.0      0   0.405   0.600
+cnrd1_r2_nad2_wk12     nad4     0.405     0.0      0   0.405   0.600
+cnrd1_r2_nad2_wk12     norif    0.405     0.0      0   0.405   0.600
+cnrd1_r2_nad2_wk12     rif      0.405     0.0      0   0.405   0.600
+l_r2_nad2_none         nad4     0.405     0.0      0   0.405   0.600
+l_r2_nad2_none         norif    0.405     0.0      0   0.405   0.600
+l_r2_nad2_none         rif      0.405     0.0      0   0.405   0.600
+lnrd1_r2_nad2_none     nad4     0.405     0.0      0   0.405   0.600
+lnrd1_r2_nad2_none     norif    0.405     0.0      0   0.405   0.600
+lnrd1_r2_nad2_none     rif      0.405     0.0      0   0.405   0.600
+enrd1_r2_nad2_none     nad4     0.405     0.0      0   0.405   0.600
+enrd1_r2_nad2_none     norif    0.405     0.0      0   0.405   0.600
+enrd1_r2_nad2_none     rif      0.405     0.0      0   0.405   0.600
+cnrd1_r2_nad2_none     nad4     0.405     0.0      0   0.405   0.600
+cnrd1_r2_nad2_none     norif    0.405     0.0      0   0.405   0.600
+cnrd1_r2_nad2_none     rif      0.405     0.0      0   0.405   0.600
+l_r2_nad2_nad3         nad4     0.405     0.0      0   0.405   0.600
+l_r2_nad2_nad3         norif    0.405     0.0      0   0.405   0.600
+l_r2_nad2_nad3         rif      0.405     0.0      0   0.405   0.600
+lnrd1_r2_nad2_nad3     nad4     0.405     0.0      0   0.405   0.600
+lnrd1_r2_nad2_nad3     norif    0.405     0.0      0   0.405   0.600
+lnrd1_r2_nad2_nad3     rif      0.405     0.0      0   0.405   0.600
+enrd1_r2_nad2_nad3     nad4     0.405     0.0      0   0.405   0.600
+enrd1_r2_nad2_nad3     norif    0.405     0.0      0   0.405   0.600
+enrd1_r2_nad2_nad3     rif      0.405     0.0      0   0.405   0.600
+cnrd1_r2_nad2_nad3     nad4     0.405     0.0      0   0.405   0.600
+cnrd1_r2_nad2_nad3     norif    0.405     0.0      0   0.405   0.600
+cnrd1_r2_nad2_nad3     rif      0.405     0.0      0   0.405   0.600
+
+
+Table: Scenario  d2 l-OR = -0.1 
+Rule settings
+
+domain   rule    delta   thresh
+-------  -----  ------  -------
+d1       sup      0.00    0.975
+d1       fut      0.05    0.300
+d2       ni      -0.05    0.975
+d2       fut      0.00    0.100
+d3       sup      0.00    0.975
+d3       fut      0.05    0.300
+d4       sup      0.00    0.990
+d4       fut      0.05    0.300
+
+
+Table: Scenario  d2 l-OR = -0.1 
+Pr decision by domain and interim
+
+domain   rule        1       2       3       4       5
+-------  -----  ------  ------  ------  ------  ------
+d1       fut     0.613   0.781   0.858   0.902   0.922
+d1       sup     0.027   0.035   0.046   0.052   0.057
+d2       fut     0.136   0.203   0.247   0.296   0.328
+d2       ni      0.038   0.062   0.079   0.101   0.121
+d3       fut     0.501   0.660   0.731   0.786   0.820
+d3       sup     0.026   0.048   0.056   0.068   0.071
+d4       fut     0.657   0.830   0.903   0.943   0.953
+d4       sup     0.015   0.026   0.033   0.038   0.039
+
+
+Table: Scenario  d2 l-OR = -0.1 
+Enrolment at time of decision
+
+domain    n_dec   pr_dec       mu_n   q_025_n   q_975_n
+-------  ------  -------  ---------  --------  --------
+d1          979    0.979    807.457       500      2275
+d3          891    0.891    886.083       500      2500
+d4          992    0.992    763.609       500      2000
+d2          449    0.449   1206.013       500      2500
+
+
+Table: Scenario  d2 l-OR = -0.1 
+Enrolment and sample size informing decisions
+
+domain    n_dec   pr_dec   mu_n_enrl   q025_n_enrl   q975_n_enrl   mu_n_info   q025_n_info   q975_n_info   prop_info
+-------  ------  -------  ----------  ------------  ------------  ----------  ------------  ------------  ----------
+d1          979    0.979       807.5           500          2275       322.7         180.0         907.6       0.400
+d3          891    0.891       886.1           500          2500       179.3         100.0         427.8       0.215
+d4          992    0.992       763.6           500          2000       534.4         330.8        1412.4       0.700
+d2          449    0.449      1206.0           500          2500       124.1          47.0         287.2       0.108
+
+
+Table: Scenario  d2 l-OR = -0.1 
+Sample size informing decisions by arm
+
+domain   arm     inform     mu_n    sd_n   q025_n   q975_n
+-------  ------  -------  ------  ------  -------  -------
+d1       dair    TRUE      161.8   102.6     85.0    454.2
+d1       r1      TRUE       53.5    34.6     24.0    150.5
+d1       r2      TRUE      107.5    68.2     54.0    305.2
+d3       wk12    TRUE       90.0    49.2     46.0    220.8
+d3       none    TRUE       89.3    49.2     45.0    213.8
+d3       nad3    FALSE      75.9    41.7     37.0    185.0
+d4       rif     TRUE      267.1   159.1    157.8    714.2
+d4       norif   TRUE      267.3   158.0    155.8    706.2
+d4       nad4    FALSE     229.2   136.5    132.8    608.0
+d2       wk12    TRUE       61.9    36.0     22.0    141.4
+d2       wk6     TRUE       62.2    36.4     22.0    147.0
+d2       nad2    FALSE      52.2    30.4     19.0    125.0
+
+
+Table: Scenario  d2 l-OR = -0.1 
+Weighted conditional/model-scale log OR
+
+ i_anlys  par     truth   mean_est     bias    rmse   coverage
+--------  ----  -------  ---------  -------  ------  ---------
+       1  d1     -0.012      0.019    0.031   0.287      0.945
+       2  d1     -0.012     -0.004    0.007   0.219      0.963
+       3  d1     -0.012     -0.016   -0.004   0.200      0.953
+       4  d1     -0.012     -0.024   -0.013   0.192      0.953
+       5  d1     -0.012     -0.027   -0.015   0.188      0.951
+       1  d2     -0.100     -0.114   -0.014   0.566      0.944
+       2  d2     -0.100     -0.132   -0.032   0.461      0.940
+       3  d2     -0.100     -0.142   -0.042   0.437      0.930
+       4  d2     -0.100     -0.149   -0.049   0.428      0.927
+       5  d2     -0.100     -0.152   -0.052   0.424      0.921
+       1  d3      0.000      0.004    0.004   0.409      0.936
+       2  d3      0.000     -0.009   -0.009   0.323      0.943
+       3  d3      0.000     -0.021   -0.021   0.294      0.942
+       4  d3      0.000     -0.030   -0.030   0.278      0.946
+       5  d3      0.000     -0.035   -0.035   0.273      0.943
+       1  d4      0.000      0.010    0.010   0.240      0.942
+       2  d4      0.000      0.007    0.007   0.173      0.948
+       3  d4      0.000      0.000    0.000   0.155      0.949
+       4  d4      0.000     -0.001   -0.001   0.150      0.948
+       5  d4      0.000     -0.002   -0.002   0.147      0.956
+
+
+Table: Scenario  d2 l-OR = -0.1 
+Standardised marginal log OR
+
+ i_anlys  par     truth   mean_est     bias    rmse   coverage
+--------  ----  -------  ---------  -------  ------  ---------
+       1  d1     -0.012     -0.002    0.009   0.274      0.949
+       2  d1     -0.012     -0.017   -0.005   0.215      0.963
+       3  d1     -0.012     -0.027   -0.015   0.197      0.954
+       4  d1     -0.012     -0.034   -0.022   0.190      0.952
+       5  d1     -0.012     -0.036   -0.024   0.187      0.950
+       1  d2     -0.100     -0.105   -0.005   0.533      0.947
+       2  d2     -0.100     -0.124   -0.024   0.441      0.939
+       3  d2     -0.100     -0.135   -0.035   0.419      0.938
+       4  d2     -0.100     -0.144   -0.044   0.413      0.932
+       5  d2     -0.100     -0.147   -0.047   0.410      0.930
+       1  d3      0.000      0.006    0.006   0.394      0.941
+       2  d3      0.000     -0.003   -0.003   0.316      0.948
+       3  d3      0.000     -0.015   -0.015   0.289      0.942
+       4  d3      0.000     -0.023   -0.023   0.275      0.942
+       5  d3      0.000     -0.028   -0.028   0.270      0.944
+       1  d4      0.000      0.010    0.010   0.227      0.942
+       2  d4      0.000      0.007    0.007   0.167      0.948
+       3  d4      0.000      0.001    0.001   0.152      0.949
+       4  d4      0.000     -0.001   -0.001   0.148      0.948
+       5  d4      0.000     -0.002   -0.002   0.144      0.956
+
+
+Table: Scenario  d2 l-OR = -0.1 
+Standardised marginal RD
+
+ i_anlys  par     truth   mean_est     bias    rmse   coverage
+--------  ----  -------  ---------  -------  ------  ---------
+       1  d1     -0.003     -0.001    0.002   0.065      0.949
+       2  d1     -0.003     -0.005   -0.002   0.052      0.963
+       3  d1     -0.003     -0.007   -0.004   0.048      0.953
+       4  d1     -0.003     -0.009   -0.006   0.046      0.952
+       5  d1     -0.003     -0.009   -0.007   0.045      0.950
+       1  d2     -0.024     -0.024    0.000   0.121      0.946
+       2  d2     -0.024     -0.029   -0.005   0.103      0.939
+       3  d2     -0.024     -0.032   -0.008   0.098      0.938
+       4  d2     -0.024     -0.034   -0.010   0.097      0.932
+       5  d2     -0.024     -0.035   -0.011   0.096      0.930
+       1  d3      0.000      0.001    0.001   0.091      0.941
+       2  d3      0.000     -0.001   -0.001   0.075      0.948
+       3  d3      0.000     -0.005   -0.005   0.069      0.942
+       4  d3      0.000     -0.007   -0.007   0.066      0.942
+       5  d3      0.000     -0.008   -0.008   0.065      0.944
+       1  d4      0.000      0.002    0.002   0.054      0.942
+       2  d4      0.000      0.001    0.001   0.040      0.948
+       3  d4      0.000      0.000    0.000   0.037      0.949
+       4  d4      0.000     -0.001   -0.001   0.036      0.948
+       5  d4      0.000     -0.001   -0.001   0.035      0.956
+
+
+Model code hasn't been stored, but used: indep2
+
+
+End of results for file
+Configuration sim09-v04-20260916-110144.qs2
+Scenario d3 l-OR = 1
+
+
+Table: Scenario  d3 l-OR = 1 
+Domain 1 distribution
+
+silo      pr   dair      r1      r2
+------  ----  -----  ------  ------
+l        0.4    0.5   0.167   0.333
+lnrd1    0.1    0.5   0.200   0.300
+enrd1    0.3    0.7   0.150   0.150
+cnrd1    0.2    0.2   0.200   0.600
+
+
+Table: Scenario  d3 l-OR = 1 
+Linear predictor by regimen
+
+reg                    d4         b_0   b_reg   b_d4     eta       p
+---------------------  ------  ------  ------  -----  ------  ------
+l_dair_nad2_nad3       nad4     0.405       0      0   0.405   0.600
+l_dair_nad2_nad3       norif    0.405       0      0   0.405   0.600
+l_dair_nad2_nad3       rif      0.405       0      0   0.405   0.600
+lnrd1_dair_nad2_nad3   nad4     0.405       0      0   0.405   0.600
+lnrd1_dair_nad2_nad3   norif    0.405       0      0   0.405   0.600
+lnrd1_dair_nad2_nad3   rif      0.405       0      0   0.405   0.600
+enrd1_dair_nad2_nad3   nad4     0.405       0      0   0.405   0.600
+enrd1_dair_nad2_nad3   norif    0.405       0      0   0.405   0.600
+enrd1_dair_nad2_nad3   rif      0.405       0      0   0.405   0.600
+cnrd1_dair_nad2_nad3   nad4     0.405       0      0   0.405   0.600
+cnrd1_dair_nad2_nad3   norif    0.405       0      0   0.405   0.600
+cnrd1_dair_nad2_nad3   rif      0.405       0      0   0.405   0.600
+l_r1_wk12_nad3         nad4     0.405       0      0   0.405   0.600
+l_r1_wk12_nad3         norif    0.405       0      0   0.405   0.600
+l_r1_wk12_nad3         rif      0.405       0      0   0.405   0.600
+lnrd1_r1_wk12_nad3     nad4     0.405       0      0   0.405   0.600
+lnrd1_r1_wk12_nad3     norif    0.405       0      0   0.405   0.600
+lnrd1_r1_wk12_nad3     rif      0.405       0      0   0.405   0.600
+enrd1_r1_wk12_nad3     nad4     0.405       0      0   0.405   0.600
+enrd1_r1_wk12_nad3     norif    0.405       0      0   0.405   0.600
+enrd1_r1_wk12_nad3     rif      0.405       0      0   0.405   0.600
+cnrd1_r1_wk12_nad3     nad4     0.405       0      0   0.405   0.600
+cnrd1_r1_wk12_nad3     norif    0.405       0      0   0.405   0.600
+cnrd1_r1_wk12_nad3     rif      0.405       0      0   0.405   0.600
+l_r1_wk6_nad3          nad4     0.405       0      0   0.405   0.600
+l_r1_wk6_nad3          norif    0.405       0      0   0.405   0.600
+l_r1_wk6_nad3          rif      0.405       0      0   0.405   0.600
+lnrd1_r1_wk6_nad3      nad4     0.405       0      0   0.405   0.600
+lnrd1_r1_wk6_nad3      norif    0.405       0      0   0.405   0.600
+lnrd1_r1_wk6_nad3      rif      0.405       0      0   0.405   0.600
+enrd1_r1_wk6_nad3      nad4     0.405       0      0   0.405   0.600
+enrd1_r1_wk6_nad3      norif    0.405       0      0   0.405   0.600
+enrd1_r1_wk6_nad3      rif      0.405       0      0   0.405   0.600
+cnrd1_r1_wk6_nad3      nad4     0.405       0      0   0.405   0.600
+cnrd1_r1_wk6_nad3      norif    0.405       0      0   0.405   0.600
+cnrd1_r1_wk6_nad3      rif      0.405       0      0   0.405   0.600
+l_r1_nad2_nad3         nad4     0.405       0      0   0.405   0.600
+l_r1_nad2_nad3         norif    0.405       0      0   0.405   0.600
+l_r1_nad2_nad3         rif      0.405       0      0   0.405   0.600
+lnrd1_r1_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+lnrd1_r1_nad2_nad3     norif    0.405       0      0   0.405   0.600
+lnrd1_r1_nad2_nad3     rif      0.405       0      0   0.405   0.600
+enrd1_r1_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+enrd1_r1_nad2_nad3     norif    0.405       0      0   0.405   0.600
+enrd1_r1_nad2_nad3     rif      0.405       0      0   0.405   0.600
+cnrd1_r1_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+cnrd1_r1_nad2_nad3     norif    0.405       0      0   0.405   0.600
+cnrd1_r1_nad2_nad3     rif      0.405       0      0   0.405   0.600
+l_r2_nad2_wk12         nad4     0.405       1      0   1.405   0.803
+l_r2_nad2_wk12         norif    0.405       1      0   1.405   0.803
+l_r2_nad2_wk12         rif      0.405       1      0   1.405   0.803
+lnrd1_r2_nad2_wk12     nad4     0.405       1      0   1.405   0.803
+lnrd1_r2_nad2_wk12     norif    0.405       1      0   1.405   0.803
+lnrd1_r2_nad2_wk12     rif      0.405       1      0   1.405   0.803
+enrd1_r2_nad2_wk12     nad4     0.405       1      0   1.405   0.803
+enrd1_r2_nad2_wk12     norif    0.405       1      0   1.405   0.803
+enrd1_r2_nad2_wk12     rif      0.405       1      0   1.405   0.803
+cnrd1_r2_nad2_wk12     nad4     0.405       1      0   1.405   0.803
+cnrd1_r2_nad2_wk12     norif    0.405       1      0   1.405   0.803
+cnrd1_r2_nad2_wk12     rif      0.405       1      0   1.405   0.803
+l_r2_nad2_none         nad4     0.405       0      0   0.405   0.600
+l_r2_nad2_none         norif    0.405       0      0   0.405   0.600
+l_r2_nad2_none         rif      0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_none     nad4     0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_none     norif    0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_none     rif      0.405       0      0   0.405   0.600
+enrd1_r2_nad2_none     nad4     0.405       0      0   0.405   0.600
+enrd1_r2_nad2_none     norif    0.405       0      0   0.405   0.600
+enrd1_r2_nad2_none     rif      0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_none     nad4     0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_none     norif    0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_none     rif      0.405       0      0   0.405   0.600
+l_r2_nad2_nad3         nad4     0.405       0      0   0.405   0.600
+l_r2_nad2_nad3         norif    0.405       0      0   0.405   0.600
+l_r2_nad2_nad3         rif      0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_nad3     norif    0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_nad3     rif      0.405       0      0   0.405   0.600
+enrd1_r2_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+enrd1_r2_nad2_nad3     norif    0.405       0      0   0.405   0.600
+enrd1_r2_nad2_nad3     rif      0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_nad3     norif    0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_nad3     rif      0.405       0      0   0.405   0.600
+
+
+Table: Scenario  d3 l-OR = 1 
+Rule settings
+
+domain   rule    delta   thresh
+-------  -----  ------  -------
+d1       sup      0.00    0.975
+d1       fut      0.05    0.300
+d2       ni      -0.05    0.975
+d2       fut      0.00    0.100
+d3       sup      0.00    0.975
+d3       fut      0.05    0.300
+d4       sup      0.00    0.990
+d4       fut      0.05    0.300
+
+
+Table: Scenario  d3 l-OR = 1 
+Pr decision by domain and interim
+
+domain   rule        1       2       3       4       5
+-------  -----  ------  ------  ------  ------  ------
+d1       fut     0.295   0.355   0.378   0.383   0.385
+d1       sup     0.122   0.320   0.473   0.540   0.579
+d2       fut     0.129   0.181   0.221   0.252   0.275
+d2       ni      0.052   0.104   0.152   0.192   0.220
+d3       fut     0.011   0.011   0.011   0.011   0.011
+d3       sup     0.655   0.919   0.970   0.985   0.988
+d4       fut     0.663   0.862   0.930   0.958   0.970
+d4       sup     0.008   0.013   0.019   0.021   0.021
+
+
+Table: Scenario  d3 l-OR = 1 
+Enrolment at time of decision
+
+domain    n_dec   pr_dec       mu_n   q_025_n   q_975_n
+-------  ------  -------  ---------  --------  --------
+d1          964    0.964   1013.485       500      2500
+d2          495    0.495   1204.040       500      2500
+d3          999    0.999    711.712       500      1500
+d4          991    0.991    747.225       500      2000
+
+
+Table: Scenario  d3 l-OR = 1 
+Enrolment and sample size informing decisions
+
+domain    n_dec   pr_dec   mu_n_enrl   q025_n_enrl   q975_n_enrl   mu_n_info   q025_n_info   q975_n_info   prop_info
+-------  ------  -------  ----------  ------------  ------------  ----------  ------------  ------------  ----------
+d1          964    0.964      1013.5           500          2500       405.4         180.1         994.8       0.400
+d2          495    0.495      1204.0           500          2500       145.5          49.0         354.0       0.120
+d3          999    0.999       711.7           500          1500       159.3          98.0         351.0       0.228
+d4          991    0.991       747.2           500          2000       523.2         333.0        1401.0       0.700
+
+
+Table: Scenario  d3 l-OR = 1 
+Sample size informing decisions by arm
+
+domain   arm     inform     mu_n    sd_n   q025_n   q975_n
+-------  ------  -------  ------  ------  -------  -------
+d1       dair    TRUE      202.7   115.0       85    499.0
+d1       r1      TRUE       67.8    39.2       25    160.0
+d1       r2      TRUE      135.0    76.5       55    326.0
+d2       wk12    TRUE       73.0    45.8       23    178.9
+d2       wk6     TRUE       72.5    45.7       23    179.0
+d2       nad2    FALSE      62.3    39.5       18    156.3
+d3       wk12    TRUE       79.7    36.2       46    181.0
+d3       none    TRUE       79.6    35.6       44    171.1
+d3       nad3    FALSE      68.6    32.0       36    155.1
+d4       rif     TRUE      261.3   148.7      157    704.2
+d4       norif   TRUE      261.9   149.9      158    705.8
+d4       nad4    FALSE     224.1   129.4      133    603.2
+
+
+Table: Scenario  d3 l-OR = 1 
+Weighted conditional/model-scale log OR
+
+ i_anlys  par    truth   mean_est     bias    rmse   coverage
+--------  ----  ------  ---------  -------  ------  ---------
+       1  d1     0.233      0.290    0.057   0.302      0.941
+       2  d1     0.233      0.307    0.073   0.274      0.911
+       3  d1     0.233      0.329    0.095   0.284      0.846
+       4  d1     0.233      0.338    0.104   0.288      0.808
+       5  d1     0.233      0.343    0.110   0.290      0.787
+       1  d2     0.000     -0.021   -0.021   0.600      0.944
+       2  d2     0.000     -0.021   -0.021   0.454      0.942
+       3  d2     0.000     -0.040   -0.040   0.430      0.936
+       4  d2     0.000     -0.044   -0.044   0.426      0.933
+       5  d2     0.000     -0.041   -0.041   0.426      0.930
+       1  d3     1.000      1.057    0.057   0.460      0.956
+       2  d3     1.000      1.031    0.031   0.322      0.957
+       3  d3     1.000      1.025    0.025   0.294      0.955
+       4  d3     1.000      1.027    0.027   0.281      0.952
+       5  d3     1.000      1.029    0.029   0.278      0.950
+       1  d4     0.000     -0.004   -0.004   0.239      0.936
+       2  d4     0.000     -0.008   -0.008   0.175      0.961
+       3  d4     0.000     -0.012   -0.012   0.160      0.953
+       4  d4     0.000     -0.015   -0.015   0.153      0.959
+       5  d4     0.000     -0.016   -0.016   0.149      0.963
+
+
+Table: Scenario  d3 l-OR = 1 
+Standardised marginal log OR
+
+ i_anlys  par    truth   mean_est     bias    rmse   coverage
+--------  ----  ------  ---------  -------  ------  ---------
+       1  d1     0.233      0.221   -0.012   0.275      0.953
+       2  d1     0.233      0.253    0.019   0.251      0.924
+       3  d1     0.233      0.277    0.044   0.259      0.882
+       4  d1     0.233      0.287    0.054   0.263      0.856
+       5  d1     0.233      0.293    0.060   0.265      0.828
+       1  d2     0.000     -0.021   -0.021   0.565      0.938
+       2  d2     0.000     -0.020   -0.020   0.438      0.940
+       3  d2     0.000     -0.038   -0.038   0.417      0.941
+       4  d2     0.000     -0.042   -0.042   0.413      0.937
+       5  d2     0.000     -0.040   -0.040   0.414      0.934
+       1  d3     1.000      1.014    0.014   0.438      0.959
+       2  d3     1.000      1.003    0.003   0.312      0.956
+       3  d3     1.000      1.001    0.001   0.287      0.949
+       4  d3     1.000      1.004    0.004   0.275      0.950
+       5  d3     1.000      1.007    0.007   0.271      0.951
+       1  d4     0.000     -0.003   -0.003   0.222      0.936
+       2  d4     0.000     -0.007   -0.007   0.166      0.961
+       3  d4     0.000     -0.011   -0.011   0.152      0.953
+       4  d4     0.000     -0.014   -0.014   0.146      0.959
+       5  d4     0.000     -0.015   -0.015   0.143      0.963
+
+
+Table: Scenario  d3 l-OR = 1 
+Standardised marginal RD
+
+ i_anlys  par    truth   mean_est     bias    rmse   coverage
+--------  ----  ------  ---------  -------  ------  ---------
+       1  d1     0.047      0.051    0.003   0.063      0.951
+       2  d1     0.047      0.058    0.011   0.059      0.921
+       3  d1     0.047      0.064    0.016   0.062      0.864
+       4  d1     0.047      0.066    0.019   0.063      0.834
+       5  d1     0.047      0.067    0.020   0.063      0.811
+       1  d2     0.000     -0.004   -0.004   0.125      0.938
+       2  d2     0.000     -0.005   -0.005   0.101      0.940
+       3  d2     0.000     -0.009   -0.009   0.097      0.941
+       4  d2     0.000     -0.010   -0.010   0.096      0.937
+       5  d2     0.000     -0.009   -0.009   0.096      0.934
+       1  d3     0.203      0.196   -0.007   0.080      0.959
+       2  d3     0.203      0.202   -0.001   0.064      0.958
+       3  d3     0.203      0.203    0.000   0.060      0.953
+       4  d3     0.203      0.204    0.001   0.059      0.952
+       5  d3     0.203      0.205    0.002   0.058      0.956
+       1  d4     0.000     -0.001   -0.001   0.052      0.936
+       2  d4     0.000     -0.002   -0.002   0.039      0.961
+       3  d4     0.000     -0.003   -0.003   0.036      0.953
+       4  d4     0.000     -0.004   -0.004   0.034      0.959
+       5  d4     0.000     -0.004   -0.004   0.033      0.963
+
+
+Model code hasn't been stored, but used: indep2
+
+
+End of results for file
+Configuration sim09-v05-20260916-110415.qs2
+Scenario d4 l-OR = 1
+
+
+Table: Scenario  d4 l-OR = 1 
+Domain 1 distribution
+
+silo      pr   dair      r1      r2
+------  ----  -----  ------  ------
+l        0.4    0.5   0.167   0.333
+lnrd1    0.1    0.5   0.200   0.300
+enrd1    0.3    0.7   0.150   0.150
+cnrd1    0.2    0.2   0.200   0.600
+
+
+Table: Scenario  d4 l-OR = 1 
+Linear predictor by regimen
+
+reg                    d4         b_0   b_reg   b_d4     eta       p
+---------------------  ------  ------  ------  -----  ------  ------
+l_dair_nad2_nad3       nad4     0.405       0      0   0.405   0.600
+l_dair_nad2_nad3       norif    0.405       0      0   0.405   0.600
+l_dair_nad2_nad3       rif      0.405       0      1   1.405   0.803
+lnrd1_dair_nad2_nad3   nad4     0.405       0      0   0.405   0.600
+lnrd1_dair_nad2_nad3   norif    0.405       0      0   0.405   0.600
+lnrd1_dair_nad2_nad3   rif      0.405       0      1   1.405   0.803
+enrd1_dair_nad2_nad3   nad4     0.405       0      0   0.405   0.600
+enrd1_dair_nad2_nad3   norif    0.405       0      0   0.405   0.600
+enrd1_dair_nad2_nad3   rif      0.405       0      1   1.405   0.803
+cnrd1_dair_nad2_nad3   nad4     0.405       0      0   0.405   0.600
+cnrd1_dair_nad2_nad3   norif    0.405       0      0   0.405   0.600
+cnrd1_dair_nad2_nad3   rif      0.405       0      1   1.405   0.803
+l_r1_wk12_nad3         nad4     0.405       0      0   0.405   0.600
+l_r1_wk12_nad3         norif    0.405       0      0   0.405   0.600
+l_r1_wk12_nad3         rif      0.405       0      1   1.405   0.803
+lnrd1_r1_wk12_nad3     nad4     0.405       0      0   0.405   0.600
+lnrd1_r1_wk12_nad3     norif    0.405       0      0   0.405   0.600
+lnrd1_r1_wk12_nad3     rif      0.405       0      1   1.405   0.803
+enrd1_r1_wk12_nad3     nad4     0.405       0      0   0.405   0.600
+enrd1_r1_wk12_nad3     norif    0.405       0      0   0.405   0.600
+enrd1_r1_wk12_nad3     rif      0.405       0      1   1.405   0.803
+cnrd1_r1_wk12_nad3     nad4     0.405       0      0   0.405   0.600
+cnrd1_r1_wk12_nad3     norif    0.405       0      0   0.405   0.600
+cnrd1_r1_wk12_nad3     rif      0.405       0      1   1.405   0.803
+l_r1_wk6_nad3          nad4     0.405       0      0   0.405   0.600
+l_r1_wk6_nad3          norif    0.405       0      0   0.405   0.600
+l_r1_wk6_nad3          rif      0.405       0      1   1.405   0.803
+lnrd1_r1_wk6_nad3      nad4     0.405       0      0   0.405   0.600
+lnrd1_r1_wk6_nad3      norif    0.405       0      0   0.405   0.600
+lnrd1_r1_wk6_nad3      rif      0.405       0      1   1.405   0.803
+enrd1_r1_wk6_nad3      nad4     0.405       0      0   0.405   0.600
+enrd1_r1_wk6_nad3      norif    0.405       0      0   0.405   0.600
+enrd1_r1_wk6_nad3      rif      0.405       0      1   1.405   0.803
+cnrd1_r1_wk6_nad3      nad4     0.405       0      0   0.405   0.600
+cnrd1_r1_wk6_nad3      norif    0.405       0      0   0.405   0.600
+cnrd1_r1_wk6_nad3      rif      0.405       0      1   1.405   0.803
+l_r1_nad2_nad3         nad4     0.405       0      0   0.405   0.600
+l_r1_nad2_nad3         norif    0.405       0      0   0.405   0.600
+l_r1_nad2_nad3         rif      0.405       0      1   1.405   0.803
+lnrd1_r1_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+lnrd1_r1_nad2_nad3     norif    0.405       0      0   0.405   0.600
+lnrd1_r1_nad2_nad3     rif      0.405       0      1   1.405   0.803
+enrd1_r1_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+enrd1_r1_nad2_nad3     norif    0.405       0      0   0.405   0.600
+enrd1_r1_nad2_nad3     rif      0.405       0      1   1.405   0.803
+cnrd1_r1_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+cnrd1_r1_nad2_nad3     norif    0.405       0      0   0.405   0.600
+cnrd1_r1_nad2_nad3     rif      0.405       0      1   1.405   0.803
+l_r2_nad2_wk12         nad4     0.405       0      0   0.405   0.600
+l_r2_nad2_wk12         norif    0.405       0      0   0.405   0.600
+l_r2_nad2_wk12         rif      0.405       0      1   1.405   0.803
+lnrd1_r2_nad2_wk12     nad4     0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_wk12     norif    0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_wk12     rif      0.405       0      1   1.405   0.803
+enrd1_r2_nad2_wk12     nad4     0.405       0      0   0.405   0.600
+enrd1_r2_nad2_wk12     norif    0.405       0      0   0.405   0.600
+enrd1_r2_nad2_wk12     rif      0.405       0      1   1.405   0.803
+cnrd1_r2_nad2_wk12     nad4     0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_wk12     norif    0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_wk12     rif      0.405       0      1   1.405   0.803
+l_r2_nad2_none         nad4     0.405       0      0   0.405   0.600
+l_r2_nad2_none         norif    0.405       0      0   0.405   0.600
+l_r2_nad2_none         rif      0.405       0      1   1.405   0.803
+lnrd1_r2_nad2_none     nad4     0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_none     norif    0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_none     rif      0.405       0      1   1.405   0.803
+enrd1_r2_nad2_none     nad4     0.405       0      0   0.405   0.600
+enrd1_r2_nad2_none     norif    0.405       0      0   0.405   0.600
+enrd1_r2_nad2_none     rif      0.405       0      1   1.405   0.803
+cnrd1_r2_nad2_none     nad4     0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_none     norif    0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_none     rif      0.405       0      1   1.405   0.803
+l_r2_nad2_nad3         nad4     0.405       0      0   0.405   0.600
+l_r2_nad2_nad3         norif    0.405       0      0   0.405   0.600
+l_r2_nad2_nad3         rif      0.405       0      1   1.405   0.803
+lnrd1_r2_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_nad3     norif    0.405       0      0   0.405   0.600
+lnrd1_r2_nad2_nad3     rif      0.405       0      1   1.405   0.803
+enrd1_r2_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+enrd1_r2_nad2_nad3     norif    0.405       0      0   0.405   0.600
+enrd1_r2_nad2_nad3     rif      0.405       0      1   1.405   0.803
+cnrd1_r2_nad2_nad3     nad4     0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_nad3     norif    0.405       0      0   0.405   0.600
+cnrd1_r2_nad2_nad3     rif      0.405       0      1   1.405   0.803
+
+
+Table: Scenario  d4 l-OR = 1 
+Rule settings
+
+domain   rule    delta   thresh
+-------  -----  ------  -------
+d1       sup      0.00    0.975
+d1       fut      0.05    0.300
+d2       ni      -0.05    0.975
+d2       fut      0.00    0.100
+d3       sup      0.00    0.975
+d3       fut      0.05    0.300
+d4       sup      0.00    0.990
+d4       fut      0.05    0.300
+
+
+Table: Scenario  d4 l-OR = 1 
+Pr decision by domain and interim
+
+domain   rule        1       2       3       4       5
+-------  -----  ------  ------  ------  ------  ------
+d1       fut     0.621   0.786   0.882   0.916   0.930
+d1       sup     0.018   0.031   0.043   0.051   0.055
+d2       fut     0.105   0.147   0.179   0.198   0.217
+d2       ni      0.069   0.133   0.176   0.204   0.229
+d3       fut     0.521   0.698   0.776   0.819   0.843
+d3       sup     0.029   0.044   0.059   0.064   0.070
+d4       fut     0.001   0.001   0.001   0.001   0.001
+d4       sup     0.965   0.998   0.999   0.999   0.999
+
+
+Table: Scenario  d4 l-OR = 1 
+Enrolment at time of decision
+
+domain    n_dec   pr_dec       mu_n   q_025_n   q_975_n
+-------  ------  -------  ---------  --------  --------
+d1          985    0.985    800.508       500      2000
+d3          913    0.913    851.588       500      2500
+d4         1000    1.000    517.500       500      1000
+d2          446    0.446   1142.377       500      2500
+
+
+Table: Scenario  d4 l-OR = 1 
+Enrolment and sample size informing decisions
+
+domain    n_dec   pr_dec   mu_n_enrl   q025_n_enrl   q975_n_enrl   mu_n_info   q025_n_info   q975_n_info   prop_info
+-------  ------  -------  ----------  ------------  ------------  ----------  ------------  ------------  ----------
+d1          985    0.985       800.5           500          2000       319.8           181         815.0       0.399
+d3          913    0.913       851.6           500          2500       174.2            98         397.2       0.216
+d4         1000    1.000       517.5           500          1000       362.7           331         684.1       0.701
+d2          446    0.446      1142.4           500          2500       118.6            50         286.0       0.110
+
+
+Table: Scenario  d4 l-OR = 1 
+Sample size informing decisions by arm
+
+domain   arm     inform     mu_n   sd_n   q025_n   q975_n
+-------  ------  -------  ------  -----  -------  -------
+d1       dair    TRUE      159.6   96.7     84.0    420.4
+d1       r1      TRUE       53.4   32.9     24.0    144.4
+d1       r2      TRUE      106.9   65.6     53.0    278.0
+d3       wk12    TRUE       87.0   45.3     45.0    203.0
+d3       none    TRUE       87.2   46.3     44.8    205.0
+d3       nad3    FALSE      74.8   39.9     39.0    179.2
+d4       rif     TRUE      181.1   34.8    155.0    337.0
+d4       norif   TRUE      181.6   34.3    156.0    342.0
+d4       nad4    FALSE     154.8   30.9    130.0    298.0
+d2       wk12    TRUE       59.0   33.7     22.0    136.9
+d2       wk6     TRUE       59.6   32.9     23.0    143.9
+d2       nad2    FALSE      50.7   28.5     17.1    119.8
+
+
+Table: Scenario  d4 l-OR = 1 
+Weighted conditional/model-scale log OR
+
+ i_anlys  par    truth   mean_est     bias    rmse   coverage
+--------  ----  ------  ---------  -------  ------  ---------
+       1  d1         0      0.049    0.049   0.295      0.961
+       2  d1         0      0.012    0.012   0.230      0.962
+       3  d1         0     -0.001   -0.001   0.212      0.952
+       4  d1         0     -0.006   -0.006   0.206      0.955
+       5  d1         0     -0.010   -0.010   0.202      0.957
+       1  d2         0      0.030    0.030   0.629      0.944
+       2  d2         0      0.004    0.004   0.528      0.933
+       3  d2         0     -0.003   -0.003   0.505      0.933
+       4  d2         0     -0.008   -0.008   0.495      0.933
+       5  d2         0     -0.008   -0.008   0.491      0.931
+       1  d3         0      0.005    0.005   0.443      0.940
+       2  d3         0     -0.016   -0.016   0.346      0.950
+       3  d3         0     -0.028   -0.028   0.323      0.944
+       4  d3         0     -0.034   -0.034   0.309      0.941
+       5  d3         0     -0.035   -0.035   0.302      0.938
+       1  d4         1      1.064    0.064   0.282      0.921
+       2  d4         1      1.023    0.023   0.204      0.945
+       3  d4         1      1.011    0.011   0.190      0.950
+       4  d4         1      1.006    0.006   0.183      0.950
+       5  d4         1      1.004    0.004   0.181      0.952
+
+
+Table: Scenario  d4 l-OR = 1 
+Standardised marginal log OR
+
+ i_anlys  par    truth   mean_est     bias    rmse   coverage
+--------  ----  ------  ---------  -------  ------  ---------
+       1  d1         0      0.009    0.009   0.266      0.965
+       2  d1         0     -0.018   -0.018   0.217      0.962
+       3  d1         0     -0.028   -0.028   0.202      0.951
+       4  d1         0     -0.031   -0.031   0.198      0.947
+       5  d1         0     -0.035   -0.035   0.195      0.948
+       1  d2         0      0.026    0.026   0.563      0.942
+       2  d2         0      0.004    0.004   0.483      0.933
+       3  d2         0     -0.002   -0.002   0.466      0.933
+       4  d2         0     -0.006   -0.006   0.457      0.935
+       5  d2         0     -0.006   -0.006   0.454      0.937
+       1  d3         0      0.005    0.005   0.408      0.932
+       2  d3         0     -0.011   -0.011   0.320      0.952
+       3  d3         0     -0.021   -0.021   0.301      0.944
+       4  d3         0     -0.026   -0.026   0.290      0.937
+       5  d3         0     -0.027   -0.027   0.284      0.937
+       1  d4         1      1.010    0.010   0.261      0.934
+       2  d4         1      0.992   -0.008   0.196      0.942
+       3  d4         1      0.989   -0.011   0.186      0.948
+       4  d4         1      0.986   -0.014   0.180      0.945
+       5  d4         1      0.986   -0.014   0.178      0.948
+
+
+Table: Scenario  d4 l-OR = 1 
+Standardised marginal RD
+
+ i_anlys  par    truth   mean_est     bias    rmse   coverage
+--------  ----  ------  ---------  -------  ------  ---------
+       1  d1     0.000      0.002    0.002   0.057      0.965
+       2  d1     0.000     -0.005   -0.005   0.046      0.962
+       3  d1     0.000     -0.007   -0.007   0.042      0.951
+       4  d1     0.000     -0.008   -0.008   0.041      0.947
+       5  d1     0.000     -0.009   -0.009   0.041      0.948
+       1  d2     0.000      0.006    0.006   0.114      0.942
+       2  d2     0.000      0.001    0.001   0.099      0.933
+       3  d2     0.000     -0.001   -0.001   0.095      0.933
+       4  d2     0.000     -0.001   -0.001   0.094      0.935
+       5  d2     0.000     -0.001   -0.001   0.093      0.937
+       1  d3     0.000      0.001    0.001   0.086      0.932
+       2  d3     0.000     -0.004   -0.004   0.068      0.952
+       3  d3     0.000     -0.006   -0.006   0.064      0.944
+       4  d3     0.000     -0.008   -0.008   0.061      0.937
+       5  d3     0.000     -0.008   -0.008   0.060      0.937
+       1  d4     0.203      0.202   -0.001   0.050      0.935
+       2  d4     0.203      0.201   -0.002   0.041      0.948
+       3  d4     0.203      0.201   -0.002   0.040      0.950
+       4  d4     0.203      0.200   -0.003   0.039      0.950
+       5  d4     0.203      0.200   -0.003   0.039      0.949
+
+
+Model code hasn't been stored, but used: indep2
+
+
+End of results for file
+Configuration sim09-v06-20260916-110642.qs2
+Scenario d2 l-OR = -0.1 d3 l-OR = 1.0 d4 l-OR = 0.5
+
+
+Table: Scenario  d2 l-OR = -0.1 d3 l-OR = 1.0 d4 l-OR = 0.5 
+Domain 1 distribution
+
+silo      pr   dair      r1      r2
+------  ----  -----  ------  ------
+l        0.4    0.5   0.167   0.333
+lnrd1    0.1    0.5   0.200   0.300
+enrd1    0.3    0.7   0.150   0.150
+cnrd1    0.2    0.2   0.200   0.600
+
+
+Table: Scenario  d2 l-OR = -0.1 d3 l-OR = 1.0 d4 l-OR = 0.5 
+Linear predictor by regimen
+
+reg                    d4         b_0   b_reg   b_d4     eta       p
+---------------------  ------  ------  ------  -----  ------  ------
+l_dair_nad2_nad3       nad4     0.405     0.0    0.0   0.405   0.600
+l_dair_nad2_nad3       norif    0.405     0.0    0.0   0.405   0.600
+l_dair_nad2_nad3       rif      0.405     0.0    0.5   0.905   0.712
+lnrd1_dair_nad2_nad3   nad4     0.405     0.0    0.0   0.405   0.600
+lnrd1_dair_nad2_nad3   norif    0.405     0.0    0.0   0.405   0.600
+lnrd1_dair_nad2_nad3   rif      0.405     0.0    0.5   0.905   0.712
+enrd1_dair_nad2_nad3   nad4     0.405     0.0    0.0   0.405   0.600
+enrd1_dair_nad2_nad3   norif    0.405     0.0    0.0   0.405   0.600
+enrd1_dair_nad2_nad3   rif      0.405     0.0    0.5   0.905   0.712
+cnrd1_dair_nad2_nad3   nad4     0.405     0.0    0.0   0.405   0.600
+cnrd1_dair_nad2_nad3   norif    0.405     0.0    0.0   0.405   0.600
+cnrd1_dair_nad2_nad3   rif      0.405     0.0    0.5   0.905   0.712
+l_r1_wk12_nad3         nad4     0.405     0.0    0.0   0.405   0.600
+l_r1_wk12_nad3         norif    0.405     0.0    0.0   0.405   0.600
+l_r1_wk12_nad3         rif      0.405     0.0    0.5   0.905   0.712
+lnrd1_r1_wk12_nad3     nad4     0.405     0.0    0.0   0.405   0.600
+lnrd1_r1_wk12_nad3     norif    0.405     0.0    0.0   0.405   0.600
+lnrd1_r1_wk12_nad3     rif      0.405     0.0    0.5   0.905   0.712
+enrd1_r1_wk12_nad3     nad4     0.405     0.0    0.0   0.405   0.600
+enrd1_r1_wk12_nad3     norif    0.405     0.0    0.0   0.405   0.600
+enrd1_r1_wk12_nad3     rif      0.405     0.0    0.5   0.905   0.712
+cnrd1_r1_wk12_nad3     nad4     0.405     0.0    0.0   0.405   0.600
+cnrd1_r1_wk12_nad3     norif    0.405     0.0    0.0   0.405   0.600
+cnrd1_r1_wk12_nad3     rif      0.405     0.0    0.5   0.905   0.712
+l_r1_wk6_nad3          nad4     0.405    -0.1    0.0   0.305   0.576
+l_r1_wk6_nad3          norif    0.405    -0.1    0.0   0.305   0.576
+l_r1_wk6_nad3          rif      0.405    -0.1    0.5   0.805   0.691
+lnrd1_r1_wk6_nad3      nad4     0.405    -0.1    0.0   0.305   0.576
+lnrd1_r1_wk6_nad3      norif    0.405    -0.1    0.0   0.305   0.576
+lnrd1_r1_wk6_nad3      rif      0.405    -0.1    0.5   0.805   0.691
+enrd1_r1_wk6_nad3      nad4     0.405    -0.1    0.0   0.305   0.576
+enrd1_r1_wk6_nad3      norif    0.405    -0.1    0.0   0.305   0.576
+enrd1_r1_wk6_nad3      rif      0.405    -0.1    0.5   0.805   0.691
+cnrd1_r1_wk6_nad3      nad4     0.405    -0.1    0.0   0.305   0.576
+cnrd1_r1_wk6_nad3      norif    0.405    -0.1    0.0   0.305   0.576
+cnrd1_r1_wk6_nad3      rif      0.405    -0.1    0.5   0.805   0.691
+l_r1_nad2_nad3         nad4     0.405     0.0    0.0   0.405   0.600
+l_r1_nad2_nad3         norif    0.405     0.0    0.0   0.405   0.600
+l_r1_nad2_nad3         rif      0.405     0.0    0.5   0.905   0.712
+lnrd1_r1_nad2_nad3     nad4     0.405     0.0    0.0   0.405   0.600
+lnrd1_r1_nad2_nad3     norif    0.405     0.0    0.0   0.405   0.600
+lnrd1_r1_nad2_nad3     rif      0.405     0.0    0.5   0.905   0.712
+enrd1_r1_nad2_nad3     nad4     0.405     0.0    0.0   0.405   0.600
+enrd1_r1_nad2_nad3     norif    0.405     0.0    0.0   0.405   0.600
+enrd1_r1_nad2_nad3     rif      0.405     0.0    0.5   0.905   0.712
+cnrd1_r1_nad2_nad3     nad4     0.405     0.0    0.0   0.405   0.600
+cnrd1_r1_nad2_nad3     norif    0.405     0.0    0.0   0.405   0.600
+cnrd1_r1_nad2_nad3     rif      0.405     0.0    0.5   0.905   0.712
+l_r2_nad2_wk12         nad4     0.405     1.0    0.0   1.405   0.803
+l_r2_nad2_wk12         norif    0.405     1.0    0.0   1.405   0.803
+l_r2_nad2_wk12         rif      0.405     1.0    0.5   1.905   0.871
+lnrd1_r2_nad2_wk12     nad4     0.405     1.0    0.0   1.405   0.803
+lnrd1_r2_nad2_wk12     norif    0.405     1.0    0.0   1.405   0.803
+lnrd1_r2_nad2_wk12     rif      0.405     1.0    0.5   1.905   0.871
+enrd1_r2_nad2_wk12     nad4     0.405     1.0    0.0   1.405   0.803
+enrd1_r2_nad2_wk12     norif    0.405     1.0    0.0   1.405   0.803
+enrd1_r2_nad2_wk12     rif      0.405     1.0    0.5   1.905   0.871
+cnrd1_r2_nad2_wk12     nad4     0.405     1.0    0.0   1.405   0.803
+cnrd1_r2_nad2_wk12     norif    0.405     1.0    0.0   1.405   0.803
+cnrd1_r2_nad2_wk12     rif      0.405     1.0    0.5   1.905   0.871
+l_r2_nad2_none         nad4     0.405     0.0    0.0   0.405   0.600
+l_r2_nad2_none         norif    0.405     0.0    0.0   0.405   0.600
+l_r2_nad2_none         rif      0.405     0.0    0.5   0.905   0.712
+lnrd1_r2_nad2_none     nad4     0.405     0.0    0.0   0.405   0.600
+lnrd1_r2_nad2_none     norif    0.405     0.0    0.0   0.405   0.600
+lnrd1_r2_nad2_none     rif      0.405     0.0    0.5   0.905   0.712
+enrd1_r2_nad2_none     nad4     0.405     0.0    0.0   0.405   0.600
+enrd1_r2_nad2_none     norif    0.405     0.0    0.0   0.405   0.600
+enrd1_r2_nad2_none     rif      0.405     0.0    0.5   0.905   0.712
+cnrd1_r2_nad2_none     nad4     0.405     0.0    0.0   0.405   0.600
+cnrd1_r2_nad2_none     norif    0.405     0.0    0.0   0.405   0.600
+cnrd1_r2_nad2_none     rif      0.405     0.0    0.5   0.905   0.712
+l_r2_nad2_nad3         nad4     0.405     0.0    0.0   0.405   0.600
+l_r2_nad2_nad3         norif    0.405     0.0    0.0   0.405   0.600
+l_r2_nad2_nad3         rif      0.405     0.0    0.5   0.905   0.712
+lnrd1_r2_nad2_nad3     nad4     0.405     0.0    0.0   0.405   0.600
+lnrd1_r2_nad2_nad3     norif    0.405     0.0    0.0   0.405   0.600
+lnrd1_r2_nad2_nad3     rif      0.405     0.0    0.5   0.905   0.712
+enrd1_r2_nad2_nad3     nad4     0.405     0.0    0.0   0.405   0.600
+enrd1_r2_nad2_nad3     norif    0.405     0.0    0.0   0.405   0.600
+enrd1_r2_nad2_nad3     rif      0.405     0.0    0.5   0.905   0.712
+cnrd1_r2_nad2_nad3     nad4     0.405     0.0    0.0   0.405   0.600
+cnrd1_r2_nad2_nad3     norif    0.405     0.0    0.0   0.405   0.600
+cnrd1_r2_nad2_nad3     rif      0.405     0.0    0.5   0.905   0.712
+
+
+Table: Scenario  d2 l-OR = -0.1 d3 l-OR = 1.0 d4 l-OR = 0.5 
+Rule settings
+
+domain   rule    delta   thresh
+-------  -----  ------  -------
+d1       sup      0.00    0.975
+d1       fut      0.05    0.300
+d2       ni      -0.05    0.975
+d2       fut      0.00    0.100
+d3       sup      0.00    0.975
+d3       fut      0.05    0.300
+d4       sup      0.00    0.990
+d4       fut      0.05    0.300
+
+
+Table: Scenario  d2 l-OR = -0.1 d3 l-OR = 1.0 d4 l-OR = 0.5 
+Pr decision by domain and interim
+
+domain   rule        1       2       3       4       5
+-------  -----  ------  ------  ------  ------  ------
+d1       fut     0.385   0.458   0.478   0.487   0.491
+d1       sup     0.093   0.255   0.364   0.438   0.474
+d2       fut     0.160   0.242   0.295   0.334   0.371
+d2       ni      0.051   0.080   0.103   0.126   0.153
+d3       fut     0.021   0.022   0.023   0.023   0.023
+d3       sup     0.643   0.889   0.954   0.968   0.974
+d4       fut     0.038   0.045   0.050   0.050   0.050
+d4       sup     0.447   0.789   0.907   0.945   0.950
+
+
+Table: Scenario  d2 l-OR = -0.1 d3 l-OR = 1.0 d4 l-OR = 0.5 
+Enrolment at time of decision
+
+domain    n_dec   pr_dec       mu_n   q_025_n   q_975_n
+-------  ------  -------  ---------  --------  --------
+d1          965    0.965    967.358       500      2500
+d3          997    0.997    723.170       500      1500
+d4         1000    1.000    864.500       500      2000
+d2          524    0.524   1172.710       500      2500
+
+
+Table: Scenario  d2 l-OR = -0.1 d3 l-OR = 1.0 d4 l-OR = 0.5 
+Enrolment and sample size informing decisions
+
+domain    n_dec   pr_dec   mu_n_enrl   q025_n_enrl   q975_n_enrl   mu_n_info   q025_n_info   q975_n_info   prop_info
+-------  ------  -------  ----------  ------------  ------------  ----------  ------------  ------------  ----------
+d1          965    0.965       967.4           500          2500       387.8           182         993.0       0.401
+d3          997    0.997       723.2           500          1500       159.0            99         346.2       0.225
+d4         1000    1.000       864.5           500          2000       605.6           335        1394.0       0.701
+d2          524    0.524      1172.7           500          2500       138.5            49         372.9       0.118
+
+
+Table: Scenario  d2 l-OR = -0.1 d3 l-OR = 1.0 d4 l-OR = 0.5 
+Sample size informing decisions by arm
+
+domain   arm     inform     mu_n    sd_n   q025_n   q975_n
+-------  ------  -------  ------  ------  -------  -------
+d1       dair    TRUE      193.9   116.7       86    492.0
+d1       r1      TRUE       64.8    39.6       24    162.9
+d1       r2      TRUE      129.1    77.8       55    326.9
+d3       wk12    TRUE       79.7    35.9       45    175.1
+d3       none    TRUE       79.4    36.5       46    180.0
+d3       nad3    FALSE      68.4    32.3       38    151.0
+d4       rif     TRUE      302.9   149.9      158    695.0
+d4       norif   TRUE      302.7   150.3      158    702.0
+d4       nad4    FALSE     258.9   129.5      133    603.0
+d2       wk12    TRUE       69.2    46.9       22    193.9
+d2       wk6     TRUE       69.2    46.0       24    185.9
+d2       nad2    FALSE      58.7    39.5       18    161.0
+
+
+Table: Scenario  d2 l-OR = -0.1 d3 l-OR = 1.0 d4 l-OR = 0.5 
+Weighted conditional/model-scale log OR
+
+ i_anlys  par     truth   mean_est     bias    rmse   coverage
+--------  ----  -------  ---------  -------  ------  ---------
+       1  d1      0.222      0.266    0.044   0.309      0.946
+       2  d1      0.222      0.285    0.063   0.274      0.904
+       3  d1      0.222      0.303    0.082   0.281      0.858
+       4  d1      0.222      0.310    0.088   0.285      0.818
+       5  d1      0.222      0.313    0.091   0.285      0.810
+       1  d2     -0.100     -0.115   -0.015   0.635      0.929
+       2  d2     -0.100     -0.129   -0.029   0.489      0.925
+       3  d2     -0.100     -0.141   -0.041   0.460      0.928
+       4  d2     -0.100     -0.151   -0.051   0.455      0.922
+       5  d2     -0.100     -0.164   -0.064   0.455      0.918
+       1  d3      1.000      1.074    0.074   0.503      0.935
+       2  d3      1.000      1.046    0.046   0.373      0.937
+       3  d3      1.000      1.046    0.046   0.339      0.938
+       4  d3      1.000      1.046    0.046   0.326      0.940
+       5  d3      1.000      1.048    0.048   0.320      0.943
+       1  d4      0.500      0.539    0.039   0.249      0.943
+       2  d4      0.500      0.525    0.025   0.182      0.958
+       3  d4      0.500      0.523    0.023   0.167      0.951
+       4  d4      0.500      0.524    0.024   0.161      0.957
+       5  d4      0.500      0.523    0.023   0.158      0.957
+
+
+Table: Scenario  d2 l-OR = -0.1 d3 l-OR = 1.0 d4 l-OR = 0.5 
+Standardised marginal log OR
+
+ i_anlys  par     truth   mean_est     bias    rmse   coverage
+--------  ----  -------  ---------  -------  ------  ---------
+       1  d1      0.222      0.181   -0.041   0.282      0.949
+       2  d1      0.222      0.214   -0.008   0.249      0.922
+       3  d1      0.222      0.234    0.012   0.253      0.888
+       4  d1      0.222      0.241    0.019   0.256      0.875
+       5  d1      0.222      0.244    0.023   0.257      0.862
+       1  d2     -0.100     -0.099    0.001   0.591      0.929
+       2  d2     -0.100     -0.117   -0.017   0.466      0.924
+       3  d2     -0.100     -0.130   -0.030   0.440      0.924
+       4  d2     -0.100     -0.141   -0.041   0.436      0.918
+       5  d2     -0.100     -0.154   -0.054   0.436      0.916
+       1  d3      1.000      1.018    0.018   0.472      0.933
+       2  d3      1.000      1.005    0.005   0.351      0.934
+       3  d3      1.000      1.007    0.007   0.318      0.943
+       4  d3      1.000      1.008    0.008   0.306      0.946
+       5  d3      1.000      1.011    0.011   0.301      0.946
+       1  d4      0.500      0.503    0.003   0.230      0.945
+       2  d4      0.500      0.499   -0.001   0.170      0.957
+       3  d4      0.500      0.501    0.001   0.156      0.950
+       4  d4      0.500      0.503    0.003   0.151      0.954
+       5  d4      0.500      0.502    0.002   0.148      0.956
+
+
+Table: Scenario  d2 l-OR = -0.1 d3 l-OR = 1.0 d4 l-OR = 0.5 
+Standardised marginal RD
+
+ i_anlys  par     truth   mean_est     bias    rmse   coverage
+--------  ----  -------  ---------  -------  ------  ---------
+       1  d1      0.041      0.039   -0.002   0.061      0.951
+       2  d1      0.041      0.046    0.005   0.055      0.917
+       3  d1      0.041      0.050    0.009   0.056      0.877
+       4  d1      0.041      0.051    0.010   0.057      0.854
+       5  d1      0.041      0.052    0.011   0.057      0.846
+       1  d2     -0.023     -0.022    0.001   0.127      0.927
+       2  d2     -0.023     -0.026   -0.003   0.105      0.924
+       3  d2     -0.023     -0.029   -0.006   0.099      0.925
+       4  d2     -0.023     -0.032   -0.009   0.098      0.918
+       5  d2     -0.023     -0.035   -0.012   0.098      0.916
+       1  d3      0.187      0.183   -0.004   0.081      0.934
+       2  d3      0.187      0.186   -0.002   0.065      0.935
+       3  d3      0.187      0.186   -0.002   0.060      0.945
+       4  d3      0.187      0.185   -0.002   0.059      0.942
+       5  d3      0.187      0.185   -0.002   0.058      0.945
+       1  d4      0.107      0.108    0.001   0.049      0.945
+       2  d4      0.107      0.108    0.001   0.037      0.956
+       3  d4      0.107      0.108    0.001   0.035      0.949
+       4  d4      0.107      0.108    0.001   0.034      0.951
+       5  d4      0.107      0.108    0.001   0.033      0.957
+
+
+Model code hasn't been stored, but used: indep2
+
+
+End of results for file
