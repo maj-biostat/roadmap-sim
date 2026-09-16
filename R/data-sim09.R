@@ -282,11 +282,7 @@ sim09_run_trial <- function(
     
     d_batch_dat <- sim09_batch_01(l_spec, l_dom_state = l_dom_state)
     d_batch_dat[, batch := i]
-    d_cum_dat <- rbind(d_cum_dat, d_batch_dat)
-    
-    # everything contained in l_res now
-    # state that generated batch i (starts from original/opening state setup)
-    # l_state_log[[i]] <- l_dom_state         
+    d_cum_dat <- rbind(d_cum_dat, d_batch_dat)      
     
     # updated for batch i+1
     l_res[[i]]   <- fn_decision(
@@ -403,34 +399,39 @@ sim09_decision_fn_dummy <- function(
     batch
 ){
   
-  # just a dummy placeholder update on the third interim so that batch 4 and onwards
-  # don't randomised d2 
-  
-  # in practice, this would possibly invoke the analysis from here and make the 
-  # decision on the basis of the results.
+  # just a dummy placeholder
   
   l_dom_state 
 }
 
 sim09_d1_alloc <- function(l_dec) {
   # safe to use isTRUE since sup is a single value
-  if (isTRUE(l_dec$d1$sup)) return(c(dair = 0.0, r1 = 1/3, r2 = 2/3))   # revision superior
-  if (isTRUE(l_dec$d1$fut)) return(c(dair = 1.0, r1 = 0.0, r2 = 0.0))   # revision futile
+  # isTRUE is NOT vectorised so please dont use on data.table again mr jones.
+  # revision superior - allocation from here on in
+  if (isTRUE(l_dec$d1$sup)) return(c(dair = 0.0, r1 = 1/3, r2 = 2/3))   
+  # revision futile - allocation from here on in
+  if (isTRUE(l_dec$d1$fut)) return(c(dair = 1.0, r1 = 0.0, r2 = 0.0))   
   sim09_domain_state_open()$d1
 }
 sim09_d2_alloc <- function(l_dec) {
-  if (isTRUE(l_dec$d2$ni))  return(c(nad2 = 0.3, wk12 = 0.0, wk6 = 0.7))  # 6wk non-inferior
-  if (isTRUE(l_dec$d2$fut)) return(c(nad2 = 0.3, wk12 = 0.7, wk6 = 0.0))  # 6wk futile
+  # 6wk non-inferior
+  if (isTRUE(l_dec$d2$ni))  return(c(nad2 = 0.3, wk12 = 0.0, wk6 = 0.7))  
+  # 6wk futile
+  if (isTRUE(l_dec$d2$fut)) return(c(nad2 = 0.3, wk12 = 0.7, wk6 = 0.0))  
   sim09_domain_state_open()$d2
 }
 sim09_d3_alloc <- function(l_dec) {
-  if (isTRUE(l_dec$d3$sup)) return(c(nad3 = 0.3, wk12 = 0.7, none = 0.0)) # wk12 superior
-  if (isTRUE(l_dec$d3$fut)) return(c(nad3 = 0.3, wk12 = 0.0, none = 0.7)) # wk12 futile
+  # wk12 superior
+  if (isTRUE(l_dec$d3$sup)) return(c(nad3 = 0.3, wk12 = 0.7, none = 0.0)) 
+  # wk12 futile
+  if (isTRUE(l_dec$d3$fut)) return(c(nad3 = 0.3, wk12 = 0.0, none = 0.7)) 
   sim09_domain_state_open()$d3
 }
 sim09_d4_alloc <- function(l_dec) {
-  if (isTRUE(l_dec$d4$sup)) return(c(nad4 = 0.3, norif = 0.0, rif = 0.7)) # rif superior
-  if (isTRUE(l_dec$d4$fut)) return(c(nad4 = 0.3, norif = 0.7, rif = 0.0)) # rif futile
+  # rif superior
+  if (isTRUE(l_dec$d4$sup)) return(c(nad4 = 0.3, norif = 0.0, rif = 0.7)) 
+  # rif futile
+  if (isTRUE(l_dec$d4$fut)) return(c(nad4 = 0.3, norif = 0.7, rif = 0.0)) 
   sim09_domain_state_open()$d4
 }
 
@@ -443,7 +444,7 @@ sim09_update_dom_state <- function(l_dom_state, l_dec) {
 }
 
 
-# Once a rule (sup/ni/fut) for a domain flips TRUE, it stays TRUE for every
+# Once a rule (sup/ni/fut) for a domain deemed TRUE, it stays TRUE for every
 # subsequent interim regardless of what a later analysis concludes. 
 # NA  never overrides a locked TRUE, and never itself counts as decided.
 sim09_lock_dec <- function(l_dec_prev, l_dec_new) {
@@ -454,7 +455,8 @@ sim09_lock_dec <- function(l_dec_prev, l_dec_new) {
     rules <- names(l_dec_new[[dm]])
     rules <- rules[!grepl("_prob$", rules)]
     for (rl in rules) {
-      l_locked[[dm]][[rl]] <- isTRUE(l_dec_prev[[dm]][[rl]]) || isTRUE(l_dec_new[[dm]][[rl]])
+      l_locked[[dm]][[rl]] <- 
+        isTRUE(l_dec_prev[[dm]][[rl]]) || isTRUE(l_dec_new[[dm]][[rl]])
     }
   }
   l_locked
@@ -659,7 +661,7 @@ sim09_compute_lor_std <- function(
   
   p_d1_dair <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d1_dair)
   p_d1_rev <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d1_rev)
-  # marginal or
+  # marginal lor
   post_lor_d1 <- qlogis(p_d1_rev) - qlogis(p_d1_dair)
   
   
@@ -725,7 +727,8 @@ sim09_compute_lor_std <- function(
   )
 }
 
-# prototype - bootstap version tbc...
+# prototype - bootstap version tbc... not used as of yet.
+# not sure if this is correct. need to confirm
 sim09_reg_wgt_boot <- function(
     regs, d_cum_dat, n_draws
     ) {
@@ -743,11 +746,11 @@ sim09_reg_wgt_boot <- function(
           rgamma(n_draws, shape = a, rate = 1) 
         }
       })
-  # each row ~ Dirichlet(n_full), one row per posterior draw
+  # each row \sim Dirichlet(n_full), one row per posterior draw
   g / rowSums(g)   
 }
 
-# Producing an RD aligned with a population/regimen mix per what is observed 
+# Producing RD aligned with a population/regimen mix per what is observed 
 # in the sample. 
 # In contrast the bayesian bootstrap would try to reflect the extra uncertainty
 # about whether the observed mix of regimens is a reliable estimate of the 
@@ -761,10 +764,12 @@ sim09_reg_wgt_boot <- function(
 #
 # d1 tricky - a DAIR patient has no observed r1/r2 (or downstream
 # d2/d3) counterfactual, because they never entered that pathway.
-# Therefore, treat "revision" as a probability-weighted
+# So, treating "revision" as a probability-weighted
 # mixture over the l_r1_*/l_r2_* regimens, with weights given by the
 # OBSERVED proportions of actual revision patients across those cells (i.e.
 # the same w_d1 already used for the log-odds jnt_d1 contrast.
+# This more or less corresponds to what we have been repeatedly asked for
+# even though it doesnt make a lot of sense to me...
 # Mixture is applied uniformly to EVERY l-silo patient (not just the
 # ones who actually got DAIR), so "revision" and "dair" are both counter-
 # factual quantities defined the same way for the whole standardisation
@@ -894,11 +899,11 @@ sim09_stan_fit_01 <- function(
   # g-comp (standardisation) note ----------
   # In the following g-computation is used to standardise the model based 
   # parameters over a pre-specified target distribution of regimen 
-  # characteristics. It is important to note that we are treating the target
-  # distribution as fixed and so the posterior uncertainty is reflecting the 
-  # uncertainty in the model parameters but not the uncertainty in the 
-  # estimation of the target distribution as would be offered via a 
-  # bayesian bootstrap. The approach adopted aligns with the common reporting
+  # characteristics. We are treating the target  distribution as fixed and 
+  # so the posterior uncertainty is only reflecting the uncertainty in the 
+  # model parameters not the uncertainty in the  estimation of the target 
+  # distribution which is what a bayesian bootstrap tries to do.
+  # The approach adopted here aligns with the standard reporting
   # perspective for clinical trials.
   d_lor <- sim09_compute_lor(d_cum_dat, l_spec, f_1)
   d_lor_std <- sim09_compute_lor_std(d_cum_dat, l_spec, f_1)
@@ -942,10 +947,9 @@ sim09_stan_fit_01 <- function(
 
 
 # Data generation ------------
-# Same allocation/outcome structure as sim09_cohort_01, but d2/d3/d4 are now
-# drawn directly from domain_state (a single 3-way sample() per domain,
-# rather than a two-step enter/split). d1 is unchanged for now - see note
-# in the accompanying discussion for how to extend it the same way.
+# d2/d3/d4 are now drawn directly from domain_state (a single 3-way sample() 
+# per domain, rather than the two-step enter/split process used previously). 
+# d1 is unchanged for now
 sim09_batch_01 <- function(
     l_spec,
     l_dom_state = sim09_domain_state_open(),   
@@ -985,11 +989,13 @@ sim09_batch_01 <- function(
   # d1: surgery received
   # The l silo draws from l_dom_state$d1 (the randomised comparison, which can be 
   # stopped like the other domains). The other three silos are non-randomised 
-  # clinician choice and are fixed distributions.
+  # clinician choice and enter as fixed distributions.
   d[, d1 := character(.N)]
   idx_l <- d$silo == "l"
-  d[idx_l, d1 := sample(names(l_dom_state$d1), .N, replace = TRUE, prob = l_dom_state$d1)]
+  d[idx_l, d1 := sample(
+    names(l_dom_state$d1), .N, replace = TRUE, prob = l_dom_state$d1)]
   
+  # non rand pathway for entry...
   for (s in c("lnrd1", "enrd1", "cnrd1")) {
     # pick up the sampling dist for this silo
     p_vec <- switch(s, 
@@ -1007,21 +1013,26 @@ sim09_batch_01 <- function(
   
   # The d2, d3, d4 are coordinated by domain status
   d[, d2 := "nad2"]
+  # for those that are r1
   idx_r1 <- d$d1 == "r1"
-  d[idx_r1, d2 := sample(names(l_dom_state$d2), .N, replace = TRUE, prob = l_dom_state$d2)]
+  # enter into d2 based on the dist in l_dom_state$d2
+  d[idx_r1, d2 := sample(
+    names(l_dom_state$d2), .N, replace = TRUE, prob = l_dom_state$d2)]
   d[, d2 := factor(d2, levels = c("nad2", "wk12", "wk6"))]
   
   d[, d3 := "nad3"]
   idx_r2 <- d$d1 == "r2"
-  d[idx_r2, d3 := sample(names(l_dom_state$d3), .N, replace = TRUE, prob = l_dom_state$d3)]
+  d[idx_r2, d3 := sample(
+    names(l_dom_state$d3), .N, replace = TRUE, prob = l_dom_state$d3)]
   d[, d3 := factor(d3, levels = c("nad3", "wk12", "none"))]
   
-  d[, d4 := sample(names(l_dom_state$d4), .N, replace = TRUE, prob = l_dom_state$d4)]
+  d[, d4 := sample(
+    names(l_dom_state$d4), .N, replace = TRUE, prob = l_dom_state$d4)]
   d[, d4 := factor(d4, levels = c("nad4", "norif", "rif"))]
   
   d[, silo := factor(silo, levels = c("l", "lnrd1", "enrd1", "cnrd1"))]
   
-  # outcome full silo:d1:d2:d3 interaction + additive d4
+  # outcome full silo:d1:d2:d3 regimen + additive d4
   reg_key <- paste(d$silo, d$d1, d$d2, d$d3, sep = "_")
   d[, reg := factor(reg_key, levels = l_spec$reg_opts)]
   d[, d1b := copy(d1)]
@@ -1029,7 +1040,8 @@ sim09_batch_01 <- function(
   d[, d1b := droplevels(d1b)]
   
   intercept <- qlogis(l_spec$response_p_ref)
-  lp <- intercept + full_reg_effect[reg_key] + l_spec$d4_effect[as.character(d$d4)]
+  lp <- intercept + full_reg_effect[reg_key] + 
+    l_spec$d4_effect[as.character(d$d4)]
   
   d[, eta := lp]
   d[, p := plogis(eta)]
@@ -1041,7 +1053,8 @@ sim09_batch_01 <- function(
 sim09_stan_data_01 <- function(d_cum_dat, l_spec){
   
   
-  d_grp_dat <- d_cum_dat[, .(n = .N, y = sum(y)), keyby = .(reg, d4, d1, d2, d3, silo)]
+  d_grp_dat <- d_cum_dat[
+    ,  .(n = .N, y = sum(y)), keyby = .(reg, d4, d1, d2, d3, silo)]
   d_grp_dat[, ix_reg := as.integer(reg)]
   d_grp_dat[, ix_d4 := as.integer(d4)]
   
@@ -1074,7 +1087,8 @@ sim09_stan_data_01 <- function(d_cum_dat, l_spec){
     N = nrow(d_grp_dat),
     n = d_grp_dat$n,
     y = d_grp_dat$y,
-    # reference what is observed - some regimens might not appear in our sample...
+    # fixed at what is possible but not necessarily observed due to small 
+    # sample sizes...
     K_reg = nrow(d_grp_reg),
     K_d4 = length(levels(d_grp_dat$d4)),
     reg = d_grp_dat$ix_reg,
@@ -1103,6 +1117,8 @@ sim09_stan_data_01 <- function(d_cum_dat, l_spec){
 
 # Utils --------
 
+# Reportin-----
+# run on a given output dir in the data directory to summarise various ocs
 sim09_report_sim_res <- function(){
   
   library(data.table)
@@ -1331,13 +1347,14 @@ sim09_true_effects_des_pop <- function(
     plogis(eta)
   }
   
-  # d4 is randomised independently of silo, so just use the domain allocation probabilities
+  # d4 is randomised independently of silo, so just use the 
+  # domain allocation probabilities
   w_d4 <- l_dom_state$d4
   
   
   # d1: revision vs DAIR
   #
-  # rev is a mixture of the six revision regimes:
+  # ok, rev is currently deemed a mixture of the six revision regimes:
   #
   #   r1_wk12_nad3
   #   r1_wk6_nad3
@@ -1395,7 +1412,8 @@ sim09_true_effects_des_pop <- function(
   reg_wk6_d2  <- paste0(silos, "_r1_wk6_nad3")
   
   lor_d2 <- sum(
-    w_silo_r1 * (l_spec$reg_effect[reg_wk6_d2] - l_spec$reg_effect[reg_wk12_d2]))
+    w_silo_r1 * (l_spec$reg_effect[reg_wk6_d2] - 
+                   l_spec$reg_effect[reg_wk12_d2]))
   
   
   # d3: wk12 vs none
@@ -1424,7 +1442,7 @@ sim09_true_effects_des_pop <- function(
   
   # Risk differences
   #
-  # urgh. need to average probabilities on the probability scale,
+  # ur, need to average probabilities on the probability scale,
   # rather than transform the averaged log OR.
   
   # d1
@@ -1465,7 +1483,6 @@ sim09_true_effects_des_pop <- function(
   names(p_wk12_d2) <- silos
   
   for (s in silos) {
-    
     p_wk6_d2[s] <- sum(
       w_d4 *
         sapply(
@@ -1499,7 +1516,6 @@ sim09_true_effects_des_pop <- function(
   names(p_none_d3) <- silos
   
   for (s in silos) {
-    
     p_wk12_d3[s] <- sum(
       w_d4 *
         sapply(
@@ -1542,16 +1558,16 @@ sim09_true_effects_des_pop <- function(
   # Expected probability of each regimen
   p_reg_pop <- setNames(numeric(length(all_regs)), all_regs)
   
+  # work through all the combinations
   for (s in silos) {
-    
+    # pr of being in silo s
     p_s <- l_spec$p_silo[s]
-    
     if (s == "l") {
-      
+      # pick up the starting domain assignment weights (allows us to do adaptions
+      # downstream)  
       p_d1_s <- l_dom_state$d1
-      
     } else {
-      
+      # bsaed on the distributions fixed
       p_d1_s <- switch(
         s,
         lnrd1 = l_spec$p_surg_lnrd1,
@@ -1559,10 +1575,10 @@ sim09_true_effects_des_pop <- function(
         cnrd1 = l_spec$p_surg_cnrd1
       )
     }
-    
+    # how each d1 trt level influences downstream probs.
     for (d1 in names(p_d1_s)) {
-      
       if (d1 == "dair") {
+        # d2 and d3 setup
         p_d2_s <- c(nad2 = 1)
         p_d3_s <- c(nad3 = 1)
       } else if (d1 == "r1") {
@@ -1573,12 +1589,12 @@ sim09_true_effects_des_pop <- function(
         p_d3_s <- l_dom_state$d3
       }
       
+      # for each regime combination 
       for (d2 in names(p_d2_s)) {
         for (d3 in names(p_d3_s)) {
-          
           reg <- paste(s, d1, d2, d3, sep = "_")
-          
           if (reg %in% all_regs) {
+            # accumulator for the probability of being in reg
             p_reg_pop[reg] <-
               p_reg_pop[reg] +
               p_s *
@@ -2139,11 +2155,9 @@ sim09_set_domain <- function(state, domain, vec) {
 # Each open domain is a simplex over its possible values, which includes the 
 # non-randomised option if applicable.
 # - still open, default ratio: c(nad2 = 0.3, wk12 = 0.35, wk6 = 0.35)
-# - still open, re-weighted (e.g. RAR): c(nad2 = 0.3, wk12 = 0.20, wk6 = 0.50)
+# - still open, re-weighted: c(nad2 = 0.3, wk12 = 0.20, wk6 = 0.50)
 # - closed, reverts to standard care: c(nad2 = 1,   wk12 = 0,    wk6 = 0)
 # - closed, winner becomes routine: c(nad2 = 0,   wk12 = 0,    wk6 = 1)
-# Ground truth (reg_effect / d4_effect below) never changes - only the
-# allocation are updated.
 sim09_domain_state_open <- function() {
   list(
     # 'l' silo only - randomised dair vs revision,
@@ -2160,7 +2174,8 @@ sim09_domain_state_open <- function() {
 
 sim09_enrol_time_int <- function(
     N,
-    lambda = function(t, lambda_inf = 1.52, ramp_up = 90) { lambda_inf * pmin(t/ramp_up, 1) },
+    lambda = function(t, lambda_inf = 1.52, ramp_up = 90) { 
+      lambda_inf * pmin(t/ramp_up, 1) },
     lambda_max = 1.52,
     ramp_up_period  = 90
 ) {
@@ -2252,9 +2267,12 @@ sim09_build_reg_effect <- function(
 ) {
   
   eff <- setNames(rep(0, length(reg_opts)), reg_opts)
-  eff[d1_trt_regs]  <- eff[d1_trt_regs]  + d1_delta      # any revision vs dair
-  eff[d2_wk6_regs]  <- eff[d2_wk6_regs]  + d2_wk6_delta  # wk6 vs wk12 (wk12 stays at 0)
-  eff[d3_wk12_regs] <- eff[d3_wk12_regs] + d3_wk12_delta # wk12 vs none (none stays at 0)
+  # any revision vs dair
+  eff[d1_trt_regs]  <- eff[d1_trt_regs]  + d1_delta   
+  # wk6 vs wk12 (wk12 stays at 0)
+  eff[d2_wk6_regs]  <- eff[d2_wk6_regs]  + d2_wk6_delta  
+  # wk12 vs none (none stays at 0)
+  eff[d3_wk12_regs] <- eff[d3_wk12_regs] + d3_wk12_delta 
   eff["l_dair_nad2_nad3"] <- 0
   eff
 }
@@ -2303,7 +2321,8 @@ sim09_update_cfg <- function(l_spec){
   
   if(l_spec$nex > 0){
     l_spec$nex <- pmin(l_spec$nex, l_spec$n_sim)
-    l_spec$ex_trial_ix <- sort(sample(1:l_spec$n_sim, size = l_spec$nex, replace = F))
+    l_spec$ex_trial_ix <- sort(
+      sample(1:l_spec$n_sim, size = l_spec$nex, replace = F))
     l_spec$ex_trial_ix[1] <- 1
   }
   
@@ -2464,7 +2483,8 @@ sim09_ex_dat_1 <- function(){
   d_fig <- d_batch[silo == "l"]
   d_fig[, d1_b := copy(d1)]
   d_fig[d1 != "dair", d1_b := "rev"]
-  p_1 <- ggplot( d_fig, aes(x = d1_b, fill = d1)) + geom_bar() + scale_x_discrete("") +
+  p_1 <- ggplot( d_fig, aes(x = d1_b, fill = d1)) + geom_bar() + 
+    scale_x_discrete("") +
     ggtitle(
       "Surgical (late silo only)",
       subtitle = paste0("rand trt N = ", nrow(d_fig), "/", nrow(d_batch))
