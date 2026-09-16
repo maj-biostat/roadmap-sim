@@ -5,9 +5,9 @@ default:
   mc_warmup: 1000
   mc_samp: 1000
   mc_chain: 1
-  # hier or indep
-  mc_model: hier 
-  # example trials
+  # hier or indep1 or indep2
+  mc_model: indep2
+  # example indep
   nex: 3
   n_batch: [500, 500, 500, 500, 500]
   
@@ -101,8 +101,11 @@ default:
 
   # hyperparams
   pri_b_0: [0, 1]
-  pri_b_reg: [7, 0, 0.5]
-  pri_b_d4: [7, 0, 1.0]
+  # pri_b_reg: [3, 0, 1.0]
+  # pri_b_d4: [3, 0, 1.0]
+  
+  pri_b_reg: [0, 2.5]
+  pri_b_d4: [0, 2.5]
   prior_only: 0
   
   

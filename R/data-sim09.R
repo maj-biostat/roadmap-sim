@@ -26,23 +26,23 @@ args = commandArgs(trailingOnly=TRUE)
 if (length(args)<1) {
   log_info("Setting default run method (does nothing)")
   args[1] = "sim09_run_none"
-  args[2] = "sim09/cfg-sim09-sc01-v01.yml"
+  args[2] = "sim09/cfg-sim09-sc01-v02.yml"
 } else {
   log_info("Run method ", args[1])
   log_info("Scenario config ", args[2])
 }
 
-
-
+# compile models at bottom of scipt
 # if(!interactive()){
 #   m_1 <- cmdstanr::cmdstan_model(cmdstanr::write_stan_file(s_mod))
 # } else {
 #   # based on locally stored file - for future use
 #   m_1 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09.stan"))
 # }
-
-m_1 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09-a.stan"))
-m_2 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09-b.stan"))
+# m_1 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09-a.stan"))
+# m_2 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09-c.stan"))
+# # hierarchical
+# m_3 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09-b.stan"))
 
 
 sim09_run_trial <- function(
@@ -682,7 +682,7 @@ sim09_stan_fit_01 <- function(
     "-intrm-", max(d_cum_dat$batch))
   
   # snk <- capture.output(
-  if(l_spec$mc_model == "indep"){
+  if(l_spec$mc_model == "indep1"){
     f_1 <- m_1$sample(
       ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
       parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
@@ -691,16 +691,34 @@ sim09_stan_fit_01 <- function(
       output_dir = l_spec$mc_out_dir,
       output_basename = foutname
     )
-  } else if (l_spec$mc_model == "hier"){
+    
+    # f_1$summary(variables = c("b_reg"))
+    # f_0 <- glm(y ~ reg + d4, data = d_cum_dat, family = binomial)
+    # coef(f_0)
+    
+  } else if (l_spec$mc_model == "indep2"){
+    
     f_1 <- m_2$sample(
       ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
       parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
-      refresh = 0, show_exceptions = T,
+      refresh = 0, show_exceptions = F,
       max_treedepth = 11,
       output_dir = l_spec$mc_out_dir,
       output_basename = foutname
     )
-  }
+    # f_1$summary(variables = c("b_reg"))
+  } else if (l_spec$mc_model == "hier"){
+    f_1 <- m_3$sample(
+      ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
+      parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
+      refresh = 0, show_exceptions = F,
+      max_treedepth = 11,
+      output_dir = l_spec$mc_out_dir,
+      output_basename = foutname
+    )
+    # f_1$summary(variables = c("mu_reg", "sig_reg"))
+    # f_1$summary(variables = c("b_reg"))
+  } 
   
   
   # )
@@ -855,18 +873,54 @@ sim09_batch_01 <- function(
 sim09_stan_data_01 <- function(d_cum_dat, l_spec){
   
   
-  d_grp_dat <- d_cum_dat[, .(n = .N, y = sum(y)), keyby = .(reg, d4)]
+  d_grp_dat <- d_cum_dat[, .(n = .N, y = sum(y)), keyby = .(reg, d4, d1, d2, d3, silo)]
   d_grp_dat[, ix_reg := as.integer(reg)]
   d_grp_dat[, ix_d4 := as.integer(d4)]
+  
+  d_grp_dat[, ix_d1 := as.integer(d1)]
+  d_grp_dat[, ix_d2 := as.integer(d2)]
+  d_grp_dat[, ix_d3 := as.integer(d3)]
+  d_grp_dat[, ix_silo := as.integer(silo)]
+  
+  if(nrow(d_grp_dat[, .N, keyby = reg]) != length(l_spec$reg_opts)){
+    
+    reg_zero <- l_spec$reg_opts[!(l_spec$reg_opts %in% d_grp_dat$reg)]
+    log_info("regs not present in data ", paste0(reg_zero, collaspse = ", "))
+  }
+  
+  d_grp_reg <- data.table(
+    reg = l_spec$reg_opts
+  )
+  d_grp_reg[, c("silo", "d1", "d2", "d3") := tstrsplit(reg, "_")]
+  d_grp_reg[, silo := factor(silo, levels = levels(d_grp_dat$silo))]
+  d_grp_reg[, d1 := factor(d1, levels = levels(d_grp_dat$d1))]
+  d_grp_reg[, d2 := factor(d2, levels = levels(d_grp_dat$d2))]
+  d_grp_reg[, d3 := factor(d3, levels = levels(d_grp_dat$d3))]
+  
+  d_grp_reg[, ix_d1 := as.integer(d1)]
+  d_grp_reg[, ix_d2 := as.integer(d2)]
+  d_grp_reg[, ix_d3 := as.integer(d3)]
+  d_grp_reg[, ix_silo := as.integer(silo)]
   
   ld <- list(
     N = nrow(d_grp_dat),
     n = d_grp_dat$n,
     y = d_grp_dat$y,
-    K_reg = length(levels(d_grp_dat$reg)),
+    # reference what is observed - some regimens might not appear in our sample...
+    K_reg = nrow(d_grp_reg),
     K_d4 = length(levels(d_grp_dat$d4)),
     reg = d_grp_dat$ix_reg,
     d4 = d_grp_dat$ix_d4,
+    
+    d1 = d_grp_dat$ix_d1,
+    d2 = d_grp_dat$ix_d2,
+    d3 = d_grp_dat$ix_d3,
+    silo = d_grp_dat$ix_silo,
+    
+    reg_silo_idx = d_grp_reg$ix_silo,
+    reg_d1_idx =   d_grp_reg$ix_d1, 
+    reg_d2_idx =   d_grp_reg$ix_d2,
+    reg_d3_idx =   d_grp_reg$ix_d3,
     
     pri_b_0 = l_spec$pri_b_0,
     pri_b_reg = l_spec$pri_b_reg,
@@ -887,7 +941,7 @@ sim09_report_sim_res <- function(){
   library(qs2)
   library(kableExtra)
   
-  l <- qs2::qs_read("data/sim09/sim09-20260915-175048.qs2")
+  l <- qs2::qs_read("data/sim09/sim09-v02-20260916-091644.qs2")
   
   r = l$r
   l_spec = l$l_spec
@@ -1918,8 +1972,8 @@ sim09_get_silo_contrib <- function(reg_opts, prefix = "enrd1"){
 sim09_update_cfg <- function(l_spec){
   
   if(unname(Sys.info()[1]) == "Darwin"){
-    message("On mac, resetting cores to 5")
     l_spec$mc_cores <- 5
+    message("On mac, resetting cores to ", l_spec$mc_cores)
   } else {
     message(paste0("Allocated ", l_spec$mc_cores, " cores"))
   }
@@ -1971,8 +2025,8 @@ sim09_default_cfg <- function(){
   l_spec <- list()
   
   if(unname(Sys.info()[1]) == "Darwin"){
-    message("On mac, resetting cores to 5")
     l_spec$mc_cores <- 5
+    message("On mac, resetting cores to ", l_spec$mc_cores)
   } else {
     
     l_spec$mc_cores <- 60
@@ -1982,6 +2036,7 @@ sim09_default_cfg <- function(){
   l_spec$n_sim <- 10
   
   l_spec$seed <- 1
+  l_spec$mc_model <- "indep2"
   
   l_spec$p_silo <- c(l = 0.4, lnrd1 = 0.1, enrd1 = 0.3, cnrd1 = 0.2)
   l_spec$p_surg_lnrd1 <- c(dair = 0.5, r1 = 0.2, r2 = 0.3)
@@ -2814,18 +2869,6 @@ sim09_sim_loop <- function(){
   # temp
   l_dom_state = sim09_domain_state_open()
   
-  # l_spec$reg_effect <- sim09_build_reg_effect(
-  #   reg_opts = l_spec$reg_opts, 
-  #   d1_trt_regs = l_spec$d1_trt_regs,
-  #   d2_wk6_regs = l_spec$d2_wk6_regs,
-  #   d3_wk12_regs = l_spec$d3_wk12_regs,
-  #   d1_delta = 0, 
-  #   d2_wk6_delta = 0, 
-  #   d3_wk12_delta = 0
-  # )
-  # sanity - all contribs should be 1
-  # l_spec$reg_effect[sim09_get_silo_contrib(l_spec$reg_opts, "l_")]
-  
   RNGkind("L'Ecuyer-CMRG"); set.seed(l_spec$seed)
   r <- pbapply::pblapply(
     X=1:l_spec$n_sim, cl = l_spec$mc_cores, FUN=function(ix) {
@@ -2859,7 +2902,7 @@ sim09_sim_loop <- function(){
   log_info("Sleep for 2 secs before processing")
   Sys.sleep(2)
   
-  scen <- substr(basename(f_spec), 11, 14)
+  scen <- substr(basename(f_spec), 16, 18)
   fname <- paste0("sim09-", scen, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs2")
   log_info("sim09_sim_loop: saving to file", fname)
   qs2::qs_save(
@@ -2886,3 +2929,205 @@ sim09_main <- function(){
 if(!interactive()){
   sim09_main()
 }
+
+
+
+
+# stan models----------------
+mod_a <- "
+data{ 
+  int N;
+  array[N] int y;
+  array[N] int n;
+  
+  int K_reg;
+  int K_d4;
+  
+  array[N] int reg;
+  array[N] int d4;
+  
+  vector[2] pri_b_0;
+  vector[2] pri_b_reg; 
+  vector[2] pri_b_d4;
+  
+  int prior_only;
+}
+transformed data{
+}
+parameters{
+  real b_0;
+  vector[K_reg-1] b_reg_raw;
+  vector[K_d4-1] b_d4_raw;
+}
+transformed parameters{
+  vector[K_reg] b_reg;
+  vector[K_d4] b_d4;
+  
+  b_reg[1] = 0.0;
+  b_reg[2:K_reg] = b_reg_raw;
+  b_d4[1] = 0.0;
+  b_d4[2:K_d4] = b_d4_raw;
+} 
+model{
+  target += logistic_lpdf(b_0 | pri_b_0[1], pri_b_0[2]);
+  // target += student_t_lpdf(b_reg_raw | pri_b_reg[1], pri_b_reg[2], pri_b_reg[3]);
+  // target += student_t_lpdf(b_d4_raw | pri_b_d4[1], pri_b_d4[2], pri_b_d4[3]);
+  target += normal_lpdf(b_reg_raw | pri_b_reg[1], pri_b_reg[2]);
+  target += normal_lpdf(b_d4_raw | pri_b_d4[1], pri_b_d4[2]);
+  
+  if(!prior_only){
+    target += binomial_logit_lpmf(y | n, b_0 + b_reg[reg] + b_d4[d4]);  
+  }
+}
+generated quantities{
+}
+"
+
+
+mod_b <- "
+data{ 
+  int N;
+  array[N] int y;
+  array[N] int n;
+  int K_reg;
+  // lookup: for reg cell k, which silo column (1..4)
+  array[K_reg] int reg_silo_idx;  
+   // lookup: which d1 row (1=dair, 2=r1, 3=r2)
+  array[K_reg] int reg_d1_idx;   
+  array[K_reg] int reg_d2_idx;
+  array[K_reg] int reg_d3_idx;
+  
+  array[N] int silo;
+  
+  // each dair, r1, r2
+  array[N] int  d1;
+  
+  // nad2, wk12, wk6
+  array[N] int d2;
+  // nad3, none, wk12
+  array[N] int d3;
+  // nad4, norif, rif
+  array[N] int d4;
+  
+  // priors
+  vector[2] pri_b_0;
+  vector[2] pri_b_reg; 
+  vector[2] pri_b_d4;
+  
+  int prior_only;
+}
+transformed data{
+}
+parameters{
+  real b_0;
+  vector[2] b_d1_l_raw;
+  vector[3] b_d1_lnr;
+  vector[3] b_d1_enr;
+  vector[3] b_d1_cnr;
+  
+  vector[2] b_d2_raw;
+  vector[2] b_d3_raw;
+  vector[2] b_d4_raw;
+}
+transformed parameters{
+
+  // dair, r1, r2 x l, lnr, enr, cnr
+  matrix[3, 4] b_d1;
+  
+  b_d1[1, 1] = 0.0;
+  b_d1[2:3, 1] = b_d1_l_raw;
+  b_d1[, 2] = b_d1_lnr;
+  b_d1[, 3] = b_d1_enr;
+  b_d1[, 4] = b_d1_cnr;
+  
+  vector[3] b_d2;
+  b_d2[1] = 0.0;
+  b_d2[2:3] = b_d2_raw;
+  
+  vector[3] b_d3;
+  b_d3[1] = 0.0;
+  b_d3[2:3] = b_d3_raw;
+  
+  vector[3] b_d4;
+  b_d4[1] = 0.0;
+  b_d4[2:3] = b_d4_raw;
+} 
+model{
+  target += logistic_lpdf(b_0 | pri_b_0[1], pri_b_0[2]);
+  
+  target += normal_lpdf(b_d1_l_raw | 0, 2);
+  target += normal_lpdf(b_d1_lnr | 0, 2);
+  target += normal_lpdf(b_d1_enr | 0, 2);
+  target += normal_lpdf(b_d1_cnr | 0, 2);
+  
+  target += normal_lpdf(b_d2_raw | 0, 2);
+  target += normal_lpdf(b_d3_raw | 0, 2);
+  target += normal_lpdf(b_d4_raw | 0, 2);
+  
+  if(!prior_only){
+    for(i in 1:N){
+      target += binomial_logit_lpmf(
+        y[i] | n[i], b_0 + b_d1[d1[i], silo[i]] + b_d2[d2[i]] + b_d3[d3[i]] + b_d4[d4[i]]);  
+    }
+  }
+}
+generated quantities{
+  vector[K_reg] b_reg;
+  for (k in 1:K_reg) {
+    b_reg[k] = b_d1[reg_d1_idx[k], reg_silo_idx[k]] + b_d2[reg_d2_idx[k]] + b_d3[reg_d3_idx[k]];
+  }
+}
+"
+
+mod_c <- "
+data{ 
+  int N;
+  array[N] int y;
+  array[N] int n;
+  int K_reg;
+  int K_d4;
+  array[N] int reg;
+  array[N] int d4;
+  
+  vector[2] pri_b_0;
+  vector[2] pri_b_d4;
+  int prior_only;
+}
+transformed data{
+}
+parameters{
+  real b_0;
+  real mu_reg;
+  vector[K_reg-1] z_reg;
+  real<lower=0> sig_reg;
+  vector[K_d4-1] b_d4_raw;
+}
+transformed parameters{
+  vector[K_reg] b_reg;
+  vector[K_d4] b_d4;
+  b_d4[1] = 0.0;
+  b_reg[1] = 0.0;
+  b_reg[2:K_reg] = mu_reg + z_reg * sig_reg;
+  b_d4[2:K_d4] = b_d4_raw;
+} 
+model{
+  target += logistic_lpdf(b_0 | pri_b_0[1], pri_b_0[2]);
+  target += normal_lpdf(mu_reg | 0, 3);
+  target += normal_lpdf(z_reg | 0, 1);
+  target += exponential_lpdf(sig_reg | 1);
+  target += normal_lpdf(b_d4_raw | pri_b_d4[1], pri_b_d4[2]);
+  if(!prior_only){
+    target += binomial_logit_lpmf(y | n, b_0 + b_reg[reg] + b_d4[d4]);  
+  }
+}
+generated quantities{
+}
+"
+
+
+m_1 <- cmdstanr::cmdstan_model(
+  cmdstanr::write_stan_file(mod_a, basename = "m_1", dir = getwd()))
+m_2 <- cmdstanr::cmdstan_model(
+  cmdstanr::write_stan_file(mod_b, basename = "m_2", dir = getwd()))
+m_3 <- cmdstanr::cmdstan_model(
+  cmdstanr::write_stan_file(mod_c, basename = "m_3", dir = getwd()))
