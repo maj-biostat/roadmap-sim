@@ -70,7 +70,7 @@ default:
     d1:
       sup: 
         delta: 0.0
-        thresh: 0.95
+        thresh: 0.975
       fut:  
         delta: 0.05 
         thresh: 0.3
@@ -78,7 +78,7 @@ default:
       # Pr(theta > delta)  > thresh => Non-inferior
       ni:  
         delta: -0.05
-        thresh: 0.95
+        thresh: 0.975
       # Pr(theta > delta) < thresh => Futility, ie futile wrt ni if the Pr < 0.3 is > 0.05
       fut:  
         delta: 0.0 
@@ -86,7 +86,7 @@ default:
     d3:
       sup:  
         delta: 0.0
-        thresh: 0.95
+        thresh: 0.975
       fut:  
         delta: 0.05 
         thresh: 0.3

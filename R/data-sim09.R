@@ -236,6 +236,11 @@ m_2 <- cmdstanr::cmdstan_model(
 m_3 <- cmdstanr::cmdstan_model(
   cmdstanr::write_stan_file(mod_c))
 
+mod <- list()
+mod[["indep1"]] <- m_1
+mod[["indep2"]] <- m_2
+mod[["hier"]] <- m_3
+
 
 # simulated trial -----------------
 sim09_run_trial <- function(
@@ -353,14 +358,13 @@ sim09_decision_fn_01 <- function(
     d_cum_dat, fn_data, l_spec
   )
   
+  # decisions based on rd (risk diffs)
   l_dec_new <- sim09_eval_all_dec(l_fit$d_rd, l_spec)
   # prevent decisions from flip-flop 
   l_dec_new <- sim09_lock_dec(l_dec, l_dec_new)          
   
   # update new state (accounts for locks)
   l_dom_state_new <- sim09_update_dom_state(l_dom_state, l_dec_new)  
-  
-  
   
   l_res <- list(
     # retain previous state so that we can just return a set of res objs with
@@ -874,44 +878,15 @@ sim09_stan_fit_01 <- function(
     "-sim-", l_spec$ix_sim, 
     "-intrm-", max(d_cum_dat$batch))
   
-  # snk <- capture.output(
-  if(l_spec$mc_model == "indep1"){
-    f_1 <- m_1$sample(
-      ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
-      parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
-      refresh = 0, show_exceptions = F,
-      max_treedepth = 11,
-      output_dir = l_spec$mc_out_dir,
-      output_basename = foutname
-    )
-    
-    # f_1$summary(variables = c("b_reg"))
-    # f_0 <- glm(y ~ reg + d4, data = d_cum_dat, family = binomial)
-    # coef(f_0)
-    
-  } else if (l_spec$mc_model == "indep2"){
-    
-    f_1 <- m_2$sample(
-      ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
-      parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
-      refresh = 0, show_exceptions = F,
-      max_treedepth = 11,
-      output_dir = l_spec$mc_out_dir,
-      output_basename = foutname
-    )
-    # f_1$summary(variables = c("b_reg"))
-  } else if (l_spec$mc_model == "hier"){
-    f_1 <- m_3$sample(
-      ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
-      parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
-      refresh = 0, show_exceptions = F,
-      max_treedepth = 11,
-      output_dir = l_spec$mc_out_dir,
-      output_basename = foutname
-    )
-    # f_1$summary(variables = c("mu_reg", "sig_reg"))
-    # f_1$summary(variables = c("b_reg"))
-  } 
+  
+  f_1 <- mod[[l_spec$mc_model]]$sample(
+    ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
+    parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
+    refresh = 0, show_exceptions = F,
+    max_treedepth = 11,
+    output_dir = l_spec$mc_out_dir,
+    output_basename = foutname
+  )
   
   
   # )
@@ -1134,79 +1109,209 @@ sim09_report_sim_res <- function(){
   library(qs2)
   library(kableExtra)
   
-  l <- qs2::qs_read("data/sim09/sim09-v06-20260916-094427.qs2")
+  get_delta <- function(l_spec, domain = "d1", rule = "sup"){
+    l_spec$dec[[domain]][[rule]]$delta
+  }
+  get_thres <- function(l_spec, domain = "d1", rule = "sup"){
+    l_spec$dec[[domain]][[rule]]$thresh
+  }
   
-  r = l$r
-  l_spec = l$l_spec
+  fname <- paste0("sim09-result-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".txt")
+  f_out <- file(here::here("versions", fname), open = "w")
   
-  l_oc <- list(
-    dec_pr = sim09_smry_pr_dec(r, l_spec),
+  sim_dat_dir <-  "sim09-04"
+  f_list <- list.files(here::here("data", sim_dat_dir))
+  f = f_list[2]
+  for(f in f_list){
     
-    # maybe no longer necessary...
-    l_dec_n = sim09_smry_dec_n(r, l_spec),
+    # l <- qs2::qs_read("data/sim09/sim09-v02-20260916-124947.qs2")
+    message("##### ", f)
+    l <- qs2::qs_read(here::here("data", sim_dat_dir, f))
     
-    # partially duplicates sim09_smry_dec_n
-    l_dec_info = sim09_smry_dec_info(r, l_spec),
+    r = l$r
+    l_spec = l$l_spec
+    l_dom_state0 <- l$l_dom_state0
     
-    l_effects = sim09_smry_effects(r, l_spec)
+    writeLines(paste0("Configuration ", f), f_out)
     
-  )
+    writeLines(paste0("Scenario ", l_spec$desc), f_out)
+    writeLines("\n", f_out)
+    
+    d_silo <- data.table(silo = names(l_spec$p_silo), pr = l_spec$p_silo)
+    d_tmp <- rbind(
+      l_dom_state0$d1,
+      l_spec$p_surg_lnrd1,
+      l_spec$p_surg_enrd1,
+      l_spec$p_surg_cnrd1
+    )
+    d_silo <- cbind(d_silo, d_tmp)
+    tbl <- kableExtra::kbl(
+      d_silo, digits = 3, format = "simple", 
+      caption = paste("Scenario ", l_spec$desc, "\nDomain 1 distribution")
+    )
+    writeLines(tbl, f_out)
+    writeLines("\n", f_out)
+    
+    d_reg <- sim09_true_reg_resp(l_spec)
+    tbl <- kableExtra::kbl(
+      d_reg, digits = 3, format = "simple", 
+      caption = paste("Scenario ", l_spec$desc, "\nLinear predictor by regimen")
+    )
+    writeLines(tbl, f_out)
+    writeLines("\n", f_out)
+    
+    d_dec <- data.table(
+      domain = rep(paste0("d", 1:4), each = 2),
+      rule = c(
+        names(l_spec$dec$d1),
+        names(l_spec$dec$d2),
+        names(l_spec$dec$d3),
+        names(l_spec$dec$d4)
+      ),
+      delta = c(
+        get_delta(l_spec, "d1", names(l_spec$dec$d1)[1]),
+        get_delta(l_spec, "d1", names(l_spec$dec$d1)[2]),
+        get_delta(l_spec, "d2", names(l_spec$dec$d2)[1]),
+        get_delta(l_spec, "d2", names(l_spec$dec$d2)[2]),
+        get_delta(l_spec, "d3", names(l_spec$dec$d3)[1]),
+        get_delta(l_spec, "d3", names(l_spec$dec$d3)[2]),
+        get_delta(l_spec, "d4", names(l_spec$dec$d4)[1]),
+        get_delta(l_spec, "d4", names(l_spec$dec$d4)[2])
+      ),
+      thresh = c(
+        get_thres(l_spec, "d1", names(l_spec$dec$d1)[1]),
+        get_thres(l_spec, "d1", names(l_spec$dec$d1)[2]),
+        get_thres(l_spec, "d2", names(l_spec$dec$d2)[1]),
+        get_thres(l_spec, "d2", names(l_spec$dec$d2)[2]),
+        get_thres(l_spec, "d3", names(l_spec$dec$d3)[1]),
+        get_thres(l_spec, "d3", names(l_spec$dec$d3)[2]),
+        get_thres(l_spec, "d4", names(l_spec$dec$d4)[1]),
+        get_thres(l_spec, "d4", names(l_spec$dec$d4)[2])
+      )
+    )
+    
+    tbl <- kableExtra::kbl(
+      d_dec, digits = 3, format = "simple", 
+      caption = paste("Scenario ", l_spec$desc, "\nRule settings")
+    )
+    writeLines(tbl, f_out)
+    writeLines("\n", f_out)
+    
+    l_oc <- list(
+      dec_pr = sim09_smry_pr_dec(r, l_spec),
+      
+      # maybe no longer necessary...
+      l_dec_n = sim09_smry_dec_n(r, l_spec),
+      
+      # partially duplicates sim09_smry_dec_n
+      l_dec_info = sim09_smry_dec_info(r, l_spec),
+      
+      l_effects = sim09_smry_effects(r, l_spec)
+      
+    )
+    
+    
+    tbl <- kableExtra::kbl(
+      dcast(l_oc$dec_pr, domain + rule ~ i_anlys, value.var = "mu"),
+      digits = 3, format = "simple", 
+      caption = paste("Scenario ",
+                      l_spec$desc, "\nPr decision by domain and interim")
+    )
+    writeLines(tbl, f_out)
+    writeLines("\n", f_out)
+    # sanity
+    # l_oc$dec_pr[i_anlys == 5, .(pr_dec = sum(mu)), keyby = domain]
+    
+    tbl <- kableExtra::kbl(
+      l_oc$l_dec_n$d_smry,
+      digits = 3, format = "simple", 
+      caption = paste("Scenario ",
+                      l_spec$desc, "\nEnrolment at time of decision")
+    )
+    writeLines(tbl, f_out)
+    writeLines("\n", f_out)
+    tbl <- kableExtra::kbl(
+      l_oc$l_dec_info$d_smry,
+      digits = c(0, 0, 3, 1, 0, 0, 1, 1, 1, 3), 
+      format = "simple", 
+      caption = paste("Scenario ",
+                      l_spec$desc, "\nEnrolment and sample size informing decisions")
+    )
+    writeLines(tbl, f_out)
+    writeLines("\n", f_out)
+    tbl <- kableExtra::kbl(
+      l_oc$l_dec_info$d_arms,
+      digits = 1, format = "simple", 
+      caption = paste("Scenario ",
+                      l_spec$desc, "\nSample size informing decisions by arm")
+    )
+    writeLines(tbl, f_out)
+    writeLines("\n", f_out)
+    tbl <- kableExtra::kbl(
+      l_oc$l_effects$d_lor,
+      digits = 3, format = "simple", 
+      caption = paste("Scenario ",
+                      l_spec$desc, "\nWeighted conditional/model-scale log OR")
+    )
+    writeLines(tbl, f_out)
+    writeLines("\n", f_out)
+    tbl <- kableExtra::kbl(
+      l_oc$l_effects$d_lor_std,
+      digits = 3, format = "simple", 
+      caption = paste("Scenario ",
+                      l_spec$desc, "\nStandardised marginal log OR")
+    )
+    writeLines(tbl, f_out)
+    writeLines("\n", f_out)
+    tbl <- kableExtra::kbl(
+      l_oc$l_effects$d_rd,
+      digits = 3, format = "simple", 
+      caption = paste("Scenario ",
+                      l_spec$desc, "\nStandardised marginal RD")
+    )
+    writeLines(tbl, f_out)
+    writeLines("\n", f_out)
+    
+    if(!is.null(l$model)){
+      writeLines(l$model$print(), f_out)
+    } else {
+      writeLines(paste0("Model code hasn't been stored, but used: ", l_spec$mc_model), f_out)
+    }
+    writeLines("\n", f_out)
+    writeLines("End of results for file", f_out)
+    
+    message("Complete")
+  }
   
-  
-  kableExtra::kbl(
-    dcast(l_oc$dec_pr, domain + rule ~ i_anlys, value.var = "mu"),
-    digits = 3, format = "simple", 
-    caption = paste("Scenario ",
-      l_spec$desc, "\nPr decision by domain and interim")
-  )
-  # sanity
-  # l_oc$dec_pr[i_anlys == 5, .(pr_dec = sum(mu)), keyby = domain]
-  
-  kableExtra::kbl(
-    l_oc$l_dec_n$d_smry,
-    digits = 3, format = "simple", 
-    caption = paste("Scenario ",
-        l_spec$desc, "\nEnrolment at time of decision")
-  )
-  
-  kableExtra::kbl(
-    l_oc$l_dec_info$d_smry,
-    digits = c(0, 0, 3, 1, 0, 0, 1, 1, 1, 3), 
-    format = "simple", 
-    caption = paste("Scenario ",
-        l_spec$desc, "\nEnrolment and sample size informing decisions")
-  )
-  
-  kableExtra::kbl(
-    l_oc$l_dec_info$d_arms,
-    digits = 1, format = "simple", 
-    caption = paste("Scenario ",
-        l_spec$desc, "\nSample size informing decisions by arm")
-  )
-  
-  kableExtra::kbl(
-    l_oc$l_effects$d_lor,
-    digits = 3, format = "simple", 
-    caption = paste("Scenario ",
-        l_spec$desc, "\nWeighted conditional/model-scale log OR")
-  )
-  
-  kableExtra::kbl(
-    l_oc$l_effects$d_lor_std,
-    digits = 3, format = "simple", 
-    caption = paste("Scenario ",
-        l_spec$desc, "\nStandardised marginal log OR")
-  )
-  
-  kableExtra::kbl(
-    l_oc$l_effects$d_rd,
-    digits = 3, format = "simple", 
-    caption = paste("Scenario ",
-        l_spec$desc, "\nStandardised marginal RD")
-  )
-  
+  message("Close file")
+  close(f_out)
   
 }
+
+
+sim09_true_reg_resp <- function(
+    l_spec
+) {
+  
+  d_grid_reg <- data.table(
+    reg = l_spec$reg_opts,
+    b_reg = l_spec$reg_effect
+  )
+  d_grid_d4 <- data.table(
+    d4 = names(l_spec$d4),
+    b_d4 = l_spec$d4
+    )
+  
+  cj <- CJ(i = seq_len(nrow(d_grid_reg)), j = seq_len(nrow(d_grid_d4)), sorted = FALSE)
+  d_grid <- cbind(d_grid_reg[cj$i, ], d_grid_d4[cj$j, ])
+  d_grid[, b_0 := qlogis(l_spec$response_p_ref)]
+  d_grid[, eta := b_0 + b_reg + b_d4]
+  d_grid[, p := plogis(eta)]
+  setcolorder(d_grid, c("reg", "d4", "b_0", "b_reg", "b_d4", "eta", "p"))
+  d_grid[]
+}
+
+
 
 # Truth is the design-population standardised estimand.
 # The fitted estimand uses realised population weights, so finite-sample
@@ -2366,24 +2471,33 @@ sim09_ex_dat_1 <- function(){
     )
   
   d_fig <- d_batch[d1 == "r1"]
-  p_2 <- ggplot( d_fig, aes(x = d2, fill = silo)) + geom_bar() + scale_x_discrete("") +
+  p_2 <- ggplot( d_fig, aes(x = d2, fill = silo)) + geom_bar() +
+    scale_x_discrete("") +
     ggtitle(
       "Duration A (r1 rev all silo)",
-      subtitle = paste0("rand trt N = ", nrow(d_fig[d2 != "nad2"]), "/", nrow(d_batch))
+      subtitle = paste0(
+        "rand trt N = ", nrow(d_fig[d2 != "nad2"]), 
+        "/", nrow(d_batch))
     )
   
   d_fig <- d_batch[d1 == "r2"]
-  p_3 <- ggplot( d_fig, aes(x = d3, fill = silo)) + geom_bar() + scale_x_discrete("") +
+  p_3 <- ggplot( d_fig, aes(x = d3, fill = silo)) + geom_bar() +
+    scale_x_discrete("") +
     ggtitle(
       "Duration B (r2 rev all silo)",
-      subtitle = paste0("rand trt N = ", nrow(d_fig[d3 != "nad3"]), "/", nrow(d_batch))
+      subtitle = paste0(
+        "rand trt N = ", nrow(d_fig[d3 != "nad3"]), 
+        "/", nrow(d_batch))
       )
   
   d_fig <- copy(d_batch)
-  p_4 <- ggplot( d_fig, aes(x = d4, fill = silo)) + geom_bar() + scale_x_discrete("") +
+  p_4 <- ggplot( d_fig, aes(x = d4, fill = silo)) + geom_bar() +
+    scale_x_discrete("") +
     ggtitle(
       "Choice (applicable pathogen all silo)",
-      subtitle = paste0("rand trt N = ", nrow(d_fig[d4 != "nad4"]), "/", nrow(d_batch))
+      subtitle = paste0(
+        "rand trt N = ", nrow(d_fig[d4 != "nad4"]), 
+        "/", nrow(d_batch))
       )
   
   p_1 + p_2 + p_3 + p_4
@@ -2404,7 +2518,8 @@ sim09_ex_dat_1 <- function(){
     geom_col() + scale_x_discrete("") +
     geom_text(aes(label = count), col = "red") +
     coord_flip() +
-    facet_wrap(~ silo_lab, scales = "free_y", labeller = label_both) +
+    facet_wrap(~ silo_lab, scales = "free_y", 
+               labeller = label_both) +
     ggtitle(
       "Proportion allocated to each regimen"
     )
@@ -2421,12 +2536,12 @@ sim09_ex_dat_1 <- function(){
 
 # Ex prototype/minimal interim setup --------
 sim09_ex_sim_1 <- function(
-    # easily switch out to some different function when I build in analysis code
+    # easily switch out to some different function 
+    # when I build in analysis code
     fn_decision = sim09_decision_fn_dummy
   ){
   
   set.seed(1)
-  
   
   # CFG
   default_cfg <- F
@@ -2466,7 +2581,9 @@ sim09_ex_sim_1 <- function(
     l_dom_state   <- fn_decision(d_cum_dat, l_dom_state, i)   
   }
   
-  list(data = d_cum_dat, state_log = state_log, final_state = l_dom_state)
+  list(data = d_cum_dat, 
+       state_log = state_log, 
+       final_state = l_dom_state)
   
   
 }
@@ -2506,7 +2623,8 @@ sim09_ex_sim_2 <- function(
       wgt_b <- d_w_b[l_spec$d2_wk6_regs, w]
       f_1_coef_a <- coef(f_1)[paste0("reg", l_spec$d2_wk12_regs)]
       f_1_coef_b <- coef(f_1)[paste0("reg", l_spec$d2_wk6_regs)]
-      jnt_d2 <- as.numeric((wgt_b %*% f_1_coef_b) - (wgt_a %*% f_1_coef_a))
+      jnt_d2 <- as.numeric((wgt_b %*% f_1_coef_b) - 
+                             (wgt_a %*% f_1_coef_a))
       
       # proportions with which we will weight params fur d3
       d_w_a <- d_batch[reg %in% l_spec$d3_none_regs, .N, keyby = reg]
@@ -2519,7 +2637,8 @@ sim09_ex_sim_2 <- function(
       wgt_b <- d_w_b[l_spec$d3_wk12_regs, w]
       f_1_coef_a <- coef(f_1)[paste0("reg", l_spec$d3_none_regs)]
       f_1_coef_b <- coef(f_1)[paste0("reg", l_spec$d3_wk12_regs)]
-      jnt_d3 <- as.numeric((wgt_b %*% f_1_coef_b) - (wgt_a %*% f_1_coef_a))
+      jnt_d3 <- as.numeric((wgt_b %*% f_1_coef_b) - 
+                             (wgt_a %*% f_1_coef_a))
       
       # get this for free
       jnt_d4 <- as.numeric(coef(f_1)["d4rif"] - coef(f_1)["d4norif"])
@@ -2563,12 +2682,14 @@ sim09_ex_sim_2 <- function(
   ))
   
   d_tbl <- melt(d_res, measure.vars = names(d_res))
-  d_tbl[, c("model", "domain") := tstrsplit(variable, "_", fixed = T)]
+  d_tbl[, c("model", "domain") := tstrsplit(
+    variable, "_", fixed = T)]
   d_smry <- dcast(
     d_tbl[, .(
       mu = mean(value), 
       sd = sd(value)
-    ), keyby = .(model, domain)], domain ~ model, value.var = list("mu", "sd"))
+    ), keyby = .(model, domain)], 
+    domain ~ model, value.var = list("mu", "sd"))
   
   d_smry
   
@@ -2577,7 +2698,8 @@ sim09_ex_sim_2 <- function(
 # Ex g-comp test ------
 sim09_ex_gcomp_stan_demo <- function(
 ){
-  m_2 <- cmdstanr::cmdstan_model(here::here("stan", "model-sim-09-gcomp.stan"))
+  m_2 <- cmdstanr::cmdstan_model(
+    here::here("stan", "model-sim-09-gcomp.stan"))
   
   d <- data.table(id = 1:1000)
   d[, trt := rbinom(.N, 1, 0.5) + 1]
@@ -2713,7 +2835,8 @@ sim09_ex_scenarios <- function(){
     l_r2_nad2_nad3 = 0.0
     
   )
-  full_reg_effects <- setNames(rep(0, length(l_spec$reg_effect)), l_spec$reg_opts)
+  full_reg_effects <- setNames(
+    rep(0, length(l_spec$reg_effect)), l_spec$reg_opts)
   full_reg_effects[names(l_spec$test_fx)] <- l_spec$test_fx
   l_spec$reg_effect <- full_reg_effects
   
@@ -2768,7 +2891,8 @@ sim09_ex_scenarios <- function(){
     l_r2_nad2_nad3 = 0.0
     
   )
-  full_reg_effects <- setNames(rep(0, length(l_spec$reg_effect)), l_spec$reg_opts)
+  full_reg_effects <- setNames(
+    rep(0, length(l_spec$reg_effect)), l_spec$reg_opts)
   full_reg_effects[names(l_spec$test_fx)] <- l_spec$test_fx
   l_spec$reg_effect <- full_reg_effects
   
@@ -2790,7 +2914,8 @@ sim09_ex_scenarios <- function(){
   # l_spec$reg_opts[grep("l_", l_spec$reg_opts , fixed = T)]
   l_spec$test_fx <- c()
   l_spec$d4_effect["rif"]  <- 1
-  full_reg_effects <- setNames(rep(0, length(l_spec$reg_effect)), l_spec$reg_opts)
+  full_reg_effects <- setNames(
+    rep(0, length(l_spec$reg_effect)), l_spec$reg_opts)
   full_reg_effects[names(l_spec$test_fx)] <- l_spec$test_fx
   l_spec$reg_effect <- full_reg_effects
   
@@ -2844,7 +2969,8 @@ sim09_ex_scenarios <- function(){
     cnrd1_r2_nad2_wk12 = 1.0
   )
   l_spec$d4_effect["rif"]  <- 0
-  full_reg_effects <- setNames(rep(0, length(l_spec$reg_effect)), l_spec$reg_opts)
+  full_reg_effects <- setNames(
+    rep(0, length(l_spec$reg_effect)), l_spec$reg_opts)
   full_reg_effects[names(l_spec$test_fx)] <- l_spec$test_fx
   l_spec$reg_effect <- full_reg_effects
   
@@ -3098,11 +3224,14 @@ sim09_sim_loop <- function(){
   scen <- substr(basename(f_spec), 16, 18)
   fname <- paste0("sim09-", scen, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs2")
   log_info("sim09_sim_loop: saving to file", fname)
+ 
+  
   qs2::qs_save(
     list(
       r = r,
       l_spec = l_spec, 
-      l_dom_state0 = sim09_domain_state_open()
+      l_dom_state0 = sim09_domain_state_open(),
+      model = mod[[l_spec$mc_model]]
       ),
     file = here::here("data", "sim09", fname)
   )
