@@ -1,5 +1,5 @@
 default:
-  desc: "d1 l-OR = 1"
+  desc: "d3 l-OR = 1"
   n_sim: 1000
   mc_cores: 50
   mc_warmup: 1000
@@ -29,32 +29,32 @@ default:
     enrd1_dair_nad2_nad3: 0.0
     cnrd1_dair_nad2_nad3: 0.0
     # d2 wk12
-    l_r1_wk12_nad3: 1.0
+    l_r1_wk12_nad3: 0.0
     lnrd1_r1_wk12_nad3: 0.0
     enrd1_r1_wk12_nad3: 0.0
     cnrd1_r1_wk12_nad3: 0.0
     # d2 wk6
-    l_r1_wk6_nad3: 1.0 
+    l_r1_wk6_nad3: 0.0
     lnrd1_r1_wk6_nad3: 0.0
     enrd1_r1_wk6_nad3: 0.0
     cnrd1_r1_wk6_nad3: 0.0
     # r1 non rand trt in duration domains
-    l_r1_nad2_nad3: 1.0
+    l_r1_nad2_nad3: 0.0
     lnrd1_r1_nad2_nad3: 0.0
     enrd1_r1_nad2_nad3: 0.0
     cnrd1_r1_nad2_nad3: 0.0
     # d3 wk12
     l_r2_nad2_wk12: 1.0
-    lnrd1_r2_nad2_wk12: 0.0
-    enrd1_r2_nad2_wk12: 0.0
-    cnrd1_r2_nad2_wk12: 0.0
+    lnrd1_r2_nad2_wk12: 1.0
+    enrd1_r2_nad2_wk12: 1.0
+    cnrd1_r2_nad2_wk12: 1.0
     # d3 none
-    l_r2_nad2_none: 1.0
+    l_r2_nad2_none: 0.0
     lnrd1_r2_nad2_none: 0.0
     enrd1_r2_nad2_none: 0.0
     cnrd1_r2_nad2_none: 0.0
     # r2 non rand trt in duration domains
-    l_r2_nad2_nad3: 1.0
+    l_r2_nad2_nad3: 0.0
     lnrd1_r2_nad2_nad3: 0.0
     enrd1_r2_nad2_nad3: 0.0
     cnrd1_r2_nad2_nad3: 0.0
