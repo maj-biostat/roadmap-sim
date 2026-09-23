@@ -351,7 +351,7 @@ sim09_decision_fn_01 <- function(
   
   
   l_fit <- fn_stanfit(
-    d_cum_dat, fn_data, l_spec
+    d_cum_dat, fn_data, l_spec, l_dom_state
   )
   
   # decisions based on rd (risk diffs)
@@ -375,8 +375,12 @@ sim09_decision_fn_01 <- function(
       d_lor_std_smry = l_fit$d_lor_std_smry,
       d_rd_smry = l_fit$d_rd_smry
     ),
+    
+    l_w_grid = l_fit$l_w_grid,
     # decision based on rules for each domain
     l_dec_new = l_dec_new,
+    
+    
     
     retn_post = l_spec$return_posterior
   )
@@ -521,6 +525,11 @@ sim09_eval_all_dec <- function(d_post, l_spec) {
 
 
 # Computing treatment contrasts ----------
+
+# The cov_grid provides a set of regimens and d4 levels along with
+# weight for each of their contributions. We compute the predicted posterior 
+# log odds response for each combination, convert to prob scale and weight 
+# accordingly.
 sim09_std_prob <- function(
     v_b0, m_reg, m_d4, cov_grid
     ) {
@@ -552,6 +561,125 @@ sim09_reg_wgt <- function(
   w[as.character(tb$reg)] <- tb$N / sum(tb$N)
   w[regs]
 }
+
+# Current weighting separates what the trial does by design i.e. the 
+# randomisation ratios, read from l_dom_state, which can change immediately
+# based on a locked decision from what can only be estimated from data.
+# That is, the clinician self selectin r1 vs r2, whether a patient enters 
+# randomised D2/D3 at all; each silo's overall population share). 
+# Replaces sim09_reg_wgt so that the weights are reflecting the the trial 
+# as it is currently being run rather than considering all of the history.
+# The lor calcs are left as is as they are just for reporting rather than 
+# decision making.
+sim09_silo_wgt_current <- function(
+    d_cum_dat, 
+    l_dom_state, 
+    target_d1
+) {
+  
+  silos <- c("l", "lnrd1", "enrd1", "cnrd1")
+  
+  n_silo <- d_cum_dat[, .N, keyby = silo]
+  if (sum(n_silo$N) == 0) return(setNames(rep(NA_real_, length(silos)), silos))
+  # distribution to silos estimated because in practice we only observe 
+  # what happens.
+  p_silo_emp <- setNames(rep(0, length(silos)), silos)
+  p_silo_emp[as.character(n_silo$silo)] <- n_silo$N / sum(n_silo$N)
+  
+  # P(target_d1 | silo) is known (l_dom_state) for silo l but for the 
+  # rest is based on the observed sample
+  p_d1_given_silo <- setNames(numeric(length(silos)), silos)
+  p_d1_given_silo["l"] <- l_dom_state$d1[target_d1]
+  for (s in c("lnrd1", "enrd1", "cnrd1")) {
+    d_s <- d_cum_dat[silo == s]
+    
+    p_d1_given_silo[s] <- fifelse(
+      nrow(d_s) == 0, NA_real_, mean(d_s$d1 == target_d1))
+    
+  }
+  
+  w <- p_silo_emp * p_d1_given_silo
+  
+  if (any(is.na(w)) || sum(w, na.rm = TRUE) == 0) {
+    return(setNames(rep(NA_real_, length(silos)), silos))
+  }
+  w / sum(w)
+}
+
+
+sim09_d1_wgt_current <- function(
+    d_cum_dat, 
+    l_dom_state
+) {
+  
+  # this function assumes a specific ordering for regimes relevant to d1, so 
+  # i would rather not rely on l_spec$d1_trt_regs as it might change 
+  # underneath me if I am not carefull.....
+  cells <- c(
+    "l_r1_wk12_nad3",
+    "l_r1_wk6_nad3",
+    "l_r1_nad2_nad3",
+    "l_r2_nad2_wk12",
+    "l_r2_nad2_none",
+    "l_r2_nad2_nad3"
+  )
+  
+  d_l <- d_cum_dat[silo == "l"]
+  d_rev <- d_l[d1 %in% c("r1", "r2")]
+  # just creates a vector of NA with names per the cells
+  if (nrow(d_rev) == 0) return(setNames(rep(NA_real_, 6), cells))
+  
+  # proportion receiving r1/r2
+  p_r1 <- mean(d_rev$d1 == "r1")
+  p_r2 <- 1 - p_r1
+  
+  # proportion recv rand trt in d2/d3
+  d_r1 <- d_l[d1 == "r1"]
+  p_enter_d2 <- fifelse(nrow(d_r1) == 0, 0, mean(d_r1$d2 != "nad2") )
+    
+  d_r2 <- d_l[d1 == "r2"]
+  p_enter_d3 <- fifelse(nrow(d_r2) == 0, 0, mean(d_r2$d3 != "nad3") )
+  
+  # arm level randomisation within domains 
+  # need to consider generalisation to more than two arms...
+  p_wk12_d2 <- l_dom_state$d2["wk12"] / (l_dom_state$d2["wk12"] + l_dom_state$d2["wk6"])
+  p_wk12_d3 <- l_dom_state$d3["wk12"] / (l_dom_state$d3["wk12"] + l_dom_state$d3["none"])
+  
+  setNames(c(
+    p_r1 * p_enter_d2 * p_wk12_d2,
+    p_r1 * p_enter_d2 * (1 - p_wk12_d2),
+    p_r1 * (1 - p_enter_d2),
+    p_r2 * p_enter_d3 * p_wk12_d3,
+    p_r2 * p_enter_d3 * (1 - p_wk12_d3),
+    p_r2 * (1 - p_enter_d3)
+  ), cells)
+}
+
+# prototype - bootstap version tbc... not used as of yet.
+# not sure if this is correct. need to confirm
+sim09_reg_wgt_boot <- function(
+    regs, d_cum_dat, n_draws
+) {
+  tb <- d_cum_dat[reg %in% regs, .N, keyby = reg]
+  n_full <- setNames(rep(0, length(regs)), regs)
+  n_full[as.character(tb$reg)] <- tb$N
+  if (sum(n_full) == 0) {
+    return(matrix(NA_real_, n_draws, length(regs), dimnames = list(NULL, regs)))
+  }
+  g <- sapply(
+    n_full, function(a) {
+      if (a == 0) {
+        rep(0, n_draws) 
+      } else { 
+        rgamma(n_draws, shape = a, rate = 1) 
+      }
+    })
+  # each row \sim Dirichlet(n_full), one row per posterior draw
+  g / rowSums(g)   
+}
+
+
+
 
 # Tentatively refer to as weighted conditional/model-scale log OR
 sim09_compute_lor <- function(
@@ -731,28 +859,6 @@ sim09_compute_lor_std <- function(
   )
 }
 
-# prototype - bootstap version tbc... not used as of yet.
-# not sure if this is correct. need to confirm
-sim09_reg_wgt_boot <- function(
-    regs, d_cum_dat, n_draws
-    ) {
-  tb <- d_cum_dat[reg %in% regs, .N, keyby = reg]
-  n_full <- setNames(rep(0, length(regs)), regs)
-  n_full[as.character(tb$reg)] <- tb$N
-  if (sum(n_full) == 0) {
-    return(matrix(NA_real_, n_draws, length(regs), dimnames = list(NULL, regs)))
-  }
-  g <- sapply(
-    n_full, function(a) {
-      if (a == 0) {
-        rep(0, n_draws) 
-      } else { 
-          rgamma(n_draws, shape = a, rate = 1) 
-        }
-      })
-  # each row \sim Dirichlet(n_full), one row per posterior draw
-  g / rowSums(g)   
-}
 
 # Producing RD aligned with a population/regimen mix per what is observed 
 # in the sample. 
@@ -779,7 +885,7 @@ sim09_reg_wgt_boot <- function(
 # factual quantities defined the same way for the whole standardisation
 # population.
 sim09_comp_rd <- function(
-    d_cum_dat, l_spec, f_1
+    d_cum_dat, l_spec, f_1, l_dom_state
     ) {
   
   v_b0  <- as.numeric(f_1$draws(variables = "b_0", format = "matrix"))
@@ -794,7 +900,8 @@ sim09_comp_rd <- function(
   
   # d1: revision (mixture over r1/r2 sub-regimens) vs dair, l silo
   # same mixture weights as jnt_d1
-  w_d1 <- sim09_reg_wgt(l_spec$d1_trt_regs, d_cum_dat)   
+  w_d1 <- sim09_d1_wgt_current(d_cum_dat, l_dom_state) 
+  
   
   # in practice i think this would need to be across the whole covariate mix, site, 
   # prognostics etc.
@@ -815,36 +922,54 @@ sim09_comp_rd <- function(
     grid_rev, data.table(d4 = as.character(d_pop_l$d4), w_covar = d_pop_l$w), by = "d4")
   # combined weight as product
   grid_rev[, w := w_treat * w_covar]
+  grid_rev[, `:=`(w_treat = NULL, w_covar = NULL)]
   
+  # probability of response based on regimens entering grid and their weights
   p_dair <- sim09_std_prob(v_b0, m_reg, m_d4, cov_grid = grid_dair)
   p_rev  <- sim09_std_prob(v_b0, m_reg, m_d4, grid_rev)
   rd_d1  <- as.numeric(p_rev - p_dair)
   
-  # d2: wk6 vs wk12, weigths among actual r1 patients (all silo)
-  d_pop_r1 <- d_cum_dat[d1 == "r1", .N, keyby = .(silo, d4)]
-  d_pop_r1[, w := N / sum(N)]
-  d_pop_r1[, reg_wk12 := paste0(silo, "_r1_wk12_nad3")]
-  d_pop_r1[, reg_wk6  := paste0(silo, "_r1_wk6_nad3")]
+  # d2: 
+  # wk6 vs wk12, silo composition current-practice so split known
   
+  w_silo_r1 <- sim09_silo_wgt_current(d_cum_dat, l_dom_state, "r1")
+  # in expectation we know the allocation to each arm is 1:1
+  p_wk12_d2 <- l_dom_state$d2["wk12"] / (l_dom_state$d2["wk12"] + l_dom_state$d2["wk6"])
+  
+  # d4 distribution within each silos r1 patients
+  d_d4_r1 <- d_cum_dat[d1 == "r1", .N, keyby = .(silo, d4)]
+  d_d4_r1[, w_d4 := N / sum(N), by = silo]   
+  
+  # all the wk12 contributions along with their weights
   grid_wk12 <- data.table(
-    reg = d_pop_r1$reg_wk12, d4 = as.character(d_pop_r1$d4), w = d_pop_r1$w)
+    reg = paste0(d_d4_r1$silo, "_r1_wk12_nad3"), d4 = as.character(d_d4_r1$d4),
+    # pr(silo) * pr(d2 = wk12) * pr(d4)
+    w = w_silo_r1[as.character(d_d4_r1$silo)] * p_wk12_d2 * d_d4_r1$w_d4)
+  
   grid_wk6  <- data.table(
-    reg = d_pop_r1$reg_wk6,  d4 = as.character(d_pop_r1$d4), w = d_pop_r1$w)
+    reg = paste0(d_d4_r1$silo, "_r1_wk6_nad3"),  d4 = as.character(d_d4_r1$d4),
+    w = w_silo_r1[as.character(d_d4_r1$silo)] * (1 - p_wk12_d2) * d_d4_r1$w_d4)
+  
   
   p_wk12 <- sim09_std_prob(v_b0, m_reg, m_d4, grid_wk12)
   p_wk6  <- sim09_std_prob(v_b0, m_reg, m_d4, grid_wk6)
   rd_d2  <- as.numeric(p_wk6 - p_wk12)
   
-  # d3: wk12 vs none, as above, among actual r2 patients (any silo)
-  d_pop_r2 <- d_cum_dat[d1 == "r2", .N, keyby = .(silo, d4)]
-  d_pop_r2[, w := N / sum(N)]
-  d_pop_r2[, reg_wk12 := paste0(silo, "_r2_nad2_wk12")]
-  d_pop_r2[, reg_none := paste0(silo, "_r2_nad2_none")]
+  
+  # d3: 
+  # wk12 vs none, silo composition current-practice so split known
+  w_silo_r2 <- sim09_silo_wgt_current(d_cum_dat, l_dom_state, "r2")
+  p_wk12_d3 <- l_dom_state$d3["wk12"] / (l_dom_state$d3["wk12"] + l_dom_state$d3["none"])
+  
+  d_d4_r2 <- d_cum_dat[d1 == "r2", .N, keyby = .(silo, d4)]
+  d_d4_r2[, w_d4 := N / sum(N), by = silo]
   
   grid_d3_wk12 <- data.table(
-    reg = d_pop_r2$reg_wk12, d4 = as.character(d_pop_r2$d4), w = d_pop_r2$w)
+    reg = paste0(d_d4_r2$silo, "_r2_nad2_wk12"), d4 = as.character(d_d4_r2$d4),
+    w = w_silo_r2[as.character(d_d4_r2$silo)] * p_wk12_d3 * d_d4_r2$w_d4)
   grid_d3_none <- data.table(
-    reg = d_pop_r2$reg_none, d4 = as.character(d_pop_r2$d4), w = d_pop_r2$w)
+    reg = paste0(d_d4_r2$silo, "_r2_nad2_none"), d4 = as.character(d_d4_r2$d4),
+    w = w_silo_r2[as.character(d_d4_r2$silo)] * (1 - p_wk12_d3) * d_d4_r2$w_d4)
   
   p_d3_wk12 <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d3_wk12)
   p_d3_none <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d3_none)
@@ -869,7 +994,30 @@ sim09_comp_rd <- function(
     d3 = rd_d3, 
     d4 = rd_d4
   )
-  d_rd
+  
+  l_grid <- list()
+  l_grid[["d1"]] <- list(
+    rev = grid_rev
+  )
+  l_grid[["d2"]] <- list(
+    wk12 = grid_wk12,
+    wk6 = grid_wk6
+  )
+  l_grid[["d3"]] <- list(
+    wk12 = grid_d3_wk12,
+    none = grid_d3_none
+  )
+  l_grid[["d4"]] <- list(
+    rif = grid_rif,
+    norif = grid_norif
+  )
+  
+  list(
+    d_rd = d_rd,
+    l_grid = l_grid
+  )
+  
+    
   
 }
 
@@ -877,7 +1025,8 @@ sim09_comp_rd <- function(
 sim09_stan_fit_01 <- function(
     d_cum_dat,
     fn_data = sim09_stan_data_01, 
-    l_spec
+    l_spec,
+    l_dom_state
     ){
   
   ld <- fn_data(d_cum_dat, l_spec)
@@ -898,8 +1047,6 @@ sim09_stan_fit_01 <- function(
   )
   
   
-  # )
-  
   # g-comp (standardisation) note ----------
   # In the following g-computation is used to standardise the model based 
   # parameters over a pre-specified target distribution of regimen 
@@ -911,7 +1058,7 @@ sim09_stan_fit_01 <- function(
   # perspective for clinical trials.
   d_lor <- sim09_compute_lor(d_cum_dat, l_spec, f_1)
   d_lor_std <- sim09_compute_lor_std(d_cum_dat, l_spec, f_1)
-  d_rd <- sim09_comp_rd(d_cum_dat, l_spec, f_1)
+  l_rd <- sim09_comp_rd(d_cum_dat, l_spec, f_1, l_dom_state)
   
   
   par_smry <- function(dat){
@@ -925,7 +1072,7 @@ sim09_stan_fit_01 <- function(
   
   d_lor_smry <- par_smry(d_lor)
   d_lor_std_smry <- par_smry(d_lor_std)
-  d_rd_smry <- par_smry(d_rd)
+  d_rd_smry <- par_smry(l_rd$d_rd)
   
   # d_fig <- melt(d_rd, measure.vars = names(d_rd))
   # ggplot(d_fig, aes(x = value)) + geom_density() + facet_wrap(~variable)
@@ -939,7 +1086,8 @@ sim09_stan_fit_01 <- function(
     # one row per posterior draw, one column per domain contrast
     d_lor = d_lor,
     d_lor_std = d_lor_std, 
-    d_rd = d_rd
+    d_rd = l_rd$d_rd,
+    l_w_grid = l_rd$l_grid
   )
   
 }
