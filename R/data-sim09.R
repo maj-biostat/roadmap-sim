@@ -236,10 +236,10 @@ m_2 <- cmdstanr::cmdstan_model(
 m_3 <- cmdstanr::cmdstan_model(
   cmdstanr::write_stan_file(mod_c))
 
-mod <- list()
-mod[["indep1"]] <- m_1
-mod[["indep2"]] <- m_2
-mod[["hier"]] <- m_3
+l_mod <- list()
+l_mod[["indep1"]] <- m_1
+l_mod[["indep2"]] <- m_2
+l_mod[["hier"]] <- m_3
 
 
 # simulated trial -----------------
@@ -387,6 +387,8 @@ sim09_decision_fn_01 <- function(
     l_res[["d_rd"]] <- l_fit$d_rd
   }
   
+  
+  
   # return results which may include full posterior if configured to do so
   l_res 
 }
@@ -529,8 +531,10 @@ sim09_std_prob <- function(
   p_acc <- numeric(n_draws)
   ii <- 1
   for (ii in seq_len(nrow(cov_grid))) {
+    # eta for each draw of posterior assuming current covariate combination
     eta <- v_b0 + m_reg[, cov_grid$reg[ii]] + m_d4[, cov_grid$d4[ii]]
-    p_acc <- p_acc + cov_grid$w[ii] * plogis(eta)
+    # 
+    p_acc <- p_acc + (cov_grid$w[ii] * plogis(eta))
   }
   p_acc
 }
@@ -884,7 +888,7 @@ sim09_stan_fit_01 <- function(
     "-intrm-", max(d_cum_dat$batch))
   
   
-  f_1 <- mod[[l_spec$mc_model]]$sample(
+  f_1 <- l_mod[[l_spec$mc_model]]$sample(
     ld, iter_warmup = l_spec$mc_warmup, iter_sampling = l_spec$mc_samp,
     parallel_chains = l_spec$mc_chain, chains = l_spec$mc_chain,
     refresh = 0, show_exceptions = F,
@@ -1119,6 +1123,173 @@ sim09_stan_data_01 <- function(d_cum_dat, l_spec){
 
 # Reportin-----
 # run on a given output dir in the data directory to summarise various ocs
+sim09_report_report_file <- function(
+    # results
+    r,
+    l_spec,
+    l_dom_state0,
+    f_out
+){
+  
+  writeLines(paste0("# Simulation Source ", f), f_out)
+  writeLines("\n", f_out)
+  writeLines(paste0("**Scenario:** ", l_spec$desc), f_out)
+  writeLines("\n", f_out)
+  
+  writeLines("Simulation configuration information follows: ", f_out)
+  writeLines("\n", f_out)
+  d_silo <- data.table(silo = names(l_spec$p_silo), pr = l_spec$p_silo)
+  d_tmp <- rbind(
+    l_dom_state0$d1,
+    l_spec$p_surg_lnrd1,
+    l_spec$p_surg_enrd1,
+    l_spec$p_surg_cnrd1
+  )
+  d_silo <- cbind(d_silo, d_tmp)
+  tbl <- kableExtra::kbl(
+    d_silo, digits = 3, format = "simple", 
+    caption = paste(
+      "Scenario ", l_spec$desc, " - Domain 1 distribution")
+  )
+  writeLines(tbl, f_out)
+  writeLines("\n", f_out)
+  
+  d_reg <- sim09_true_reg_resp(l_spec)
+  tbl <- kableExtra::kbl(
+    d_reg, digits = 3, format = "simple", 
+    caption = paste(
+      "Scenario ", l_spec$desc, " - Linear predictor (log-odds response) by regimen")
+  )
+  writeLines(tbl, f_out)
+  writeLines("\n", f_out)
+  
+  d_dec <- data.table(
+    domain = rep(paste0("d", 1:4), each = 2),
+    rule = c(
+      names(l_spec$dec$d1),
+      names(l_spec$dec$d2),
+      names(l_spec$dec$d3),
+      names(l_spec$dec$d4)
+    ),
+    delta = c(
+      get_delta(l_spec, "d1", names(l_spec$dec$d1)[1]),
+      get_delta(l_spec, "d1", names(l_spec$dec$d1)[2]),
+      get_delta(l_spec, "d2", names(l_spec$dec$d2)[1]),
+      get_delta(l_spec, "d2", names(l_spec$dec$d2)[2]),
+      get_delta(l_spec, "d3", names(l_spec$dec$d3)[1]),
+      get_delta(l_spec, "d3", names(l_spec$dec$d3)[2]),
+      get_delta(l_spec, "d4", names(l_spec$dec$d4)[1]),
+      get_delta(l_spec, "d4", names(l_spec$dec$d4)[2])
+    ),
+    thresh = c(
+      get_thres(l_spec, "d1", names(l_spec$dec$d1)[1]),
+      get_thres(l_spec, "d1", names(l_spec$dec$d1)[2]),
+      get_thres(l_spec, "d2", names(l_spec$dec$d2)[1]),
+      get_thres(l_spec, "d2", names(l_spec$dec$d2)[2]),
+      get_thres(l_spec, "d3", names(l_spec$dec$d3)[1]),
+      get_thres(l_spec, "d3", names(l_spec$dec$d3)[2]),
+      get_thres(l_spec, "d4", names(l_spec$dec$d4)[1]),
+      get_thres(l_spec, "d4", names(l_spec$dec$d4)[2])
+    )
+  )
+  
+  writeLines("Decision rules: ", f_out)
+  writeLines("\n", f_out)
+  writeLines("Sup: high prob RD is above zero, eg pr(theta > 0) > 0.975", f_out)    
+  writeLines("\n", f_out)
+  writeLines("NI: high prob RD is above some small negative value, eg pr(theta > -0.05)  > 0.975", f_out)    
+  writeLines("\n", f_out)
+  writeLines("Fut: low prob RD is above some minimal (or zero) effect, eg pr(theta > 0.05) < 0.3", f_out)    
+  writeLines("\n", f_out)
+  
+  tbl <- kableExtra::kbl(
+    d_dec, digits = 3, format = "simple", 
+    caption = paste("Scenario ", l_spec$desc, " - Decision rule parameters")
+    
+  ) 
+  writeLines(tbl, f_out)
+  writeLines("\n", f_out)
+  
+  l_oc <- list(
+    dec_pr = sim09_smry_pr_dec(r, l_spec),
+    # maybe no longer necessary...
+    l_dec_n = sim09_smry_dec_n(r, l_spec),
+    # partially duplicates sim09_smry_dec_n
+    l_dec_info = sim09_smry_dec_info(r, l_spec),
+    l_effects = sim09_smry_effects(r, l_spec)
+  )
+  
+  writeLines("\n", f_out)
+  writeLines("Simulation results follow: ", f_out)
+  writeLines("\n", f_out)
+  
+  tbl <- kableExtra::kbl(
+    dcast(l_oc$dec_pr, domain + rule ~ i_anlys, value.var = "mu"),
+    digits = 3, format = "simple", 
+    caption = paste("Scenario ",
+                    l_spec$desc, " - Probability of decision")
+  )
+  writeLines(tbl, f_out)
+  writeLines("\n", f_out)
+  # sanity
+  # l_oc$dec_pr[i_anlys == 5, .(pr_dec = sum(mu)), keyby = domain]
+  
+  tbl <- kableExtra::kbl(
+    l_oc$l_dec_n$d_smry[, .SD, .SDcols = !c("n_dec")],
+    digits = c(0, 3, 1, 0, 0), 
+    format = "simple", 
+    caption = paste("Scenario ",
+                    l_spec$desc, " - Number enrolled at time of decision")
+  )
+  writeLines(tbl, f_out)
+  writeLines("\n", f_out)
+  tbl <- kableExtra::kbl(
+    l_oc$l_dec_info$d_smry[, .SD, .SDcols = !c("n_dec")],
+    digits = c(0, 3, 1, 0, 0, 1, 1, 1, 3), 
+    format = "simple", 
+    caption = paste("Scenario ",
+                    l_spec$desc, " - Enrolment and sample size informing decisions")
+  )
+  writeLines(tbl, f_out)
+  writeLines("\n", f_out)
+  tbl <- kableExtra::kbl(
+    l_oc$l_dec_info$d_arms,
+    digits = 1, format = "simple", 
+    caption = paste("Scenario ",
+                    l_spec$desc, " - Sample size informing decisions by arm")
+  )
+  writeLines(tbl, f_out)
+  writeLines("\n", f_out)
+  tbl <- kableExtra::kbl(
+    l_oc$l_effects$d_lor_std,
+    digits = 3, format = "simple", 
+    caption = paste("Scenario ",
+                    l_spec$desc, " - Standardised marginal log OR")
+  )
+  writeLines(tbl, f_out)
+  writeLines("\n", f_out)
+  tbl <- kableExtra::kbl(
+    l_oc$l_effects$d_rd,
+    digits = 3, format = "simple", 
+    caption = paste("Scenario ",
+                    l_spec$desc, "- Standardised marginal RD")
+  )
+  writeLines(tbl, f_out)
+  writeLines("\n", f_out)
+  
+  writeLines("# Model code", f_out)
+  if(!is.null(l$model)){
+    writeLines(l$model, f_out)
+  } else {
+    writeLines(paste0("Model code hasn't been stored, but used: ", l_spec$mc_model), f_out)
+  }
+  writeLines("\n", f_out)
+  writeLines("End of results for file", f_out)
+  writeLines("\n", f_out)
+  
+}
+
+
 sim09_report_sim_res <- function(){
   
   library(data.table)
@@ -1132,12 +1303,12 @@ sim09_report_sim_res <- function(){
     l_spec$dec[[domain]][[rule]]$thresh
   }
   
-  fname <- paste0("sim09-result-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".txt")
+  fname <- paste0("sim09-result-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".md")
   f_out <- file(here::here("versions", fname), open = "w")
   
-  sim_dat_dir <-  "sim09-04"
+  sim_dat_dir <-  "sim09-05"
   f_list <- list.files(here::here("data", sim_dat_dir))
-  f = f_list[2]
+  f = f_list[1]
   for(f in f_list){
     
     # l <- qs2::qs_read("data/sim09/sim09-v02-20260916-124947.qs2")
@@ -1148,155 +1319,9 @@ sim09_report_sim_res <- function(){
     l_spec = l$l_spec
     l_dom_state0 <- l$l_dom_state0
     
-    writeLines(paste0("Configuration ", f), f_out)
+    sim09_report_report_file(r, l_spec, l_dom_state0, f_out)
     
-    writeLines(paste0("Scenario ", l_spec$desc), f_out)
-    writeLines("\n", f_out)
-    
-    d_silo <- data.table(silo = names(l_spec$p_silo), pr = l_spec$p_silo)
-    d_tmp <- rbind(
-      l_dom_state0$d1,
-      l_spec$p_surg_lnrd1,
-      l_spec$p_surg_enrd1,
-      l_spec$p_surg_cnrd1
-    )
-    d_silo <- cbind(d_silo, d_tmp)
-    tbl <- kableExtra::kbl(
-      d_silo, digits = 3, format = "simple", 
-      caption = paste("Scenario ", l_spec$desc, "\nDomain 1 distribution")
-    )
-    writeLines(tbl, f_out)
-    writeLines("\n", f_out)
-    
-    d_reg <- sim09_true_reg_resp(l_spec)
-    tbl <- kableExtra::kbl(
-      d_reg, digits = 3, format = "simple", 
-      caption = paste("Scenario ", l_spec$desc, "\nLinear predictor by regimen")
-    )
-    writeLines(tbl, f_out)
-    writeLines("\n", f_out)
-    
-    d_dec <- data.table(
-      domain = rep(paste0("d", 1:4), each = 2),
-      rule = c(
-        names(l_spec$dec$d1),
-        names(l_spec$dec$d2),
-        names(l_spec$dec$d3),
-        names(l_spec$dec$d4)
-      ),
-      delta = c(
-        get_delta(l_spec, "d1", names(l_spec$dec$d1)[1]),
-        get_delta(l_spec, "d1", names(l_spec$dec$d1)[2]),
-        get_delta(l_spec, "d2", names(l_spec$dec$d2)[1]),
-        get_delta(l_spec, "d2", names(l_spec$dec$d2)[2]),
-        get_delta(l_spec, "d3", names(l_spec$dec$d3)[1]),
-        get_delta(l_spec, "d3", names(l_spec$dec$d3)[2]),
-        get_delta(l_spec, "d4", names(l_spec$dec$d4)[1]),
-        get_delta(l_spec, "d4", names(l_spec$dec$d4)[2])
-      ),
-      thresh = c(
-        get_thres(l_spec, "d1", names(l_spec$dec$d1)[1]),
-        get_thres(l_spec, "d1", names(l_spec$dec$d1)[2]),
-        get_thres(l_spec, "d2", names(l_spec$dec$d2)[1]),
-        get_thres(l_spec, "d2", names(l_spec$dec$d2)[2]),
-        get_thres(l_spec, "d3", names(l_spec$dec$d3)[1]),
-        get_thres(l_spec, "d3", names(l_spec$dec$d3)[2]),
-        get_thres(l_spec, "d4", names(l_spec$dec$d4)[1]),
-        get_thres(l_spec, "d4", names(l_spec$dec$d4)[2])
-      )
-    )
-    
-    tbl <- kableExtra::kbl(
-      d_dec, digits = 3, format = "simple", 
-      caption = paste("Scenario ", l_spec$desc, "\nRule settings")
-    )
-    writeLines(tbl, f_out)
-    writeLines("\n", f_out)
-    
-    l_oc <- list(
-      dec_pr = sim09_smry_pr_dec(r, l_spec),
-      
-      # maybe no longer necessary...
-      l_dec_n = sim09_smry_dec_n(r, l_spec),
-      
-      # partially duplicates sim09_smry_dec_n
-      l_dec_info = sim09_smry_dec_info(r, l_spec),
-      
-      l_effects = sim09_smry_effects(r, l_spec)
-      
-    )
-    
-    
-    tbl <- kableExtra::kbl(
-      dcast(l_oc$dec_pr, domain + rule ~ i_anlys, value.var = "mu"),
-      digits = 3, format = "simple", 
-      caption = paste("Scenario ",
-                      l_spec$desc, "\nPr decision by domain and interim")
-    )
-    writeLines(tbl, f_out)
-    writeLines("\n", f_out)
-    # sanity
-    # l_oc$dec_pr[i_anlys == 5, .(pr_dec = sum(mu)), keyby = domain]
-    
-    tbl <- kableExtra::kbl(
-      l_oc$l_dec_n$d_smry,
-      digits = 3, format = "simple", 
-      caption = paste("Scenario ",
-                      l_spec$desc, "\nEnrolment at time of decision")
-    )
-    writeLines(tbl, f_out)
-    writeLines("\n", f_out)
-    tbl <- kableExtra::kbl(
-      l_oc$l_dec_info$d_smry,
-      digits = c(0, 0, 3, 1, 0, 0, 1, 1, 1, 3), 
-      format = "simple", 
-      caption = paste("Scenario ",
-                      l_spec$desc, "\nEnrolment and sample size informing decisions")
-    )
-    writeLines(tbl, f_out)
-    writeLines("\n", f_out)
-    tbl <- kableExtra::kbl(
-      l_oc$l_dec_info$d_arms,
-      digits = 1, format = "simple", 
-      caption = paste("Scenario ",
-                      l_spec$desc, "\nSample size informing decisions by arm")
-    )
-    writeLines(tbl, f_out)
-    writeLines("\n", f_out)
-    tbl <- kableExtra::kbl(
-      l_oc$l_effects$d_lor,
-      digits = 3, format = "simple", 
-      caption = paste("Scenario ",
-                      l_spec$desc, "\nWeighted conditional/model-scale log OR")
-    )
-    writeLines(tbl, f_out)
-    writeLines("\n", f_out)
-    tbl <- kableExtra::kbl(
-      l_oc$l_effects$d_lor_std,
-      digits = 3, format = "simple", 
-      caption = paste("Scenario ",
-                      l_spec$desc, "\nStandardised marginal log OR")
-    )
-    writeLines(tbl, f_out)
-    writeLines("\n", f_out)
-    tbl <- kableExtra::kbl(
-      l_oc$l_effects$d_rd,
-      digits = 3, format = "simple", 
-      caption = paste("Scenario ",
-                      l_spec$desc, "\nStandardised marginal RD")
-    )
-    writeLines(tbl, f_out)
-    writeLines("\n", f_out)
-    
-    if(!is.null(l$model)){
-      writeLines(l$model$print(), f_out)
-    } else {
-      writeLines(paste0("Model code hasn't been stored, but used: ", l_spec$mc_model), f_out)
-    }
-    writeLines("\n", f_out)
-    writeLines("End of results for file", f_out)
-    
-    message("Complete")
+    message("End of results for file", f)
   }
   
   message("Close file")
@@ -2354,6 +2379,7 @@ sim09_default_cfg <- function(){
   
   l_spec$seed <- 1
   l_spec$mc_model <- "indep2"
+  l_spec$mc_save_model <- TRUE
   
   l_spec$p_silo <- c(l = 0.4, lnrd1 = 0.1, enrd1 = 0.3, cnrd1 = 0.2)
   l_spec$p_surg_lnrd1 <- c(dair = 0.5, r1 = 0.2, r2 = 0.3)
@@ -3251,12 +3277,20 @@ sim09_sim_loop <- function(){
   log_info("sim09_sim_loop: saving to file", fname)
  
   
+  model_text <- fcase(
+    l_spec$mc_model == "indep1", mod_a,
+    l_spec$mc_model == "indep2", mod_b,
+    l_spec$mc_model == "hier", mod_c,
+    default = NULL
+  )
+  
   qs2::qs_save(
     list(
       r = r,
       l_spec = l_spec, 
       l_dom_state0 = sim09_domain_state_open(),
-      model = mod[[l_spec$mc_model]]
+      # need to deep copy
+      model = model_text
       ),
     file = here::here("data", "sim09", fname)
   )
