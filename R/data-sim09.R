@@ -2379,7 +2379,6 @@ sim09_default_cfg <- function(){
   
   l_spec$seed <- 1
   l_spec$mc_model <- "indep2"
-  l_spec$mc_save_model <- TRUE
   
   l_spec$p_silo <- c(l = 0.4, lnrd1 = 0.1, enrd1 = 0.3, cnrd1 = 0.2)
   l_spec$p_surg_lnrd1 <- c(dair = 0.5, r1 = 0.2, r2 = 0.3)
