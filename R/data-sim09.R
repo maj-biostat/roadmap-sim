@@ -1271,6 +1271,47 @@ sim09_stan_data_01 <- function(d_cum_dat, l_spec){
 
 # Reportin-----
 # run on a given output dir in the data directory to summarise various ocs
+
+sim09_report_sim_res <- function(){
+  
+  library(data.table)
+  library(qs2)
+  library(kableExtra)
+  
+  get_delta <- function(l_spec, domain = "d1", rule = "sup"){
+    l_spec$dec[[domain]][[rule]]$delta
+  }
+  get_thres <- function(l_spec, domain = "d1", rule = "sup"){
+    l_spec$dec[[domain]][[rule]]$thresh
+  }
+  
+  fname <- paste0("sim09-result-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".md")
+  f_out <- file(here::here("versions", fname), open = "w")
+  
+  sim_dat_dir <-  "sim09-06"
+  f_list <- list.files(here::here("data", sim_dat_dir))
+  f = f_list[1]
+  for(f in f_list){
+    
+    # l <- qs2::qs_read("data/sim09/sim09-v02-20260916-124947.qs2")
+    message("##### ", f)
+    l <- qs2::qs_read(here::here("data", sim_dat_dir, f))
+    
+    r = l$r
+    l_spec = l$l_spec
+    l_dom_state0 <- l$l_dom_state0
+    
+    sim09_report_report_file(r, l_spec, l_dom_state0, f_out)
+    
+    message("End of results for file", f)
+  }
+  
+  message("Close file")
+  close(f_out)
+  
+}
+
+
 sim09_report_report_file <- function(
     # results
     r,
@@ -1364,13 +1405,30 @@ sim09_report_report_file <- function(
     l_dec_n = sim09_smry_dec_n(r, l_spec),
     # partially duplicates sim09_smry_dec_n
     l_dec_info = sim09_smry_dec_info(r, l_spec),
-    l_effects = sim09_smry_effects(r, l_spec)
+    l_effects = sim09_smry_effects(r, l_spec),
+    wgt = sim09_smry_wgt(r, l_spec)
   )
   
   writeLines("\n", f_out)
   writeLines("Simulation results follow: ", f_out)
   writeLines("\n", f_out)
   
+  writeLines("Regimen weights for each domain's contrast, by interim: ", f_out)
+  writeLines("\n", f_out)
+  # ignore d4 never changes with - usually not worth reporting
+  for (dm in c("d1", "d2", "d3")) {   
+    tbl <- kableExtra::kbl(
+      
+      dcast(l_oc$wgt[domain == dm], side + reg ~ i_anlys, value.var = "mu"),
+      digits = 3, format = "simple",
+      caption = paste("Scenario", l_spec$desc, "-", dm, "regimen weights by interim")
+    )
+    writeLines(tbl, f_out)
+    writeLines("\n", f_out)
+  }
+  
+  writeLines("Cumulative probability of decision by interim (power/type-i): ", f_out)
+  writeLines("\n", f_out)
   tbl <- kableExtra::kbl(
     dcast(l_oc$dec_pr, domain + rule ~ i_anlys, value.var = "mu"),
     digits = 3, format = "simple", 
@@ -1437,44 +1495,50 @@ sim09_report_report_file <- function(
   
 }
 
+# extract l_w_grid from interim into long format (domain, side, reg, w)
+# collapses the d4 dimension by summing (since sum over d4 within a fixed
+# reg recovers exactly the regimen-level weight the domain contrast used -
+# see derivation in the accompanying discussion)
+sim09_extract_wgt <- function(l_w_grid) {
+  rbindlist(lapply(names(l_w_grid), function(dm) {
+    sides <- l_w_grid[[dm]]
+    rbindlist(lapply(names(sides), function(sd) {
+      g <- sides[[sd]]
+      g[, .(w = sum(w)), by = reg][, `:=`(domain = dm, side = sd)]
+    }))
+  }))
+}
 
-sim09_report_sim_res <- function(){
+# summarise across all simulations and interims
+# NA per-simulation entries (domain had no supporting data yet in that
+# particular replicate) are excluded from the cross-simulation mean via
+# na.rm, and counted separately in n_na so that's visible rather than silent.
+sim09_smry_wgt <- function(r, l_spec) {
+  d_wgt <- rbindlist(lapply(seq_along(r), function(ix) {
+    l_res <- r[[ix]]$l_res
+    l_res <- l_res[!sapply(l_res, is.null)]
+    rbindlist(lapply(seq_along(l_res), function(i) {
+      z <- l_res[[i]]$l_w_grid
+      if (is.null(z)) return(NULL)
+      d <- sim09_extract_wgt(z)
+      d[, i_anlys := i]
+      d
+    }))
+  }), idcol = "i_sim")
   
-  library(data.table)
-  library(qs2)
-  library(kableExtra)
-  
-  get_delta <- function(l_spec, domain = "d1", rule = "sup"){
-    l_spec$dec[[domain]][[rule]]$delta
-  }
-  get_thres <- function(l_spec, domain = "d1", rule = "sup"){
-    l_spec$dec[[domain]][[rule]]$thresh
-  }
-  
-  fname <- paste0("sim09-result-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".md")
-  f_out <- file(here::here("versions", fname), open = "w")
-  
-  sim_dat_dir <-  "sim09-05"
-  f_list <- list.files(here::here("data", sim_dat_dir))
-  f = f_list[1]
-  for(f in f_list){
-    
-    # l <- qs2::qs_read("data/sim09/sim09-v02-20260916-124947.qs2")
-    message("##### ", f)
-    l <- qs2::qs_read(here::here("data", sim_dat_dir, f))
-    
-    r = l$r
-    l_spec = l$l_spec
-    l_dom_state0 <- l$l_dom_state0
-    
-    sim09_report_report_file(r, l_spec, l_dom_state0, f_out)
-    
-    message("End of results for file", f)
-  }
-  
-  message("Close file")
-  close(f_out)
-  
+  d_smry <- d_wgt[, .(
+    mu    = mean(w, na.rm = TRUE),
+    q_025 = quantile(w, 0.025, na.rm = TRUE),
+    q_975 = quantile(w, 0.975, na.rm = TRUE),
+    n_na  = sum(is.na(w))
+  ), by = .(domain, side, reg, i_anlys)]
+  setorder(d_smry, domain, side, reg, i_anlys)
+  d_smry
+}
+
+# wide (interim-as-columns) view of one domain, for reporting
+sim09_wgt_wide <- function(d_smry, dm) {
+  dcast(d_smry[domain == dm], side + reg ~ i_anlys, value.var = "mu")
 }
 
 
