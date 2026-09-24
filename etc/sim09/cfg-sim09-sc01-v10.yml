@@ -1,6 +1,6 @@
 default:
   desc: "d2 l-OR = 0.1"
-  n_sim: 10
+  n_sim: 500
   mc_cores: 50
   mc_warmup: 1000
   mc_samp: 1000
@@ -70,33 +70,33 @@ default:
     d1:
       sup: 
         delta: 0.0
-        thresh: 0.975
+        thresh: 0.98
       fut:  
         delta: 0.0 
-        thresh: 0.2
+        thresh: 0.5
     d2:
       # Pr(theta > delta)  > thresh => Non-inferior
       ni:  
         delta: -0.05
-        thresh: 0.975
+        thresh: 0.98
       # Pr(theta > delta) < thresh => Futility, ie futile wrt ni if the Pr < 0.3 is > 0.05
       fut:  
         delta: -0.05
-        thresh: 0.2
+        thresh: 0.6
     d3:
       sup:  
         delta: 0.0
-        thresh: 0.975
+        thresh: 0.98
       fut:  
         delta: 0.00 
-        thresh: 0.2
+        thresh: 0.5
     d4:
       sup:  
         delta: 0.0
         thresh: 0.99
       fut:  
         delta: 0.0
-        thresh: 0.2
+        thresh: 0.5
   
 
   # hyperparams

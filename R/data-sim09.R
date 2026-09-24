@@ -1286,7 +1286,7 @@ sim09_report_sim_res <- function(){
     l_spec$dec[[domain]][[rule]]$thresh
   }
   
-  sim_dat_dir <-  "sim09-08"  #"sim09-06"
+  sim_dat_dir <-  "sim09"  
   
   fname <- paste0(
     sim_dat_dir, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".md")
@@ -1318,106 +1318,12 @@ sim09_report_sim_res <- function(){
 }
 
 
-# load up and produce some minimal summaries on a single trial from a simulation result
-sim09_report_trial_res <- function(
-){
-  library(data.table)
-  library(qs2)
-  library(kableExtra)
-  
-  get_delta <- function(l_spec, domain = "d1", rule = "sup"){
-    l_spec$dec[[domain]][[rule]]$delta
-  }
-  get_thres <- function(l_spec, domain = "d1", rule = "sup"){
-    l_spec$dec[[domain]][[rule]]$thresh
-  }
-  
-  sim_dat_dir <-  "sim09"  #"sim09-06"
-  f_list <- list.files(here::here("data", sim_dat_dir))
-  f = f_list[1]
-  
-  message("##### ", f)
-  l <- qs2::qs_read(here::here("data", sim_dat_dir, f))
-  
-  r = l$r
-  l_spec = l$l_spec
-  l_dom_state0 <- l$l_dom_state0
-  
-  
-  
-  
-  ix_trial <- 1
-  sim09_report_trial(ll = r[[ix_trial]], l_spec)
-}
-
-
-sim09_report_trial <- function(
-    ll,
-    l_spec
-){
-  
-  # only look at the non null instances
-  l_res <- ll$l_res[!sapply(ll$l_res, is.null)]
-  
-  ii <- 1
-  d_dec <- rbindlist(lapply(seq_along(l_res), function(ii){
-    z <- l_res[[ii]]
-    # trial status after first interim
-    dec <- z$l_dec_new
-    d_res <- data.table(
-      interim = ii,
-      domain = rep(names(dec), each = 2),
-      rule = c(
-        "sup", "fut",
-        "ni", "fut",
-        "sup", "fut",
-        "sup", "fut"
-        ),
-      dec = c(
-        dec$d1$sup, dec$d1$fut,
-        dec$d2$ni, dec$d2$fut,
-        dec$d3$sup, dec$d3$fut,
-        dec$d4$sup, dec$d4$fut
-      ),
-      pr = c(
-        dec$d1$sup_prob, dec$d1$fut_prob,
-        dec$d2$ni_prob, dec$d2$fut_prob,
-        dec$d3$sup_prob, dec$d3$fut_prob,
-        dec$d4$sup_prob, dec$d4$fut_prob
-      )
-    )
-    
-  }))
-
-  
-  
-  
-  d_w <- rbindlist(lapply(seq_along(l_res), function(ii){
-    d_w <- sim09_extract_wgt(l_res[[ii]]$l_w_grid)
-    d_w[, interim := ii]
-    d_w <- d_w[domain != "d4"]
-    d_w
-  }))
-  
-  kableExtra::kbl(
-    dcast(d_dec, domain + rule ~ interim, value.var = "dec") , 
-    digits = 3, format = "simple"
-  )
-  
-  kableExtra::kbl(
-    dcast(d_w, domain + reg + side ~ interim, value.var = "w")  , 
-    digits = 3, format = "simple"
-  )
-  
-}
-
-
 sim09_report_report_file <- function(
     # results
-    r,
-    l_spec,
-    l_dom_state0,
-    f_out
+  r,
+  l_spec,
+  l_dom_state0,
+  f_out
 ){
   
   
@@ -1536,7 +1442,7 @@ sim09_report_report_file <- function(
     } else {
       lvls = c(l_spec$d3_wk12_regs, l_spec$d3_none_regs)
     }
-      
+    
     d_tbl[, reg := factor(reg, levels = lvls)]
     setorder(d_tbl, side, reg)
     
@@ -1633,6 +1539,97 @@ sim09_report_report_file <- function(
   writeLines("\n", f_out)
   
 }
+
+# load up and produce some minimal summaries on a single trial from a simulation result
+sim09_report_trial_res <- function(
+){
+  library(data.table)
+  library(qs2)
+  library(kableExtra)
+  
+  get_delta <- function(l_spec, domain = "d1", rule = "sup"){
+    l_spec$dec[[domain]][[rule]]$delta
+  }
+  get_thres <- function(l_spec, domain = "d1", rule = "sup"){
+    l_spec$dec[[domain]][[rule]]$thresh
+  }
+  
+  sim_dat_dir <-  "sim09-08"  #"sim09-06"
+  f_list <- list.files(here::here("data", sim_dat_dir))
+  f = f_list[2]
+  
+  message("##### ", f)
+  l <- qs2::qs_read(here::here("data", sim_dat_dir, f))
+  
+  r = l$r
+  l_spec = l$l_spec
+  l_dom_state0 <- l$l_dom_state0
+  
+  ix_trial <- 2
+  ll = r[[ix_trial]]
+  sim09_report_trial(ll = r[[ix_trial]], l_spec)
+}
+
+
+sim09_report_trial <- function(
+    ll,
+    l_spec
+){
+  
+  # only look at the non null instances
+  l_res <- ll$l_res[!sapply(ll$l_res, is.null)]
+  
+  ii <- 1
+  d_dec <- rbindlist(lapply(seq_along(l_res), function(ii){
+    z <- l_res[[ii]]
+    # trial status after first interim
+    dec <- z$l_dec_new
+    d_res <- data.table(
+      interim = ii,
+      domain = rep(names(dec), each = 2),
+      rule = c(
+        "sup", "fut",
+        "ni", "fut",
+        "sup", "fut",
+        "sup", "fut"
+        ),
+      dec = c(
+        dec$d1$sup, dec$d1$fut,
+        dec$d2$ni, dec$d2$fut,
+        dec$d3$sup, dec$d3$fut,
+        dec$d4$sup, dec$d4$fut
+      ),
+      pr = c(
+        dec$d1$sup_prob, dec$d1$fut_prob,
+        dec$d2$ni_prob, dec$d2$fut_prob,
+        dec$d3$sup_prob, dec$d3$fut_prob,
+        dec$d4$sup_prob, dec$d4$fut_prob
+      )
+    )
+    
+  }))
+
+  d_w <- rbindlist(lapply(seq_along(l_res), function(ii){
+    d_w <- sim09_extract_wgt(l_res[[ii]]$l_w_grid)
+    d_w[, interim := ii]
+    d_w <- d_w[domain != "d4"]
+    d_w
+  }))
+  
+  kableExtra::kbl(
+    dcast(d_dec, domain + rule ~ interim, value.var = "dec") , 
+    digits = 3, format = "simple"
+  )
+  
+  kableExtra::kbl(
+    dcast(d_w, domain + reg + side ~ interim, value.var = "w")  , 
+    digits = 3, format = "simple"
+  )
+  
+}
+
+
+
 
 # extract l_w_grid from interim into long format (domain, side, reg, w)
 # collapses the d4 dimension by summing (since sum over d4 within a fixed
@@ -2295,7 +2292,7 @@ sim09_smry_effects <- function(
     truth = data.table::first(truth),
     mean_est = mean(mu, na.rm = TRUE),
     se_est = sd(mu, na.rm = T),
-    # sd_est = sqrt(mean(sd^2, na.rm = T) + var(mu, na.rm = T)),
+    sd_est = sqrt(mean(sd^2, na.rm = T) + var(mu, na.rm = T)),
     bias = mean(mu - truth, na.rm = TRUE),
     rmse = sqrt(mean((mu - truth)^2, na.rm = TRUE)),
     coverage = mean(
@@ -2309,7 +2306,7 @@ sim09_smry_effects <- function(
     truth = data.table::first(truth),
     mean_est = mean(mu, na.rm = TRUE),
     se_est = sd(mu, na.rm = T),
-    # sd_est = sqrt(mean(sd^2, na.rm = T) + var(mu, na.rm = T)),
+    sd_est = sqrt(mean(sd^2, na.rm = T) + var(mu, na.rm = T)),
     bias = mean(mu - truth, na.rm = TRUE),
     rmse = sqrt(mean((mu - truth)^2, na.rm = TRUE)),
     coverage = mean(
@@ -2324,7 +2321,7 @@ sim09_smry_effects <- function(
     mean_est = mean(mu, na.rm = TRUE),
     se_est = sd(mu, na.rm = T),
     # pooled sd
-    # sd_est = sqrt(mean(sd^2, na.rm = T) + var(mu, na.rm = T)),
+    sd_est = sqrt(mean(sd^2, na.rm = T) + var(mu, na.rm = T)),
     bias = mean(mu - truth, na.rm = TRUE),
     rmse = sqrt(mean((mu - truth)^2, na.rm = TRUE)),
     # proportion of times truth within interval
@@ -3164,7 +3161,7 @@ sim09_ex_scenarios <- function(){
   set.seed(1)
   default_cfg <- F
   if(!default_cfg){
-    f_cfgsc <- file.path("./etc/sim09/cfg-sim09-sc01-v08.yml")
+    f_cfgsc <- file.path("./etc/sim09/cfg-sim09-sc01-v04.yml")
     l_spec <- config::get(file = f_cfgsc)
     l_spec <- sim09_update_cfg(l_spec)
   } else {
