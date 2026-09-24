@@ -1,6 +1,6 @@
 default:
-  desc: "d2 l-OR = -0.5"
-  n_sim: 1000
+  desc: "d2 l-OR = 0.1"
+  n_sim: 10
   mc_cores: 50
   mc_warmup: 1000
   mc_samp: 1000
@@ -34,10 +34,10 @@ default:
     enrd1_r1_wk12_nad3: 0.0
     cnrd1_r1_wk12_nad3: 0.0
     # d2 wk6
-    l_r1_wk6_nad3: -0.5
-    lnrd1_r1_wk6_nad3: -0.5
-    enrd1_r1_wk6_nad3: -0.5
-    cnrd1_r1_wk6_nad3: -0.5
+    l_r1_wk6_nad3: 0.1
+    lnrd1_r1_wk6_nad3: 0.1
+    enrd1_r1_wk6_nad3: 0.1
+    cnrd1_r1_wk6_nad3: 0.1
     # r1 non rand trt in duration domains
     l_r1_nad2_nad3: 0.0
     lnrd1_r1_nad2_nad3: 0.0
@@ -72,8 +72,8 @@ default:
         delta: 0.0
         thresh: 0.975
       fut:  
-        delta: 0.05 
-        thresh: 0.3
+        delta: 0.0 
+        thresh: 0.2
     d2:
       # Pr(theta > delta)  > thresh => Non-inferior
       ni:  
@@ -81,22 +81,22 @@ default:
         thresh: 0.975
       # Pr(theta > delta) < thresh => Futility, ie futile wrt ni if the Pr < 0.3 is > 0.05
       fut:  
-        delta: 0.0 
-        thresh: 0.1
+        delta: -0.05
+        thresh: 0.2
     d3:
       sup:  
         delta: 0.0
         thresh: 0.975
       fut:  
-        delta: 0.05 
-        thresh: 0.3
+        delta: 0.00 
+        thresh: 0.2
     d4:
       sup:  
         delta: 0.0
         thresh: 0.99
       fut:  
-        delta: 0.05 
-        thresh: 0.3
+        delta: 0.0
+        thresh: 0.2
   
 
   # hyperparams

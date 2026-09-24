@@ -26,7 +26,7 @@ args = commandArgs(trailingOnly=TRUE)
 if (length(args)<1) {
   log_info("Setting default run method (does nothing)")
   args[1] = "sim09_run_none"
-  args[2] = "sim09/cfg-sim09-sc01-v02.yml"
+  args[2] = "sim09/cfg-sim09-sc01-v10.yml"
 } else {
   log_info("Run method ", args[1])
   log_info("Scenario config ", args[2])
@@ -1065,6 +1065,7 @@ sim09_stan_fit_01 <- function(
     data.table(
       par = names(dat),
       mu = apply(dat, 2, mean),
+      sd = apply(dat, 2, sd),
       q_025 = apply(dat, 2, function(z){quantile(z, prob = 0.025)}),
       q_975 = apply(dat, 2, function(z){quantile(z, prob = 0.975)})
     )
@@ -1285,10 +1286,13 @@ sim09_report_sim_res <- function(){
     l_spec$dec[[domain]][[rule]]$thresh
   }
   
-  fname <- paste0("sim09-result-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".md")
+  sim_dat_dir <-  "sim09-08"  #"sim09-06"
+  
+  fname <- paste0(
+    sim_dat_dir, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".md")
   f_out <- file(here::here("versions", fname), open = "w")
   
-  sim_dat_dir <-  "sim09-06"
+
   f_list <- list.files(here::here("data", sim_dat_dir))
   f = f_list[1]
   for(f in f_list){
@@ -1301,6 +1305,8 @@ sim09_report_sim_res <- function(){
     l_spec = l$l_spec
     l_dom_state0 <- l$l_dom_state0
     
+    writeLines(paste0("# Source data: ", f, " (", sim_dat_dir, ")"), f_out)
+    
     sim09_report_report_file(r, l_spec, l_dom_state0, f_out)
     
     message("End of results for file", f)
@@ -1308,6 +1314,100 @@ sim09_report_sim_res <- function(){
   
   message("Close file")
   close(f_out)
+  
+}
+
+
+# load up and produce some minimal summaries on a single trial from a simulation result
+sim09_report_trial_res <- function(
+){
+  library(data.table)
+  library(qs2)
+  library(kableExtra)
+  
+  get_delta <- function(l_spec, domain = "d1", rule = "sup"){
+    l_spec$dec[[domain]][[rule]]$delta
+  }
+  get_thres <- function(l_spec, domain = "d1", rule = "sup"){
+    l_spec$dec[[domain]][[rule]]$thresh
+  }
+  
+  sim_dat_dir <-  "sim09"  #"sim09-06"
+  f_list <- list.files(here::here("data", sim_dat_dir))
+  f = f_list[1]
+  
+  message("##### ", f)
+  l <- qs2::qs_read(here::here("data", sim_dat_dir, f))
+  
+  r = l$r
+  l_spec = l$l_spec
+  l_dom_state0 <- l$l_dom_state0
+  
+  
+  
+  
+  ix_trial <- 1
+  sim09_report_trial(ll = r[[ix_trial]], l_spec)
+}
+
+
+sim09_report_trial <- function(
+    ll,
+    l_spec
+){
+  
+  # only look at the non null instances
+  l_res <- ll$l_res[!sapply(ll$l_res, is.null)]
+  
+  ii <- 1
+  d_dec <- rbindlist(lapply(seq_along(l_res), function(ii){
+    z <- l_res[[ii]]
+    # trial status after first interim
+    dec <- z$l_dec_new
+    d_res <- data.table(
+      interim = ii,
+      domain = rep(names(dec), each = 2),
+      rule = c(
+        "sup", "fut",
+        "ni", "fut",
+        "sup", "fut",
+        "sup", "fut"
+        ),
+      dec = c(
+        dec$d1$sup, dec$d1$fut,
+        dec$d2$ni, dec$d2$fut,
+        dec$d3$sup, dec$d3$fut,
+        dec$d4$sup, dec$d4$fut
+      ),
+      pr = c(
+        dec$d1$sup_prob, dec$d1$fut_prob,
+        dec$d2$ni_prob, dec$d2$fut_prob,
+        dec$d3$sup_prob, dec$d3$fut_prob,
+        dec$d4$sup_prob, dec$d4$fut_prob
+      )
+    )
+    
+  }))
+
+  
+  
+  
+  d_w <- rbindlist(lapply(seq_along(l_res), function(ii){
+    d_w <- sim09_extract_wgt(l_res[[ii]]$l_w_grid)
+    d_w[, interim := ii]
+    d_w <- d_w[domain != "d4"]
+    d_w
+  }))
+  
+  kableExtra::kbl(
+    dcast(d_dec, domain + rule ~ interim, value.var = "dec") , 
+    digits = 3, format = "simple"
+  )
+  
+  kableExtra::kbl(
+    dcast(d_w, domain + reg + side ~ interim, value.var = "w")  , 
+    digits = 3, format = "simple"
+  )
   
 }
 
@@ -1320,12 +1420,11 @@ sim09_report_report_file <- function(
     f_out
 ){
   
-  writeLines(paste0("# Simulation Source ", f), f_out)
-  writeLines("\n", f_out)
+  
   writeLines(paste0("**Scenario:** ", l_spec$desc), f_out)
   writeLines("\n", f_out)
   
-  writeLines("Simulation configuration information follows: ", f_out)
+  writeLines("## Simulation configuration ", f_out)
   writeLines("\n", f_out)
   d_silo <- data.table(silo = names(l_spec$p_silo), pr = l_spec$p_silo)
   d_tmp <- rbind(
@@ -1338,7 +1437,8 @@ sim09_report_report_file <- function(
   tbl <- kableExtra::kbl(
     d_silo, digits = 3, format = "simple", 
     caption = paste(
-      "Scenario ", l_spec$desc, " - Domain 1 distribution")
+      "Scenario ", 
+      l_spec$desc, " - Domain 1 distribution")
   )
   writeLines(tbl, f_out)
   writeLines("\n", f_out)
@@ -1347,7 +1447,9 @@ sim09_report_report_file <- function(
   tbl <- kableExtra::kbl(
     d_reg, digits = 3, format = "simple", 
     caption = paste(
-      "Scenario ", l_spec$desc, " - Linear predictor (log-odds response) by regimen")
+      "Scenario ", 
+      l_spec$desc, 
+      " - Linear predictor (log-odds response) by regimen")
   )
   writeLines(tbl, f_out)
   writeLines("\n", f_out)
@@ -1384,16 +1486,20 @@ sim09_report_report_file <- function(
   
   writeLines("Decision rules: ", f_out)
   writeLines("\n", f_out)
-  writeLines("Sup: high prob RD is above zero, eg pr(theta > 0) > 0.975", f_out)    
+  writeLines(
+    "Sup: high prob RD is above zero, eg pr(theta > 0) > 0.975", f_out)    
   writeLines("\n", f_out)
-  writeLines("NI: high prob RD is above some small negative value, eg pr(theta > -0.05)  > 0.975", f_out)    
+  writeLines(
+    "NI: high prob RD is above some small negative value, eg pr(theta > -0.05)  > 0.975", f_out)    
   writeLines("\n", f_out)
-  writeLines("Fut: low prob RD is above some minimal (or zero) effect, eg pr(theta > 0.05) < 0.3", f_out)    
+  writeLines(
+    "Fut: low prob RD is above some minimal (or zero) effect, eg pr(theta > 0.05) < 0.3", f_out)    
   writeLines("\n", f_out)
   
   tbl <- kableExtra::kbl(
     d_dec, digits = 3, format = "simple", 
-    caption = paste("Scenario ", l_spec$desc, " - Decision rule parameters")
+    caption = paste(
+      "Scenario ", l_spec$desc, " - Decision rule parameters")
     
   ) 
   writeLines(tbl, f_out)
@@ -1410,42 +1516,70 @@ sim09_report_report_file <- function(
   )
   
   writeLines("\n", f_out)
-  writeLines("Simulation results follow: ", f_out)
+  writeLines("## Results ", f_out)
   writeLines("\n", f_out)
   
-  writeLines("Regimen weights for each domain's contrast, by interim: ", f_out)
+  
+  writeLines("### Regimen weights (means)", f_out)
   writeLines("\n", f_out)
+  
   # ignore d4 never changes with - usually not worth reporting
-  for (dm in c("d1", "d2", "d3")) {   
-    tbl <- kableExtra::kbl(
+  for (dm in c("d1", "d2", "d3")) {  
+    d_tbl <- dcast(
+      l_oc$wgt[domain == dm], 
+      side + reg ~ i_anlys, value.var = "mu")
+    lvls <- d_tbl$reg
+    if(dm == "d1"){
+      lvls = l_spec$d1_trt_regs
+    } else if (dm == "d2"){
+      lvls = c(l_spec$d2_wk6_regs, l_spec$d2_wk12_regs)
+    } else {
+      lvls = c(l_spec$d3_wk12_regs, l_spec$d3_none_regs)
+    }
       
-      dcast(l_oc$wgt[domain == dm], side + reg ~ i_anlys, value.var = "mu"),
+    d_tbl[, reg := factor(reg, levels = lvls)]
+    setorder(d_tbl, side, reg)
+    
+    tbl <- kableExtra::kbl(
+      d_tbl,
       digits = 3, format = "simple",
-      caption = paste("Scenario", l_spec$desc, "-", dm, "regimen weights by interim")
+      caption = paste(
+        "Scenario", 
+        l_spec$desc, "-", dm, "regimen weights by interim")
     )
     writeLines(tbl, f_out)
     writeLines("\n", f_out)
+    writeLines("\n", f_out)
   }
   
-  writeLines("Cumulative probability of decision by interim (power/type-i): ", f_out)
+  writeLines("### Decision probabilities", f_out)
+  writeLines("\n", f_out)
+  
+  writeLines("Cumulative probability of each decision: ", f_out)
   writeLines("\n", f_out)
   tbl <- kableExtra::kbl(
     dcast(l_oc$dec_pr, domain + rule ~ i_anlys, value.var = "mu"),
     digits = 3, format = "simple", 
-    caption = paste("Scenario ",
-                    l_spec$desc, " - Probability of decision")
+    caption = paste(
+      "Scenario ",
+      l_spec$desc, " - Probability of decision")
   )
   writeLines(tbl, f_out)
   writeLines("\n", f_out)
   # sanity
   # l_oc$dec_pr[i_anlys == 5, .(pr_dec = sum(mu)), keyby = domain]
   
+  
+  writeLines("### Sample size ", f_out)
+  writeLines("\n", f_out)
+  
   tbl <- kableExtra::kbl(
     l_oc$l_dec_n$d_smry[, .SD, .SDcols = !c("n_dec")],
     digits = c(0, 3, 1, 0, 0), 
     format = "simple", 
-    caption = paste("Scenario ",
-                    l_spec$desc, " - Number enrolled at time of decision")
+    caption = paste(
+      "Scenario ",
+      l_spec$desc, " - Number enrolled at time of decision")
   )
   writeLines(tbl, f_out)
   writeLines("\n", f_out)
@@ -1453,42 +1587,47 @@ sim09_report_report_file <- function(
     l_oc$l_dec_info$d_smry[, .SD, .SDcols = !c("n_dec")],
     digits = c(0, 3, 1, 0, 0, 1, 1, 1, 3), 
     format = "simple", 
-    caption = paste("Scenario ",
-                    l_spec$desc, " - Enrolment and sample size informing decisions")
+    caption = paste(
+      "Scenario ",
+      l_spec$desc, " - Enrolment and sample size informing decisions")
   )
   writeLines(tbl, f_out)
   writeLines("\n", f_out)
   tbl <- kableExtra::kbl(
     l_oc$l_dec_info$d_arms,
     digits = 1, format = "simple", 
-    caption = paste("Scenario ",
-                    l_spec$desc, " - Sample size informing decisions by arm")
+    caption = paste(
+      "Scenario ",
+      l_spec$desc, " - Sample size informing decisions by arm")
   )
   writeLines(tbl, f_out)
   writeLines("\n", f_out)
+  
+  writeLines("### Parameter estimates ", f_out)
+  writeLines("\n", f_out)
+  
   tbl <- kableExtra::kbl(
     l_oc$l_effects$d_lor_std,
     digits = 3, format = "simple", 
-    caption = paste("Scenario ",
-                    l_spec$desc, " - Standardised marginal log OR")
+    caption = paste(
+      "Scenario ",
+      l_spec$desc, " - Standardised marginal log OR")
   )
   writeLines(tbl, f_out)
   writeLines("\n", f_out)
   tbl <- kableExtra::kbl(
     l_oc$l_effects$d_rd,
     digits = 3, format = "simple", 
-    caption = paste("Scenario ",
-                    l_spec$desc, "- Standardised marginal RD")
+    caption = paste(
+      "Scenario ",
+      l_spec$desc, "- Standardised marginal RD")
   )
   writeLines(tbl, f_out)
   writeLines("\n", f_out)
   
   writeLines("# Model code", f_out)
-  if(!is.null(l$model)){
-    writeLines(l$model, f_out)
-  } else {
-    writeLines(paste0("Model code hasn't been stored, but used: ", l_spec$mc_model), f_out)
-  }
+  writeLines(paste0("Model used: ", l_spec$mc_model), f_out)
+  
   writeLines("\n", f_out)
   writeLines("End of results for file", f_out)
   writeLines("\n", f_out)
@@ -1500,10 +1639,15 @@ sim09_report_report_file <- function(
 # reg recovers exactly the regimen-level weight the domain contrast used -
 # see derivation in the accompanying discussion)
 sim09_extract_wgt <- function(l_w_grid) {
+  
+  # for each domain
   rbindlist(lapply(names(l_w_grid), function(dm) {
+    # treatment groups
     sides <- l_w_grid[[dm]]
+    # each regimen will be split int nad4, norif, rif so sum these up
     rbindlist(lapply(names(sides), function(sd) {
       g <- sides[[sd]]
+      # sum up contributions over each regimen by choice
       g[, .(w = sum(w)), by = reg][, `:=`(domain = dm, side = sd)]
     }))
   }))
@@ -1513,19 +1657,29 @@ sim09_extract_wgt <- function(l_w_grid) {
 # NA per-simulation entries (domain had no supporting data yet in that
 # particular replicate) are excluded from the cross-simulation mean via
 # na.rm, and counted separately in n_na so that's visible rather than silent.
-sim09_smry_wgt <- function(r, l_spec) {
+sim09_smry_wgt <- function(
+    r, 
+    l_spec
+    ) {
+  
+  # over all sims
   d_wgt <- rbindlist(lapply(seq_along(r), function(ix) {
     l_res <- r[[ix]]$l_res
+    # get rid of the slots after the trial has stopped
     l_res <- l_res[!sapply(l_res, is.null)]
+    # 
     rbindlist(lapply(seq_along(l_res), function(i) {
+      # pick up the current weights grid (for all domains)
       z <- l_res[[i]]$l_w_grid
       if (is.null(z)) return(NULL)
+      # gets us the regimen level weights for each domain and for each analys
       d <- sim09_extract_wgt(z)
       d[, i_anlys := i]
       d
     }))
   }), idcol = "i_sim")
   
+  # average over sims
   d_smry <- d_wgt[, .(
     mu    = mean(w, na.rm = TRUE),
     q_025 = quantile(w, 0.025, na.rm = TRUE),
@@ -1534,11 +1688,6 @@ sim09_smry_wgt <- function(r, l_spec) {
   ), by = .(domain, side, reg, i_anlys)]
   setorder(d_smry, domain, side, reg, i_anlys)
   d_smry
-}
-
-# wide (interim-as-columns) view of one domain, for reporting
-sim09_wgt_wide <- function(d_smry, dm) {
-  dcast(d_smry[domain == dm], side + reg ~ i_anlys, value.var = "mu")
 }
 
 
@@ -2145,6 +2294,8 @@ sim09_smry_effects <- function(
   d_lor_out <- d_lor[, .(
     truth = data.table::first(truth),
     mean_est = mean(mu, na.rm = TRUE),
+    se_est = sd(mu, na.rm = T),
+    # sd_est = sqrt(mean(sd^2, na.rm = T) + var(mu, na.rm = T)),
     bias = mean(mu - truth, na.rm = TRUE),
     rmse = sqrt(mean((mu - truth)^2, na.rm = TRUE)),
     coverage = mean(
@@ -2157,6 +2308,8 @@ sim09_smry_effects <- function(
   d_lor_std_out <- d_lor_std[, .(
     truth = data.table::first(truth),
     mean_est = mean(mu, na.rm = TRUE),
+    se_est = sd(mu, na.rm = T),
+    # sd_est = sqrt(mean(sd^2, na.rm = T) + var(mu, na.rm = T)),
     bias = mean(mu - truth, na.rm = TRUE),
     rmse = sqrt(mean((mu - truth)^2, na.rm = TRUE)),
     coverage = mean(
@@ -2169,6 +2322,9 @@ sim09_smry_effects <- function(
   d_rd_out <- d_rd[, .(
     truth = data.table::first(truth),
     mean_est = mean(mu, na.rm = TRUE),
+    se_est = sd(mu, na.rm = T),
+    # pooled sd
+    # sd_est = sqrt(mean(sd^2, na.rm = T) + var(mu, na.rm = T)),
     bias = mean(mu - truth, na.rm = TRUE),
     rmse = sqrt(mean((mu - truth)^2, na.rm = TRUE)),
     # proportion of times truth within interval
@@ -3006,9 +3162,9 @@ sim09_ex_gcomp_stan_demo <- function(
 sim09_ex_scenarios <- function(){
   
   set.seed(1)
-  default_cfg <- T
+  default_cfg <- F
   if(!default_cfg){
-    f_cfgsc <- file.path("./etc/sim09/cfg-sim09-sc01-v06.yml")
+    f_cfgsc <- file.path("./etc/sim09/cfg-sim09-sc01-v08.yml")
     l_spec <- config::get(file = f_cfgsc)
     l_spec <- sim09_update_cfg(l_spec)
   } else {
@@ -3022,6 +3178,19 @@ sim09_ex_scenarios <- function(){
   
   # starting state for domains
   l_dom_state = sim09_domain_state_open()
+  
+  l_spec$reg_effect
+  d_risk <- sim09_true_regimen_risk(
+    l_spec,
+    l_dom_state
+  )
+  d_risk <- dcast(
+    d_risk[reg %in% c("l_r1_wk6_nad3", "l_r1_wk12_nad3")],
+    d4 ~ reg, value.var = "p"
+  )
+  d_risk[, delta := l_r1_wk6_nad3 - l_r1_wk12_nad3]
+  d_risk[]
+  
   
   # Scenario - positive effect restricted to d1 ------------
   
