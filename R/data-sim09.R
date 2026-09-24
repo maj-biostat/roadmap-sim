@@ -1286,7 +1286,7 @@ sim09_report_sim_res <- function(){
     l_spec$dec[[domain]][[rule]]$thresh
   }
   
-  sim_dat_dir <-  "sim09"  
+  sim_dat_dir <-  "sim09-08"  
   
   fname <- paste0(
     sim_dat_dir, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".md")
@@ -1297,7 +1297,6 @@ sim09_report_sim_res <- function(){
   f = f_list[1]
   for(f in f_list){
     
-    # l <- qs2::qs_read("data/sim09/sim09-v02-20260916-124947.qs2")
     message("##### ", f)
     l <- qs2::qs_read(here::here("data", sim_dat_dir, f))
     
@@ -1411,10 +1410,12 @@ sim09_report_report_file <- function(
   writeLines(tbl, f_out)
   writeLines("\n", f_out)
   
+  # operating characteristics summary -----
   l_oc <- list(
     dec_pr = sim09_smry_pr_dec(r, l_spec),
+    l_n = sim09_smry_n(r, l_spec),
     # maybe no longer necessary...
-    l_dec_n = sim09_smry_dec_n(r, l_spec),
+    # l_dec_n = sim09_smry_dec_n(r, l_spec),
     # partially duplicates sim09_smry_dec_n
     l_dec_info = sim09_smry_dec_info(r, l_spec),
     l_effects = sim09_smry_effects(r, l_spec),
@@ -1427,6 +1428,8 @@ sim09_report_report_file <- function(
   
   
   writeLines("### Regimen weights (means)", f_out)
+  writeLines("\n", f_out)
+  writeLines("Weight for the regimen contributions to the treatment contrasts.", f_out)
   writeLines("\n", f_out)
   
   # ignore d4 never changes with - usually not worth reporting
@@ -1479,19 +1482,46 @@ sim09_report_report_file <- function(
   writeLines("### Sample size ", f_out)
   writeLines("\n", f_out)
   
+  # d_tbl <- l_oc$l_n$d_smry[
+  #   (silo == "l" & domain == "d1") | 
+  #     (domain %in% c(paste0("d", 2:4)))
+  # ]
+  
   tbl <- kableExtra::kbl(
-    l_oc$l_dec_n$d_smry[, .SD, .SDcols = !c("n_dec")],
-    digits = c(0, 3, 1, 0, 0), 
+    dcast(l_oc$l_n$d_smry, silo + domain + arm ~ interim, value.var = "mu_n"),
+    digits = 1, 
     format = "simple", 
     caption = paste(
       "Scenario ",
-      l_spec$desc, " - Number enrolled at time of decision")
+      l_spec$desc, " - Cumulative mean enrolments by silo and domain")
   )
   writeLines(tbl, f_out)
   writeLines("\n", f_out)
+  
+  tbl <- kableExtra::kbl(
+    dcast(l_oc$l_n$d_smry, silo + domain + arm ~ interim, value.var = "mu_pr"),
+    digits = 3, 
+    format = "simple", 
+    caption = paste(
+      "Scenario ",
+      l_spec$desc, " - Proprotion to each arm by silo and domain")
+  )
+  writeLines(tbl, f_out)
+  writeLines("\n", f_out)
+  
+  # tbl <- kableExtra::kbl(
+  #   l_oc$l_dec_n$d_smry[, .SD, .SDcols = !c("n_dec")],
+  #   digits = c(0, 0, 3, 1, 0, 0), 
+  #   format = "simple", 
+  #   caption = paste(
+  #     "Scenario ",
+  #     l_spec$desc, " - Number enrolled at time of decision")
+  # )
+  # writeLines(tbl, f_out)
+  # writeLines("\n", f_out)
   tbl <- kableExtra::kbl(
     l_oc$l_dec_info$d_smry[, .SD, .SDcols = !c("n_dec")],
-    digits = c(0, 3, 1, 0, 0, 1, 1, 1, 3), 
+    digits = c(0, 0, 3, 1, 0, 0, 1, 1, 1, 3), 
     format = "simple", 
     caption = paste(
       "Scenario ",
@@ -2118,12 +2148,98 @@ sim09_smry_pr_dec <- function(r, l_spec){
     mu = mean(dec01)
   ), keyby = .(i_anlys, domain, rule)]
   
-  
+  d_out[, rule := factor(rule, levels = c("sup", "ni", "fut"))]
+  setorder(d_out, domain, rule)
   
   d_out
   
 }
 
+
+sim09_smry_n <- function(r, l_spec) {
+  
+  d_out <- rbindlist(
+    lapply(seq_along(r), function(i_sim) {
+      rr <- r[[i_sim]]
+      dm <- "d1"
+      d_dm <- rbindlist(lapply(c("d1", "d2", "d3", "d4"), function(dm){
+        d_tmp <- rr$data[, .(n = .N), keyby = c("batch", "silo", dm)]
+        setnames(d_tmp, dm, "arm")
+        d_tmp[, domain := dm]
+        # d_tmp[, n := cumsum(n), keyby = .(silo, arm, domain)]
+        # dcast(d_tmp, silo + domain + arm ~ batch, value.var = "n")
+        d_tmp
+      }))
+      
+      d_dm
+      
+    }), idcol = "i_sim"
+  )
+  d_out[, n := as.double(n)]
+  setnames(d_out, "batch", "interim")
+  
+  d_grid <- rbind(
+    CJ(
+      i_sim = 1:l_spec$n_sim,
+      interim = seq_along(l_spec$n_batch),
+      silo = c("l", "lnrd1", "enrd1", "cnrd1"),
+      domain = "d1",
+      arm = c("dair", "r1", "r2")
+    ),
+    CJ(
+      i_sim = 1:l_spec$n_sim,
+      interim = seq_along(l_spec$n_batch),
+      silo = c("l", "lnrd1", "enrd1", "cnrd1"),
+      domain = "d2",
+      arm = c("nad2", "wk12" , "wk6")
+    ),
+    CJ(
+      i_sim = 1:l_spec$n_sim,
+      interim = seq_along(l_spec$n_batch),
+      silo = c("l", "lnrd1", "enrd1", "cnrd1"),
+      domain = "d3",
+      arm = c("nad3",  "none",  "wk12")
+    ),
+    CJ(
+      i_sim = 1:l_spec$n_sim,
+      interim = seq_along(l_spec$n_batch),
+      silo = c("l", "lnrd1", "enrd1", "cnrd1"),
+      domain = "d4",
+      arm = c("nad4","norif", "rif"  )
+    )
+  )
+    
+  d_out <- base::merge(
+    d_grid, d_out, by = c("i_sim", "interim", "silo", "arm", "domain"), all.x = T)
+  d_out[is.na(n), n := 0]
+  d_out[, c_n := cumsum(n), keyby = .(i_sim, silo, arm, domain)]
+  d_out[, tot := sum(c_n), keyby = .(i_sim, interim, silo, domain)]
+  d_out[, prop := c_n / tot]
+  
+  setcolorder(d_out, c("i_sim", "interim", "silo", "domain"))
+  
+  d_smry <- d_out[
+    ,
+    .(
+      mu_n = mean(c_n),
+      mu_pr = mean(prop)
+    ),
+    keyby = .(silo, domain, interim, arm)
+  ]
+  
+  setcolorder(d_smry, c("domain", "interim", "silo"))
+  d_smry[, silo := factor(silo, levels = c("l", "lnrd1", "enrd1", "cnrd1"))]
+  setorder(d_smry, domain, interim, silo)
+  
+  # d_tbl <- copy(d_smry)
+  # d_tbl[, out := sprintf("%.1f (%.2f)", mu_n, mu_pr)]
+  # dcast(d_tbl, silo + domain + arm ~ interim, value.var = "out")
+  list(
+    d_first = d_first,
+    d_smry = d_smry
+  )
+  
+}
 
 sim09_smry_dec_n <- function(r, l_spec) {
   
@@ -2137,16 +2253,16 @@ sim09_smry_dec_n <- function(r, l_spec) {
           d_dec <- sim09_extract_dec_indicators(z$l_dec_new)
           d_dec <- d_dec[dec == TRUE]
           if (nrow(d_dec) == 0) {return(NULL)}
-          data.table(
-            domain = unique(d_dec$domain),
-            i_anlys = i_anlys,
-            n = sum(l_spec$n_batch[seq_len(i_anlys)])
-          )
+          d_dec[, n := sum(l_spec$n_batch[seq_len(i_anlys)])]
+          d_dec[, i_anlys := i_anlys]
+          d_dec
         })
       )
     }), idcol = "i_sim"
   )
   d_out[, n := as.double(n)]
+  
+  d_out[, rule := factor(rule, levels = c("sup", "ni", "fut"))]
   
   
   # First decision only
@@ -2165,7 +2281,7 @@ sim09_smry_dec_n <- function(r, l_spec) {
       q_025_n = quantile(n, 0.025),
       q_975_n = quantile(n, 0.975)
     ),
-    by = domain
+    keyby = .(domain, rule)
   ]
   
   list(
@@ -2342,6 +2458,7 @@ sim09_smry_effects <- function(
 
 sim09_smry_dec_info <- function(r, l_spec) {
   
+  # first decision by simulation
   d_first <- sim09_first_dec(r)
   
   if (nrow(d_first) == 0) {
@@ -2404,8 +2521,10 @@ sim09_smry_dec_info <- function(r, l_spec) {
       
       prop_info = mean(inform_prop)
     ),
-    by = domain
+    keyby = .(domain, rule)
   ]
+  
+  d_summary[, rule := factor(rule, levels = c("sup", "ni", "fut"))]
   
   # Mean arm sizes among simulations in which the decision occurred
   d_arm_summary <- d_out[
@@ -2416,7 +2535,7 @@ sim09_smry_dec_info <- function(r, l_spec) {
       q025_n = quantile(n, 0.025),
       q975_n = quantile(n, 0.975)
     ),
-    by = .(domain, arm, inform)
+    keyby = .(domain, arm, inform)
   ]
   
   list(
