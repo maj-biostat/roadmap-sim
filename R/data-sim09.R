@@ -1286,7 +1286,7 @@ sim09_report_sim_res <- function(){
     l_spec$dec[[domain]][[rule]]$thresh
   }
   
-  sim_dat_dir <-  "sim09-08"  
+  sim_dat_dir <-  "sim09-09"  
   
   fname <- paste0(
     sim_dat_dir, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".md")
@@ -1519,6 +1519,7 @@ sim09_report_report_file <- function(
   # )
   # writeLines(tbl, f_out)
   # writeLines("\n", f_out)
+  # d_tbl <- l_oc$l_dec_info$d_smry[, .SD, .SDcols = !c("n_dec")]
   tbl <- kableExtra::kbl(
     l_oc$l_dec_info$d_smry[, .SD, .SDcols = !c("n_dec")],
     digits = c(0, 0, 3, 1, 0, 0, 1, 1, 1, 3), 
@@ -1584,7 +1585,7 @@ sim09_report_trial_res <- function(
     l_spec$dec[[domain]][[rule]]$thresh
   }
   
-  sim_dat_dir <-  "sim09-08"  #"sim09-06"
+  sim_dat_dir <-  "sim09-09" 
   f_list <- list.files(here::here("data", sim_dat_dir))
   f = f_list[2]
   
@@ -2525,6 +2526,7 @@ sim09_smry_dec_info <- function(r, l_spec) {
   ]
   
   d_summary[, rule := factor(rule, levels = c("sup", "ni", "fut"))]
+  setorder(d_summary, domain, rule)
   
   # Mean arm sizes among simulations in which the decision occurred
   d_arm_summary <- d_out[
@@ -3280,7 +3282,7 @@ sim09_ex_scenarios <- function(){
   set.seed(1)
   default_cfg <- F
   if(!default_cfg){
-    f_cfgsc <- file.path("./etc/sim09/cfg-sim09-sc01-v04.yml")
+    f_cfgsc <- file.path("./etc/sim09/cfg-sim09-sc01-v08.yml")
     l_spec <- config::get(file = f_cfgsc)
     l_spec <- sim09_update_cfg(l_spec)
   } else {
