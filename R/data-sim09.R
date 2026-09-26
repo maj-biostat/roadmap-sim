@@ -564,16 +564,13 @@ sim09_reg_wgt <- function(
 
 # Current weighting separates what the trial does by design i.e. the 
 # randomisation ratios, read from l_dom_state, which can change immediately
-# based on a locked decision from what can only be estimated from data.
-# That is, the clinician self selectin r1 vs r2, whether a patient enters 
-# randomised D2/D3 at all; each silo's overall population share). 
-# Replaces sim09_reg_wgt so that the weights are reflecting the the trial 
-# as it is currently being run rather than considering all of the history.
-# The lor calcs are left as is as they are just for reporting rather than 
-# decision making.
+# based on a locked decision and are (obviously) known from what can only 
+# be estimated from data.
+# For example, we don't know a-prior how the r1/r2 groups will be distributed.
 sim09_silo_wgt_current <- function(
     d_cum_dat, 
     l_dom_state, 
+    # either r1 or r2 
     target_d1
 ) {
   
@@ -586,16 +583,21 @@ sim09_silo_wgt_current <- function(
   p_silo_emp <- setNames(rep(0, length(silos)), silos)
   p_silo_emp[as.character(n_silo$silo)] <- n_silo$N / sum(n_silo$N)
   
-  # P(target_d1 | silo) is known (l_dom_state) for silo l but for the 
-  # rest is based on the observed sample
+  # P(target_d1 | silo) do empirical estimation for every silo. 
+  # Why? If we use l_dom_state$d1 here (the adaptive allocation for d1) then 
+  # the d2 and d3 estimates will be heavily biased.
+  # This is because the lock decision is computed from the same cumulative data 
+  # (including the same "l"-silo cells) that feed this domain's own contrast, 
+  # so weighting by it correlates "l"'s influence with "l"'s own realised 
+  # estimate in that specific simulated trial. This is what creates a bias
+  # in the the pooled estimate toward whatever drove D1's decision. 
+  # The empirical d1-allocation rate carries no such correlation, since 
+  # treatment assignment is independent of outcome by randomisation.
   p_d1_given_silo <- setNames(numeric(length(silos)), silos)
-  p_d1_given_silo["l"] <- l_dom_state$d1[target_d1]
-  for (s in c("lnrd1", "enrd1", "cnrd1")) {
+  for (s in silos) {
     d_s <- d_cum_dat[silo == s]
-    
-    p_d1_given_silo[s] <- fifelse(
+    p_d1_given_silo[s] <- fiflese(
       nrow(d_s) == 0, NA_real_, mean(d_s$d1 == target_d1))
-    
   }
   
   w <- p_silo_emp * p_d1_given_silo
@@ -919,7 +921,8 @@ sim09_comp_rd <- function(
     grid_rev, data.table(reg = l_spec$d1_trt_regs, w_treat = w_d1), by = "reg")
   # weights acros d4
   grid_rev <- base::merge(
-    grid_rev, data.table(d4 = as.character(d_pop_l$d4), w_covar = d_pop_l$w), by = "d4")
+    grid_rev, data.table(
+      d4 = as.character(d_pop_l$d4), w_covar = d_pop_l$w), by = "d4")
   # combined weight as product
   grid_rev[, w := w_treat * w_covar]
   grid_rev[, `:=`(w_treat = NULL, w_covar = NULL)]
@@ -934,7 +937,8 @@ sim09_comp_rd <- function(
   
   w_silo_r1 <- sim09_silo_wgt_current(d_cum_dat, l_dom_state, "r1")
   # in expectation we know the allocation to each arm is 1:1
-  p_wk12_d2 <- l_dom_state$d2["wk12"] / (l_dom_state$d2["wk12"] + l_dom_state$d2["wk6"])
+  p_wk12_d2 <- l_dom_state$d2["wk12"] / (l_dom_state$d2["wk12"] +
+                                           l_dom_state$d2["wk6"])
   
   # d4 distribution within each silos r1 patients
   d_d4_r1 <- d_cum_dat[d1 == "r1", .N, keyby = .(silo, d4)]
