@@ -1323,7 +1323,7 @@ sim09_report_sim_res <- function(){
     l_spec$dec[[domain]][[rule]]$thresh
   }
   
-  sim_dat_dir <-  "sim09-10"  
+  sim_dat_dir <-  "sim09-11"  
   
   fname <- paste0(
     sim_dat_dir, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".md")
