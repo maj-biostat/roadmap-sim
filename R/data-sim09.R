@@ -596,7 +596,7 @@ sim09_silo_wgt_current <- function(
   p_d1_given_silo <- setNames(numeric(length(silos)), silos)
   for (s in silos) {
     d_s <- d_cum_dat[silo == s]
-    p_d1_given_silo[s] <- fiflese(
+    p_d1_given_silo[s] <- fifelse(
       nrow(d_s) == 0, NA_real_, mean(d_s$d1 == target_d1))
   }
   
@@ -609,10 +609,22 @@ sim09_silo_wgt_current <- function(
 }
 
 
+# weights for each of the revision regimens that include both the r1 and r2 
+# trt combinations and downstream interventions. 
+# we work up from:
+#  prob of being revision within late silo (estimate)
+#  prob of receiving r1 or r2 (estimate)
+#  prob of entering into randomised trt | r1/r2 (esitmate)
+#  current allocation prob for given domain (known)
 sim09_d1_wgt_current <- function(
     d_cum_dat, 
     l_dom_state
 ) {
+  
+  # d_tmp <- d_l[d1 != "dair", .N, keyby = .(d1, d2, d3)]
+  # d_tmp[, tot := sum(N)]
+  # d_tmp[, pr := N/tot]
+  # d_tmp
   
   # this function assumes a specific ordering for regimes relevant to d1, so 
   # i would rather not rely on l_spec$d1_trt_regs as it might change 
@@ -627,6 +639,7 @@ sim09_d1_wgt_current <- function(
   )
   
   d_l <- d_cum_dat[silo == "l"]
+  # cohort receiving revision within late silo
   d_rev <- d_l[d1 %in% c("r1", "r2")]
   # just creates a vector of NA with names per the cells
   if (nrow(d_rev) == 0) return(setNames(rep(NA_real_, 6), cells))
@@ -642,12 +655,17 @@ sim09_d1_wgt_current <- function(
   d_r2 <- d_l[d1 == "r2"]
   p_enter_d3 <- fifelse(nrow(d_r2) == 0, 0, mean(d_r2$d3 != "nad3") )
   
-  # arm level randomisation within domains 
-  # need to consider generalisation to more than two arms...
-  p_wk12_d2 <- l_dom_state$d2["wk12"] / (l_dom_state$d2["wk12"] + l_dom_state$d2["wk6"])
-  p_wk12_d3 <- l_dom_state$d3["wk12"] / (l_dom_state$d3["wk12"] + l_dom_state$d3["none"])
+  # arm level randomisation within domains based on known allocation probs
+  # todo - need to consider generalisation to more than two arms...
+  p_wk12_d2 <- l_dom_state$d2["wk12"] / (l_dom_state$d2["wk12"] + 
+                                           l_dom_state$d2["wk6"])
+  p_wk12_d3 <- l_dom_state$d3["wk12"] / (l_dom_state$d3["wk12"] + 
+                                           l_dom_state$d3["none"])
   
-  setNames(c(
+  # so within the subset of interest, we have 
+  # w = prob of being r1 or r2 * prob of entering d2 (i.e. pr reveal d2) * pr trt arm
+  
+  wgts <- setNames(c(
     p_r1 * p_enter_d2 * p_wk12_d2,
     p_r1 * p_enter_d2 * (1 - p_wk12_d2),
     p_r1 * (1 - p_enter_d2),
@@ -655,6 +673,7 @@ sim09_d1_wgt_current <- function(
     p_r2 * p_enter_d3 * (1 - p_wk12_d3),
     p_r2 * (1 - p_enter_d3)
   ), cells)
+  wgts
 }
 
 # prototype - bootstap version tbc... not used as of yet.
@@ -902,12 +921,15 @@ sim09_comp_rd <- function(
   
   # d1: revision (mixture over r1/r2 sub-regimens) vs dair, l silo
   # same mixture weights as jnt_d1
+  # pr of b
   w_d1 <- sim09_d1_wgt_current(d_cum_dat, l_dom_state) 
   
   
   # in practice i think this would need to be across the whole covariate mix, site, 
   # prognostics etc.
   
+  # we know the allocation within d4 rand trt but we don't know how many enter
+  # into rand trt, so just estimate all
   d_pop_l <- d_cum_dat[silo == "l", .N, keyby = d4]
   d_pop_l[, w := N / sum(N)]
   
@@ -936,9 +958,11 @@ sim09_comp_rd <- function(
   # wk6 vs wk12, silo composition current-practice so split known
   
   w_silo_r1 <- sim09_silo_wgt_current(d_cum_dat, l_dom_state, "r1")
-  # in expectation we know the allocation to each arm is 1:1
-  p_wk12_d2 <- l_dom_state$d2["wk12"] / (l_dom_state$d2["wk12"] +
-                                           l_dom_state$d2["wk6"])
+  
+  # dumb - not required here.
+  # we know the allocation to each arm is per the current domain status
+  # p_wk12_d2 <- l_dom_state$d2["wk12"] / (l_dom_state$d2["wk12"] +
+  #                                          l_dom_state$d2["wk6"])
   
   # d4 distribution within each silos r1 patients
   d_d4_r1 <- d_cum_dat[d1 == "r1", .N, keyby = .(silo, d4)]
@@ -947,13 +971,21 @@ sim09_comp_rd <- function(
   # all the wk12 contributions along with their weights
   grid_wk12 <- data.table(
     reg = paste0(d_d4_r1$silo, "_r1_wk12_nad3"), d4 = as.character(d_d4_r1$d4),
-    # pr(silo) * pr(d2 = wk12) * pr(d4)
-    w = w_silo_r1[as.character(d_d4_r1$silo)] * p_wk12_d2 * d_d4_r1$w_d4)
+    # second term is same over all silos:
+    
+    # wrong...
+    # pr(silo|r1) * pr(d2 = wk12 | silo) * pr(d4)
+    # w = w_silo_r1[as.character(d_d4_r1$silo)] * p_wk12_d2 * d_d4_r1$w_d4 
+    
+    # pr(silo|r1) * pr(d4|silo) - same standardisation as grid_wk6 below
+    w = w_silo_r1[as.character(d_d4_r1$silo)] * d_d4_r1$w_d4
+    )
   
   grid_wk6  <- data.table(
     reg = paste0(d_d4_r1$silo, "_r1_wk6_nad3"),  d4 = as.character(d_d4_r1$d4),
-    w = w_silo_r1[as.character(d_d4_r1$silo)] * (1 - p_wk12_d2) * d_d4_r1$w_d4)
-  
+    # w = w_silo_r1[as.character(d_d4_r1$silo)] * (1 - p_wk12_d2) * d_d4_r1$w_d4
+    w = w_silo_r1[as.character(d_d4_r1$silo)] * d_d4_r1$w_d4
+    )
   
   p_wk12 <- sim09_std_prob(v_b0, m_reg, m_d4, grid_wk12)
   p_wk6  <- sim09_std_prob(v_b0, m_reg, m_d4, grid_wk6)
@@ -963,17 +995,17 @@ sim09_comp_rd <- function(
   # d3: 
   # wk12 vs none, silo composition current-practice so split known
   w_silo_r2 <- sim09_silo_wgt_current(d_cum_dat, l_dom_state, "r2")
-  p_wk12_d3 <- l_dom_state$d3["wk12"] / (l_dom_state$d3["wk12"] + l_dom_state$d3["none"])
+  # p_wk12_d3 <- l_dom_state$d3["wk12"] / (l_dom_state$d3["wk12"] + l_dom_state$d3["none"])
   
   d_d4_r2 <- d_cum_dat[d1 == "r2", .N, keyby = .(silo, d4)]
   d_d4_r2[, w_d4 := N / sum(N), by = silo]
   
   grid_d3_wk12 <- data.table(
     reg = paste0(d_d4_r2$silo, "_r2_nad2_wk12"), d4 = as.character(d_d4_r2$d4),
-    w = w_silo_r2[as.character(d_d4_r2$silo)] * p_wk12_d3 * d_d4_r2$w_d4)
+    w = w_silo_r2[as.character(d_d4_r2$silo)] * d_d4_r2$w_d4)
   grid_d3_none <- data.table(
     reg = paste0(d_d4_r2$silo, "_r2_nad2_none"), d4 = as.character(d_d4_r2$d4),
-    w = w_silo_r2[as.character(d_d4_r2$silo)] * (1 - p_wk12_d3) * d_d4_r2$w_d4)
+    w = w_silo_r2[as.character(d_d4_r2$silo)] * d_d4_r2$w_d4)
   
   p_d3_wk12 <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d3_wk12)
   p_d3_none <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d3_none)
@@ -1277,6 +1309,7 @@ sim09_stan_data_01 <- function(d_cum_dat, l_spec){
 # Reportin-----
 # run on a given output dir in the data directory to summarise various ocs
 
+# main simulation report ------
 sim09_report_sim_res <- function(){
   
   library(data.table)
@@ -1290,7 +1323,7 @@ sim09_report_sim_res <- function(){
     l_spec$dec[[domain]][[rule]]$thresh
   }
   
-  sim_dat_dir <-  "sim09-09"  
+  sim_dat_dir <-  "sim09-10"  
   
   fname <- paste0(
     sim_dat_dir, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".md")
@@ -1431,16 +1464,19 @@ sim09_report_report_file <- function(
   writeLines("\n", f_out)
   
   
-  writeLines("### Regimen weights (means)", f_out)
+  writeLines("### Regimen weights", f_out)
   writeLines("\n", f_out)
-  writeLines("Weight for the regimen contributions to the treatment contrasts.", f_out)
+  writeLines("Weight (mean, sd in parentheses) for regimen contributions in treatment contrasts.", f_out)
   writeLines("\n", f_out)
   
   # ignore d4 never changes with - usually not worth reporting
-  for (dm in c("d1", "d2", "d3")) {  
+  for (dm in c("d1", "d2", "d3")) {
+    d_tbl <- l_oc$wgt[domain == dm]
+    d_tbl[, out := sprintf("%.3f (%.3f)", mu, sd)]
+    
     d_tbl <- dcast(
-      l_oc$wgt[domain == dm], 
-      side + reg ~ i_anlys, value.var = "mu")
+      d_tbl, 
+      side + reg ~ i_anlys, value.var = "out")
     lvls <- d_tbl$reg
     if(dm == "d1"){
       lvls = l_spec$d1_trt_regs
@@ -1685,42 +1721,6 @@ sim09_extract_wgt <- function(l_w_grid) {
   }))
 }
 
-# summarise across all simulations and interims
-# NA per-simulation entries (domain had no supporting data yet in that
-# particular replicate) are excluded from the cross-simulation mean via
-# na.rm, and counted separately in n_na so that's visible rather than silent.
-sim09_smry_wgt <- function(
-    r, 
-    l_spec
-    ) {
-  
-  # over all sims
-  d_wgt <- rbindlist(lapply(seq_along(r), function(ix) {
-    l_res <- r[[ix]]$l_res
-    # get rid of the slots after the trial has stopped
-    l_res <- l_res[!sapply(l_res, is.null)]
-    # 
-    rbindlist(lapply(seq_along(l_res), function(i) {
-      # pick up the current weights grid (for all domains)
-      z <- l_res[[i]]$l_w_grid
-      if (is.null(z)) return(NULL)
-      # gets us the regimen level weights for each domain and for each analys
-      d <- sim09_extract_wgt(z)
-      d[, i_anlys := i]
-      d
-    }))
-  }), idcol = "i_sim")
-  
-  # average over sims
-  d_smry <- d_wgt[, .(
-    mu    = mean(w, na.rm = TRUE),
-    q_025 = quantile(w, 0.025, na.rm = TRUE),
-    q_975 = quantile(w, 0.975, na.rm = TRUE),
-    n_na  = sum(is.na(w))
-  ), by = .(domain, side, reg, i_anlys)]
-  setorder(d_smry, domain, side, reg, i_anlys)
-  d_smry
-}
 
 
 sim09_true_reg_resp <- function(
@@ -2240,7 +2240,7 @@ sim09_smry_n <- function(r, l_spec) {
   # d_tbl[, out := sprintf("%.1f (%.2f)", mu_n, mu_pr)]
   # dcast(d_tbl, silo + domain + arm ~ interim, value.var = "out")
   list(
-    d_first = d_first,
+    d_out = d_out,
     d_smry = d_smry
   )
   
@@ -2552,6 +2552,44 @@ sim09_smry_dec_info <- function(r, l_spec) {
     # average totals informing each decision
     d_smry = d_summary
   )
+}
+
+
+
+# summarise across all simulations and interims
+# NA per-simulation entries (domain had no supporting data yet in that
+# particular replicate) are excluded from the cross-simulation mean via
+# na.rm, and counted separately in n_na so that's visible rather than silent.
+sim09_smry_wgt <- function(
+    r, 
+    l_spec
+) {
+  
+  # over all sims
+  d_wgt <- rbindlist(lapply(seq_along(r), function(ix) {
+    l_res <- r[[ix]]$l_res
+    # get rid of the slots after the trial has stopped
+    l_res <- l_res[!sapply(l_res, is.null)]
+    # 
+    rbindlist(lapply(seq_along(l_res), function(i) {
+      # pick up the current weights grid (for all domains)
+      z <- l_res[[i]]$l_w_grid
+      if (is.null(z)) return(NULL)
+      # gets us the regimen level weights for each domain and for each analys
+      d <- sim09_extract_wgt(z)
+      d[, i_anlys := i]
+      d
+    }))
+  }), idcol = "i_sim")
+  
+  # average over sims
+  d_smry <- d_wgt[, .(
+    mu    = mean(w, na.rm = TRUE),
+    sd = sd(w, na.rm = TRUE),
+    n_na  = sum(is.na(w))
+  ), by = .(domain, side, reg, i_anlys)]
+  setorder(d_smry, domain, side, reg, i_anlys)
+  d_smry
 }
 
 sim09_first_dec <- function(r) {
