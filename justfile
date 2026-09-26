@@ -10,9 +10,17 @@ sim09 cfg:
 
 runsim09:
   just sim09 ../etc/sim09/cfg-sim09-sc01-v01.yml
-  just sim09 ../etc/sim09/cfg-sim09-sc01-v02.yml
+  #just sim09 ../etc/sim09/cfg-sim09-sc01-v02.yml
   just sim09 ../etc/sim09/cfg-sim09-sc01-v03.yml
-  just sim09 ../etc/sim09/cfg-sim09-sc01-v04.yml
-  just sim09 ../etc/sim09/cfg-sim09-sc01-v05.yml
+  #just sim09 ../etc/sim09/cfg-sim09-sc01-v04.yml
+  #just sim09 ../etc/sim09/cfg-sim09-sc01-v05.yml
   just sim09 ../etc/sim09/cfg-sim09-sc01-v06.yml
+  #just sim09 ../etc/sim09/cfg-sim09-sc01-v07.yml
+  just sim09 ../etc/sim09/cfg-sim09-sc01-v08.yml
+  #just sim09 ../etc/sim09/cfg-sim09-sc01-v09.yml
+  just sim09 ../etc/sim09/cfg-sim09-sc01-v10.yml
+  just sim09 ../etc/sim09/cfg-sim09-sc01-v11.yml
+  #just sim09 ../etc/sim09/cfg-sim09-sc01-v12.yml
+  #just sim09 ../etc/sim09/cfg-sim09-sc01-v13.yml
+  #just sim09 ../etc/sim09/cfg-sim09-sc01-v14.yml
   
