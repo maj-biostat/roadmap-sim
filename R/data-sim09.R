@@ -778,18 +778,18 @@ sim09_compute_lor_std <- function(
   # distribution oover complete regimens and d4
   w_d1_trt <- sim09_reg_wgt(l_spec$d1_trt_regs, d_cum_dat )
   # mirrors the marginal rd approach
-  d_pop_l <- d_cum_dat[ silo == "l", .N, keyby = d4 ]
-  d_pop_l[, w := N / sum(N)]
+  d_dist_d4 <- d_cum_dat[ silo == "l", .N, keyby = d4 ]
+  d_dist_d4[, w := N / sum(N)]
   
   # tbd should probably pull some of this code out into a function that can be 
   # called from compute_rd and this function....
   # DAIR
   grid_d1_dair <- data.table(
-    reg = "l_dair_nad2_nad3", d4 = as.character(d_pop_l$d4), w = d_pop_l$w
+    reg = "l_dair_nad2_nad3", d4 = as.character(d_dist_d4$d4), w = d_dist_d4$w
   )
   # Revision
   grid_d1_rev <- CJ(
-    reg = l_spec$d1_trt_regs, d4 = as.character(d_pop_l$d4)
+    reg = l_spec$d1_trt_regs, d4 = as.character(d_dist_d4$d4)
   )
   
   grid_d1_rev <- base::merge(
@@ -804,8 +804,8 @@ sim09_compute_lor_std <- function(
   grid_d1_rev <- base::merge(
     grid_d1_rev,
     data.table(
-      d4 = as.character(d_pop_l$d4),
-      w_d4 = d_pop_l$w
+      d4 = as.character(d_dist_d4$d4),
+      w_d4 = d_dist_d4$w
     ),
     by = "d4"
   )
@@ -909,6 +909,8 @@ sim09_comp_rd <- function(
     d_cum_dat, l_spec, f_1, l_dom_state
     ) {
   
+  silos <- names(l_spec$p_silo)
+  
   v_b0  <- as.numeric(f_1$draws(variables = "b_0", format = "matrix"))
   
   reg_lvls <- levels(d_cum_dat$reg)
@@ -929,22 +931,24 @@ sim09_comp_rd <- function(
   # prognostics etc.
   
   # we know the allocation within d4 rand trt but we don't know how many enter
-  # into rand trt, so just estimate all
-  d_pop_l <- d_cum_dat[silo == "l", .N, keyby = d4]
-  d_pop_l[, w := N / sum(N)]
+  # into rand trt - estimate based on all data
+  d_dist_d4 <- d_cum_dat[, .N, keyby = d4]
+  d_dist_d4[, w := N / sum(N)]
+  w_dist_d4 <- d_dist_d4$w
+  names(w_dist_d4) <- d_dist_d4$d4
   
   grid_dair <- data.table(
-    reg = "l_dair_nad2_nad3", d4 = as.character(d_pop_l$d4), w = d_pop_l$w)
+    reg = "l_dair_nad2_nad3", d4 = as.character(d_dist_d4$d4), w = d_dist_d4$w)
   
   # contributions across pop
-  grid_rev <- CJ(reg = l_spec$d1_trt_regs, d4 = as.character(d_pop_l$d4))
+  grid_rev <- CJ(reg = l_spec$d1_trt_regs, d4 = as.character(d_dist_d4$d4))
   # weight associated with each regimen
   grid_rev <- base::merge(
     grid_rev, data.table(reg = l_spec$d1_trt_regs, w_treat = w_d1), by = "reg")
   # weights acros d4
   grid_rev <- base::merge(
     grid_rev, data.table(
-      d4 = as.character(d_pop_l$d4), w_covar = d_pop_l$w), by = "d4")
+      d4 = as.character(d_dist_d4$d4), w_covar = d_dist_d4$w), by = "d4")
   # combined weight as product
   grid_rev[, w := w_treat * w_covar]
   grid_rev[, `:=`(w_treat = NULL, w_covar = NULL)]
@@ -965,47 +969,41 @@ sim09_comp_rd <- function(
   #                                          l_dom_state$d2["wk6"])
   
   # d4 distribution within each silos r1 patients
-  d_d4_r1 <- d_cum_dat[d1 == "r1", .N, keyby = .(silo, d4)]
-  d_d4_r1[, w_d4 := N / sum(N), by = silo]   
+  
   
   # all the wk12 contributions along with their weights
-  grid_wk12 <- data.table(
-    reg = paste0(d_d4_r1$silo, "_r1_wk12_nad3"), d4 = as.character(d_d4_r1$d4),
-    # second term is same over all silos:
-    
-    # wrong...
-    # pr(silo|r1) * pr(d2 = wk12 | silo) * pr(d4)
-    # w = w_silo_r1[as.character(d_d4_r1$silo)] * p_wk12_d2 * d_d4_r1$w_d4 
-    
-    # pr(silo|r1) * pr(d4|silo) - same standardisation as grid_wk6 below
-    w = w_silo_r1[as.character(d_d4_r1$silo)] * d_d4_r1$w_d4
-    )
+  grid_d2_wk12 <- CJ(reg = paste0(silos, "_r1_wk12_nad3"), 
+                 d4 = as.character(d_dist_d4$d4))
+  grid_d2_wk12[, silo := tstrsplit(reg, "_", fixed = T, keep = 1)]
+  grid_d2_wk12[, w := w_silo_r1[silo] * w_dist_d4[d4]]
+  grid_d2_wk12[, silo := NULL]
   
-  grid_wk6  <- data.table(
-    reg = paste0(d_d4_r1$silo, "_r1_wk6_nad3"),  d4 = as.character(d_d4_r1$d4),
-    # w = w_silo_r1[as.character(d_d4_r1$silo)] * (1 - p_wk12_d2) * d_d4_r1$w_d4
-    w = w_silo_r1[as.character(d_d4_r1$silo)] * d_d4_r1$w_d4
-    )
+  grid_d2_wk6  <- CJ(reg = paste0(silos, "_r1_wk6_nad3"), 
+                  d4 = as.character(d_dist_d4$d4))
+  grid_d2_wk6[, silo := tstrsplit(reg, "_", fixed = T, keep = 1)]
+  grid_d2_wk6[, w := w_silo_r1[silo] * w_dist_d4[d4]]
+  grid_d2_wk6[, silo := NULL]
   
-  p_wk12 <- sim09_std_prob(v_b0, m_reg, m_d4, grid_wk12)
-  p_wk6  <- sim09_std_prob(v_b0, m_reg, m_d4, grid_wk6)
+  p_wk12 <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d2_wk12)
+  p_wk6  <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d2_wk6)
   rd_d2  <- as.numeric(p_wk6 - p_wk12)
   
   
   # d3: 
   # wk12 vs none, silo composition current-practice so split known
   w_silo_r2 <- sim09_silo_wgt_current(d_cum_dat, l_dom_state, "r2")
-  # p_wk12_d3 <- l_dom_state$d3["wk12"] / (l_dom_state$d3["wk12"] + l_dom_state$d3["none"])
   
-  d_d4_r2 <- d_cum_dat[d1 == "r2", .N, keyby = .(silo, d4)]
-  d_d4_r2[, w_d4 := N / sum(N), by = silo]
+  grid_d3_wk12 <- CJ(reg = paste0(silos, "_r2_nad2_wk12"), 
+                  d4 = as.character(d_dist_d4$d4))
+  grid_d3_wk12[, silo := tstrsplit(reg, "_", fixed = T, keep = 1)]
+  grid_d3_wk12[, w := w_silo_r2[silo] * w_dist_d4[d4]]
+  grid_d3_wk12[, silo := NULL]
   
-  grid_d3_wk12 <- data.table(
-    reg = paste0(d_d4_r2$silo, "_r2_nad2_wk12"), d4 = as.character(d_d4_r2$d4),
-    w = w_silo_r2[as.character(d_d4_r2$silo)] * d_d4_r2$w_d4)
-  grid_d3_none <- data.table(
-    reg = paste0(d_d4_r2$silo, "_r2_nad2_none"), d4 = as.character(d_d4_r2$d4),
-    w = w_silo_r2[as.character(d_d4_r2$silo)] * d_d4_r2$w_d4)
+  grid_d3_none <- CJ(reg = paste0(silos, "_r2_nad2_none"), 
+                     d4 = as.character(d_dist_d4$d4))
+  grid_d3_none[, silo := tstrsplit(reg, "_", fixed = T, keep = 1)]
+  grid_d3_none[, w := w_silo_r2[silo] * w_dist_d4[d4]]
+  grid_d3_none[, silo := NULL]
   
   p_d3_wk12 <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d3_wk12)
   p_d3_none <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d3_none)
@@ -1036,8 +1034,8 @@ sim09_comp_rd <- function(
     rev = grid_rev
   )
   l_grid[["d2"]] <- list(
-    wk12 = grid_wk12,
-    wk6 = grid_wk6
+    wk12 = grid_d2_wk12,
+    wk6 = grid_d2_wk6
   )
   l_grid[["d3"]] <- list(
     wk12 = grid_d3_wk12,
