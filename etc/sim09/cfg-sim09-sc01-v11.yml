@@ -1,5 +1,5 @@
 default:
-  desc: "d3 l-OR = 0.75"
+  desc: "d3 l-OR = 0.564 (approx 12pct)"
   n_sim: 1000
   mc_cores: 50
   mc_warmup: 1000
@@ -44,10 +44,10 @@ default:
     enrd1_r1_nad2_nad3: 0.0
     cnrd1_r1_nad2_nad3: 0.0
     # d3 wk12
-    l_r2_nad2_wk12:     0.75
-    lnrd1_r2_nad2_wk12: 0.75
-    enrd1_r2_nad2_wk12: 0.75
-    cnrd1_r2_nad2_wk12: 0.75
+    l_r2_nad2_wk12:     0.564
+    lnrd1_r2_nad2_wk12: 0.564
+    enrd1_r2_nad2_wk12: 0.564
+    cnrd1_r2_nad2_wk12: 0.564
     # d3 none
     l_r2_nad2_none:     0.0
     lnrd1_r2_nad2_none: 0.0
