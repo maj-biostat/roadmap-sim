@@ -81,8 +81,8 @@ default:
         thresh: 0.95
       # Pr(theta > delta) < thresh => Futility, ie futile wrt ni if the Pr < 0.3 is > 0.05
       fut:  
-        delta: -0.05
-        thresh: 0.6
+        delta: -0.075
+        thresh: 0.5
     d3:
       sup:  
         delta: 0.0

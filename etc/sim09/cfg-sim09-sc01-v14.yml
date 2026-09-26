@@ -69,10 +69,10 @@ default:
     #  Pr(theta > delta) < thresh => Futility, ie futile if the Pr < 0.3 is > 0.05
     d1:
       sup: 
-        delta: 0.0
+        delta:  0.0
         thresh: 0.98
       fut:  
-        delta: 0.0 
+        delta:  0.0 
         thresh: 0.5
     d2:
       # Pr(theta > delta)  > thresh => Non-inferior
@@ -81,21 +81,21 @@ default:
         thresh: 0.95
       # Pr(theta > delta) < thresh => Futility, ie futile wrt ni if the Pr < 0.3 is > 0.05
       fut:  
-        delta: -0.05
-        thresh: 0.6
+        delta: -0.075
+        thresh: 0.5
     d3:
       sup:  
-        delta: 0.0
+        delta:  0.0
         thresh: 0.98
       fut:  
-        delta: 0.00 
+        delta:  0.00 
         thresh: 0.5
     d4:
       sup:  
-        delta: 0.0
+        delta:  0.0
         thresh: 0.99
       fut:  
-        delta: 0.0
+        delta:  0.0
         thresh: 0.5
   
 
