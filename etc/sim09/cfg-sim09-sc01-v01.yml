@@ -1,13 +1,13 @@
 default:
   desc: "All domains log OR zero"
-  n_sim: 10
+  n_sim: 1000
   mc_cores: 50
   mc_warmup: 1000
   mc_samp: 1000
   mc_chain: 1
   # hier or indep1 or indep2
   mc_model: indep2
-  # example indep
+  # example trials
   nex: 3
   n_batch: [500, 500, 500, 500, 500]
   
@@ -18,7 +18,7 @@ default:
   # proportion of each surgery type within non-rand d1
   p_surg_lnrd1: {dair: 0.50, r1: 0.20, r2: 0.30}
   p_surg_enrd1: {dair: 0.70, r1: 0.15, r2: 0.15}
-  p_surg_cnrd1: {dair: 0.20, r1: 0.20, r2: 0.60}
+  p_surg_cnrd1: {dair: 0.20, r1: 0.30, r2: 0.50}
   
   response_p_ref: 0.6
   
@@ -78,8 +78,8 @@ default:
     d2:
       # Pr(theta > delta)  > thresh => Non-inferior
       ni:  
-        delta: -0.05
-        thresh: 0.98
+        delta: -0.075
+        thresh: 0.95
       # Pr(theta > delta) < thresh => Futility, ie futile wrt ni if the Pr < 0.3 is > 0.05
       fut:  
         delta: -0.05

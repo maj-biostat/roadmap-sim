@@ -1,6 +1,6 @@
 default:
-  desc: "d2 l-OR = -0.205"
-  n_sim: 500
+  desc: "d2 l-OR = -0.305 (around 7.5pct)"
+  n_sim: 1000
   mc_cores: 50
   mc_warmup: 1000
   mc_samp: 1000
@@ -18,7 +18,7 @@ default:
   # proportion of each surgery type within non-rand d1
   p_surg_lnrd1: {dair: 0.50, r1: 0.20, r2: 0.30}
   p_surg_enrd1: {dair: 0.70, r1: 0.15, r2: 0.15}
-  p_surg_cnrd1: {dair: 0.20, r1: 0.20, r2: 0.60}
+  p_surg_cnrd1: {dair: 0.20, r1: 0.30, r2: 0.50}
   
   response_p_ref: 0.6
   
@@ -34,10 +34,12 @@ default:
     enrd1_r1_wk12_nad3: 0.0
     cnrd1_r1_wk12_nad3: 0.0
     # d2 wk6
-    l_r1_wk6_nad3:     -0.205
-    lnrd1_r1_wk6_nad3: -0.205
-    enrd1_r1_wk6_nad3: -0.205
-    cnrd1_r1_wk6_nad3: -0.205
+    # to get 0.05 rd use -0.205 (but double check in case any other par changed)
+    # to get 0.05 rd use -0.285 
+    l_r1_wk6_nad3:     -0.305
+    lnrd1_r1_wk6_nad3: -0.305
+    enrd1_r1_wk6_nad3: -0.305
+    cnrd1_r1_wk6_nad3: -0.305
     # r1 non rand trt in duration domains
     l_r1_nad2_nad3: 0.0
     lnrd1_r1_nad2_nad3: 0.0
@@ -77,8 +79,8 @@ default:
     d2:
       # Pr(theta > delta)  > thresh => Non-inferior
       ni:  
-        delta: -0.05
-        thresh: 0.98
+        delta: -0.075
+        thresh: 0.95
       # Pr(theta > delta) < thresh => Futility, ie futile wrt ni if the Pr < 0.3 is > 0.05
       fut:  
         delta: -0.05
