@@ -1321,7 +1321,7 @@ sim09_report_sim_res <- function(){
     l_spec$dec[[domain]][[rule]]$thresh
   }
   
-  sim_dat_dir <-  "sim09-11"  
+  sim_dat_dir <-  "sim09-12"  
   
   fname <- paste0(
     sim_dat_dir, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".md")
@@ -2712,7 +2712,7 @@ sim09_set_domain <- function(state, domain, vec) {
 sim09_domain_state_open <- function() {
   list(
     # 'l' silo only - randomised dair vs revision,
-    d1 = c(dair = 0.50, r1 = 1/6, r2 = 1/3),   
+    d1 = c(dair = 0.50, r1 = 2/10, r2 = 3/10),   
     # revision split r1/r2 (2/3 to r2) is just best guess
     d2 = c(nad2 = 0.3, wk12 = 0.35, wk6 = 0.35),
     d3 = c(nad3 = 0.3, wk12 = 0.35, none  = 0.35),
