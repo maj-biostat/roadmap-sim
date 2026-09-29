@@ -1321,7 +1321,7 @@ sim09_report_sim_res <- function(){
     l_spec$dec[[domain]][[rule]]$thresh
   }
   
-  sim_dat_dir <-  "sim09-12"  
+  sim_dat_dir <-  "sim09-13"  
   
   fname <- paste0(
     sim_dat_dir, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".md")
@@ -3322,7 +3322,7 @@ sim09_ex_scenarios <- function(){
   set.seed(1)
   default_cfg <- F
   if(!default_cfg){
-    f_cfgsc <- file.path("./etc/sim09/cfg-sim09-sc01-v08.yml")
+    f_cfgsc <- file.path("./etc/sim09/cfg-sim09-sc01-v11.yml")
     l_spec <- config::get(file = f_cfgsc)
     l_spec <- sim09_update_cfg(l_spec)
   } else {
@@ -3342,12 +3342,21 @@ sim09_ex_scenarios <- function(){
     l_spec,
     l_dom_state
   )
-  d_risk <- dcast(
+  # all the contrasts will yield the same effect within a silo 
+  # so just looking at one of them
+  d_tbl <- dcast(
     d_risk[reg %in% c("l_r1_wk6_nad3", "l_r1_wk12_nad3")],
     d4 ~ reg, value.var = "p"
   )
-  d_risk[, delta := l_r1_wk6_nad3 - l_r1_wk12_nad3]
-  d_risk[]
+  d_tbl[, delta := l_r1_wk6_nad3 - l_r1_wk12_nad3]
+  d_tbl[]
+  
+  d_tbl <- dcast(
+    d_risk[reg %in% c("l_r2_nad2_none", "l_r2_nad2_wk12")],
+    d4 ~ reg, value.var = "p"
+  )
+  d_tbl[, delta := l_r2_nad2_wk12 - l_r2_nad2_none]
+  d_tbl[]
   
   
   # Scenario - positive effect restricted to d1 ------------
