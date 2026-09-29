@@ -1,5 +1,6 @@
 ---
 title: "ROADMAP: Simulated Trial Behaviour"
+subtitle: "What the platform trial design would likely show, under a range of assumed truths"
 format:
   html:
     toc: true
@@ -34,7 +35,12 @@ library(stringr)
 # accompanying discussion (its bottom guard becomes
 # `if (!interactive() && Sys.getenv("SIM09_SOURCE_ONLY") != "true")`).
 Sys.setenv(SIM09_SOURCE_ONLY = "true")
-source(here::here("R/data-sim09.R"))
+source(here::here("R", "data-sim09.R"))
+
+# helper for filenames derived from scenario descriptions (which may contain
+# spaces/punctuation - fine for markdown link text, not safe in a path that
+# has to survive Pandoc's LaTeX/PDF resource resolution)
+safe_name <- function(x) gsub("[^A-Za-z0-9]+", "_", x)
 
 # --- plain-language labels, reused throughout -------------------------------
 domain_labs <- c(
@@ -46,8 +52,6 @@ domain_labs <- c(
 rule_labs <- c(sup = "Superiority", ni = "Non-inferiority", fut = "Futility")
 
 wrap_lab <- function(x) str_wrap(x, width = 28)
-
-# sim_dir <- "sim09-13"
 ```
 
 # About this report
@@ -193,7 +197,7 @@ for (scn in scenario_names) {
 
   cat("### Chance of reaching each decision\n\n")
   p1 <- plot_decisions(oc)
-  fig1 <- here::here("figs", paste0("dec_", scn, ".png"))
+  fig1 <- file.path("figs", paste0("dec_", safe_name(scn), ".png"))
   dir.create(dirname(fig1), showWarnings = FALSE, recursive = TRUE)
   ggsave(fig1, p1, width = 9, height = 6, dpi = 130)
   cat(sprintf("![](%s)\n\n", fig1))
@@ -204,7 +208,7 @@ for (scn in scenario_names) {
 
   cat("### Recovered vs. true effect\n\n")
   p2 <- plot_effects(oc)
-  fig2 <- here::here("figs", paste0("rd_", scn, ".png"))
+  fig2 <- file.path("figs", paste0("rd_", safe_name(scn), ".png"))
   ggsave(fig2, p2, width = 9, height = 6, dpi = 130)
   cat(sprintf("![](%s)\n\n", fig2))
 
