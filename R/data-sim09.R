@@ -617,7 +617,8 @@ sim09_silo_wgt_current <- function(
 #  current allocation prob for given domain (known)
 sim09_d1_wgt_current <- function(
     d_cum_dat, 
-    l_dom_state
+    l_dom_state,
+    l_spec
 ) {
   
   # d_tmp <- d_l[d1 != "dair", .N, keyby = .(d1, d2, d3)]
@@ -647,19 +648,45 @@ sim09_d1_wgt_current <- function(
   p_r1 <- mean(d_rev$d1 == "r1")
   p_r2 <- 1 - p_r1
   
+  
   # proportion recv rand trt in d2/d3
   d_r1 <- d_l[d1 == "r1"]
   p_enter_d2 <- fifelse(nrow(d_r1) == 0, 0, mean(d_r1$d2 != "nad2") )
-    
+  
   d_r2 <- d_l[d1 == "r2"]
   p_enter_d3 <- fifelse(nrow(d_r2) == 0, 0, mean(d_r2$d3 != "nad3") )
   
-  # arm level randomisation within domains based on known allocation probs
-  # todo - need to consider generalisation to more than two arms...
-  p_wk12_d2 <- l_dom_state$d2["wk12"] / (l_dom_state$d2["wk12"] + 
-                                           l_dom_state$d2["wk6"])
-  p_wk12_d3 <- l_dom_state$d3["wk12"] / (l_dom_state$d3["wk12"] + 
-                                           l_dom_state$d3["none"])
+  
+  
+  if(!l_spec$d1_empirc_wgt){
+    # seemingly induces bias due to correlation between effect and decision
+    
+    # l_dom_state$d2/$d3 are the d2/d3 adaptively allocatd state
+    # which are a function of the decisions made which are driven by the domain
+    # posterior
+    # if we use dom_state to determine the weights we will creatE a correlation 
+    # between how much wgt wk12 gets with how favourable the wk12 estimate is
+    # if d3 is large we will then create a bias in d1
+    
+    # arm level randomisation within domains based on known allocation probs
+    # todo - need to consider generalisation to more than two arms...
+    p_wk12_d2 <- l_dom_state$d2["wk12"] / (l_dom_state$d2["wk12"] + 
+                                             l_dom_state$d2["wk6"])
+    p_wk12_d3 <- l_dom_state$d3["wk12"] / (l_dom_state$d3["wk12"] + 
+                                             l_dom_state$d3["none"])
+  } else {
+    
+    # in contrast to the above, the empirical proportion of actual pts who received
+    # wk12 vs none carries none of the correlation so will blend gradually over
+    # the pre and post lock rather than jumping immediately to the domain state
+    
+    d_r1_entered <- d_r1[d2 != "nad2"]
+    p_wk12_d2 <- fifelse(nrow(d_r1_entered) == 0, 0.5, mean(d_r1_entered$d2 == "wk12"))
+      
+    d_r2_entered <- d_r2[d3 != "nad3"]
+    p_wk12_d3 <- fifelse(nrow(d_r1_entered) == 0, 0.5, mean(d_r2_entered$d3 == "wk12"))
+      
+  }
   
   # so within the subset of interest, we have 
   # w = prob of being r1 or r2 * prob of entering d2 (i.e. pr reveal d2) * pr trt arm
@@ -923,7 +950,7 @@ sim09_comp_rd <- function(
   # d1: revision (mixture over r1/r2 sub-regimens) vs dair, l silo
   # same mixture weights as jnt_d1
   # pr of b
-  w_d1 <- sim09_d1_wgt_current(d_cum_dat, l_dom_state) 
+  w_d1 <- sim09_d1_wgt_current(d_cum_dat, l_dom_state, l_spec) 
   
   
   # in practice i think this would need to be across the whole covariate mix, site, 
@@ -3081,6 +3108,12 @@ sim09_default_cfg <- function(){
   # theta = pr_succsess_rif - pr_succsess_norif
   l_spec$dec$d4$sup <- list(delta = 0, thresh = 0.99)
   l_spec$dec$d4$fut <- list(delta = 0.05, thresh = 0.3)
+  
+  # decides whether we use domain state or the observed distributions 
+  # to construct the d1 effects.
+  # the former will induce bias in d1 due to correlation between decision 
+  # and subsequent progression. see sim09_d1_wgt_current
+  l_spec$d1_empirc_wgt <- TRUE
   
   l_spec
 }

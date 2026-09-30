@@ -65,9 +65,12 @@ default:
   # decision rules, hurdles and threshold probs
   # decisions based on risk differences
   dec:
-    #  Pr(theta > delta)  > thresh => Superiority
     # theta = pr_succsess_rev - pr_succsess_dair
-    #  Pr(theta > delta) < thresh => Futility, ie futile if the Pr < 0.3 is > 0.05
+    # Superiority - e.g. high prob of non zero effect
+    #  Superiority indicated if Pr(theta > delta)  > thresh
+    # Futility - e.g. inadequate prob of being above zero
+    #  Futility indicated if Pr(theta > delta) < thresh 
+    # e.g. futile if the Pr theta > 0.0 is < 0.4
     d1:
       sup: 
         delta: 0.0
@@ -99,6 +102,7 @@ default:
         delta: 0.0
         thresh: 0.5
   
+  d1_empirc_wgt: true
 
   # hyperparams
   pri_b_0: [0, 1]

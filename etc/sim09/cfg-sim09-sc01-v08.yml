@@ -100,6 +100,8 @@ default:
         delta: 0.0
         thresh: 0.5
   
+  d1_empirc_wgt: true
+  
 
   # hyperparams
   pri_b_0: [0, 1]

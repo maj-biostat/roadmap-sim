@@ -1,5 +1,5 @@
 default:
-  desc: "d4 l-OR = 0.25"
+  desc: "d4 l-OR = 0.3"
   n_sim: 1000
   mc_cores: 50
   mc_warmup: 1000
@@ -59,7 +59,7 @@ default:
     enrd1_r2_nad2_nad3: 0.0
     cnrd1_r2_nad2_nad3: 0.0
   
-  d4_effect: {nad4: 0.0, norif: 0, rif: 0.25}
+  d4_effect: {nad4: 0.0, norif: 0, rif: 0.3}
   
   
   # decision rules, hurdles and threshold probs
@@ -97,6 +97,8 @@ default:
       fut:  
         delta: 0.0
         thresh: 0.5
+  
+  d1_empirc_wgt: true
   
 
   # hyperparams
