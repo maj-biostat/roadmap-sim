@@ -9,7 +9,7 @@ format:
     theme: cosmo
     toc: true
     toc-depth: 2
-    code-fold: true
+    code-fold: false # set to true when displaying code in report
     code-summary: "Show underlying code"
     embed-resources: true
     fig-width: 9
@@ -19,6 +19,7 @@ params:
 execute:
   warning: false
   message: false
+  echo: false # set to true if you want code to display in report
 ---
 
 ```{r setup}
@@ -227,16 +228,19 @@ oc_by_scenario <- parallel::mclapply(scenario_files, function(l) {
 scenario_narrative <- function(oc) {
   truth_tbl <- unique(oc$l_effects$d_rd[, .(par, truth)])
   nonzero <- truth_tbl[abs(truth) > 1e-8]
+  
   if (nrow(nonzero) == 0) {
-    return("None of the four questions has a true effect in this scenario - every comparison is exactly null. This checks that the design does not falsely declare an effect when there isn't one.")
+    return("None of the four questions has a true effect in this scenario - every comparison is exactly zero. This checks that the design does not falsely declare an effect when there isn't one.")
   }
+  
   effect_strs <- sprintf(
     "**%s** has a true effect of about %.2f percentage points (risk-difference scale)",
     gsub("\n", " ", domain_labs[nonzero$par]), nonzero$truth * 100
   )
+  
   paste0(
     paste(effect_strs, collapse = "; "),
-    ". Every other question is exactly null in this scenario."
+    ". Any remaining question is set to zero."
   )
 }
 ```
