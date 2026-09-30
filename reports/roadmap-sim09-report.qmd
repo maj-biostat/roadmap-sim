@@ -64,9 +64,9 @@ ROADMAP is an adaptive platform trial in prosthetic joint infection.
 It has four domains and is designed to stop recruiting into a domain when the accumulated evidence is strong enough but continue recruitment into the other domains.
 Loosely, the four questions are:
 
-- **D1 - Surgical strategy:** is revision surgery (removing and replacing the joint) better than DAIR (debridement and implant retention, a less invasive procedure) for patients with a late-acute infection?
+- **D1 - Surgical strategy:** is revision surgery (removing and replacing the joint) better than DAIR (debridement and implant retention) for patients with a late-acute infection?
 - **D2 - Antibiotic duration:** among patients having a one-stage revision (r1), is a shorter (6-week) course of antibiotics as non-inferior to a 12-week course?
-- **D3 - Extended prophylaxis:** among patients having a two-stage revision (r12), does an extra 12 weeks of preventive antibiotics improve outcomes compared with none?
+- **D3 - Extended prophylaxis:** among patients having a two-stage revision (r2), does an extra 12 weeks of preventive antibiotics improve outcomes compared with none?
 - **D4 - Rifampicin:** does adding rifampicin to the antibiotic regimen improve outcomes?
 
 At each interim analysis, the trial looks at the data collected to date for each of these four questions and asks whether the evidence is strong enough to draw a conclusion.
@@ -99,6 +99,7 @@ for(scn in scenario_names){
 }
 ```
 
+The results data are those stored in `r sim_dir`.
 
 # How to read the results
 
@@ -191,6 +192,11 @@ Each of d2, d3 and d4 contains parameters to account for non-randomised treatmen
 Treatment effects for d1 contrast late silo dair versus revision participants.
 However, whereas the response on dair is represented via a single regimen, the revision effects are formed from a mixture of regimens, weighted accordingly (see [Appendix] for regimens and weights).
 Implicitly, what is observed in the surgical domain has a dependency on the downstream treatment strategy because d2 and d3 only ever happen for revision patients.
+
+For d2 and d3, deriving the conditional log-odds contrast using weights is overkill, but it gives the same result as referencing the parameter contrasts directly.
+However, the current design reports standardised marginal effects on both log-odds and risk scales.
+For the log-odds ratio, this involves averaging the probability over the standardisation population then converting to log-odds and taking the difference.
+For the risk difference, this involves just averaging the probability over the standardisation population and then doing the contrast.
 
 ## Decision rules
 
