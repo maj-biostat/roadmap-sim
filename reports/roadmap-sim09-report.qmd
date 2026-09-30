@@ -15,7 +15,7 @@ format:
     fig-width: 9
     fig-height: 6
 params:
-  sim_dir: "sim09-13"
+  sim_dir: "sim09-14"
 execute:
   warning: false
   message: false
@@ -99,7 +99,7 @@ for(scn in scenario_names){
 }
 ```
 
-The results data are those stored in `r sim_dir`.
+The results data are those stored in `r params$sim_dir` and have `r scenario_files[[1]]$l_spec$n_sim` iterations per scenario.
 
 # How to read the results
 
