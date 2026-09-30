@@ -73,7 +73,6 @@ If so, the simulation stops randomising patients to that question and adopts the
 Futility stopping is also implemented where stopping occurs due to weak levels of support for addressing the questions of interest.
 
 This report  describes the revised simulations results where the simulations are of hypothetical runs of the trial design under a range of assumed "true" states of the world.
-This lets us see how the design behaves. 
 
 Each scenario below assumes a different combination of true effects across the four domains.
 Most commonly, one domain is set up to have a real effect and the rest are set at zero, so the design's ability to correctly identify a real effect (and correctly recognise a null one elsewhere) can be checked domain by domain.
@@ -104,15 +103,15 @@ for(scn in scenario_names){
 
 For each scenario, we are reporting three things:
 
-1. **Chance of reaching each decision, by interim** - across many simulated repeats of the trial, what proportion would have concluded superiority / non-inferiority / futility for each domain, by each interim analysis. A well-behaved design shows this probability climbing quickly toward 1 for whichever decision matches the assumed truth, and staying low for the wrong one.
-2. **Typical patient numbers** - how many patients are typically enrolled, and how many actually inform each domain's own comparison, by the time a decision is reached.
-3. **Recovered vs. true effect** - whether the trial's own estimate of each effect (averaged across simulated repeats) tracks the assumed true value, and how wide a single trial's own uncertainty would typically be.
+1. **Chance of reaching each decision, by interim** - across many simulated trials, what proportion concluded superiority / non-inferiority / futility for each domain, by each interim analysis.
+2. **Typical patient numbers** - how many patients are typically enrolled, and how many directly inform each domain's own comparison, by the time a decision is reached.
+3. **Recovered vs. true effect** - whether the trial's own estimate of each effect (averaged across simulated repeats) tracks the assumed true value.
 
 A full set of the underlying numerical tables (bias, root-mean-square error, coverage, and regimen-level weights) is in the [Appendix].
 
 # Simulation configuration
 
-The two tables below describe parts of the design that are **the same across every scenario** in this report - only the assumed true effects (covered scenario by scenario, below) differ. They're included once here rather than repeated in each scenario section.
+The two tables below describe parts of the design that are the same across every scenario in this report - only the assumed true effects (covered scenario by scenario, below) differ.
 
 ```{r config-tables}
 # these are assumed common to every scenario file - check that, and warn
@@ -173,8 +172,6 @@ table_decision_rules <- function(l_spec) {
 }
 ```
 
-## Where patients come from, and their surgical strategy (D1)
-
 Only the late-acute silo that enters into randomised treatment for DAIR versus revision. 
 The other three groups (late-acute patients outside the randomisation window, early infections, and chronic infections) receive whichever surgical strategy their clinician deems appropriate.
 
@@ -185,9 +182,20 @@ table_silo_d1(l_spec1, l_dom_state1) |>
   tab_options(table.font.size = 13)
 ```
 
+## Analysis model
+
+The analysis model includes an intercept, a 4x3 matrix of parameters to address silo and d1 effect and vector terms for d2, d3 and d4.
+Each of d2, d3 and d4 contains parameters to account for non-randomised treatment/non-reveal along with assignment to the possible randomised treatment strategies.
+
+Treatment effects for d1 contrast late silo dair versus revision participants.
+However, whereas the response on dair is represented via a single regimen, the revision effects are formed from a mixture of regimens, weighted accordingly (see [Appendix] for regimens and weights).
+Implicitly, what is observed in the surgical domain has a dependency on the downstream treatment strategy because d2 and d3 only ever happen for revision patients.
+
 ## Decision rules
 
 For each domain, a decision is reached once the trial is sufficiently confident that the true effect exceeds (or, for futility, falls short of) a pre-specified margin.
+The decision rules are mutual exclusive to prevent conclusions being simultaneously superior (or ni) and futile.
+This is not the case for the asymmetric rules, although the chance of it happening even in the asymmetric setup is small.
 
 ```{r table-decision-rules}
 table_decision_rules(l_spec1) |>
@@ -214,9 +222,8 @@ oc_by_scenario <- parallel::mclapply(scenario_files, function(l) {
 ```
 
 ```{r narrative-helper}
-# builds a one-line, plain-language statement of the scenario's assumed
-# truth directly from the standardised risk-difference truths, rather than
-# hand-authoring text per scenario (robust to new scenarios being added)
+# statement of the scenario's assumed
+# truth directly from the standardised risk-difference truths
 scenario_narrative <- function(oc) {
   truth_tbl <- unique(oc$l_effects$d_rd[, .(par, truth)])
   nonzero <- truth_tbl[abs(truth) > 1e-8]
@@ -224,7 +231,7 @@ scenario_narrative <- function(oc) {
     return("None of the four questions has a true effect in this scenario - every comparison is exactly null. This checks that the design does not falsely declare an effect when there isn't one.")
   }
   effect_strs <- sprintf(
-    "**%s** has a true effect of about %.0f percentage points (on the risk-difference scale)",
+    "**%s** has a true effect of about %.2f percentage points (risk-difference scale)",
     gsub("\n", " ", domain_labs[nonzero$par]), nonzero$truth * 100
   )
   paste0(
@@ -237,36 +244,48 @@ scenario_narrative <- function(oc) {
 ```{r plot-decisions-fn}
 plot_decisions <- function(oc) {
   d <- copy(oc$dec_pr)
-  d[, domain_lab := factor(wrap_lab(domain_labs[domain]), levels = wrap_lab(domain_labs))]
+  d[, domain_lab := factor(
+    wrap_lab(domain_labs[domain]), 
+    levels = wrap_lab(domain_labs))]
   d[, rule_lab := rule_labs[rule]]
   ggplot(d, aes(x = i_anlys, y = mu, colour = rule_lab)) +
     geom_line(aes(lty = rule_lab), linewidth = 0.5) +
     geom_point(size = 1) +
     facet_wrap(~ domain_lab, ncol = 2) +
-    scale_y_continuous(labels = percent, limits = c(0, 1), breaks = seq(0, 1, by = 0.1)) +
+    scale_y_continuous(
+      labels = percent, limits = c(0, 1), 
+      breaks = seq(0, 1, by = 0.1)) +
     scale_x_continuous(breaks = unique(d$i_anlys)) +
     labs(x = "Interim analysis", 
          y = "Cumulative chance of this decision",
          colour = "Decision",
          lty = "Decision") +
     theme_minimal(base_size = 12) +
-    theme(legend.position = "bottom", strip.text = element_text(face = "bold"))
+    theme(legend.position = "bottom", 
+          strip.text = element_text(face = "bold"))
 }
 ```
 
 ```{r plot-effects-fn}
 plot_effects <- function(oc) {
   d <- copy(oc$l_effects$d_rd)
-  d[, domain_lab := factor(wrap_lab(domain_labs[par]), levels = wrap_lab(domain_labs))]
+  d[, domain_lab := factor(
+    wrap_lab(domain_labs[par]), levels = wrap_lab(domain_labs))]
+  
   ggplot(d, aes(x = i_anlys)) +
-    geom_ribbon(aes(ymin = mean_est - sd_est, ymax = mean_est + sd_est), alpha = 0.15) +
+    geom_ribbon(aes(ymin = mean_est - sd_est, 
+                    ymax = mean_est + sd_est), alpha = 0.15) +
     geom_line(aes(y = mean_est), linewidth = 0.5) +
     geom_point(aes(y = mean_est), size = 1) +
-    geom_hline(aes(yintercept = truth), linetype = "dashed", colour = "firebrick") +
+    geom_hline(
+      aes(yintercept = truth), 
+      linetype = "dashed", colour = "firebrick") +
     facet_wrap(~ domain_lab, ncol = 2, scales = "free_y") +
     scale_x_continuous(breaks = unique(d$i_anlys)) +
-    labs(x = "Interim analysis", y = "Estimated risk difference",
-         caption = "Dashed red line = assumed true value. Shaded band = typical width of a single trial's own uncertainty interval (not the spread across repeats).") +
+    labs(
+      x = "Interim analysis", 
+      y = "Estimated risk difference",
+      caption = "Dashed red line = assumed true value. Shaded band = typical width of a single trial's own uncertainty interval (not the spread across repeats).") +
     theme_minimal(base_size = 12) +
     theme(strip.text = element_text(face = "bold"))
 }
@@ -286,7 +305,9 @@ table_sample_size <- function(oc) {
     `Typical no. informing this decision` = round(mu_n_info)
   )] |>
     gt() |>
-    tab_header(title = "Patients enrolled by the time a decision is reached") |>
+    tab_header(
+      title = 
+        "Patients enrolled by the time a decision is reached") |>
     tab_options(table.font.size = 13)
 }
 ```
@@ -307,10 +328,6 @@ for (scn in scenario_names) {
 
   cat("### Chance of reaching each decision\n\n")
   print(plot_decisions(oc))
-  # fig1 <- file.path("figs", paste0("dec_", safe_name(scn), ".png"))
-  # dir.create(dirname(fig1), showWarnings = FALSE, recursive = TRUE)
-  # ggsave(fig1, p1, width = 9, height = 6, dpi = 130)
-  # cat(sprintf("![](%s)\n\n", fig1))
   cat("\n\n")
   
   cat("### Typical patient numbers\n\n")
@@ -319,8 +336,6 @@ for (scn in scenario_names) {
 
   cat("### Recovered vs. true effect\n\n")
   print(plot_effects(oc))
-  # fig2 <- file.path("figs", paste0("rd_", safe_name(scn), ".png"))
-  # ggsave(fig2, p2, width = 9, height = 6, dpi = 130)
   cat("\n\n")
 
   cat("\n\n")
@@ -329,7 +344,11 @@ for (scn in scenario_names) {
 
 # Appendix
 
-Full statistical detail for readers wanting the underlying numbers behind the plots above: bias, root-mean-square error (RMSE), and coverage of the 95% credible interval, on both the log-odds and risk-difference scales, plus the regimen-level weights that go into each domain's contrast. "Coverage" here is the proportion of simulated trials whose own credible interval contained the assumed true value - it should sit close to 95% if the model's uncertainty is well calibrated.
+Further detail for readers wanting the numbers behind the plots above: bias, root-mean-square error (RMSE), and coverage of the 95% credible interval, on both the log-odds and risk-difference scales.
+
+Regimen-level weights that are used to build each domain's contrast are provided.
+
+Coverage is the proportion of trials whose own credible interval contained the assumed true value.
 
 ```{r appendix, results='asis'}
 for (scn in scenario_names) {
@@ -339,19 +358,26 @@ for (scn in scenario_names) {
   cat("\n\n## ", scn, "\n\n")
 
   cat("### Standardised marginal log-odds ratio\n\n")
-  print(gt(oc$l_effects$d_lor_std) |> fmt_number(columns = -c(par, i_anlys), decimals = 3))
+  print(
+    gt(oc$l_effects$d_lor_std) |> 
+      fmt_number(columns = -c(par, i_anlys), decimals = 3))
   cat("\n\n")
 
   cat("### Standardised marginal risk difference\n\n")
-  print(gt(oc$l_effects$d_rd) |> fmt_number(columns = -c(par, i_anlys), decimals = 3))
+  print(
+    gt(oc$l_effects$d_rd) |> 
+      fmt_number(columns = -c(par, i_anlys), decimals = 3))
   cat("\n\n")
 
   cat("### Regimen weights by interim (mean, sd)\n\n")
   for (dm in c("d1", "d2", "d3")) {
     d_tbl <- oc$wgt[domain == dm]
     d_tbl[, out := sprintf("%.3f (%.3f)", mu, sd)]
-    d_tbl_wide <- dcast(d_tbl, side + reg ~ i_anlys, value.var = "out")
-    print(gt(d_tbl_wide) |> tab_header(title = paste(dm, "regimen weights")))
+    d_tbl_wide <- dcast(
+      d_tbl, side + reg ~ i_anlys, value.var = "out")
+    print(
+      gt(d_tbl_wide) |> 
+        tab_header(title = paste(dm, "regimen weights")))
     cat("\n\n")
   }
 }

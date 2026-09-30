@@ -261,7 +261,7 @@ sim09_run_trial <- function(
   log_info("sim09_run_trial: starting trial ", l_spec$ix_sim)
   # accrued data
   d_cum_dat   <- data.table()
-  
+  d_cum_dec <- data.table()
   # probably not necessary, we can put everything in single result obj
   # l_state_log <- vector("list", length(l_spec$n_batch))
   
@@ -315,6 +315,9 @@ sim09_run_trial <- function(
     
     # break once done
     d_dec <- sim09_extract_dec_indicators(l_res[[i]]$l_dec_new)
+    d_dec[, `:=`(i_anlys = i)]
+    d_cum_dec <- rbind(d_cum_dec, d_dec)
+    
     d_resolved <- d_dec[, .(resolved = any(dec)), by = domain]
     if (sum(d_resolved$resolved) == nrow(d_resolved)) {
       log_info("sim09_run_trial: All domains resolved")
@@ -328,6 +331,7 @@ sim09_run_trial <- function(
   
   list(
     data = d_cum_dat,
+    dec = d_cum_dec,
     # includes the domain state entering and after each analysis
     l_res = l_res
     )
@@ -348,7 +352,6 @@ sim09_decision_fn_01 <- function(
     fn_data = sim09_stan_data_01,
     fn_stanfit = sim09_stan_fit_01
 ){
-  
   
   l_fit <- fn_stanfit(
     d_cum_dat, fn_data, l_spec, l_dom_state
@@ -376,11 +379,9 @@ sim09_decision_fn_01 <- function(
       d_rd_smry = l_fit$d_rd_smry
     ),
     
-    l_w_grid = l_fit$l_w_grid,
+    d_w_grid = l_fit$d_w_grid,
     # decision based on rules for each domain
     l_dec_new = l_dec_new,
-    
-    
     
     retn_post = l_spec$return_posterior
   )
@@ -390,8 +391,6 @@ sim09_decision_fn_01 <- function(
     l_res[["d_lor_std"]] <- l_fit$d_lor_std
     l_res[["d_rd"]] <- l_fit$d_rd
   }
-  
-  
   
   # return results which may include full posterior if configured to do so
   l_res 
@@ -1029,26 +1028,40 @@ sim09_comp_rd <- function(
     d4 = rd_d4
   )
   
-  l_grid <- list()
-  l_grid[["d1"]] <- list(
-    rev = grid_rev
-  )
-  l_grid[["d2"]] <- list(
-    wk12 = grid_d2_wk12,
-    wk6 = grid_d2_wk6
-  )
-  l_grid[["d3"]] <- list(
-    wk12 = grid_d3_wk12,
-    none = grid_d3_none
-  )
-  l_grid[["d4"]] <- list(
-    rif = grid_rif,
-    norif = grid_norif
+  d_grid <- rbind(
+    data.table(
+      domain = "d1", side = "rev", 
+      reg = grid_rev$reg, d4 = grid_rev$d4, w = grid_rev$w
+    ),
+    data.table(
+      domain = "d2", side = "wk12", 
+      reg = grid_d2_wk12$reg, d4 = grid_d2_wk12$d4, w = grid_d2_wk12$w
+    ),
+    data.table(
+      domain = "d2", side = "wk6", 
+      reg = grid_d2_wk6$reg, d4 = grid_d2_wk6$d4, w = grid_d2_wk6$w
+    ),
+    data.table(
+      domain = "d3", side = "wk12", 
+      reg = grid_d3_wk12$reg, d4 = grid_d3_wk12$d4, w = grid_d3_wk12$w
+    ),
+    data.table(
+      domain = "d3", side = "none", 
+      reg = grid_d3_none$reg, d4 = grid_d3_none$d4, w = grid_d3_none$w
+    ),
+    data.table(
+      domain = "d4", side = "rif", 
+      reg = grid_rif$reg, d4 = grid_rif$d4, w = grid_rif$w
+    ),
+    data.table(
+      domain = "d4", side = "norif", 
+      reg = grid_norif$reg, d4 = grid_norif$d4, w = grid_norif$w
+    )
   )
   
   list(
     d_rd = d_rd,
-    l_grid = l_grid
+    d_grid = d_grid
   )
   
     
@@ -1122,7 +1135,7 @@ sim09_stan_fit_01 <- function(
     d_lor = d_lor,
     d_lor_std = d_lor_std, 
     d_rd = l_rd$d_rd,
-    l_w_grid = l_rd$l_grid
+    d_w_grid = l_rd$d_grid
   )
   
 }
@@ -1464,7 +1477,9 @@ sim09_report_report_file <- function(
   
   writeLines("### Regimen weights", f_out)
   writeLines("\n", f_out)
-  writeLines("Weight (mean, sd in parentheses) for regimen contributions in treatment contrasts.", f_out)
+  writeLines(
+    "Weight (mean, sd in parentheses) for regimen contributions in treatment contrasts.", 
+    f_out)
   writeLines("\n", f_out)
   
   # ignore d4 never changes with - usually not worth reporting
@@ -1699,24 +1714,26 @@ sim09_report_trial <- function(
 
 
 
-
 # extract l_w_grid from interim into long format (domain, side, reg, w)
 # collapses the d4 dimension by summing (since sum over d4 within a fixed
 # reg recovers exactly the regimen-level weight the domain contrast used -
 # see derivation in the accompanying discussion)
 sim09_extract_wgt <- function(l_w_grid) {
-  
-  # for each domain
+
   rbindlist(lapply(names(l_w_grid), function(dm) {
-    # treatment groups
     sides <- l_w_grid[[dm]]
-    # each regimen will be split int nad4, norif, rif so sum these up
     rbindlist(lapply(names(sides), function(sd) {
       g <- sides[[sd]]
-      # sum up contributions over each regimen by choice
-      g[, .(w = sum(w)), by = reg][, `:=`(domain = dm, side = sd)]
-    }))
-  }))
+      # Sum contributions within each regimen
+      d <- g[, .(w = sum(w)), by = reg]
+      d[, `:=`(domain = dm, side   = sd)]
+      d
+      }),
+      use.names = TRUE
+      )
+    }),
+    use.names = TRUE
+  )
 }
 
 
@@ -2461,8 +2478,64 @@ sim09_smry_effects <- function(
 
 sim09_smry_dec_info <- function(r, l_spec) {
   
+  d_first <- rbindlist(lapply(seq_along(r), function(i_sim) {
+    
+    d_dm <- r[[i_sim]]$dec
+    if (nrow(d_dm) == 0) return(NULL)
+    d_dm
+    
+  }), idcol = "i_sim")
+  d_first <- d_first[dec == T, .(i_sim, i_anlys, domain, rule, dec)]
+  setorder(d_first, i_sim, i_anlys, domain, rule)
+  
+  setorder(d_first, i_sim, i_anlys, domain, rule)
+  d_first[, first_dec := seq_len(.N), by = .(i_sim, domain)]
   # first decision by simulation
-  d_first <- sim09_first_dec(r)
+  d_first <- d_first[first_dec == 1, .(i_sim, domain, i_anlys, rule)]
+  
+  # d_first <- rbindlist(lapply(seq_along(r), function(i_sim) {
+  #   rbindlist(lapply(
+  #     seq_along(r[[i_sim]]$l_res), function(i_anlys) {
+  # 
+  #       if (is.null(r[[i_sim]]$l_res)) return(NULL)
+  # 
+  #       z <- r[[i_sim]]$l_res[[i_anlys]]
+  #       if (is.null(z)) return(NULL)
+  # 
+  #       dec <- z$l_dec_new
+  # 
+  #       d_dm <- rbind(
+  #         data.table(
+  #           domain = "d1",
+  #           rule = names(dec$d1)[!(names(dec$d1) %like% "prob")]
+  #         )[, dec := unlist(dec$d1[rule])],
+  #         data.table(
+  #           domain = "d2",
+  #           rule = names(dec$d2)[!(names(dec$d2) %like% "prob")]
+  #         )[, dec := unlist(dec$d2[rule])],
+  #         data.table(
+  #           domain = "d3",
+  #           rule = names(dec$d3)[!(names(dec$d3) %like% "prob")]
+  #         )[, dec := unlist(dec$d3[rule])],
+  #         data.table(
+  #           domain = "d4",
+  #           rule = names(dec$d4)[!(names(dec$d4) %like% "prob")]
+  #         )[, dec := unlist(dec$d4[rule])]
+  #       )
+  # 
+  #       d_dm <- d_dm[dec == TRUE]
+  # 
+  #       if (nrow(d_dm) == 0) return(NULL)
+  # 
+  #       d_dm
+  #     }), idcol = "i_anlys")
+  # 
+  # }), idcol = "i_sim")
+  # 
+  # setorder(d_first, i_sim, i_anlys, domain, rule)
+  # d_first[, first_dec := seq_len(.N), by = .(i_sim, domain)]
+  # # first decision by simulation
+  # d_first <- d_first[first_dec == 1, .(i_sim, domain, i_anlys, rule)]
   
   if (nrow(d_first) == 0) {
     return(list(
@@ -2550,6 +2623,7 @@ sim09_smry_dec_info <- function(r, l_spec) {
     # average totals informing each decision
     d_smry = d_summary
   )
+  
 }
 
 
@@ -2563,22 +2637,23 @@ sim09_smry_wgt <- function(
     l_spec
 ) {
   
-  # over all sims
-  d_wgt <- rbindlist(lapply(seq_along(r), function(ix) {
-    l_res <- r[[ix]]$l_res
-    # get rid of the slots after the trial has stopped
-    l_res <- l_res[!sapply(l_res, is.null)]
-    # 
-    rbindlist(lapply(seq_along(l_res), function(i) {
-      # pick up the current weights grid (for all domains)
-      z <- l_res[[i]]$l_w_grid
-      if (is.null(z)) return(NULL)
-      # gets us the regimen level weights for each domain and for each analys
-      d <- sim09_extract_wgt(z)
-      d[, i_anlys := i]
-      d
-    }))
+  
+  d_wgt <- rbindlist(lapply(seq_along(r), function(i_sim){
+    
+    rbindlist(lapply(r[[i_sim]]$l_res, function(res){
+      
+      if (is.null(res)) return(NULL)
+      if (is.null(res$d_w_grid)) return(NULL)
+      
+      res$d_w_grid
+      
+    }), 
+    idcol = "i_anlys")
+    
   }), idcol = "i_sim")
+  
+  d_wgt <- d_wgt[, .(w = sum(w)), keyby = .(
+    i_sim, domain, i_anlys, side, reg)]
   
   # average over sims
   d_smry <- d_wgt[, .(
@@ -3854,10 +3929,9 @@ sim09_main <- function(){
   eval(parse(text=funcname))
 }
 
-if(!interactive()){
+if(!interactive() && Sys.getenv("SIM09_SOURCE_ONLY") != "true"){
   sim09_main()
 }
-
 
 
 
