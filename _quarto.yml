@@ -3,6 +3,7 @@ project:
   execute-dir: project
   render: 
     - "*.qmd"
+    - "!reports/roadmap-sim09-report.qmd"
     - "!notebooks/population-assumptions.qmd"
     - "!notebooks/model-spec.qmd"
     - "!notebooks/decision-rules.qmd"
