@@ -12,7 +12,7 @@ args = commandArgs(trailingOnly=TRUE)
 if (length(args)<1) {
   log_info("Setting default run method (does nothing)")
   args[1] = "run_none_sim_07"
-  args[2] = "./sim07/cfg-sim07-sc01-v05.yml"
+  args[2] = "./sim07/cfg-sim07-sc01-v12.yml"
 } else {
   log_info("Run method ", args[1])
   log_info("Scenario config ", args[2])
@@ -499,6 +499,8 @@ run_trial <- function(
 
 sim_07_par_sim <- function(){
   
+  # Rscript --vanilla ./R/sim-07.R sim_07_par_sim ./sim07/cfg-sim07-sc01-v12.yml
+  
   if(unname(Sys.info()[1]) == "Darwin"){
     log_info("On mac, reset cores to 5")
     mc_cores <- 5
@@ -600,8 +602,8 @@ sim_07_par_sim <- function(){
   log_info("b_d3: ", paste0(l_spec$bd3, collapse = ", "));
   log_info("b_d4: ", paste0(l_spec$bd4, collapse = ", "));
   
-  N_sim <- 5000
-  message("Start sim with ", N_sim, " iterations")
+  N_sim <- 100
+  message("Start sim with ", N_sim, " iterations using the following sim params")
   message(" l_e$bd1: ", paste0(l_spec$l_e$bd1, collapse = ", "))
   message(" l_l$bd1: ", paste0(l_spec$l_l$bd1, collapse = ", "))
   message(" l_c$bd1: ", paste0(l_spec$l_c$bd1, collapse = ", "))
@@ -683,6 +685,7 @@ sim_07_par_sim <- function(){
   })
   d_fig <- data.table(do.call(rbind, r))
   
+  message("Expectations for posterior means for estimated parameters:")
   d_fig <- melt(d_fig, measure.vars = names(d_fig))
   d_out <- d_fig[, .(mu = mean(value)), keyby = variable]
   for(i in 1:nrow(d_out)){
