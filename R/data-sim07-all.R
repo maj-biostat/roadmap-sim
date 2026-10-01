@@ -864,7 +864,7 @@ get_sim07_trial_data <- function(
     dec_ni = list(ab_dur = NA ),
     dec_sup_fut = list(surg = NA, ext_proph = NA, ab_choice = NA),
     dec_ni_fut = list(ab_dur = NA)
-    ){
+){
   
   if(is.null(l_spec$ia)){
     ia <- 1
@@ -950,7 +950,7 @@ get_sim07_trial_data <- function(
   } else if (!is.na(dec_sup$surg)) {
     # Revision has been deemed superior - allocation is now either one-stage or
     # two-stage dependent on preference but only for the late silo
-  
+    
     # early and chronic as they were
     d[s != 2 & d1_alloc == 0, d1 := 1]
     d[s != 2 & d1_alloc == 1 & pref == 1, d1 := 2]
@@ -1044,7 +1044,7 @@ get_sim07_trial_data <- function(
   # index for d1 is a function of 
   # d1 (3 levels - dair, rev(1), rev(2)) and silo membership (1:3)
   d[, d1_ix := d1 + (3 * (s - 1))]
-
+  
   # bd1 is irrelevant since d1 == 1 is the ref group, fixed at zero
   d[d1 == 1, eta := l_spec$mu + l_spec$bs[s] + l_spec$bp[pref] + bd1[d1_ix] + l_spec$bd4[d4]]
   # pref is irrelevant as d1 = 2 only occurs if pref = 0
@@ -1237,13 +1237,13 @@ get_sim07_trial_data_subgrp <- function(
   
   # duration of symptom at entry (3 category)
   d[, d1_sg_2 := sample(1:3, size = .N, replace = T, prob = c(0.25, 0.5, 0.25))]
-
+  
   # one of causative org is s aureus Pr(s aureus) = 0.3
   d[, d1_sg_3 := sample(1:2, size = .N, replace = T, prob = c(0.7, 0.3))]
-
+  
   # crp at entry > 100 Pr(crp > 100) = 0.2
   d[, d1_sg_4 := sample(1:2, size = .N, replace = T, prob = c(0.8, 0.2))]
-
+  
   
   # d2 -------
   # silo (already present in model)
@@ -1414,7 +1414,7 @@ get_sim07_stan_data_subgrp <- function(d_all){
 
 
 get_sim07_enrol_time_int <- function(N = 2500, lambda = 1.52,
-                           rho = function(t) pmin(t/360, 1)){
+                                     rho = function(t) pmin(t/360, 1)){
   
   c(0, poisson::nhpp.event.times(lambda, N - 1, rho))
 }
@@ -1426,7 +1426,7 @@ get_sim07_enrol_time_int <- function(N = 2500, lambda = 1.52,
 
 # Util --------
 # main simulation report ------
-sim07_report_sim_res <- function(){
+sim09_report_sim_res <- function(){
   
   library(data.table)
   library(qs2)
@@ -1453,97 +1453,19 @@ sim07_report_sim_res <- function(){
     message("##### ", f)
     l <- qs2::qs_read(here::here("data", sim_dat_dir, f))
     
+    r = l$r
     l_spec = l$l_spec
-    # 
-    # d_pr_sup = l$d_pr_sup
-    # d_pr_ni = l$d_pr_ni
-    # 
-    # d_pr_sup_fut = l$d_pr_sup_fut
-    # d_pr_ni_fut = l$d_pr_ni_fut
-    # 
-    # d_decision = l$d_decision
-    # d_post_smry_1 = l$d_post_smry_1
-    # d_post_smry_2 = l$d_post_smry_2
-    # 
-    # d_all = l$d_all
-    # 
-    # d_post_all = l$d_post_all
-    
+    l_dom_state0 <- l$l_dom_state0
     
     writeLines(paste0("# Source data: ", f, " (", sim_dat_dir, ")"), f_out)
     
-    sim07_report_report_file(l, l_spec, f_out)
+    sim09_report_report_file(r, l_spec, l_dom_state0, f_out)
     
     message("End of results for file", f)
   }
   
   message("Close file")
   close(f_out)
-  
-}
-
-sim07_report_report_file <- function(
-    l,
-    l_spec,
-    f_out
-){
-  
-  d_pr <- sim07_decision_prob(l$d_decision)
-  
-  writeLines("### Decision probabilities", f_out)
-  writeLines("\n", f_out)
-  
-  writeLines("Cumulative probability of each decision: ", f_out)
-  writeLines("\n", f_out)
-  tbl <- kableExtra::kbl(
-    dcast(d_pr, domain + quant ~ ia, value.var = "pr_val"),
-    digits = 3, format = "simple", 
-    caption = paste(
-      "Scenario ",
-      l_spec$desc, " - Probability of decision")
-  )
-  writeLines(tbl, f_out)
-  writeLines("\n", f_out)
-}
-
-sim07_decision_prob <- function(
-    d_decision
-    ){
-  
-  # long version of decisions
-  d_dec_1 <- melt(d_decision, 
-                  id.vars = c("sim", "ia", "quant"), 
-                  variable.name = "domain")
-  
-  # Should be right, but just in case...
-  if(any(is.na(d_dec_1$value))){
-    message("Some of the decision values are NA in index ", i, " file ", flist[i])
-    d_dec_1[is.na(value), value := FALSE]
-  }
-  d_dec_1[, domain := as.numeric(gsub("d", "", domain))]
-    
-  # Domains 1, 3 and 4 will stop for superiority or futility for superiority.
-  # Domaain 2 will stop for NI or futility for NI.
-  # No other stopping rules apply and so we only evaluate the operating 
-  # characteristics on these, i.e. we do not care about the results for the 
-  # cumualative probability of ni for domain 1, 3 and 4 because we would never
-  # stop for this. 
-  d_dec_1 <- rbind(
-    d_dec_1[domain %in% c(1, 3, 4) & quant %in% c("sup", "fut_sup")],
-    d_dec_1[domain %in% c(2) & quant %in% c("ni", "fut_ni")]
-    )
-    
-    
-  # compute the cumulative instances of a decision being made by sim, each 
-  # decision type and by parameter
-  d_dec_1[, value := as.logical(cumsum(value)>0), keyby = .(sim, quant, domain)]
-     
-  # cumulative proportion for which each decision quantity has been met by 
-  # analysis and domain
-  d_dec_cprob <- d_dec_1[, .(pr_val = mean(value)), keyby = .(ia, quant, domain)]
-  
-  d_dec_cprob
-  
   
 }
 
@@ -1560,13 +1482,11 @@ sim07_update_cfg <- function(l_spec){
   
   l_spec$N <- l_spec$N_pt
   # These calls are just to maintain backward compatibility 
-  l_spec$N_pt <- NULL
   log_info("Silo allocation is fixed")
   l_spec$p_s_alloc <- c(0.3, 0.5, 0.2)
-
+  
   l_spec$mu <- l_spec$bmu
   # drop this from list only retained for backward compat
-  l_spec$bmu <- NULL
   
   l_spec$bs <- unlist(l_spec$bs)
   l_spec$bp <- unlist(l_spec$bp)
@@ -1580,9 +1500,7 @@ sim07_update_cfg <- function(l_spec){
   l_spec$l_l$bd1 <- unlist(l_spec$bld1)
   l_spec$l_c$bd1 <- unlist(l_spec$bcd1)
   
-  l_spec$bed1 <- NULL
-  l_spec$bld1 <- NULL
-  l_spec$bcd1 <- NULL
+  
   
   l_spec$l_e$p_d1_alloc <- l_spec$e_p_d1_alloc
   l_spec$l_e$p_d2_entry <- l_spec$e_p_d2_entry
@@ -1594,15 +1512,7 @@ sim07_update_cfg <- function(l_spec){
   # preference for two-stage
   l_spec$l_e$p_pref <- l_spec$e_p_pref
   
-  l_spec$e_p_d1_alloc <- NULL
-  l_spec$e_p_d2_entry <- NULL
-  l_spec$e_p_d2_alloc <- NULL
-  l_spec$e_p_d3_entry <- NULL
-  l_spec$e_p_d3_alloc <- NULL
-  l_spec$e_p_d4_entry <- NULL
-  l_spec$e_p_d4_alloc <- NULL
-  # preference for two-stage
-  l_spec$e_p_pref <- NULL
+  
   
   l_spec$l_l$p_d1_alloc <- l_spec$l_p_d1_alloc
   l_spec$l_l$p_d2_entry <- l_spec$l_p_d2_entry
@@ -1613,14 +1523,7 @@ sim07_update_cfg <- function(l_spec){
   l_spec$l_l$p_d4_alloc <- l_spec$l_p_d4_alloc
   l_spec$l_l$p_pref <- l_spec$l_p_pref
   
-  l_spec$l_p_d1_alloc <- NULL
-  l_spec$l_p_d2_entry <- NULL
-  l_spec$l_p_d2_alloc <- NULL
-  l_spec$l_p_d3_entry <- NULL
-  l_spec$l_p_d3_alloc <- NULL
-  l_spec$l_p_d4_entry <- NULL
-  l_spec$l_p_d4_alloc <- NULL
-  l_spec$l_p_pref <- NULL
+  
   
   l_spec$l_c$p_d1_alloc <- l_spec$c_p_d1_alloc
   l_spec$l_c$p_d2_entry <- l_spec$c_p_d2_entry
@@ -1632,14 +1535,7 @@ sim07_update_cfg <- function(l_spec){
   # preference for two-stage
   l_spec$l_c$p_pref <- l_spec$c_p_pref
   
-  l_spec$c_p_d1_alloc <- NULL
-  l_spec$c_p_d2_entry <- NULL
-  l_spec$c_p_d2_alloc <- NULL
-  l_spec$c_p_d3_entry <- NULL
-  l_spec$c_p_d3_alloc <- NULL
-  l_spec$c_p_d4_entry <- NULL
-  l_spec$c_p_d4_alloc <- NULL
-  l_spec$c_p_pref <- NULL
+  
   
   # always ref, 12wk, 6wk as we are assessing if 6wk ni to 12wk
   l_spec$bd2 <- unlist(l_spec$bd2)
@@ -1658,13 +1554,6 @@ sim07_update_cfg <- function(l_spec){
   l_spec$prior$bd3 <- unlist(l_spec$pri_bd3)
   l_spec$prior$bd4 <- unlist(l_spec$pri_bd4)
   
-  l_spec$pri_bmu <- NULL
-  l_spec$pri_bs <- NULL
-  l_spec$pri_bp <- NULL
-  l_spec$pri_bd1 <- NULL
-  l_spec$pri_bd2 <- NULL
-  l_spec$pri_bd3 <- NULL
-  l_spec$pri_bd4 <- NULL
   
   l_spec$delta <- list()
   l_spec$delta$sup <- l_spec$dec_delta_sup
@@ -1672,10 +1561,6 @@ sim07_update_cfg <- function(l_spec){
   l_spec$delta$ni <- l_spec$dec_delta_ni
   l_spec$delta$ni_fut <- l_spec$dec_delta_ni_fut
   
-  l_spec$dec_delta_sup <- NULL
-  l_spec$dec_delta_sup_fut <- NULL
-  l_spec$dec_delta_ni <- NULL
-  l_spec$dec_delta_ni_fut <- NULL
   
   # domain specific
   l_spec$thresh <- list()
@@ -1684,10 +1569,6 @@ sim07_update_cfg <- function(l_spec){
   l_spec$thresh$fut_sup <- unlist(l_spec$dec_thresh_ni)
   l_spec$thresh$fut_ni <- unlist(l_spec$dec_thresh_fut_ni)
   
-  l_spec$dec_thresh_sup <- NULL
-  l_spec$dec_thresh_fut_sup <- NULL
-  l_spec$dec_thresh_ni <- NULL
-  l_spec$dec_thresh_fut_ni <- NULL
   
   log_info("Starting simulation with following parameters:");
   log_info("N: ", paste0(l_spec$N, collapse = ", "));
@@ -2353,13 +2234,13 @@ sim07_sim_loop <- function(){
       }
       
       ll <- tryCatch({run_trial(l_spec)},
-      error=function(e) {
-        log_info("ERROR in MCLAPPLY LOOP (see terminal output):")
-        message(" ERROR in MCLAPPLY LOOP " , e);
-        log_info("Traceback (see terminal output):")
-        message(traceback())
-        stop(paste0("Stopping with error ", e))
-      })
+                     error=function(e) {
+                       log_info("ERROR in MCLAPPLY LOOP (see terminal output):")
+                       message(" ERROR in MCLAPPLY LOOP " , e);
+                       log_info("Traceback (see terminal output):")
+                       message(traceback())
+                       stop(paste0("Stopping with error ", e))
+                     })
       
       ll
     })
@@ -2478,7 +2359,7 @@ sim07_sim_loop <- function(){
   } )))
   
   l <- list(
-    l_spec = l_spec,
+    cfg = l_spec,
     
     # reference risk
     # d_risk_smry = d_risk_smry,
@@ -2503,7 +2384,7 @@ sim07_sim_loop <- function(){
   )
   
   toks <- unlist(tstrsplit(args[2], "[-.]"))
-  fname <- paste0("data/sim07/sim07-", toks[4], "-", toks[5], "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs2")
+  fname <- paste0("data/sim07/", toks[4], "-", toks[5], "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs2")
   
   log_info("Saving results file ", fname)
   
