@@ -15,7 +15,7 @@ format:
     fig-width: 9
     fig-height: 6
 params:
-  sim_dir: "sim09-14"
+  sim_dir: "sim09-15"
 execute:
   warning: false
   message: false
