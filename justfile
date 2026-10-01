@@ -3,11 +3,18 @@ cleantmp:
   find tmp -delete
   mkdir tmp
 
+sim07 cfg:
+  Rscript --vanilla ./R/data-sim07-all.R sim07_sim_loop {{cfg}} 
+  just cleantmp
+  
+runsim07:
+  just sim07 ../etc/sim07/cfg-sim07-sc01-v01.yml
+  just sim07 ../etc/sim07/cfg-sim07-sc01-v02.yml
 
 sim09 cfg:
   Rscript --vanilla ./R/data-sim09.R sim09_sim_loop {{cfg}} 
   just cleantmp
-
+  
 runsim09:
   just sim09 ../etc/sim09/cfg-sim09-sc01-v01.yml
   #just sim09 ../etc/sim09/cfg-sim09-sc01-v02.yml

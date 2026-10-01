@@ -112,7 +112,7 @@ ate_obs <- coef(glm(y ~ x, data = d, family = binomial))[2]
 
 ```
 
-Below is a quick sanity check to see if we can empirically validate the log-odds of the response in each covariate combination.
+Below is a quick sanity check of the data generation process to see if we can empirically validate the log-odds of the response in each covariate combination based on a large sample.
 
 ```{r}
 kableExtra::kbl(merge(
@@ -126,14 +126,16 @@ kableExtra::kbl(merge(
 ## Missing completely at random
 
 For mcar, the probability of missingness depends on neither the observed or unobserved data.
-In the @fig-dag-mcar DAG, the indicator of missingness ($m$) arises as a function of an independent process - it has nothing to do with the observed or unobserved covariates or response and so it sits off by itself as an independent node.
+In @fig-dag-mcar, the indicator of missingness ($m$) arises as a function of an independent process.
+In other words, whether the outcome is missing has nothing to do with the observed or unobserved covariates nor the (hypothetical) value response.
+Therefore, we represent this variable, sitting off by itself as an independent node.
 
-The diagram to the right shows what we might use for the statistical model.
-The circles show random variables and the squares show observables and the arros show stochastic and logical depdence. 
-The boxes encasing the variables indicate iteration over units.
+In the diagram to the right, we show what we might use for the statistical model.
+The circles show random variables, the squares show observables and the arrows show stochastic and logical depdence. 
+The boxes encasing the variables indicate iteration over units, i.e. loops.
 
 On the left hand side of the model is the representation of the outcome process.
-Here `y` is just a function of $x$ and $a$.
+Here `y` is just a function of $x$ and $a$, the intervention and covariate.
 On the right is the missingness model. 
 
 ::: {#fig-mcar layout-ncol=2 layout-valign="bottom"}
@@ -164,6 +166,7 @@ We retain the full data but create an indicator `m` to tell us which of the rows
 
 We would not observe the outcome for those records that were missing (i.e. hose that have $m=1$).
 However, under MCAR, the distribution of the outcome is the same in expectation in the observed and the missing data.
+This is shown (at least approximately) in @fig-bar1.
 
 ```{r}
 #| label: fig-bar1
@@ -192,7 +195,8 @@ ggplot(d_fig,
   facet_grid(a ~ m)
 ```
 
-Given that the missingness is independent of the outcome, the complete case analysis is unbiased.
+Given that the missingness is independent of the outcome, a complete-case analysis will be unbiased.
+This can be shown (again, at least empirically) by fitting a model to the complete data (assuming that we saw the missing outcomes) and also to the subset of data we actually observe.
 
 ```{r}
 d_m <- d[, .(y = sum(y), n = .N), keyby = .(x, a)]
@@ -217,9 +221,10 @@ knitr::kable(rbind(
 ))
 ```
 
-We can use multiple imputation (which assumes MAR) for both the MAR and MCAR setting (the latter being a special case of the former).
-The `mice` package will default to predicting missing columns on all other variables in the data in line with attempting to maximal uncertainty.
-We can see that there isn't really any benefit to imputation if the missing data mechanism is MCAR.
+However, if we are so inclined, we could use multiple imputation (which assumes MAR) for both the MAR and MCAR setting (the latter being a special case of the former).
+One option to do this is via `mice` package (Multiple imputation using Fully Conditional Specification).
+The `mice` defaults are to try to predict missing columns on all other variables in the data in line with attempting to maximal uncertainty.
+But, when we try this, we can see that there isn't any substantial benefit to imputation, if the missing data mechanism is MCAR.
 
 ```{r}
 m1 <- cmdstanr::cmdstan_model("stan/missing-ex-01.stan")
@@ -353,13 +358,11 @@ ggplot(data = d_fig, aes(x = value, group = desc, col = desc)) +
   theme(legend.position = "bottom")
 ```
 
-
-
 ## Missing at random
 
 For mar, the probability of missingness depends only on the observed data.
 
-In the @fig-dag-mar DAG, the indicator of missingness arises as a function of the exposure ($x$).
+In @fig-dag-mar, the indicator of missingness is assumed to arise as a function of the exposure ($x$).
 You could think of this as the possibility of more missingness in the treatment relative to that in the control arm.
 Again, we would not observe the outcome for those records with $m=1$.
 From the DAG you can see that $y$ and $m$ are conditionally independent given $x$.
