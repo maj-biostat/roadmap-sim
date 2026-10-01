@@ -53,14 +53,14 @@ if(toks[length(toks)] == "roadmap-sim"){
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim07-05"
+sim_lab <- "sim07-10-qs2"
 
 flist <- list.files(paste0("data/", sim_lab), pattern = "sim07")
 toks <- list()
 l <- list()
 i <- 1
 for(i in 1:length(flist)){
-  l[[i]] <- qs::qread(file.path(paste0("data/", sim_lab), flist[i]))
+  l[[i]] <- qs2::qs_read(file.path(paste0("data/", sim_lab), flist[i]))
   toks[[i]] <-  unlist(tstrsplit(flist[i], "[-.]"))
 }
 
@@ -230,7 +230,7 @@ For this set of simulations, the number of simulated trials per scenario was `r 
 # Traverse the list of simulation results and for each one summarise the 
 # cumulative probability of each decision type.
 
-i <- 8
+i <- 1
 d_tbl_1 <- data.table()
 
 # For each scenario that was simulated
