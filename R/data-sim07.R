@@ -67,7 +67,7 @@ get_sim07_trial_data <- function(
     dec_ni_fut = list(
       ab_dur = NA
     )
-    ){
+){
   
   if(is.null(l_spec$ia)){
     ia <- 1
@@ -153,7 +153,7 @@ get_sim07_trial_data <- function(
   } else if (!is.na(dec_sup$surg)) {
     # Revision has been deemed superior - allocation is now either one-stage or
     # two-stage dependent on preference but only for the late silo
-  
+    
     # early and chronic as they were
     d[s != 2 & d1_alloc == 0, d1 := 1]
     d[s != 2 & d1_alloc == 1 & pref == 1, d1 := 2]
@@ -247,7 +247,7 @@ get_sim07_trial_data <- function(
   # index for d1 is a function of 
   # d1 (3 levels - dair, rev(1), rev(2)) and silo membership (1:3)
   d[, d1_ix := d1 + (3 * (s - 1))]
-
+  
   # bd1 is irrelevant since d1 == 1 is the ref group, fixed at zero
   d[d1 == 1, eta := l_spec$mu + l_spec$bs[s] + l_spec$bp[pref] + bd1[d1_ix] + l_spec$bd4[d4]]
   # pref is irrelevant as d1 = 2 only occurs if pref = 0
@@ -440,13 +440,13 @@ get_sim07_trial_data_subgrp <- function(
   
   # duration of symptom at entry (3 category)
   d[, d1_sg_2 := sample(1:3, size = .N, replace = T, prob = c(0.25, 0.5, 0.25))]
-
+  
   # one of causative org is s aureus Pr(s aureus) = 0.3
   d[, d1_sg_3 := sample(1:2, size = .N, replace = T, prob = c(0.7, 0.3))]
-
+  
   # crp at entry > 100 Pr(crp > 100) = 0.2
   d[, d1_sg_4 := sample(1:2, size = .N, replace = T, prob = c(0.8, 0.2))]
-
+  
   
   # d2 -------
   # silo (already present in model)
@@ -617,7 +617,7 @@ get_sim07_stan_data_subgrp <- function(d_all){
 
 
 get_sim07_enrol_time_int <- function(N = 2500, lambda = 1.52,
-                           rho = function(t) pmin(t/360, 1)){
+                                     rho = function(t) pmin(t/360, 1)){
   
   c(0, poisson::nhpp.event.times(lambda, N - 1, rho))
 }

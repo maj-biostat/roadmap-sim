@@ -53,7 +53,7 @@ if(toks[length(toks)] == "roadmap-sim"){
 # Load all the files into a single list.
 
 # files of interest
-sim_lab <- "sim07-10-qs2"
+sim_lab <- "sim07-11-qs2"
 
 flist <- list.files(paste0("data/", sim_lab), pattern = "sim07")
 toks <- list()
@@ -230,7 +230,7 @@ For this set of simulations, the number of simulated trials per scenario was `r 
 # Traverse the list of simulation results and for each one summarise the 
 # cumulative probability of each decision type.
 
-i <- 1
+i <- 2
 d_tbl_1 <- data.table()
 
 # For each scenario that was simulated

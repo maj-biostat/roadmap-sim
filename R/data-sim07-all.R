@@ -1439,7 +1439,7 @@ sim09_report_sim_res <- function(){
     l_spec$dec[[domain]][[rule]]$thresh
   }
   
-  sim_dat_dir <-  "sim07-10"  
+  sim_dat_dir <-  "sim07-11-qs2"  
   
   fname <- paste0(
     sim_dat_dir, "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".md")
@@ -1454,12 +1454,11 @@ sim09_report_sim_res <- function(){
     l <- qs2::qs_read(here::here("data", sim_dat_dir, f))
     
     r = l$r
-    l_spec = l$l_spec
-    l_dom_state0 <- l$l_dom_state0
+    l_spec = l$cfg
     
     writeLines(paste0("# Source data: ", f, " (", sim_dat_dir, ")"), f_out)
     
-    sim09_report_report_file(r, l_spec, l_dom_state0, f_out)
+    sim07_report_report_file(r, l_spec, l_dom_state0, f_out)
     
     message("End of results for file", f)
   }
@@ -1500,8 +1499,6 @@ sim07_update_cfg <- function(l_spec){
   l_spec$l_l$bd1 <- unlist(l_spec$bld1)
   l_spec$l_c$bd1 <- unlist(l_spec$bcd1)
   
-  
-  
   l_spec$l_e$p_d1_alloc <- l_spec$e_p_d1_alloc
   l_spec$l_e$p_d2_entry <- l_spec$e_p_d2_entry
   l_spec$l_e$p_d2_alloc <- l_spec$e_p_d2_alloc
@@ -1511,8 +1508,6 @@ sim07_update_cfg <- function(l_spec){
   l_spec$l_e$p_d4_alloc <- l_spec$e_p_d4_alloc
   # preference for two-stage
   l_spec$l_e$p_pref <- l_spec$e_p_pref
-  
-  
   
   l_spec$l_l$p_d1_alloc <- l_spec$l_p_d1_alloc
   l_spec$l_l$p_d2_entry <- l_spec$l_p_d2_entry
@@ -1565,8 +1560,8 @@ sim07_update_cfg <- function(l_spec){
   # domain specific
   l_spec$thresh <- list()
   l_spec$thresh$sup <- unlist(l_spec$dec_thresh_sup)
-  l_spec$thresh$ni <- unlist(l_spec$dec_thresh_fut_sup)
-  l_spec$thresh$fut_sup <- unlist(l_spec$dec_thresh_ni)
+  l_spec$thresh$ni <- unlist(l_spec$dec_thresh_ni)
+  l_spec$thresh$fut_sup <- unlist(l_spec$dec_thresh_fut_sup)
   l_spec$thresh$fut_ni <- unlist(l_spec$dec_thresh_fut_ni)
   
   

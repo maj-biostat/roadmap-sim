@@ -40,7 +40,7 @@ run_trial <- function(
     ix,
     l_spec,
     return_posterior = F
-    ){
+){
   
   log_info("Entered  run_trial for trial ", ix)
   
@@ -59,7 +59,7 @@ run_trial <- function(
   stop_enrol <- FALSE
   l_spec$ia <- 1 # interim number
   N_analys <- length(l_spec$N)
-
+  
   # posterior summaries
   d_post_smry_1 <- CJ(
     ia = 1:N_analys,
@@ -73,7 +73,7 @@ run_trial <- function(
   d_post_smry_1[, q_975 := NA_real_]
   
   d_post_smry_2 <- data.table()
-
+  
   # superiority probs
   pr_sup <- array(
     NA, 
@@ -110,7 +110,7 @@ run_trial <- function(
     dim = c(N_analys, 4),
     dimnames = list(1:N_analys, paste0("d", 1:4))
   )
- 
+  
   # decisions 
   # superior, ni, 
   # futile (for superiority - idiotic)
@@ -119,8 +119,8 @@ run_trial <- function(
                   "ni", 
                   "fut_sup", 
                   "fut_ni"
-                  )
-
+  )
+  
   decision <- array(
     NA,
     # num analysis x num domains x num decision types
@@ -128,7 +128,7 @@ run_trial <- function(
     dimnames = list(
       1:N_analys, paste0("d", 1:4), g_dec_type)
   )
-
+  
   # store all simulated trial pt data
   d_all <- data.table()
   
@@ -183,7 +183,7 @@ run_trial <- function(
       dec_sup, dec_ni, dec_sup_fut, dec_ni_fut)
     
     log_info("Trial ", ix, " new data generated ", l_spec$ia)
-
+    
     # combine the existing and new data
     d_all <- rbind(d_all, d)
     
@@ -208,16 +208,16 @@ run_trial <- function(
     # decision is made...?
     snk <- capture.output(
       f_1 <- m1$sample(
-        lsd$ld, iter_warmup = 1000, iter_sampling = 2000,
+        lsd$ld, iter_warmup = 1000, iter_sampling = 3000,
         parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
         max_treedepth = 11,
         output_dir = output_dir_mcmc,
         output_basename = foutname
-        )
+      )
     )
     
     log_info("Trial ", ix, " fitted models ", l_spec$ia)
-
+    
     # extract posterior - marginal probability of outcome by group
     # dair vs rev
     d_post <- data.table(f_1$draws(
@@ -228,10 +228,10 @@ run_trial <- function(
         
         "lor_d2",
         "p_d2_2", "p_d2_3", "rd_d2",
-
+        
         "lor_d3",
         "p_d3_2", "p_d3_3", "rd_d3",
-
+        
         "lor_d4",
         "p_d4_2", "p_d4_3", "rd_d4"
         
@@ -252,23 +252,23 @@ run_trial <- function(
     d_post_long[variable %like% "d4", domain := 4]
     
     # d_post_long[variable %like% "lor", .(mu = mean(value), sd = sd(value)), keyby = variable]
-  
+    
     d_post_smry_1[ia == l_spec$ia, 
                   mu := d_post_long[, mean(value), 
                                     keyby = .(domain, variable)]$V1] 
     d_post_smry_1[ia == l_spec$ia, 
                   med := d_post_long[, median(value), 
-                                    keyby = .(domain, variable)]$V1]
-    d_post_smry_1[ia == l_spec$ia, 
-                  se := d_post_long[, sd(value), 
                                      keyby = .(domain, variable)]$V1]
     d_post_smry_1[ia == l_spec$ia, 
-                  q_025 := d_post_long[, quantile(value, prob = 0.025), 
+                  se := d_post_long[, sd(value), 
                                     keyby = .(domain, variable)]$V1]
     d_post_smry_1[ia == l_spec$ia, 
+                  q_025 := d_post_long[, quantile(value, prob = 0.025), 
+                                       keyby = .(domain, variable)]$V1]
+    d_post_smry_1[ia == l_spec$ia, 
                   q_975 := d_post_long[, quantile(value, prob = 0.975), 
-                                    keyby = .(domain, variable)]$V1]
-
+                                       keyby = .(domain, variable)]$V1]
+    
     # These should produce the same answers as the generated quantities
     # outputs.
     d_post_chk <- data.table(f_1$draws(
@@ -296,7 +296,7 @@ run_trial <- function(
     )
     
     log_info("Trial ", ix, " extracted posterior ", l_spec$ia)
-
+    
     # this is how many units are used in the g-comp up to this analysis
     n_units[l_spec$ia, ] <- c(
       sum(lsd$ld$n_d1),
@@ -338,7 +338,7 @@ run_trial <- function(
       d_post[, mean(p_d3_3 - p_d3_2 > l_spec$delta$ni_fut)],
       d_post[, mean(p_d4_3 - p_d4_2 > l_spec$delta$ni_fut)]
     )
-
+    
     log_info("Trial ", ix, " calculated decision quantities ", l_spec$ia)
     
     decision[l_spec$ia, , "sup"] <- pr_sup[l_spec$ia, ] > l_spec$thresh$sup
@@ -363,7 +363,7 @@ run_trial <- function(
     decision[1:l_spec$ia, , "ni"] <- apply(decision[1:l_spec$ia, , "ni", drop = F], 2, function(z){ cumsum(z) > 0 })
     decision[1:l_spec$ia, , "fut_sup"] <- apply(decision[1:l_spec$ia, , "fut_sup", drop = F], 2, function(z){ cumsum(z) > 0 })
     decision[1:l_spec$ia, , "fut_ni"] <- apply(decision[1:l_spec$ia, , "fut_ni", drop = F], 2, function(z){ cumsum(z) > 0 })
-  
+    
     # superiority decisions apply to domains 1, 3 and 4
     if(any(decision[l_spec$ia, , "sup"])){
       # since there are only two treatments per cell, if a superiority decision 
@@ -499,7 +499,7 @@ run_trial <- function(
 
 sim_07_par_sim <- function(){
   
-  # Rscript --vanilla ./R/sim-07.R sim_07_par_sim ./sim07/cfg-sim07-sc01-v12.yml
+  # Rscript --vanilla ./R/sim-07.R sim_07_par_sim ./sim07/cfg-sim07-sc01-v16.yml
   
   if(unname(Sys.info()[1]) == "Darwin"){
     log_info("On mac, reset cores to 5")
@@ -602,7 +602,7 @@ sim_07_par_sim <- function(){
   log_info("b_d3: ", paste0(l_spec$bd3, collapse = ", "));
   log_info("b_d4: ", paste0(l_spec$bd4, collapse = ", "));
   
-  N_sim <- 100
+  N_sim <- 10000
   message("Start sim with ", N_sim, " iterations using the following sim params")
   message(" l_e$bd1: ", paste0(l_spec$l_e$bd1, collapse = ", "))
   message(" l_l$bd1: ", paste0(l_spec$l_l$bd1, collapse = ", "))
@@ -621,7 +621,7 @@ sim_07_par_sim <- function(){
       dec_ni = list(ab_dur = NA),
       dec_sup_fut = list(surg = NA, ext_proph = NA, ab_choice = NA),
       dec_ni_fut = list(ab_dur = NA)
-      )
+    )
     # d[]
     
     # create stan data format based on the relevant subsets of pt
@@ -643,7 +643,7 @@ sim_07_par_sim <- function(){
     # decision is made...?
     # only care about mean so relatively few samples
     f_1 <- m1$sample(
-      lsd$ld, iter_warmup = 1000, iter_sampling = 2000,
+      lsd$ld, iter_warmup = 1000, iter_sampling = 4000,
       parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
       max_treedepth = 11,
       output_dir = output_dir_mcmc,
@@ -686,10 +686,12 @@ sim_07_par_sim <- function(){
   d_fig <- data.table(do.call(rbind, r))
   
   message("Expectations for posterior means for estimated parameters:")
+  log_info("Expectations for posterior means for estimated parameters:")
   d_fig <- melt(d_fig, measure.vars = names(d_fig))
   d_out <- d_fig[, .(mu = mean(value)), keyby = variable]
   for(i in 1:nrow(d_out)){
     message(sprintf("%s, %.3f", d_out[i, variable], d_out[i, mu]))
+    log_info(sprintf("%s, %.3f", d_out[i, variable], d_out[i, mu]))
   }
   
   #ggplot(d_fig, aes(x = value, group = variable)) +
@@ -717,7 +719,7 @@ sim_07_par_sim <- function(){
   #    plot.subtitle = element_text(size = 8)
   #  ) 
   #
-
+  
   # 
   # file.remove("tmp/*.csv")
 }
@@ -783,7 +785,7 @@ sim_07_subgrp_dev <- function(){
       type = "response"),
     s = d$s,
     j = d$j
-    )
+  )
   d_smry <- d_out[
     , .(mu_p_1 = mean(p_1), mu_p_2 = mean(p_2), mu_p_3 = mean(p_3)), keyby = s]
   d_smry[, rd_2_1 := mu_p_2 - mu_p_1]
@@ -821,7 +823,7 @@ sim_07_subgrp_dev <- function(){
   # <fctr>     <num>     <num>     <num>      <num>       <num>
   #   1:      1 0.3619614 0.4217142 0.3701458 0.05975279 0.008184397
   # 2:      2 0.3169593 0.3698630 0.3318754 0.05290368 0.014916107
-
+  
   data.table(marginaleffects::comparisons(f_1, variables = "domA", by = "j"))[
     order(j), .(contrast, j, estimate)]
   # contrast      j    estimate
@@ -903,73 +905,73 @@ sim_07_subgrp_dev <- function(){
     d_out[order(s), .(contrast, s, estimate, conf.low, conf.high)]
   )
   
-
+  
   
   # Simulation --------
   
   N <- 2500
   r <- pbapply::pblapply(X=1:2000, cl = mc_cores, FUN = function(ix){
-      
-      d <- data.table(
-        domA = factor(sample(1:3, size = N, replace = T)),
-        s = factor(sample(1:3, size = N, replace = T)),
-        j = factor(sample(1:2, size = N, replace = T))
-      )
-      X <- model.matrix(~ domA + s + j + domA:s + domA:j, data = d)
-      d[, eta :=  X %*% b]
-      d[, p_tru := plogis(eta)]
-      d[, y := rbinom(.N, 1, p_tru)]
-      # d[, .(p_obs = mean(y), p_tru = unique(p_tru)), keyby = .(domA, s, j)]
-      
-      d_mod <- d[, .(y = sum(y), n = .N), keyby = .(domA, s, j)]
-      
-      ld <- list(
-        N = nrow(d_mod),
-        y = d_mod$y, n = d_mod$n,
-        domA = d_mod$domA, s = d_mod$s, j = d_mod$j,
-        N_s = d_mod[, .N, keyby = s][, N],
-        N_j = d_mod[, .N, keyby = j][, N],
-        ix_s1 = d_mod[s == 1, , which = T],
-        ix_s2 = d_mod[s == 2, , which = T],
-        ix_s3 = d_mod[s == 3, , which = T],
-        ix_j1 = d_mod[j == 1, , which = T],
-        ix_j2 = d_mod[j == 2, , which = T]
-      )
-      
-      # m2 <- cmdstanr::cmdstan_model("stan/model-sim-07-a-subgrp1.stan")
-      f_4 <- m2$sample(
-        ld, iter_warmup = 1000, iter_sampling = 2000,
-        parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
-        max_treedepth = 13
-      )
-      
-      f_5 <- glm(
-        cbind(y, n-y) ~ domA + s + j + domA:s + domA:j, 
-        data = d_mod, family = binomial)
-      
-      d_post <- data.table(
-        f_4$draws(
-          variables = c("mu_rd_s1", "mu_rd_s2", "mu_rd_s3",
-                        "mu_rd_j1", "mu_rd_j2"), format = "matrix"))
-      d_post <- melt(d_post, measure.vars = names(d_post))
-      # silo specific risk diff trt effects:
-      # silo 1 (rev(1) vs dair, rev(2) vs dair)
-      # silo 2 (rev(1) vs dair, rev(2) vs dair)
-      # silo 3 (rev(1) vs dair, rev(2) vs dair)
-      # joint 1 (rev(1) vs dair, rev(2) vs dair)
-      # joint 2 (rev(1) vs dair, rev(2) vs dair)
-      d_post <- d_post[, .(mu = mean(value)), keyby = variable]
-      
-      d_out_s <- data.table(marginaleffects::comparisons(f_5, variables = "domA", by = "s"))
-      d_out_j <- data.table(marginaleffects::comparisons(f_5, variables = "domA", by = "j"))
-      
-      cbind(
-        d_post, 
-        rbind(d_out_s[order(s), .(contrast, subgrp = s, estimate)], 
-              d_out_j[order(j), .(contrast, subgrp = j, estimate)])
-      )
-      
-    })
+    
+    d <- data.table(
+      domA = factor(sample(1:3, size = N, replace = T)),
+      s = factor(sample(1:3, size = N, replace = T)),
+      j = factor(sample(1:2, size = N, replace = T))
+    )
+    X <- model.matrix(~ domA + s + j + domA:s + domA:j, data = d)
+    d[, eta :=  X %*% b]
+    d[, p_tru := plogis(eta)]
+    d[, y := rbinom(.N, 1, p_tru)]
+    # d[, .(p_obs = mean(y), p_tru = unique(p_tru)), keyby = .(domA, s, j)]
+    
+    d_mod <- d[, .(y = sum(y), n = .N), keyby = .(domA, s, j)]
+    
+    ld <- list(
+      N = nrow(d_mod),
+      y = d_mod$y, n = d_mod$n,
+      domA = d_mod$domA, s = d_mod$s, j = d_mod$j,
+      N_s = d_mod[, .N, keyby = s][, N],
+      N_j = d_mod[, .N, keyby = j][, N],
+      ix_s1 = d_mod[s == 1, , which = T],
+      ix_s2 = d_mod[s == 2, , which = T],
+      ix_s3 = d_mod[s == 3, , which = T],
+      ix_j1 = d_mod[j == 1, , which = T],
+      ix_j2 = d_mod[j == 2, , which = T]
+    )
+    
+    # m2 <- cmdstanr::cmdstan_model("stan/model-sim-07-a-subgrp1.stan")
+    f_4 <- m2$sample(
+      ld, iter_warmup = 1000, iter_sampling = 2000,
+      parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
+      max_treedepth = 13
+    )
+    
+    f_5 <- glm(
+      cbind(y, n-y) ~ domA + s + j + domA:s + domA:j, 
+      data = d_mod, family = binomial)
+    
+    d_post <- data.table(
+      f_4$draws(
+        variables = c("mu_rd_s1", "mu_rd_s2", "mu_rd_s3",
+                      "mu_rd_j1", "mu_rd_j2"), format = "matrix"))
+    d_post <- melt(d_post, measure.vars = names(d_post))
+    # silo specific risk diff trt effects:
+    # silo 1 (rev(1) vs dair, rev(2) vs dair)
+    # silo 2 (rev(1) vs dair, rev(2) vs dair)
+    # silo 3 (rev(1) vs dair, rev(2) vs dair)
+    # joint 1 (rev(1) vs dair, rev(2) vs dair)
+    # joint 2 (rev(1) vs dair, rev(2) vs dair)
+    d_post <- d_post[, .(mu = mean(value)), keyby = variable]
+    
+    d_out_s <- data.table(marginaleffects::comparisons(f_5, variables = "domA", by = "s"))
+    d_out_j <- data.table(marginaleffects::comparisons(f_5, variables = "domA", by = "j"))
+    
+    cbind(
+      d_post, 
+      rbind(d_out_s[order(s), .(contrast, subgrp = s, estimate)], 
+            d_out_j[order(j), .(contrast, subgrp = j, estimate)])
+    )
+    
+  })
   
   d_res <- rbindlist(r, idcol = "id_sim")
   d_res[, .(mu_b = mean(mu), mu_f = mean(estimate)), keyby = variable]
@@ -1100,14 +1102,14 @@ run_sim_07 <- function(){
   
   if(g_cfgsc$nex > 0){
     log_info("Creating ", g_cfgsc$nex, " example trials with full posterior")
-    g_cfgsc$ex_trial_ix <- sort(sample(1:g_cfgsc$nsim, size = g_cfgsc$nex, replace = F))
+    g_cfgsc$ex_trial_ix <- sort(sample(1:g_cfgsc$n_sim, size = g_cfgsc$nex, replace = F))
   }
   
   e = NULL
   log_info("Starting simulation")
   r <- parallel::mclapply(
-    X=1:g_cfgsc$nsim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
-    # X=1:5, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+    X=1:g_cfgsc$n_sim, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
+      # X=1:5, mc.cores = g_cfgsc$mc_cores, FUN=function(ix) {
       log_info("Simulation ", ix);
       
       if(ix %in% g_cfgsc$ex_trial_ix){
@@ -1121,7 +1123,7 @@ run_sim_07 <- function(){
           ix,
           l_spec,
           return_posterior = return_posterior
-          )
+        )
       },
       error=function(e) {
         log_info("ERROR in MCLAPPLY LOOP (see terminal output):")
@@ -1130,7 +1132,7 @@ run_sim_07 <- function(){
         message(traceback())
         stop(paste0("Stopping with error ", e))
       })
-
+      
       ll
     })
   
@@ -1170,7 +1172,7 @@ run_sim_07 <- function(){
     }
     
   }
-
+  
   d_pr_ni <- data.table(
     do.call(rbind, lapply(1:length(r), function(i){ 
       cbind(
@@ -1188,7 +1190,7 @@ run_sim_07 <- function(){
       cbind(
         sim = i, ia = as.integer(rownames(r[[i]]$pr_ni_fut)), r[[i]]$pr_ni_fut) 
     } )))
-
+  
   # decisions based on probability thresholds
   d_decision <- rbind(
     
@@ -1214,11 +1216,11 @@ run_sim_07 <- function(){
     
   )
   d_decision[, `:=`(sim = as.integer(sim), ia = as.integer(ia),
-                d1 = as.logical(d1), 
-                d2 = as.logical(d2), 
-                d3 = as.logical(d3),  
-                d4 = as.logical(d4) 
-                )]
+                    d1 = as.logical(d1), 
+                    d2 = as.logical(d2), 
+                    d3 = as.logical(d3),  
+                    d4 = as.logical(d4) 
+  )]
   
   d_post_smry_1 <- rbindlist(lapply(1:length(r), function(i){ 
     r[[i]]$d_post_smry_1
@@ -1272,14 +1274,16 @@ run_sim_07 <- function(){
     # d_n_units = d_n_units,
     # d_n_assign = d_n_assign,
     # d_grp = d_grp
-    )
+  )
   
   toks <- unlist(tstrsplit(args[2], "[-.]"))
-  fname <- paste0("data/sim07/sim07-", toks[4], "-", toks[5], "-", format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs")
+  fname <- paste0(
+    "data/sim07/sim07-", toks[4], "-", toks[5], "-", 
+    format(Sys.time(), "%Y%m%d-%H%M%S"), ".qs2")
   
   log_info("Saving results file ", fname)
   
-  qs::qsave(l, file = fname)
+  qs2::qs_save(l, file = fname)
 }
 
 run_none_sim_07 <- function(){
