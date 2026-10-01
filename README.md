@@ -18,7 +18,13 @@ quarto render notebooks/sim-design5-results.qmd --to html
 Simulations are configured via Makefile. 
 Run `make list` to see all targets. 
 
-At the time of writing `make sim05` has the simulations for the current design.
+At the time of writing `make sim07` has the simulations for the current design.
+
+The parameters are ultimately transformed to risk differences. 
+However the simulation model is on the log-odds scale.
+Use the `model-checks.R` script `parameter_for_scenario_calcs` in order to compute the parameter values that equate with the desired target risk difference.
+
+
 
 ## R, Rstudio, STAN, Quarto
 

@@ -21,3 +21,6 @@ data-202?????
 
 /fig/
 /versions/
+
+R/tmp*.*
+R/Unti*.*
