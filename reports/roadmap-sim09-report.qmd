@@ -109,6 +109,8 @@ For each scenario, we are reporting three things:
 2. **Typical patient numbers** - how many patients are typically enrolled, and how many directly inform each domain's own comparison, by the time a decision is reached.
 3. **Recovered vs. true effect** - whether the trial's own estimate of each effect (averaged across simulated repeats) tracks the assumed true value.
 
+An overall summary across scenarios (chance of each decision by interim, and patient numbers) comes first, followed by the scenario-by-scenario results.
+
 A full set of the underlying numerical tables (bias, root-mean-square error, coverage, and regimen-level weights) is in the [Appendix].
 
 # Simulation configuration
@@ -321,6 +323,211 @@ table_sample_size <- function(oc) {
     tab_options(table.font.size = 13)
 }
 ```
+
+```{r overall-fns}
+rule_cols <- c(Superiority = "#2C7FB8", `Non-inferiority` = "#31A354", Futility = "#D95F0E")
+
+scn_factor <- function(x, width = 28) {
+  factor(str_wrap(x, width), levels = str_wrap(scenario_names, width))
+}
+
+# stack one element of every scenario's summary into a single table
+stack_oc <- function(get_fn) {
+  rbindlist(lapply(scenario_names, function(scn) {
+    d <- get_fn(oc_by_scenario[[scn]])
+    if (is.null(d) || nrow(d) == 0) return(NULL)
+    d <- copy(d)
+    d[, scenario := scn]
+    d
+  }), fill = TRUE)
+}
+
+d_dec_all   <- stack_oc(function(oc) oc$dec_pr)
+d_info_all  <- stack_oc(function(oc) oc$l_dec_info$d_smry)
+d_truth_all <- stack_oc(function(oc) unique(oc$l_effects$d_rd[, .(domain = par, truth)]))
+
+d_dec_all[, rule_lab := factor(rule_labs[as.character(rule)], levels = rule_labs)]
+if (nrow(d_info_all) > 0) {
+  d_info_all[, rule_lab := factor(rule_labs[as.character(rule)], levels = rule_labs)]
+}
+
+n_interim <- max(d_dec_all$i_anlys)
+
+# cumulative enrolment at each interim, taken from the first scenario's design
+cum_enrol <- cumsum(scenario_files[[1]]$l_spec$n_batch)
+
+# ---- 1. headline table: chance of each decision by the final interim --------
+table_dec_final <- function() {
+  d <- d_dec_all[i_anlys == n_interim]
+  d[, rule_chr := factor(as.character(rule), levels = c("sup", "ni", "fut"))]
+  # columns come out as d1_sup, d1_fut, d2_ni, ... (unique names, spanners added below)
+  d_w <- dcast(d, scenario ~ domain + rule_chr, value.var = "mu")
+  d_w <- d_w[match(scenario_names, scenario)]
+  setnames(d_w, "scenario", "Scenario")
+  d_w
+}
+
+# ---- 2. progression by interim, one domain at a time ------------------------
+plot_dec_domain <- function(dm, ncol = 3) {
+  d <- d_dec_all[domain == dm]
+  d[, scenario_lab := scn_factor(scenario)]
+
+  d_lab <- merge(unique(d[, .(scenario, scenario_lab)]),
+                 d_truth_all[domain == dm, .(scenario, truth)], by = "scenario")
+  d_lab[, label := sprintf("True effect: %+.1f pp", truth * 100)]
+
+  ggplot(d, aes(x = i_anlys, y = mu, colour = rule_lab, linetype = rule_lab)) +
+    geom_line(linewidth = 0.6) +
+    geom_point(size = 1.4) +
+    geom_text(data = d_lab, aes(x = Inf, y = 0.03, label = label),
+              inherit.aes = FALSE, hjust = 1.05, size = 3, colour = "grey30") +
+    facet_wrap(~ scenario_lab, ncol = ncol) +
+    scale_colour_manual(values = rule_cols) +
+    scale_y_continuous(labels = percent, limits = c(0, 1), breaks = seq(0, 1, by = 0.2)) +
+    scale_x_continuous(breaks = seq_len(n_interim)) +
+    labs(x = "Interim analysis", y = "Cumulative chance of this decision",
+         colour = "Decision", linetype = "Decision") +
+    theme_minimal(base_size = 11) +
+    theme(legend.position = "bottom", strip.text = element_text(face = "bold", size = 8))
+}
+
+table_dec_domain <- function(dm) {
+  d <- d_dec_all[domain == dm]
+  d_w <- dcast(d, scenario + rule_lab ~ i_anlys, value.var = "mu")
+  int_cols <- as.character(seq_len(n_interim))
+  setnames(d_w, int_cols, paste("Interim", int_cols))
+  d_w <- merge(d_w, d_truth_all[domain == dm, .(scenario, truth)], by = "scenario")
+  d_w[, Scenario := sprintf("%s (true effect %+.1f pp)", scenario, truth * 100)]
+  d_w[, scn_ord := match(scenario, scenario_names)]
+  setorder(d_w, scn_ord, rule_lab)
+  d_w[, Decision := as.character(rule_lab)]
+  d_w[, c("scenario", "truth", "scn_ord", "rule_lab") := NULL]
+  setcolorder(d_w, c("Scenario", "Decision"))
+  d_w[]
+}
+
+# ---- 3. enrolment and patients informing each decision ----------------------
+min_pr <- 0.05   # decisions reached in fewer than this share of trials are de-emphasised
+
+plot_n_decision <- function(var_mu, var_lo, var_hi, ylab) {
+  d <- copy(d_info_all)
+  d[, scenario_lab := scn_factor(scenario, 22)]
+  d[, domain_lab := factor(domain_labs_short[domain], levels = domain_labs_short)]
+  d[, support := ifelse(pr_dec >= min_pr, "Reached in >= 5% of trials", "Rarely reached (< 5%)")]
+  d[, `:=`(mu = get(var_mu), lo = get(var_lo), hi = get(var_hi))]
+
+  ggplot(d, aes(x = scenario_lab, y = mu, colour = rule_lab, alpha = support)) +
+    geom_linerange(aes(ymin = lo, ymax = hi), position = position_dodge(width = 0.6), linewidth = 0.4) +
+    geom_point(position = position_dodge(width = 0.6), size = 1.8) +
+    coord_flip() +
+    facet_wrap(~ domain_lab, ncol = 2) +
+    scale_colour_manual(values = rule_cols) +
+    scale_alpha_manual(values = c("Reached in >= 5% of trials" = 1, "Rarely reached (< 5%)" = 0.35)) +
+    scale_x_discrete(limits = rev) +
+    labs(x = NULL, y = ylab, colour = "Decision", alpha = NULL) +
+    theme_minimal(base_size = 10) +
+    theme(legend.position = "bottom", strip.text = element_text(face = "bold"))
+}
+
+table_n_domain <- function(dm) {
+  d <- d_info_all[domain == dm]
+  d[, scn_ord := match(scenario, scenario_names)]
+  setorder(d, scn_ord, rule_lab)
+  d[, .(
+    Scenario = scenario,
+    Decision = as.character(rule_lab),
+    `Chance of this decision` = pr_dec,
+    `Enrolled at decision` = sprintf("%.0f (%.0f to %.0f)", mu_n_enrl, q025_n_enrl, q975_n_enrl),
+    `Informing the decision` = sprintf("%.0f (%.0f to %.0f)", mu_n_info, q025_n_info, q975_n_info),
+    `Share of enrolled informing` = prop_info
+  )]
+}
+```
+
+# Overall summary across scenarios
+
+This section puts all scenarios side by side, so the behaviour of each comparison can be seen across the range of assumed truths.
+The scenario-by-scenario detail (including how well each effect is recovered) follows in the next section.
+
+## Chance of each decision
+
+For each domain, the first decision reached locks that domain, so within a domain the possible decisions are mutually exclusive.
+The remainder (100% less the decision columns) is the chance that the domain is still open at the final interim.
+The first table gives the position at the final interim (interim `r n_interim`, cumulative enrolment of `r cum_enrol[n_interim]`).
+The domain tabs that follow show how those chances build up over the interim analyses (cumulative enrolment at interims 1 to `r n_interim` is `r paste(cum_enrol, collapse = ", ")`).
+The true effect for each scenario is on the risk-difference scale in percentage points (pp).
+
+```{r table-dec-final}
+d_final <- table_dec_final()
+d_cols <- setdiff(names(d_final), "Scenario")
+
+d_final_gt <- gt(d_final) |>
+  fmt_percent(columns = d_cols, decimals = 0) |>
+  cols_label(.list = setNames(
+    as.list(rule_labs[sub("^d[0-9]_", "", d_cols)]), d_cols)) |>
+  tab_header(title = paste0("Chance of each decision by interim ", n_interim)) |>
+  tab_options(table.font.size = 13)
+
+# one spanner per domain
+for (dm in unique(sub("_.*$", "", d_cols))) {
+  d_final_gt <- tab_spanner(
+    d_final_gt, label = domain_labs_short[[dm]],
+    columns = grep(paste0("^", dm, "_"), d_cols, value = TRUE))
+}
+d_final_gt
+```
+
+::: {.panel-tabset}
+
+```{r overall-dec-domain, results='asis'}
+for (dm in paste0("d", 1:4)) {
+
+  cat("\n\n### ", domain_labs_short[dm], "\n\n")
+
+  print(plot_dec_domain(dm))
+  cat("\n\n")
+
+  d_tbl <- table_dec_domain(dm)
+  int_cols <- grep("^Interim", names(d_tbl), value = TRUE)
+  print(
+    gt(d_tbl, groupname_col = "Scenario") |>
+      fmt_percent(columns = int_cols, decimals = 0) |>
+      tab_options(table.font.size = 13)
+  )
+  cat("\n\n")
+}
+```
+
+:::
+
+## Enrolment and patients informing each decision
+
+These summaries describe the trials in which a decision was reached, at the interim where each domain's first decision occurred.
+They should be read alongside the chance of the decision, because a decision that is rarely reached rests on very few simulated trials.
+
+- **Enrolled at decision** is the total number of patients enrolled in the whole platform by that interim, not only those relevant to the domain.
+  Decisions can only occur at an interim analysis, so this is one of the interim enrolment totals (`r paste(cum_enrol, collapse = ", ")`) and the average blends them.
+- **Informing the decision** is the number of patients contributing to that domain's own comparison:
+  D1 uses all patients in the late-acute randomised group (DAIR, 1-stage and 2-stage revision), D2 uses 1-stage revision patients randomised to 12 or 6 weeks, D3 uses 2-stage revision patients randomised to 12 weeks or none, and D4 uses patients randomised to rifampicin or not.
+- Ranges are the middle 95% across the simulated trials that reached that decision.
+
+::: {.panel-tabset}
+
+```{r overall-n-domain, results='asis'}
+for (dm in paste0("d", 1:4)) {
+
+  cat("\n\n### ", domain_labs_short[dm], "\n\n")
+
+  print(
+    gt(table_n_domain(dm), groupname_col = "Scenario") |>
+      fmt_percent(columns = c("Chance of this decision", "Share of enrolled informing"), decimals = 0) |>
+      tab_options(table.font.size = 13)
+  )
+  cat("\n\n")
+}
+```
+
+:::
 
 # Results by scenario {.tabset}
 
