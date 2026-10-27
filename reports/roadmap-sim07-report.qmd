@@ -1,0 +1,630 @@
+---
+title: "ROADMAP: Simulated Trial Behaviour (sim07)"
+sidebar: false
+date: today
+comments:
+  hypothesis: false
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 2
+    code-fold: false # set to true when displaying code in report
+    code-summary: "Show underlying code"
+    embed-resources: true
+    fig-width: 9
+    fig-height: 6
+params:
+  sim_dir: "sim07-14"
+execute:
+  warning: false
+  message: false
+  echo: false # set to true if you want code to display in report
+---
+
+```{r setup}
+library(data.table)
+library(ggplot2)
+library(gt)
+library(qs2)
+library(here)
+library(scales)
+library(stringr)
+
+# --- No sourcing of data-sim07-all.R ----------------------------------------
+# Unlike the sim09 report, this report does NOT source the simulation script.
+# data-sim07-all.R compiles the Stan model, initialises a log file and parses
+# command-line arguments at source time, and it has no summary functions that
+# match the sim09 ones. Everything needed is computed here, directly from the
+# results files written by sim07_sim_loop() (cfg, d_decision, d_all), so
+# data-sim07-all.R is left untouched.
+
+# --- plain-language labels, reused throughout (identical to sim09 report) ---
+domain_labs <- c(
+  d1 = "D1: Surgical strategy\n(DAIR vs revision)",
+  d2 = "D2: Antibiotic duration\n(12wk vs 6wk, after 1-stage revision)",
+  d3 = "D3: Extended prophylaxis\n(12wk vs none, after 2-stage revision)",
+  d4 = "D4: Rifampicin\n(added vs not)"
+)
+rule_labs <- c(sup = "Superiority", ni = "Non-inferiority", fut = "Futility")
+
+wrap_lab <- function(x) str_wrap(x, width = 28)
+```
+
+```{r sim07-helpers}
+# =============================================================================
+# sim07 equivalents of the sim09 summary functions
+# =============================================================================
+
+# sim07 coding (see get_sim07_trial_data):
+#   s  : 1 = early, 2 = late-acute (randomised to d1), 3 = chronic
+#   d1 : 1 = dair, 2 = one-stage revision (pref 1), 3 = two-stage (pref 2)
+#   d2 : 1 = not entered, 2 = 12wk, 3 = 6wk        (NA unless d1 == 2)
+#   d3 : 1 = not entered, 2 = none, 3 = 12wk       (NA unless d1 == 3)
+#   d4 : 1 = not entered, 2 = no rif, 3 = rif
+# Contrasts (from the Stan generated quantities): rd_d1 = rev - dair,
+# rd_d2 = 6wk - 12wk, rd_d3 = 12wk - none, rd_d4 = rif - none.
+
+# Map sim07 decision types onto the sim09 rule labels. 'prec' gives the
+# precedence when two rules for the same domain first trigger at the same
+# interim; superiority/ni wins, matching the if/else order in
+# get_sim07_trial_data (which is what actually governed allocation).
+sim07_rule_map <- data.table(
+  domain = c("d1", "d1", "d2", "d2", "d3", "d3", "d4", "d4"),
+  quant  = c("sup", "fut_sup", "ni", "fut_ni", "sup", "fut_sup", "sup", "fut_sup"),
+  rule   = c("sup", "fut", "ni", "fut", "sup", "fut", "sup", "fut"),
+  prec   = c(1, 2, 1, 2, 1, 2, 1, 2)
+)
+
+# First (locking) decision per simulated trial and domain.
+# sim07 locks each decision type separately (cumsum per type), so a domain can
+# later flag a second, contradictory rule (e.g. superiority at interim 2 then
+# futility at interim 4). Only the first decision changed allocation in
+# sim07, so only the first is counted - which is how sim09 defines it too.
+sim07_first_dec <- function(d_decision) {
+  d <- melt(
+    copy(d_decision), id.vars = c("sim", "ia", "quant"),
+    measure.vars = paste0("d", 1:4),
+    variable.name = "domain", value.name = "dec")
+  d[, `:=`(domain = as.character(domain),
+           sim = as.integer(sim), ia = as.integer(ia),
+           dec = as.logical(dec))]
+  d <- merge(d, sim07_rule_map, by = c("domain", "quant"))
+  d <- d[dec == TRUE]
+  if (nrow(d) == 0) return(data.table())
+  setorder(d, sim, domain, ia, prec)
+  d <- d[, .SD[1], by = .(sim, domain)]
+  d[, .(i_sim = sim, domain, i_anlys = ia, rule)]
+}
+
+# Cumulative chance of each (first) decision by interim - sim09_smry_pr_dec
+sim07_smry_pr_dec <- function(d_decision, n_interim) {
+  sims <- sort(unique(as.integer(d_decision$sim)))
+  d_first <- sim07_first_dec(d_decision)
+
+  d_grid <- CJ(i_sim = sims, i_anlys = seq_len(n_interim),
+               domain = paste0("d", 1:4))
+  d_grid <- merge(unique(sim07_rule_map[, .(domain, rule)]), d_grid,
+                  by = "domain", allow.cartesian = TRUE)
+
+  if (nrow(d_first) > 0) {
+    setnames(d_first, c("i_anlys", "rule"), c("first_ia", "first_rule"))
+    d_grid <- merge(d_grid, d_first, by = c("i_sim", "domain"), all.x = TRUE)
+  } else {
+    d_grid[, `:=`(first_ia = NA_integer_, first_rule = NA_character_)]
+  }
+  d_grid[, dec01 := as.numeric(!is.na(first_ia) & rule == first_rule &
+                                 i_anlys >= first_ia)]
+
+  d_out <- d_grid[, .(mu = mean(dec01)), keyby = .(i_anlys, domain, rule)]
+  d_out[, rule := factor(rule, levels = c("sup", "ni", "fut"))]
+  setorder(d_out, domain, rule)
+  d_out
+}
+
+# Cumulative enrolment, and the number informing each domain's own contrast,
+# by simulated trial and interim (same definitions as sim09_domain_n):
+#   d1: all late-acute (randomised) patients
+#   d2: one-stage revision patients randomised to 12wk or 6wk (all silos)
+#   d3: two-stage revision patients randomised to 12wk or none (all silos)
+#   d4: patients randomised to rif or no rif (all silos)
+sim07_cum_n <- function(d_all) {
+  d <- copy(d_all)
+  to_int <- function(x) as.integer(as.character(x))
+  d[, `:=`(sim = as.integer(sim), ia = as.integer(ia),
+           s = to_int(s), d1 = to_int(d1), d2 = to_int(d2),
+           d3 = to_int(d3), d4 = to_int(d4))]
+  d_n <- d[, .(
+    n_enrolled = sum(N),
+    d1 = sum(N[s == 2]),
+    d2 = sum(N[d1 == 2 & d2 %in% 2:3]),
+    d3 = sum(N[d1 == 3 & d3 %in% 2:3]),
+    d4 = sum(N[d4 %in% 2:3])
+  ), keyby = .(sim, ia)]
+  cols <- c("n_enrolled", paste0("d", 1:4))
+  d_n[, (cols) := lapply(.SD, function(z) cumsum(as.double(z))),
+      by = sim, .SDcols = cols]
+  melt(d_n, id.vars = c("sim", "ia", "n_enrolled"),
+       variable.name = "domain", value.name = "n_inform",
+       variable.factor = FALSE)
+}
+
+# Patients enrolled / informing at the first decision - sim09_smry_dec_info
+sim07_smry_dec_info <- function(d_decision, d_all) {
+  n_sim <- uniqueN(d_decision$sim)
+  d_first <- sim07_first_dec(d_decision)
+  if (nrow(d_first) == 0 || is.null(d_all)) {
+    return(list(d_inform_tot = data.table(), d_smry = data.table()))
+  }
+  d_n <- sim07_cum_n(d_all)
+  d_inform <- merge(
+    d_first, d_n,
+    by.x = c("i_sim", "i_anlys", "domain"), by.y = c("sim", "ia", "domain"),
+    all.x = TRUE)
+  d_inform[, inform_prop := n_inform / n_enrolled]
+
+  d_summary <- d_inform[, .(
+    n_dec = .N,
+    pr_dec = .N / n_sim,
+    mu_n_enrl = mean(n_enrolled),
+    q025_n_enrl = quantile(n_enrolled, 0.025),
+    q975_n_enrl = quantile(n_enrolled, 0.975),
+    mu_n_info = mean(n_inform),
+    q025_n_info = quantile(n_inform, 0.025),
+    q975_n_info = quantile(n_inform, 0.975),
+    prop_info = mean(inform_prop)
+  ), keyby = .(domain, rule)]
+  d_summary[, rule := factor(rule, levels = c("sup", "ni", "fut"))]
+  setorder(d_summary, domain, rule)
+
+  list(d_inform_tot = d_inform, d_smry = d_summary)
+}
+
+# True standardised risk differences implied by the sim07 data-generating
+# process, for the estimands defined in the sim07 Stan generated quantities,
+# evaluated in the design population (all domains open, i.e. before any
+# adaptation changes allocation). This mirrors sim09_true_effects_des_pop.
+#   d1: late silo. DAIR over everyone at their own preference and d4.
+#       Revision = one-stage (d2 held at 'not entered') for preference-1
+#       patients, two-stage (d3 held at 'not entered') for preference-2,
+#       mixed by the preference proportions.
+#   d2: all one-stage patients (all silos), 6wk vs 12wk.
+#   d3: all two-stage patients (all silos), 12wk vs none.
+#   d4: patients entering d4 (all silos), rif vs none.
+sim07_true_effects <- function(cfg) {
+
+  mu <- cfg$mu
+  bs <- unlist(cfg$bs)
+  bp <- unlist(cfg$bp)
+  bd1 <- c(unlist(cfg$l_e$bd1), unlist(cfg$l_l$bd1), unlist(cfg$l_c$bd1))
+  bd2 <- unlist(cfg$bd2); bd3 <- unlist(cfg$bd3); bd4 <- unlist(cfg$bd4)
+  p_s <- unlist(cfg$p_s_alloc)
+  l_s <- list(cfg$l_e, cfg$l_l, cfg$l_c)
+
+  p_lvl <- function(entry, alloc) c(1 - entry, entry * (1 - alloc), entry * alloc)
+  p_d4 <- function(s) p_lvl(l_s[[s]]$p_d4_entry, l_s[[s]]$p_d4_alloc)
+  p_d2 <- function(s) p_lvl(l_s[[s]]$p_d2_entry, l_s[[s]]$p_d2_alloc)
+  p_d3 <- function(s) p_lvl(l_s[[s]]$p_d3_entry, l_s[[s]]$p_d3_alloc)
+
+  # linear predictor exactly as in get_sim07_trial_data
+  eta <- function(s, pref, d1, d2 = 1, d3 = 1, d4) {
+    ix <- d1 + 3 * (s - 1)
+    if (d1 == 1) mu + bs[s] + bp[pref] + bd1[ix] + bd4[d4]
+    else if (d1 == 2) mu + bs[s] + bd1[ix] + bd2[d2] + bd4[d4]
+    else mu + bs[s] + bp[pref] + bd1[ix] + bd3[d3] + bd4[d4]
+  }
+  # expected probability, averaging over d4 within silo s
+  e_d4 <- function(s, f) sum(p_d4(s) * sapply(1:3, function(k) plogis(f(k))))
+
+  # ---- d1 (late silo, s = 2) ----
+  pp2 <- l_s[[2]]$p_pref
+  p_dair <- (1 - pp2) * e_d4(2, function(k) eta(2, 1, 1, d4 = k)) +
+    pp2 * e_d4(2, function(k) eta(2, 2, 1, d4 = k))
+  p_r1 <- e_d4(2, function(k) eta(2, 1, 2, d2 = 1, d4 = k))
+  p_r2 <- e_d4(2, function(k) eta(2, 2, 3, d3 = 1, d4 = k))
+  p_rev <- (1 - pp2) * p_r1 + pp2 * p_r2
+
+  # ---- d2 (one-stage patients, all silos) ----
+  w2 <- sapply(1:3, function(s) p_s[s] * l_s[[s]]$p_d1_alloc * (1 - l_s[[s]]$p_pref))
+  w2 <- w2 / sum(w2)
+  p_d2_arm <- sapply(2:3, function(lvl) sum(w2 * sapply(1:3, function(s)
+    e_d4(s, function(k) eta(s, 1, 2, d2 = lvl, d4 = k)))))
+
+  # ---- d3 (two-stage patients, all silos) ----
+  w3 <- sapply(1:3, function(s) p_s[s] * l_s[[s]]$p_d1_alloc * l_s[[s]]$p_pref)
+  w3 <- w3 / sum(w3)
+  p_d3_arm <- sapply(2:3, function(lvl) sum(w3 * sapply(1:3, function(s)
+    e_d4(s, function(k) eta(s, 2, 3, d3 = lvl, d4 = k)))))
+
+  # ---- d4 (d4 entrants, all silos) ----
+  w4 <- sapply(1:3, function(s) p_s[s] * l_s[[s]]$p_d4_entry)
+  w4 <- w4 / sum(w4)
+  p_d4_arm <- sapply(2:3, function(lvl) {
+    sum(w4 * sapply(1:3, function(s) {
+      pa <- l_s[[s]]$p_d1_alloc; pp <- l_s[[s]]$p_pref
+      dair <- (1 - pp) * plogis(eta(s, 1, 1, d4 = lvl)) +
+        pp * plogis(eta(s, 2, 1, d4 = lvl))
+      r1 <- sum(p_d2(s) * sapply(1:3, function(j) plogis(eta(s, 1, 2, d2 = j, d4 = lvl))))
+      r2 <- sum(p_d3(s) * sapply(1:3, function(j) plogis(eta(s, 2, 3, d3 = j, d4 = lvl))))
+      (1 - pa) * dair + pa * (1 - pp) * r1 + pa * pp * r2
+    }))
+  })
+
+  data.table(
+    domain = paste0("d", 1:4),
+    p_ref = c(p_dair, p_d2_arm[1], p_d3_arm[1], p_d4_arm[1]),
+    p_trt = c(p_rev, p_d2_arm[2], p_d3_arm[2], p_d4_arm[2])
+  )[, `:=`(truth = p_trt - p_ref,
+           truth_lor = qlogis(p_trt) - qlogis(p_ref))][]
+}
+```
+
+# About this report
+
+This report summarises the earlier **sim07** simulations in the same format as the sim09 report, so that the operating characteristics of the two approaches can be compared side by side.
+Only the high-level summaries across scenarios are reproduced here; scenario-by-scenario detail and the appendix are not yet included.
+
+ROADMAP is an adaptive platform trial in prosthetic joint infection.
+It has four domains and is designed to stop recruiting into a domain when the accumulated evidence is strong enough but continue recruitment into the other domains.
+Loosely, the four questions are:
+
+- **D1 - Surgical strategy:** is revision surgery (removing and replacing the joint) better than DAIR (debridement and implant retention) for patients with a late-acute infection?
+- **D2 - Antibiotic duration:** among patients having a one-stage revision (r1), is a shorter (6-week) course of antibiotics non-inferior to a 12-week course?
+- **D3 - Extended prophylaxis:** among patients having a two-stage revision (r2), does an extra 12 weeks of preventive antibiotics improve outcomes compared with none?
+- **D4 - Rifampicin:** does adding rifampicin to the antibiotic regimen improve outcomes?
+
+At each interim analysis, the trial looks at the data collected to date for each of these four questions and asks whether the evidence is strong enough to draw a conclusion.
+If so, the simulation stops randomising patients to that question and adopts the better (or, for d2, non-inferior) option going forward.
+Futility stopping is also implemented.
+
+```{r load-data}
+f_list <- list.files(here::here("data", params$sim_dir), pattern = "\\.qs2$")
+
+scenario_files <- lapply(f_list, function(f) {
+  qs2::qs_read(here::here("data", params$sim_dir, f))
+})
+
+# scenario label: the cfg description where present, else the file name
+scenario_names <- vapply(seq_along(scenario_files), function(i) {
+  d <- scenario_files[[i]]$cfg$desc
+  if (is.null(d) || !nzchar(d)) sub("\\.qs2$", "", f_list[i]) else d
+}, character(1))
+scenario_names <- make.unique(scenario_names, sep = " #")
+names(scenario_files) <- scenario_names
+
+n_sim_obs <- vapply(scenario_files, function(x) uniqueN(x$d_decision$sim), numeric(1))
+```
+
+This report covers `r length(scenario_files)` scenario(s):
+
+```{r , results='asis'}
+cat("\n")
+for(scn in scenario_names){
+  cat("\n+ ", scn, "\n")
+}
+```
+
+The results data are those stored in **`r params$sim_dir`** and have **`r paste(unique(n_sim_obs), collapse = " / ")`** iterations per scenario.
+
+# How to read the results
+
+For each scenario, we report:
+
+1. **Chance of reaching each decision, by interim** - across many simulated trials, what proportion concluded superiority / non-inferiority / futility for each domain, by each interim analysis.
+2. **Typical patient numbers** - how many patients are typically enrolled, and how many directly inform each domain's own comparison, by the time a decision is reached.
+
+These are defined exactly as in the sim09 report so the two can be read side by side.
+
+# Simulation configuration
+
+The table(s) below describe parts of the design that are the same across every scenario in this report; only the assumed true effects differ.
+
+```{r config-tables}
+cfg_list <- lapply(scenario_files, function(x) x$cfg)
+chk <- function(f) length(unique(lapply(cfg_list, function(z) unlist(f(z))))) > 1
+if (chk(function(z) z$p_s_alloc) || chk(function(z) z$thresh) ||
+    chk(function(z) z$delta) || chk(function(z) z$N)) {
+  warning("Silo proportions, enrolment schedule and/or decision rules differ across scenario files - the single 'simulation configuration' summary below no longer applies to all of them.")
+}
+
+cfg1 <- cfg_list[[1]]
+
+domain_labs_short <- c(
+  d1 = "D1: Surgical strategy", d2 = "D2: Antibiotic duration",
+  d3 = "D3: Extended prophylaxis", d4 = "D4: Rifampicin"
+)
+
+table_silo_d1 <- function(cfg) {
+  silo_labs <- c("Early infection", "Late-acute, randomised", "Chronic infection")
+  l_s <- list(cfg$l_e, cfg$l_l, cfg$l_c)
+  rbindlist(lapply(c(2, 1, 3), function(s) {
+    pa <- l_s[[s]]$p_d1_alloc; pp <- l_s[[s]]$p_pref
+    data.table(
+      Silo = silo_labs[s],
+      `Share of all patients` = percent(unname(cfg$p_s_alloc[s]), accuracy = 1),
+      `D1 randomised?` = if (s == 2) "Yes" else "No (clinician choice)",
+      `Preference for 2-stage` = percent(pp, accuracy = 1),
+      DAIR = percent(1 - pa, accuracy = 1),
+      `1-stage revision` = percent(pa * (1 - pp), accuracy = 1),
+      `2-stage revision` = percent(pa * pp, accuracy = 1)
+    )
+  }))
+}
+
+# sim07 stores margins by rule type and thresholds by domain
+table_decision_rules <- function(cfg) {
+  spec <- data.table(
+    domain = c("d1", "d1", "d2", "d2", "d3", "d3", "d4", "d4"),
+    rule   = c("sup", "fut", "ni", "fut", "sup", "fut", "sup", "fut"),
+    delta  = c("sup", "sup_fut", "ni", "ni_fut", "sup", "sup_fut", "sup", "sup_fut"),
+    thresh = c("sup", "fut_sup", "ni", "fut_ni", "sup", "fut_sup", "sup", "fut_sup"),
+    ix     = c(1, 1, 2, 2, 3, 3, 4, 4)
+  )
+  spec[, .(
+    Domain = domain_labs_short[domain],
+    Rule = rule_labs[rule],
+    `Effect margin (delta)` = sprintf("%+.3f", mapply(function(d) cfg$delta[[d]], delta)),
+    `Confidence required` = percent(
+      mapply(function(t, i) unlist(cfg$thresh[[t]])[i], thresh, ix), accuracy = 0.1)
+  )]
+}
+```
+
+sim07 has three silos.
+Only the late-acute silo is randomised to DAIR versus revision; early and chronic infections receive whichever surgical strategy their clinician deems appropriate.
+Unlike sim09, there is no separate late-acute non-randomised group: all late-acute patients are assumed to enter the D1 randomisation.
+The type of revision (one-stage vs two-stage) is set by the surgeon's preference, which is elicited at baseline before the randomisation is revealed.
+
+```{r table-silo-d1, eval = F}
+table_silo_d1(cfg1) |>
+  gt() |>
+  tab_header(title = "Patient population and initial surgical-strategy distribution") |>
+  tab_options(table.font.size = 13)
+```
+
+## Analysis model
+
+The sim07 analysis model is a single logistic regression with an intercept, silo effects, a preference effect, a 3x3 set of silo-by-surgery (d1) effects, and vector terms for d2, d3 and d4, where each includes a level for patients who did not enter the domain.
+D2 terms enter only for one-stage patients and D3 terms only for two-stage patients.
+The silo main effects and the silo-by-surgery terms overlap, so those parameters are separated only by their priors; the treatment contrasts are unaffected because they depend only on the sums.
+
+Treatment effects are obtained by g-computation inside Stan, with standardisation weights drawn from a Bayesian bootstrap (Dirichlet weights on the observed covariate patterns) at each posterior draw.
+
+- **D1** compares DAIR with revision in the late-acute silo. Revision is taken as one-stage for patients whose surgeon preferred one-stage and two-stage for those who preferred two-stage, with the downstream D2/D3 treatment held at the 'not entered' level. The two are combined in the observed preference proportions.
+- **D2 and D3** standardise over all one-stage (respectively two-stage) patients across silos, including those who did not enter the domain.
+- **D4** standardises over patients randomised within D4.
+
+## Decision rules
+
+For each domain, a decision is reached once the trial is sufficiently confident that the true effect exceeds (or, for futility, falls short of) a pre-specified margin.
+In sim07 each rule is evaluated and locked separately, so a domain can trigger a second rule after its first.
+Only the **first** decision changed allocation in sim07, so only the first is counted here, matching sim09.
+Where two rules for a domain first trigger at the same interim, superiority (or non-inferiority) takes precedence, as in the sim07 allocation logic.
+
+```{r table-decision-rules}
+table_decision_rules(cfg1) |>
+  gt(groupname_col = "Domain") |>
+  tab_header(title = "Decision rules by domain") |>
+  tab_options(table.font.size = 13)
+```
+
+```{r compute-oc, results='hide'}
+oc_by_scenario <- lapply(scenario_files, function(l) {
+  cfg <- l$cfg
+  list(
+    cfg = cfg,
+    dec_pr = sim07_smry_pr_dec(l$d_decision, length(cfg$N)),
+    l_dec_info = sim07_smry_dec_info(l$d_decision, l$d_all),
+    truth = sim07_true_effects(cfg)
+  )
+})
+```
+
+```{r overall-fns}
+rule_cols <- c(Superiority = "#2C7FB8", `Non-inferiority` = "#31A354", Futility = "#D95F0E")
+
+scn_factor <- function(x, width = 28) {
+  factor(str_wrap(x, width), levels = str_wrap(scenario_names, width))
+}
+
+# stack one element of every scenario's summary into a single table
+stack_oc <- function(get_fn) {
+  rbindlist(lapply(scenario_names, function(scn) {
+    d <- get_fn(oc_by_scenario[[scn]])
+    if (is.null(d) || nrow(d) == 0) return(NULL)
+    d <- copy(d)
+    d[, scenario := scn]
+    d
+  }), fill = TRUE)
+}
+
+d_dec_all   <- stack_oc(function(oc) oc$dec_pr)
+d_info_all  <- stack_oc(function(oc) oc$l_dec_info$d_smry)
+d_truth_all <- stack_oc(function(oc) oc$truth[, .(domain, truth, truth_lor, p_ref, p_trt)])
+
+d_dec_all[, rule_lab := factor(rule_labs[as.character(rule)], levels = rule_labs)]
+if (nrow(d_info_all) > 0) {
+  d_info_all[, rule_lab := factor(rule_labs[as.character(rule)], levels = rule_labs)]
+}
+
+n_interim <- max(d_dec_all$i_anlys)
+
+# cumulative enrolment at each interim, taken from the first scenario's design
+cum_enrol <- cumsum(cfg1$N)
+
+# ---- 0. assumed true effects (risk-difference scale) ------------------------
+table_truth <- function() {
+  d <- dcast(d_truth_all, scenario ~ domain, value.var = "truth")
+  d <- d[match(scenario_names, scenario)]
+  setnames(d, c("scenario", paste0("d", 1:4)),
+           c("Scenario", domain_labs_short[paste0("d", 1:4)]))
+  d
+}
+
+# ---- 1. headline table: chance of each decision by the final interim --------
+table_dec_final <- function() {
+  d <- d_dec_all[i_anlys == n_interim]
+  d[, rule_chr := factor(as.character(rule), levels = c("sup", "ni", "fut"))]
+  d_w <- dcast(d, scenario ~ domain + rule_chr, value.var = "mu")
+  d_w <- d_w[match(scenario_names, scenario)]
+  setnames(d_w, "scenario", "Scenario")
+  d_w
+}
+
+# ---- 2. progression by interim, one domain at a time ------------------------
+plot_dec_domain <- function(dm, ncol = 3) {
+  d <- d_dec_all[domain == dm]
+  d[, scenario_lab := scn_factor(scenario)]
+
+  d_lab <- merge(unique(d[, .(scenario, scenario_lab)]),
+                 d_truth_all[domain == dm, .(scenario, truth)], by = "scenario")
+  d_lab[, label := sprintf("True effect: %+.1f pp", truth * 100)]
+
+  ggplot(d, aes(x = i_anlys, y = mu, colour = rule_lab, linetype = rule_lab)) +
+    geom_line(linewidth = 0.6) +
+    geom_point(size = 1.4) +
+    geom_text(data = d_lab, aes(x = Inf, y = 0.03, label = label),
+              inherit.aes = FALSE, hjust = 1.05, size = 3, colour = "grey30") +
+    facet_wrap(~ scenario_lab, ncol = ncol) +
+    scale_colour_manual(values = rule_cols) +
+    scale_y_continuous(labels = percent, limits = c(0, 1), breaks = seq(0, 1, by = 0.2)) +
+    scale_x_continuous(breaks = seq_len(n_interim)) +
+    labs(x = "Interim analysis", y = "Cumulative chance of this decision",
+         colour = "Decision", linetype = "Decision") +
+    theme_minimal(base_size = 11) +
+    theme(legend.position = "bottom", strip.text = element_text(face = "bold", size = 8))
+}
+
+table_dec_domain <- function(dm) {
+  d <- d_dec_all[domain == dm]
+  d_w <- dcast(d, scenario + rule_lab ~ i_anlys, value.var = "mu")
+  int_cols <- as.character(seq_len(n_interim))
+  setnames(d_w, int_cols, paste("Interim", int_cols))
+  d_w <- merge(d_w, d_truth_all[domain == dm, .(scenario, truth)], by = "scenario")
+  d_w[, Scenario := sprintf("%s (true effect %+.1f pp)", scenario, truth * 100)]
+  d_w[, scn_ord := match(scenario, scenario_names)]
+  setorder(d_w, scn_ord, rule_lab)
+  d_w[, Decision := as.character(rule_lab)]
+  d_w[, c("scenario", "truth", "scn_ord", "rule_lab") := NULL]
+  setcolorder(d_w, c("Scenario", "Decision"))
+  d_w[]
+}
+
+# ---- 3. enrolment and patients informing each decision ----------------------
+table_n_domain <- function(dm) {
+  d <- d_info_all[domain == dm]
+  d[, scn_ord := match(scenario, scenario_names)]
+  setorder(d, scn_ord, rule_lab)
+  d[, .(
+    Scenario = scenario,
+    Decision = as.character(rule_lab),
+    `Chance of this decision` = pr_dec,
+    `Enrolled at decision` = sprintf("%.0f (%.0f to %.0f)", mu_n_enrl, q025_n_enrl, q975_n_enrl),
+    `Informing the decision` = sprintf("%.0f (%.0f to %.0f)", mu_n_info, q025_n_info, q975_n_info),
+    `Share of enrolled informing` = prop_info
+  )]
+}
+```
+
+# Overall summary across scenarios
+
+This section puts all scenarios side by side, so the behaviour of each comparison can be seen across the range of assumed truths.
+
+## Assumed true effects
+
+The true effects are the standardised risk differences implied by the sim07 data-generating process for the sim07 estimands, evaluated in the design population (all domains open, before any adaptation changes allocation).
+They are shown in percentage points.
+Because the sim07 and sim09 estimands differ (most notably for D1, where sim07 holds the downstream D2/D3 treatment at the 'not entered' level), a scenario with the same label can imply a different true effect in the two reports.
+
+```{r table-truth}
+d_truth_tbl <- table_truth()
+gt(d_truth_tbl) |>
+  fmt_number(columns = -Scenario, scale_by = 100, decimals = 2) |>
+  tab_header(title = "Assumed true risk difference (pp) by domain") |>
+  tab_options(table.font.size = 13)
+```
+
+## Chance of each decision
+
+For each domain, the first decision reached locks that domain, so within a domain the possible decisions are mutually exclusive.
+The remainder (100% less the decision columns) is the chance that the domain is still open at the final interim.
+The first table gives the position at the final interim (interim `r n_interim`, cumulative enrolment of `r cum_enrol[n_interim]`).
+The domain tabs that follow show how those chances build up over the interim analyses (cumulative enrolment at interims 1 to `r n_interim` is `r paste(cum_enrol, collapse = ", ")`).
+The true effect for each scenario is on the risk-difference scale in percentage points (pp).
+
+```{r table-dec-final}
+d_final <- table_dec_final()
+d_cols <- setdiff(names(d_final), "Scenario")
+
+d_final_gt <- gt(d_final) |>
+  fmt_percent(columns = d_cols, decimals = 0) |>
+  cols_label(.list = setNames(
+    as.list(rule_labs[sub("^d[0-9]_", "", d_cols)]), d_cols)) |>
+  tab_header(title = paste0("Chance of each decision by interim ", n_interim)) |>
+  tab_options(table.font.size = 13)
+
+# one spanner per domain
+for (dm in unique(sub("_.*$", "", d_cols))) {
+  d_final_gt <- tab_spanner(
+    d_final_gt, label = domain_labs_short[[dm]],
+    columns = grep(paste0("^", dm, "_"), d_cols, value = TRUE))
+}
+d_final_gt
+```
+
+::: {.panel-tabset}
+
+```{r overall-dec-domain, results='asis'}
+for (dm in paste0("d", 1:4)) {
+
+  cat("\n\n### ", domain_labs_short[dm], "\n\n")
+
+  print(plot_dec_domain(dm))
+  cat("\n\n")
+
+  d_tbl <- table_dec_domain(dm)
+  int_cols <- grep("^Interim", names(d_tbl), value = TRUE)
+  print(
+    gt(d_tbl, groupname_col = "Scenario") |>
+      fmt_percent(columns = int_cols, decimals = 0) |>
+      tab_options(table.font.size = 13)
+  )
+  cat("\n\n")
+}
+```
+
+:::
+
+## Enrolment and patients informing each decision
+
+These summaries describe the trials in which a decision was reached, at the interim where each domain's first decision occurred.
+They should be read alongside the chance of the decision, because a decision that is rarely reached rests on very few simulated trials.
+
+- **Enrolled at decision** is the total number of patients enrolled in the whole platform by that interim, not only those relevant to the domain.
+  Decisions can only occur at an interim analysis, so this is one of the interim enrolment totals (`r paste(cum_enrol, collapse = ", ")`) and the average blends them.
+- **Informing the decision** is the number of patients contributing to that domain's own comparison:
+  D1 uses all patients in the late-acute group (DAIR, 1-stage and 2-stage revision), D2 uses 1-stage revision patients randomised to 12 or 6 weeks, D3 uses 2-stage revision patients randomised to 12 weeks or none, and D4 uses patients randomised to rifampicin or not.
+- Ranges are the middle 95% across the simulated trials that reached that decision.
+
+::: {.panel-tabset}
+
+```{r overall-n-domain, results='asis'}
+for (dm in paste0("d", 1:4)) {
+
+  cat("\n\n### ", domain_labs_short[dm], "\n\n")
+
+  d_tbl <- table_n_domain(dm)
+  if (nrow(d_tbl) == 0) {
+    cat("No decisions were reached for this domain in any scenario.\n\n")
+    next
+  }
+  print(
+    gt(d_tbl, groupname_col = "Scenario") |>
+      fmt_percent(columns = c("Chance of this decision", "Share of enrolled informing"), decimals = 0) |>
+      tab_options(table.font.size = 13)
+  )
+  cat("\n\n")
+}
+```
+
+:::

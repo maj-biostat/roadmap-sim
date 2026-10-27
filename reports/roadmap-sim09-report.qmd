@@ -15,7 +15,7 @@ format:
     fig-width: 9
     fig-height: 6
 params:
-  sim_dir: "sim09-15"
+  sim_dir: "sim09-17"
 execute:
   warning: false
   message: false
@@ -86,7 +86,9 @@ scenario_files <- lapply(f_list, function(f) {
   qs2::qs_read(here::here("data", params$sim_dir, f))
 })
 
-scenario_names <- vapply(scenario_files, function(x) x$l_spec$desc, character(1))
+scenario_names <- vapply(scenario_files, function(x) {
+  x$l_spec$desc 
+  }, character(1))
 names(scenario_files) <- scenario_names
 ```
 
@@ -99,7 +101,7 @@ for(scn in scenario_names){
 }
 ```
 
-The results data are those stored in `r params$sim_dir` and have `r scenario_files[[1]]$l_spec$n_sim` iterations per scenario.
+The results data are those stored in **`r params$sim_dir`** and have **`r scenario_files[[1]]$l_spec$n_sim`** iterations per scenario.
 
 # How to read the results
 
@@ -115,7 +117,7 @@ A full set of the underlying numerical tables (bias, root-mean-square error, cov
 
 # Simulation configuration
 
-The two tables below describe parts of the design that are the same across every scenario in this report - only the assumed true effects (covered scenario by scenario, below) differ.
+The table(s) below describe parts of the design that are the same across every scenario in this report - only the assumed true effects (covered scenario by scenario, below) differ.
 
 ```{r config-tables}
 # these are assumed common to every scenario file - check that, and warn
@@ -179,7 +181,7 @@ table_decision_rules <- function(l_spec) {
 Only the late-acute silo that enters into randomised treatment for DAIR versus revision. 
 The other three groups (late-acute patients outside the randomisation window, early infections, and chronic infections) receive whichever surgical strategy their clinician deems appropriate.
 
-```{r table-silo-d1}
+```{r table-silo-d1, eval = F}
 table_silo_d1(l_spec1, l_dom_state1) |>
   gt() |>
   tab_header(title = "Patient population and initial surgical-strategy distribution") |>
@@ -225,6 +227,8 @@ oc_by_scenario <- parallel::mclapply(scenario_files, function(l) {
     l_n = sim09_smry_n(r, l_spec),
     l_dec_info = sim09_smry_dec_info(r, l_spec),
     l_effects = sim09_smry_effects(r, l_spec, l_dom_state0),
+    # design-population truth (log-odds and risk-difference scales)
+    true_eff = sim09_true_effects_des_pop(l_spec, l_dom_state0),
     wgt = sim09_smry_wgt(r, l_spec)
   )
 }, mc.cores = 6)
@@ -357,13 +361,27 @@ n_interim <- max(d_dec_all$i_anlys)
 cum_enrol <- cumsum(scenario_files[[1]]$l_spec$n_batch)
 
 # ---- 1. headline table: chance of each decision by the final interim --------
+
+# non-zero true risk differences (pp) implied by the specified log-odds
+# effects, from sim09_true_effects_des_pop() in the design population
+scenario_truth_str <- function(scn, tol = 1e-8) {
+  d <- oc_by_scenario[[scn]]$true_eff
+  d <- d[abs(rd) > tol]
+  if (nrow(d) == 0) return("None (all null)")
+  paste(sprintf("%s: %+.1f", d$domain, d$rd * 100), collapse = ", ")
+}
+
 table_dec_final <- function() {
   d <- d_dec_all[i_anlys == n_interim]
   d[, rule_chr := factor(as.character(rule), levels = c("sup", "ni", "fut"))]
   # columns come out as d1_sup, d1_fut, d2_ni, ... (unique names, spanners added below)
   d_w <- dcast(d, scenario ~ domain + rule_chr, value.var = "mu")
   d_w <- d_w[match(scenario_names, scenario)]
+  # scenario summary in terms of the implied true risk differences,
+  # e.g. "d1: +5.0, d4: +8.2" (pp), listing only the non-zero domains
+  d_w[, Truth := vapply(scenario, scenario_truth_str, character(1))]
   setnames(d_w, "scenario", "Scenario")
+  setcolorder(d_w, c("Scenario", "Truth"))
   d_w
 }
 
@@ -451,7 +469,7 @@ The scenario-by-scenario detail (including how well each effect is recovered) fo
 
 ## Chance of each decision
 
-For each domain, the first decision reached locks that domain, so within a domain the possible decisions are mutually exclusive.
+For each domain, the first decision reached locks that domain.
 The remainder (100% less the decision columns) is the chance that the domain is still open at the final interim.
 The first table gives the position at the final interim (interim `r n_interim`, cumulative enrolment of `r cum_enrol[n_interim]`).
 The domain tabs that follow show how those chances build up over the interim analyses (cumulative enrolment at interims 1 to `r n_interim` is `r paste(cum_enrol, collapse = ", ")`).
@@ -459,12 +477,13 @@ The true effect for each scenario is on the risk-difference scale in percentage 
 
 ```{r table-dec-final}
 d_final <- table_dec_final()
-d_cols <- setdiff(names(d_final), "Scenario")
+d_cols <- setdiff(names(d_final), c("Scenario", "Truth"))
 
 d_final_gt <- gt(d_final) |>
   fmt_percent(columns = d_cols, decimals = 0) |>
   cols_label(.list = setNames(
     as.list(rule_labs[sub("^d[0-9]_", "", d_cols)]), d_cols)) |>
+  cols_label(Truth = "True effects (RD, pp)") |>
   tab_header(title = paste0("Chance of each decision by interim ", n_interim)) |>
   tab_options(table.font.size = 13)
 
