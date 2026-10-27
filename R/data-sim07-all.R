@@ -342,7 +342,7 @@ generated quantities{
 "
 
 
-
+# m_1 <- cmdstanr::cmdstan_model("stan/model-sim-07-a.stan")
 m_1 <- cmdstanr::cmdstan_model(cmdstanr::write_stan_file(mod_a))
 
 l_mod <- list()
@@ -567,7 +567,7 @@ run_trial <- function(
     
     # fit model - does it matter that I continue to fit the model after the
     # decision is made...?
-    # snk <- capture.output(
+    snk <- capture.output(
     f_1 <- l_mod[[l_spec$model]]$sample(
       lsd$ld, iter_warmup = 1000, iter_sampling = 2000,
       parallel_chains = 1, chains = 1, refresh = 0, show_exceptions = F,
@@ -575,8 +575,22 @@ run_trial <- function(
       output_dir = output_dir_mcmc,
       output_basename = foutname
     )
-    # )
+    )
     
+    # unidentified bs[2] vs bd1[4:6] similarly bs[3] vs bd1[7:9]
+    # change and then watch the correlation between bs and sum bd1 blow up.
+    # > lsd$ld$pri_b1 <- c(0, 10)
+    # > lsd$ld$pri_b2 <- c(0, 10)
+    # > lsd$ld$pri_b3 <- c(0, 10)
+    # > lsd$ld$pri_b4 <- c(0, 10)
+    # > lsd$ld$pri_bs <- c(0, 10)
+    # m_bs <- f_1$draws(variable = "bs[2]", format = "matrix")
+    # m_bd1 <- f_1$draws(variable = c("bd1[4]", "bd1[5]", "bd1[6]"), format = "matrix")
+    # m_test <- f_1$draws(variable = c("bs[2]", "bd1[4]", "bd1[5]", "bd1[6]"), format = "matrix")
+    # m_test <- cbind(m_bs, rowSums(m_bd1))
+    # cor(m_test)
+    # pairs(m_test)
+    # cbind(m_bs, rowSums(m_bd1))
     log_info("Trial ", l_spec$ix_sim, " fitted models ", l_spec$ia)
     
     # extract posterior - marginal probability of outcome by group
