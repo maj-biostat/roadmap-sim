@@ -1,5 +1,6 @@
 default:
-  desc: "d3 l-OR = 0.564 (approx 12pct)"
+  desc: "d3 l-OR = 0.564"
+  desc_rd: "RD d1: 2.63, d3: 12.5"
   n_sim: 2500
   mc_cores: 50
   mc_warmup: 1000
@@ -11,7 +12,7 @@ default:
   nex: 3
   n_batch: [500, 500, 500, 500, 500]
   
-  seed: 88
+  seed: 9956 
   
   p_silo: {l: 0.40, lnrd1: 0.10, enrd1: 0.30, cnrd1: 0.20}
     

@@ -11,7 +11,7 @@ default:
   nex: 3
   n_batch: [500, 500, 500, 500, 500]
   
-  seed: 88
+  seed: 9969 
   
   p_silo: {l: 0.40, lnrd1: 0.10, enrd1: 0.30, cnrd1: 0.20}
     
