@@ -449,21 +449,48 @@ sim09_update_dom_state <- function(l_dom_state, l_dec) {
 }
 
 
-# Once a rule (sup/ni/fut) for a domain deemed TRUE, it stays TRUE for every
-# subsequent interim regardless of what a later analysis concludes. 
-# NA  never overrides a locked TRUE, and never itself counts as decided.
+# 1. Decision locking -----------------------------------------------------
+# A domain is decided by its FIRST decision. Once any rule (sup / ni / fut) is
+# TRUE for a domain, that rule's flag is carried forward unchanged and every
+# other rule for the domain is FALSE for all later analyses.
+# Within a single analysis, if more than one rule is TRUE (possible with
+# asymmetric margins), the success rule (sup / ni) takes precedence over fut,
+# matching the order the allocation functions already use.
+# NA never counts as a decision (it becomes FALSE, so downstream any() is safe).
+# The *_prob entries always come from the current analysis.
 sim09_lock_dec <- function(l_dec_prev, l_dec_new) {
-  if (is.null(l_dec_prev)) return(l_dec_new)
   
   l_locked <- l_dec_new
+  
   for (dm in names(l_dec_new)) {
-    rules <- names(l_dec_new[[dm]])
-    rules <- rules[!grepl("_prob$", rules)]
+    
+    z_new <- l_dec_new[[dm]]
+    rules <- names(z_new)[!grepl("_prob$", names(z_new))]
+    
+    z_prev <- if (is.null(l_dec_prev)) NULL else l_dec_prev[[dm]]
+    flags_prev <- vapply(
+      rules, function(rl) isTRUE(z_prev[[rl]]), logical(1))
+    
+    if (any(flags_prev)) {
+      # already decided - carry the locked decision forward untouched
+      flags <- flags_prev
+    } else {
+      flags <- vapply(
+        rules, function(rl) isTRUE(z_new[[rl]]), logical(1))
+      if (sum(flags) > 1) {
+        idx <- which(flags)
+        # FALSE sorts before TRUE so non-futility rules come first
+        idx <- idx[order(grepl("^fut", rules[idx]))]
+        flags[] <- FALSE
+        flags[idx[1]] <- TRUE
+      }
+    }
+    
     for (rl in rules) {
-      l_locked[[dm]][[rl]] <- 
-        isTRUE(l_dec_prev[[dm]][[rl]]) || isTRUE(l_dec_new[[dm]][[rl]])
+      l_locked[[dm]][[rl]] <- unname(flags[rl])
     }
   }
+  
   l_locked
 }
 
@@ -524,6 +551,83 @@ sim09_eval_all_dec <- function(d_post, l_spec) {
 
 
 # Computing treatment contrasts ----------
+
+
+sim09_post_mats <- function(d_cum_dat, f_1) {
+  m_reg <- as.matrix(f_1$draws(variables = "b_reg", format = "matrix"))
+  colnames(m_reg) <- levels(d_cum_dat$reg)
+  m_d4 <- as.matrix(f_1$draws(variables = "b_d4", format = "matrix"))
+  colnames(m_d4) <- levels(d_cum_dat$d4)
+  list(
+    v_b0 = as.numeric(f_1$draws(variables = "b_0", format = "matrix")),
+    m_reg = m_reg,
+    m_d4 = m_d4
+  )
+}
+
+# Single definition of the standardisation populations, used by BOTH
+# sim09_comp_rd and sim09_compute_lor_std so the two scales cannot diverge.
+#   - d4 mix: observed distribution over ALL patients (all silos), for every
+#     domain contrast that standardises over d4.
+#   - d1: dair vs revision, revision weights w_d1 supplied by the caller
+#     (named by regimen).
+#   - d2 / d3: silo mix observed among r1 / r2 patients, times the all-patient
+#     d4 mix. The same weights are used for both arms of the contrast.
+#   - d4: observed regimen distribution over all patients.
+# Weights are NA (not 0) when the relevant population has no patients yet, so
+# the contrast comes back NA rather than silently wrong.
+sim09_std_grids <- function(d_cum_dat, l_spec, w_d1) {
+  
+  stopifnot(all(l_spec$d1_trt_regs %in% names(w_d1)))
+  w_d1 <- w_d1[l_spec$d1_trt_regs]
+  
+  # d4 distribution across all silos
+  d_d4 <- d_cum_dat[, .(N = .N), by = .(d4 = as.character(d4))]
+  d_d4[, w := N / sum(N)]
+  
+  # d1
+  grid_d1_dair <- data.table(
+    reg = "l_dair_nad2_nad3", d4 = d_d4$d4, w = d_d4$w)
+  grid_d1_rev <- CJ(reg = l_spec$d1_trt_regs, d4 = d_d4$d4)
+  grid_d1_rev[, w := unname(w_d1[reg]) * d_d4$w[match(d4, d_d4$d4)]]
+  
+  # d2 / d3: silo mix within the target pathway x all-patient d4 mix
+  grid_pop <- function(target, reg_suffix) {
+    d_s <- d_cum_dat[d1 == target, .(N = .N), by = .(silo = as.character(silo))]
+    if (nrow(d_s) == 0) {
+      d_s <- data.table(silo = names(l_spec$p_silo), N = NA_real_)
+    }
+    d_s[, w_silo := N / sum(N)]
+    out <- CJ(silo = d_s$silo, d4 = d_d4$d4)
+    out[d_s, on = "silo", w_silo := i.w_silo]
+    out[d_d4, on = "d4", w_d4 := i.w]
+    out[, `:=`(reg = paste0(silo, reg_suffix), w = w_silo * w_d4)]
+    out[, .(reg, d4, w)]
+  }
+  grid_d2_wk12 <- grid_pop("r1", "_r1_wk12_nad3")
+  grid_d2_wk6  <- grid_pop("r1", "_r1_wk6_nad3")
+  grid_d3_wk12 <- grid_pop("r2", "_r2_nad2_wk12")
+  grid_d3_none <- grid_pop("r2", "_r2_nad2_none")
+  
+  # d4: observed regimen distribution, everyone
+  d_reg <- d_cum_dat[, .(N = .N), by = .(reg = as.character(reg))]
+  d_reg[, w := N / sum(N)]
+  grid_d4_rif   <- data.table(reg = d_reg$reg, d4 = "rif",   w = d_reg$w)
+  grid_d4_norif <- data.table(reg = d_reg$reg, d4 = "norif", w = d_reg$w)
+  
+  g <- list(
+    d1_dair = grid_d1_dair, d1_rev = grid_d1_rev,
+    d2_wk12 = grid_d2_wk12, d2_wk6 = grid_d2_wk6,
+    d3_wk12 = grid_d3_wk12, d3_none = grid_d3_none,
+    d4_rif = grid_d4_rif, d4_norif = grid_d4_norif
+  )
+  
+  # every grid is a probability distribution (or entirely NA)
+  for (nm in names(g)) {
+    if (!anyNA(g[[nm]]$w)) stopifnot(abs(sum(g[[nm]]$w) - 1) < 1e-8)
+  }
+  g
+}
 
 # The cov_grid provides a set of regimens and d4 levels along with
 # weight for each of their contributions. We compute the predicted posterior 
@@ -684,7 +788,7 @@ sim09_d1_wgt_current <- function(
     p_wk12_d2 <- fifelse(nrow(d_r1_entered) == 0, 0.5, mean(d_r1_entered$d2 == "wk12"))
       
     d_r2_entered <- d_r2[d3 != "nad3"]
-    p_wk12_d3 <- fifelse(nrow(d_r1_entered) == 0, 0.5, mean(d_r2_entered$d3 == "wk12"))
+    p_wk12_d3 <- fifelse(nrow(d_r2_entered) == 0, 0.5, mean(d_r2_entered$d3 == "wk12"))
       
   }
   
@@ -781,320 +885,57 @@ sim09_compute_lor <- function(
 
 
 
-# Tentatively refer to as standardised marginal log or
-sim09_compute_lor_std <- function(
-    d_cum_dat, l_spec, f_1
-) {
+# Standardised marginal log OR (same populations as sim09_comp_rd)
+sim09_compute_lor_std <- function(d_cum_dat, l_spec, f_1) {
   
-  v_b0 <- as.numeric(f_1$draws(variables = "b_0", format = "matrix"))
+  p <- sim09_post_mats(d_cum_dat, f_1)
+  # observed proportions of the revision regimens within the late silo
+  w_d1 <- sim09_reg_wgt(l_spec$d1_trt_regs, d_cum_dat)
+  g <- sim09_std_grids(d_cum_dat, l_spec, w_d1)
   
-  reg_lvls <- levels(d_cum_dat$reg)
-  d4_lvls  <- levels(d_cum_dat$d4)
-  
-  m_reg <- as.matrix(f_1$draws(variables = "b_reg", format = "matrix"))
-  colnames(m_reg) <- reg_lvls
-  
-  m_d4 <- as.matrix(f_1$draws(variables = "b_d4", format = "matrix"))
-  colnames(m_d4) <- d4_lvls
-  
-  
-  # d1: revision vs DAIR
-  # population is late-silo patients, standardised to their observed d4 distribution.
-  # In contrast to the above compute_lor, revision represented by the observed 
-  # distribution oover complete regimens and d4
-  w_d1_trt <- sim09_reg_wgt(l_spec$d1_trt_regs, d_cum_dat )
-  # mirrors the marginal rd approach
-  d_dist_d4 <- d_cum_dat[ silo == "l", .N, keyby = d4 ]
-  d_dist_d4[, w := N / sum(N)]
-  
-  # tbd should probably pull some of this code out into a function that can be 
-  # called from compute_rd and this function....
-  # DAIR
-  grid_d1_dair <- data.table(
-    reg = "l_dair_nad2_nad3", d4 = as.character(d_dist_d4$d4), w = d_dist_d4$w
-  )
-  # Revision
-  grid_d1_rev <- CJ(
-    reg = l_spec$d1_trt_regs, d4 = as.character(d_dist_d4$d4)
-  )
-  
-  grid_d1_rev <- base::merge(
-    grid_d1_rev,
-    data.table(
-      reg = l_spec$d1_trt_regs,
-      w_trt = w_d1_trt
-    ),
-    by = "reg"
-  )
-  # now add in d4
-  grid_d1_rev <- base::merge(
-    grid_d1_rev,
-    data.table(
-      d4 = as.character(d_dist_d4$d4),
-      w_d4 = d_dist_d4$w
-    ),
-    by = "d4"
-  )
-  # to get the final weights
-  grid_d1_rev[, w := w_trt * w_d4]
-  
-  p_d1_dair <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d1_dair)
-  p_d1_rev <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d1_rev)
-  # marginal lor
-  post_lor_d1 <- qlogis(p_d1_rev) - qlogis(p_d1_dair)
-  
-  
-  # d2: 6 weeks vs 12 weeks
-  # population: observed r1 patients, standardised jointly over silo and d4.
-  # The SAME target weights are used for wk6 and wk12.
-  d_pop_r1 <- d_cum_dat[ d1 == "r1", .N, keyby = .(silo, d4) ]
-  d_pop_r1[, w := N / sum(N)]
-  d_pop_r1[, reg_wk12 := paste0(silo, "_r1_wk12_nad3") ]
-  d_pop_r1[, reg_wk6 := paste0(silo, "_r1_wk6_nad3") ]
-  
-  grid_d2_wk12 <- data.table(
-    reg = d_pop_r1$reg_wk12, d4 = as.character(d_pop_r1$d4), w = d_pop_r1$w
-  )
-  grid_d2_wk6 <- data.table(
-    reg = d_pop_r1$reg_wk6, d4 = as.character(d_pop_r1$d4), w = d_pop_r1$w
-  )
-  
-  p_d2_wk12 <- sim09_std_prob( v_b0, m_reg, m_d4, grid_d2_wk12 )
-  p_d2_wk6 <- sim09_std_prob( v_b0, m_reg, m_d4, grid_d2_wk6 )
-  post_lor_d2 <- qlogis(p_d2_wk6) - qlogis(p_d2_wk12)
-  
-  # d3: 12 weeks vs none
-  # population: observed r2 patients, standardised jointly over silo and d4.
-  
-  d_pop_r2 <- d_cum_dat[ d1 == "r2", .N, keyby = .(silo, d4) ]
-  d_pop_r2[, w := N / sum(N)]
-  d_pop_r2[, reg_wk12 := paste0(silo, "_r2_nad2_wk12") ]
-  d_pop_r2[, reg_none := paste0(silo, "_r2_nad2_none") ]
-  
-  grid_d3_wk12 <- data.table(
-    reg = d_pop_r2$reg_wk12, d4 = as.character(d_pop_r2$d4), w = d_pop_r2$w
-  )
-  grid_d3_none <- data.table(
-    reg = d_pop_r2$reg_none, d4 = as.character(d_pop_r2$d4), w = d_pop_r2$w
-  )
-  p_d3_wk12 <- sim09_std_prob( v_b0, m_reg, m_d4, grid_d3_wk12 )
-  p_d3_none <- sim09_std_prob( v_b0, m_reg, m_d4, grid_d3_none )
-  post_lor_d3 <- qlogis(p_d3_wk12) - qlogis(p_d3_none)
-  
-  
-  # d4: rif vs norif
-  # population: all observed patients, standardised to their observed regimen
-  
-  d_pop_all <- d_cum_dat[ , .N, keyby = reg ]
-  d_pop_all[, w := N / sum(N)]
-  
-  grid_d4_rif <- data.table(
-    reg = as.character(d_pop_all$reg), d4 = "rif", w = d_pop_all$w
-  )
-  grid_d4_norif <- data.table(
-    reg = as.character(d_pop_all$reg), d4 = "norif", w = d_pop_all$w
-  )
-  p_d4_rif <- sim09_std_prob( v_b0, m_reg, m_d4, grid_d4_rif )
-  p_d4_norif <- sim09_std_prob( v_b0, m_reg, m_d4, grid_d4_norif)
-  post_lor_d4 <- qlogis(p_d4_rif) - qlogis(p_d4_norif)
+  sp <- function(grid) sim09_std_prob(p$v_b0, p$m_reg, p$m_d4, grid)
   
   data.table(
-    d1 = as.numeric(post_lor_d1),
-    d2 = as.numeric(post_lor_d2),
-    d3 = as.numeric(post_lor_d3),
-    d4 = as.numeric(post_lor_d4)
+    d1 = qlogis(sp(g$d1_rev))   - qlogis(sp(g$d1_dair)),
+    d2 = qlogis(sp(g$d2_wk6))   - qlogis(sp(g$d2_wk12)),
+    d3 = qlogis(sp(g$d3_wk12))  - qlogis(sp(g$d3_none)),
+    d4 = qlogis(sp(g$d4_rif))   - qlogis(sp(g$d4_norif))
   )
 }
 
 
-# Producing RD aligned with a population/regimen mix per what is observed 
-# in the sample. 
-# In contrast the bayesian bootstrap would try to reflect the extra uncertainty
-# about whether the observed mix of regimens is a reliable estimate of the 
-# population mix.
-#
-# d2/d3/d4 are direct. For the ACTUAL patients in the applicable population
-# (r1 patients for d2, r2 patients for d3, everyone for d4), predict 
-# outcome prob under each of the trt levels, holding  everything else 
-# (their own silo, their own d4 for d2/d3; their own reg for
-# d4) fixed at its observed value, then average the difference.
-#
-# d1 tricky - a DAIR patient has no observed r1/r2 (or downstream
-# d2/d3) counterfactual, because they never entered that pathway.
-# So, treating "revision" as a probability-weighted
-# mixture over the l_r1_*/l_r2_* regimens, with weights given by the
-# OBSERVED proportions of actual revision patients across those cells (i.e.
-# the same w_d1 already used for the log-odds jnt_d1 contrast.
-# This more or less corresponds to what we have been repeatedly asked for
-# even though it doesnt make a lot of sense to me...
-# Mixture is applied uniformly to EVERY l-silo patient (not just the
-# ones who actually got DAIR), so "revision" and "dair" are both counter-
-# factual quantities defined the same way for the whole standardisation
-# population.
-sim09_comp_rd <- function(
-    d_cum_dat, l_spec, f_1, l_dom_state
-    ) {
+# Standardised marginal risk difference (drives the decisions)
+sim09_comp_rd <- function(d_cum_dat, l_spec, f_1, l_dom_state) {
   
-  silos <- names(l_spec$p_silo)
+  p <- sim09_post_mats(d_cum_dat, f_1)
+  # in empirical-weight mode this equals sim09_reg_wgt(d1_trt_regs)
+  w_d1 <- sim09_d1_wgt_current(d_cum_dat, l_dom_state, l_spec)
+  g <- sim09_std_grids(d_cum_dat, l_spec, w_d1)
   
-  v_b0  <- as.numeric(f_1$draws(variables = "b_0", format = "matrix"))
-  
-  reg_lvls <- levels(d_cum_dat$reg)
-  d4_lvls  <- levels(d_cum_dat$d4)
-  
-  m_reg <- as.matrix(f_1$draws(variables = "b_reg", format = "matrix"))
-  colnames(m_reg) <- reg_lvls
-  m_d4  <- as.matrix(f_1$draws(variables = "b_d4",  format = "matrix"))
-  colnames(m_d4) <- d4_lvls
-  
-  # d1: revision (mixture over r1/r2 sub-regimens) vs dair, l silo
-  # same mixture weights as jnt_d1
-  # pr of b
-  w_d1 <- sim09_d1_wgt_current(d_cum_dat, l_dom_state, l_spec) 
-  
-  
-  # in practice i think this would need to be across the whole covariate mix, site, 
-  # prognostics etc.
-  
-  # we know the allocation within d4 rand trt but we don't know how many enter
-  # into rand trt - estimate based on all data
-  d_dist_d4 <- d_cum_dat[, .N, keyby = d4]
-  d_dist_d4[, w := N / sum(N)]
-  w_dist_d4 <- d_dist_d4$w
-  names(w_dist_d4) <- d_dist_d4$d4
-  
-  grid_dair <- data.table(
-    reg = "l_dair_nad2_nad3", d4 = as.character(d_dist_d4$d4), w = d_dist_d4$w)
-  
-  # contributions across pop
-  grid_rev <- CJ(reg = l_spec$d1_trt_regs, d4 = as.character(d_dist_d4$d4))
-  # weight associated with each regimen
-  grid_rev <- base::merge(
-    grid_rev, data.table(reg = l_spec$d1_trt_regs, w_treat = w_d1), by = "reg")
-  # weights acros d4
-  grid_rev <- base::merge(
-    grid_rev, data.table(
-      d4 = as.character(d_dist_d4$d4), w_covar = d_dist_d4$w), by = "d4")
-  # combined weight as product
-  grid_rev[, w := w_treat * w_covar]
-  grid_rev[, `:=`(w_treat = NULL, w_covar = NULL)]
-  
-  # probability of response based on regimens entering grid and their weights
-  p_dair <- sim09_std_prob(v_b0, m_reg, m_d4, cov_grid = grid_dair)
-  p_rev  <- sim09_std_prob(v_b0, m_reg, m_d4, grid_rev)
-  rd_d1  <- as.numeric(p_rev - p_dair)
-  
-  # d2: 
-  # wk6 vs wk12, silo composition current-practice so split known
-  
-  w_silo_r1 <- sim09_silo_wgt_current(d_cum_dat, l_dom_state, "r1")
-  
-  # dumb - not required here.
-  # we know the allocation to each arm is per the current domain status
-  # p_wk12_d2 <- l_dom_state$d2["wk12"] / (l_dom_state$d2["wk12"] +
-  #                                          l_dom_state$d2["wk6"])
-  
-  # d4 distribution within each silos r1 patients
-  
-  
-  # all the wk12 contributions along with their weights
-  grid_d2_wk12 <- CJ(reg = paste0(silos, "_r1_wk12_nad3"), 
-                 d4 = as.character(d_dist_d4$d4))
-  grid_d2_wk12[, silo := tstrsplit(reg, "_", fixed = T, keep = 1)]
-  grid_d2_wk12[, w := w_silo_r1[silo] * w_dist_d4[d4]]
-  grid_d2_wk12[, silo := NULL]
-  
-  grid_d2_wk6  <- CJ(reg = paste0(silos, "_r1_wk6_nad3"), 
-                  d4 = as.character(d_dist_d4$d4))
-  grid_d2_wk6[, silo := tstrsplit(reg, "_", fixed = T, keep = 1)]
-  grid_d2_wk6[, w := w_silo_r1[silo] * w_dist_d4[d4]]
-  grid_d2_wk6[, silo := NULL]
-  
-  p_wk12 <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d2_wk12)
-  p_wk6  <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d2_wk6)
-  rd_d2  <- as.numeric(p_wk6 - p_wk12)
-  
-  
-  # d3: 
-  # wk12 vs none, silo composition current-practice so split known
-  w_silo_r2 <- sim09_silo_wgt_current(d_cum_dat, l_dom_state, "r2")
-  
-  grid_d3_wk12 <- CJ(reg = paste0(silos, "_r2_nad2_wk12"), 
-                  d4 = as.character(d_dist_d4$d4))
-  grid_d3_wk12[, silo := tstrsplit(reg, "_", fixed = T, keep = 1)]
-  grid_d3_wk12[, w := w_silo_r2[silo] * w_dist_d4[d4]]
-  grid_d3_wk12[, silo := NULL]
-  
-  grid_d3_none <- CJ(reg = paste0(silos, "_r2_nad2_none"), 
-                     d4 = as.character(d_dist_d4$d4))
-  grid_d3_none[, silo := tstrsplit(reg, "_", fixed = T, keep = 1)]
-  grid_d3_none[, w := w_silo_r2[silo] * w_dist_d4[d4]]
-  grid_d3_none[, silo := NULL]
-  
-  p_d3_wk12 <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d3_wk12)
-  p_d3_none <- sim09_std_prob(v_b0, m_reg, m_d4, grid_d3_none)
-  rd_d3     <- as.numeric(p_d3_wk12 - p_d3_none)
-  
-  # d4: rif vs norif, among everyone (any reg)
-  d_pop_all <- d_cum_dat[, .N, keyby = reg]
-  d_pop_all[, w := N / sum(N)]
-  
-  grid_rif   <- data.table(
-    reg = as.character(d_pop_all$reg), d4 = "rif",   w = d_pop_all$w)
-  grid_norif <- data.table(
-    reg = as.character(d_pop_all$reg), d4 = "norif", w = d_pop_all$w)
-  
-  p_rif   <- sim09_std_prob(v_b0, m_reg, m_d4, grid_rif)
-  p_norif <- sim09_std_prob(v_b0, m_reg, m_d4, grid_norif)
-  rd_d4   <- as.numeric(p_rif - p_norif)
+  sp <- function(grid) sim09_std_prob(p$v_b0, p$m_reg, p$m_d4, grid)
   
   d_rd <- data.table(
-    d1 = rd_d1, 
-    d2 = rd_d2, 
-    d3 = rd_d3, 
-    d4 = rd_d4
+    d1 = as.numeric(sp(g$d1_rev)  - sp(g$d1_dair)),
+    d2 = as.numeric(sp(g$d2_wk6)  - sp(g$d2_wk12)),
+    d3 = as.numeric(sp(g$d3_wk12) - sp(g$d3_none)),
+    d4 = as.numeric(sp(g$d4_rif)  - sp(g$d4_norif))
   )
   
-  d_grid <- rbind(
-    data.table(
-      domain = "d1", side = "rev", 
-      reg = grid_rev$reg, d4 = grid_rev$d4, w = grid_rev$w
-    ),
-    data.table(
-      domain = "d2", side = "wk12", 
-      reg = grid_d2_wk12$reg, d4 = grid_d2_wk12$d4, w = grid_d2_wk12$w
-    ),
-    data.table(
-      domain = "d2", side = "wk6", 
-      reg = grid_d2_wk6$reg, d4 = grid_d2_wk6$d4, w = grid_d2_wk6$w
-    ),
-    data.table(
-      domain = "d3", side = "wk12", 
-      reg = grid_d3_wk12$reg, d4 = grid_d3_wk12$d4, w = grid_d3_wk12$w
-    ),
-    data.table(
-      domain = "d3", side = "none", 
-      reg = grid_d3_none$reg, d4 = grid_d3_none$d4, w = grid_d3_none$w
-    ),
-    data.table(
-      domain = "d4", side = "rif", 
-      reg = grid_rif$reg, d4 = grid_rif$d4, w = grid_rif$w
-    ),
-    data.table(
-      domain = "d4", side = "norif", 
-      reg = grid_norif$reg, d4 = grid_norif$d4, w = grid_norif$w
-    )
-  )
+  tag <- function(grid, domain, side) {
+    cbind(data.table(domain = domain, side = side), grid)
+  }
+  d_grid <- rbindlist(list(
+    tag(g$d1_rev,   "d1", "rev"),
+    tag(g$d2_wk12,  "d2", "wk12"),
+    tag(g$d2_wk6,   "d2", "wk6"),
+    tag(g$d3_wk12,  "d3", "wk12"),
+    tag(g$d3_none,  "d3", "none"),
+    tag(g$d4_rif,   "d4", "rif"),
+    tag(g$d4_norif, "d4", "norif")
+  ))
   
-  list(
-    d_rd = d_rd,
-    d_grid = d_grid
-  )
-  
-    
-  
+  list(d_rd = d_rd, d_grid = d_grid)
 }
-
 # Model fit ---------------
 sim09_stan_fit_01 <- function(
     d_cum_dat,
